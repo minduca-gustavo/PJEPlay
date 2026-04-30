@@ -1,0 +1,84 @@
+{
+  "version": "1.0.4",
+  "short_name": "PJEPlay",
+  "name": "PJE Play",
+  "description": "Abre janelas estratégicas por processo a partir da tela do PJE. Destaca documentos por palavras-chave.",
+  "author": "PJE Play",
+  "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "pje-play@extensao.local",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ],
+        "optional": []
+      }
+    }
+  },
+  "action": {
+    "default_popup": "navegador/paginas/menu/pagina.htm",
+    "default_icon": "imagens/icon32.png"
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.jus.br/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://*.jus.br/*"
+      ],
+      "resources": [
+        "utils/pdfjs.mjs",
+        "utils/pdfjs.worker.mjs",
+        "imagens/*.png",
+        "documento/paginas/pje/play/superfiltro.js"
+      ]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.jus.br/pjekz/*"
+      ],
+      "js": [
+        "modulos/definicoes.js",
+        "modulos/relatar.js",
+        "modulos/dom.js",
+        "modulos/execucao.js",
+        "modulos/navegador.js",
+        "modulos/texto.js",
+        "documento/paginas/pje/play/pintura.js",
+        "documento/paginas/pje/play/botao-play.js",
+        "documento/paginas/pje/play/janelas.js",
+        "documento/paginas/pje/play/iniciar.js",
+        "documento/paginas/pje/play/funcoes-da-planilha.js",
+        "documento/paginas/pje/play/porta-de-entrada.js",
+        "documento/paginas/pje/play/sf-botoes.js",
+        "documento/paginas/pje/play/superfiltro.js",
+        "documento/paginas/pje/play/teste.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "scripts": [
+      "modulos/definicoes.js",
+      "modulos/relatar.js",
+      "navegador/segundo-plano.js"
+    ]
+  },
+  "icons": {
+    "16": "imagens/icon16.png",
+    "32": "imagens/icon32.png",
+    "48": "imagens/icon48.png",
+    "128": "imagens/icon128.png"
+  }
+}
