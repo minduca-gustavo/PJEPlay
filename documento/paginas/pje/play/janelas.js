@@ -727,17 +727,13 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		function iniciarContagem(){
 			if(intervalo) clearInterval(intervalo)
 			intervalo = setInterval(() => {
-				//if(resetar){ 
-				//	clearInterval(intervalo)
-				//	resetar = false
-				//}
-				if(pausado) return
+				if(pausado) return          // ← pausa o decremento E o disparo do sinal
 				contadorAtual--
 				atualizarContador()
 				if(contadorAtual <= 0){
 					clearInterval(intervalo)
-					if (minhaGeracao !== _play_geracao) return
-					// Salva nota (opção escolhida) e avança
+					if(pausado) return      // ← segurança extra (não deve ocorrer, mas garante)
+					if(minhaGeracao !== _play_geracao) return
 					let nota = opcaoEscolhida || ''
 					localStorage.setItem('pjeplay_nota_' + sessao, nota)
 					play_sinalizar(sessao, 'proximo')
@@ -746,8 +742,10 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		}
 
 		divContador.addEventListener('click', () => {
-			pausado = !pausado
-			atualizarContador()
+			if(pausado) return          // já pausado, ignora cliques adicionais
+			pausado = true
+			clearInterval(intervalo)   // encerra o timer definitivamente
+			atualizarContador()        // atualiza a cor para azul (pausado)
 		})
 
 		widget.appendChild(divContador)
