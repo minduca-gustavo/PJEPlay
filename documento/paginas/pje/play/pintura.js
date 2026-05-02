@@ -104,7 +104,7 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 			fontSize:      '11px',
 			whiteSpace:    'nowrap',
 			boxShadow:     '0 2px 8px rgba(0,0,0,0.4)',
-			zIndex:        '9999',
+			zIndex:        '999999',
 			pointerEvents: 'none',
 			lineHeight:    '1.6',
 		})
@@ -119,7 +119,7 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 		badge.addEventListener('mouseleave', () => tip.style.display = 'none')
 	}
 
-	let alvo = cabecalho.querySelector('h1,h2,h3,.titulo,.title,span') || cabecalho
+	let alvo = cabecalho.querySelector('.cabecalho-direita') || cabecalho
 	alvo.appendChild(badge)
 }
 
