@@ -710,13 +710,17 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			lineHeight:   '1',
 			transition:   'color 0.2s',
 		})
-		divContador.title = 'Clique para pausar/retomar'
+		divContador.title = 'Clique para pausar'
 		divContador.textContent = contadorAtual
 
 		function atualizarContador(){
 			divContador.textContent = contadorAtual
 			if(pausado){
 				divContador.style.color = '#5e84a8'
+				divContador.innerText = 'Contador Cancelado.\nClique em PRÓXIMO para continuar.'
+				divContador.style.fontSize = '15px'
+				divContador.style.fontWeight = '500'
+				divContador.style.lineHeight = '1.2'
 			} else if(contadorAtual <= 5){
 				divContador.style.color = '#e74c3c'
 			} else {
