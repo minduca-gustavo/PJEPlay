@@ -372,7 +372,7 @@ function play_aguardarSinal(sessao, timeout = 28800000){
 		let inicio = Date.now()
 		let tick = setInterval(() => {
 			let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
-			if(sinal){
+			if(sinal && sinal !== 'pausado'){
 				clearInterval(tick)
 				localStorage.removeItem(PLAY_KEY_BASE + sessao)
 				resolver(sinal)
@@ -695,6 +695,8 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		let pausado       = false
 		let intervalo     = null
 		let opcaoEscolhida = null
+		let sinalInicial = localStorage.getItem(PLAY_KEY_BASE + sessao)
+		if (sinalInicial == 'pausado') pausado = true
 
 		// ── Display do contador ───────────────────────────────
 		let divContador = document.createElement('div')
@@ -714,13 +716,11 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		divContador.textContent = contadorAtual
 
 		function atualizarContador(){
-			divContador.textContent = contadorAtual
+			let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
+			if (sinal == 'pausado') pausado = true
+			if(!pausado) divContador.textContent = contadorAtual
 			if(pausado){
-				divContador.style.color = '#5e84a8'
-				divContador.innerText = 'Contador Cancelado.\nClique em PRÓXIMO para continuar.'
-				divContador.style.fontSize = '15px'
-				divContador.style.fontWeight = '500'
-				divContador.style.lineHeight = '1.2'
+				pausarContadorDiv()
 			} else if(contadorAtual <= 5){
 				divContador.style.color = '#e74c3c'
 			} else {
@@ -728,15 +728,32 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			}
 		}
 
+		function pausarContadorDiv(){
+			divContador.style.color = '#5e84a8'
+			divContador.innerText = 'Contador Cancelado.\nClique em PRÓXIMO para continuar.'
+			divContador.style.fontSize = '15px'
+			divContador.style.fontWeight = '500'
+			divContador.style.lineHeight = '1.2'
+		}
+
 		function iniciarContagem(){
+			
 			if(intervalo) clearInterval(intervalo)
 			intervalo = setInterval(() => {
-				if(pausado) return          // ← pausa o decremento E o disparo do sinal
+				let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
+				if (sinal == 'pausado') pausado = true
+				if(pausado) {
+					pausarContadorDiv()
+					return          // ← pausa o decremento E o disparo do sinal
+				}
 				contadorAtual--
 				atualizarContador()
 				if(contadorAtual <= 0){
 					clearInterval(intervalo)
-					if(pausado) return      // ← segurança extra (não deve ocorrer, mas garante)
+					if(pausado){
+						pausarContadorDiv()
+						return
+					}     // ← segurança extra (não deve ocorrer, mas garante)
 					if(minhaGeracao !== _play_geracao) return
 					let nota = opcaoEscolhida || ''
 					localStorage.setItem('pjeplay_nota_' + sessao, nota)
@@ -749,7 +766,8 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			if(pausado) return          // já pausado, ignora cliques adicionais
 			pausado = true
 			clearInterval(intervalo)   // encerra o timer definitivamente
-			atualizarContador()        // atualiza a cor para azul (pausado)
+    		pausarContadorDiv()                          // direto, sem passar por atualizarContador
+			play_sinalizar(sessao, 'pausado') // sinaliza para outras janelas
 		})
 
 		widget.appendChild(divContador)
@@ -847,7 +865,11 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 		document.body.appendChild(widget)
 		_play_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
-		iniciarContagem()
+		if(!pausado){
+			iniciarContagem()
+		} else {
+			pausarContadorDiv()
+		}
 		return
 	}
 
