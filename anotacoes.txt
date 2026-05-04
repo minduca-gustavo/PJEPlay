@@ -1,0 +1,14 @@
+https://siscondj.trt15.jus.br/portaltrt15/pages/movimentacao/conta/new?numeroDoProcesso=0010328-29.2023.5.15.0005
+
+const bg = (cor) => document.body.style.backgroundColor = cor;
+bg ('#ffb703')
+const bg = (cor) => document.body.style.backgroundColor = cor;
+bg ('#00b4d8')
+Amarelo: #ffb703
+Azul: #00b4d8
+
+Filtrar SEM PJC.
+
+Filtrar ACORDO no recebimento da instancia superior nas VARAS e também:
+SENTENÇA ANULADA
+IMPROCEDÊNCIA MANTIDA
