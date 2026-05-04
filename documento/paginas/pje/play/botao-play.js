@@ -13,13 +13,13 @@
 // ── Configuração de telas ─────────────────────────────────────
 
 const PLAY_BOTOES_CONFIG = [
-	{ url: '/pjekz/painel/',                   ancora: '#brasao-republica', x: 8, y: 0 },
-	{ url: '/pjekz/escaninho',                 ancora: '#brasao-republica', x: 8, y: 0 },
-	{ url: '/pjekz/pauta-audiencias',          ancora: '#brasao-republica', x: 8, y: 0 },
-	{ url: '/pjekz/gigs/relatorios',           ancora: '#brasao-republica', x: 8, y: 0 },
-	{ url: '/pjekz/comunicacoesprocessuais',   ancora: '#brasao-republica', x: 8, y: 0 },
-	{ url: '/pjekz/atas-audiencias',           ancora: '#brasao-republica', x: 8, y: 0 },
-	{ url: '/gigs/meu-painel',                 ancora: '#brasao-republica', x: 8, y: 0 },
+	{ url: '/pjekz/painel/',                   ancora: '#brasao-republica', x: 28, y: 0 },
+	{ url: '/pjekz/escaninho',                 ancora: '#brasao-republica', x: 28, y: 0 },
+	{ url: '/pjekz/pauta-audiencias',          ancora: '#brasao-republica', x: 28, y: 0 },
+	{ url: '/pjekz/gigs/relatorios',           ancora: '#brasao-republica', x: 28, y: 0 },
+	{ url: '/pjekz/comunicacoesprocessuais',   ancora: '#brasao-republica', x: 28, y: 0 },
+	{ url: '/pjekz/atas-audiencias',           ancora: '#brasao-republica', x: 28, y: 0 },
+	{ url: '/gigs/meu-painel',                 ancora: '#brasao-republica', x: 28, y: 0 },
 ]
 
 

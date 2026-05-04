@@ -653,7 +653,17 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		width:        '220px',
 	})
 
-	let posInicial = posSalva || { bottom:'20px', right:'20px', top:'auto', left:'auto' }
+	// Valida se a posição salva ainda cabe dentro da janela atual.
+	// Uma posição salva na janela da esquerda pode ficar fora dos limites
+	// na janela da direita (que é menor ou está em outra posição).
+	let posInicial = { bottom:'20px', right:'20px', top:'auto', left:'auto' }
+	if(posSalva){
+		let t = parseInt(posSalva.top)
+		let l = parseInt(posSalva.left)
+		let dentroV = !isNaN(t) && t >= 0 && t < window.innerHeight - 60
+		let dentroH = !isNaN(l) && l >= 0 && l < window.innerWidth  - 60
+		if(dentroV && dentroH) posInicial = posSalva
+	}
 	Object.assign(widget.style, posInicial)
 
 	// ── Header (arrasto) ──────────────────────────────────────

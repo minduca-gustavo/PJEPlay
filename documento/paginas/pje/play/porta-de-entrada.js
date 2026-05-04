@@ -57,7 +57,7 @@ async function buscarProcessosPorTarefa(nomeTarefa, param = '', opcoes = {}) {
 async function _idPorPaginaTarefa(pagina, idTarefa, param = '') {
 	let paginacao = await play_fetch(
 		location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=' + pagina +
-		'&idTarefa=' + idTarefa + param + '&tamanhoPagina=20'
+		'&idTarefa=' + idTarefa + param + '&tamanhoPagina=100'
 	)
 	let paginas  = paginacao?.qtdPaginas || 1
 	let resultado = paginacao?.resultado || []
