@@ -360,8 +360,10 @@ function play_calcularGeometria(posicao) {
 
 // ── Comunicação entre janelas ─────────────────────────────────
 
-const PLAY_KEY_BASE   = 'pjeplay_sinal_'
-const PLAY_KEY_FECHAR = 'pjeplay_fechar_'
+const PLAY_KEY_BASE      = 'pjeplay_sinal_'
+const PLAY_KEY_FECHAR    = 'pjeplay_fechar_'
+const PLAY_KEY_INICIAR   = 'pjeplay_iniciar_'   // timestamp de início do timer (escrito só pelo slot 0)
+const PLAY_KEY_REINICIAR = 'pjeplay_reiniciar_'  // qualquer janela pede reinício ao slot 0
 
 function play_sinalizar(sessao, acao){
 	localStorage.setItem(PLAY_KEY_BASE + sessao, acao)
@@ -407,7 +409,12 @@ function play_cancelarPipelineAtivo(){
 	_play_fila   = []
 	_play_fecharTodasJanelas()
 	Object.keys(localStorage)
-		.filter(k => k.startsWith(PLAY_KEY_BASE) || k.startsWith(PLAY_KEY_FECHAR))
+		.filter(k =>
+			k.startsWith(PLAY_KEY_BASE)      ||
+			k.startsWith(PLAY_KEY_FECHAR)    ||
+			k.startsWith(PLAY_KEY_INICIAR)   ||
+			k.startsWith(PLAY_KEY_REINICIAR)
+		)
 		.forEach(k => localStorage.removeItem(k))
 }
 
@@ -489,8 +496,10 @@ async function play_processarCursor(slots, tarefaUnica, temporizador){
 
 	let sessao = 'play_' + Date.now()
 
-	localStorage.removeItem(PLAY_KEY_BASE  + sessao)
-	localStorage.removeItem(PLAY_KEY_FECHAR + sessao)
+	localStorage.removeItem(PLAY_KEY_BASE    + sessao)
+	localStorage.removeItem(PLAY_KEY_FECHAR  + sessao)
+	localStorage.removeItem(PLAY_KEY_INICIAR + sessao)
+	localStorage.removeItem(PLAY_KEY_REINICIAR + sessao)
 
 	// Carrega posições salvas por slot para esta tarefa
 	let cfgPos   = await obterArmazenamento(['tarefaAtiva', 'widgetPosSlot'])
@@ -501,6 +510,9 @@ async function play_processarCursor(slots, tarefaUnica, temporizador){
 	let tmrJson = temporizador && temporizador.ativo
 		? encodeURIComponent(JSON.stringify(temporizador))
 		: ''
+
+	// Passa o total de janelas na URL para que o slot 0 saiba quantas coordenar
+	let totalJanelas = urlSlots.length
 
 	urlSlots.forEach(slot => {
 		let geo = play_calcularGeometria(slot.posicao)
@@ -515,11 +527,12 @@ async function play_processarCursor(slots, tarefaUnica, temporizador){
 
 		let urlFinal = slot.url
 			+ (slot.url.includes('?') ? '&' : '?')
-			+ 'pjeplay_sessao=' + sessao
+			+ 'pjeplay_sessao='    + sessao
 			+ '&pjeplay_tarefaunica=' + encodeURIComponent(tarefaUnica)
-			+ '&pjeplay_num='  + encodeURIComponent(item.numProc)
-			+ '&pjeplay_slot=' + slot.slotIndex
-			+ '&pjeplay_tarefa=' + encodeURIComponent(nomeAtivo)
+			+ '&pjeplay_num='      + encodeURIComponent(item.numProc)
+			+ '&pjeplay_slot='     + slot.slotIndex
+			+ '&pjeplay_tarefa='   + encodeURIComponent(nomeAtivo)
+			+ '&pjeplay_total='    + totalJanelas
 			+ (posSalva ? '&pjeplay_pos=' + encodeURIComponent(JSON.stringify(posSalva)) : '')
 			+ (params.length ? '&pjeplay_params=' + encodeURIComponent(JSON.stringify(params)) : '')
 			+ (tmrJson ? '&pjeplay_tmr=' + tmrJson : '')
@@ -535,11 +548,11 @@ async function play_processarCursor(slots, tarefaUnica, temporizador){
 
 	let sinal = await play_aguardarSinal(sessao)
 
-	// [ALTERAÇÃO 3] Ao encerrar: fecha TODAS as janelas abertas pela extensão
-	// antes de sinalizar o fechamento individual (que também fecha).
-	// Isso garante que todas as janelas filhas sejam fechadas, não só a atual.
+	// Fecha todas as janelas e limpa chaves de sincronização
 	_play_fecharTodasJanelas()
 	play_fecharJanelas(sessao)
+	localStorage.removeItem(PLAY_KEY_INICIAR   + sessao)
+	localStorage.removeItem(PLAY_KEY_REINICIAR + sessao)
 	await suspender(400)
 
 	let nota = localStorage.getItem('pjeplay_nota_' + sessao) || ''
@@ -573,6 +586,7 @@ async function play_injetarWidget(){
 	let numProc     = decodeURIComponent(params.get('pjeplay_num') || '')
 	let slotIndex   = parseInt(params.get('pjeplay_slot') || '0')
 	let nomeTarefa  = decodeURIComponent(params.get('pjeplay_tarefa') || '')
+	let totalJanelas = parseInt(params.get('pjeplay_total') || '1')
 
 	// Parâmetros extras (botões de clipboard)
 	let widgetParams = []
@@ -597,19 +611,146 @@ async function play_injetarWidget(){
 
 	play_monitorarFechamento(sessao)
 
+	// ── Primeira montagem após estabilização do DOM ───────────
 	_play_aguardarEstabilizacao(() => {
-		_play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador)
+		if(temporizador && temporizador.ativo){
+			// Sinaliza ao slot 0 que esta janela estabilizou
+			localStorage.setItem(PLAY_KEY_REINICIAR + sessao, slotIndex)
+
+			// Slot 0 coordena: monitora pedidos de reinício e libera o timestamp
+			if(slotIndex === 0){
+				_play_coordenarTimer(sessao, totalJanelas, temporizador)
+			}
+
+			// Todas as janelas (inclusive slot 0) aguardam o timestamp e montam o widget
+			_play_aguardarInicioTimer(sessao, (tsInicio) => {
+				_play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio)
+			})
+		} else {
+			// Modo normal: monta direto
+			_play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador)
+		}
 	})
-	// logo após o _play_montarWidget(...)
+
+	// ── Reinjeta o widget se ele sumir (navegação interna do PJe) ──
 	setInterval(async () => {
-    if (!document.getElementById('pjeplay-widget')) {
-        let cfg = await obterArmazenamento(['widgetPosSlot', 'tarefaAtiva'])
-        let nomeAtivo = cfg?.tarefaAtiva || nomeTarefa
-        let posSalvaAtual = cfg?.widgetPosSlot?.[nomeAtivo]?.[slotIndex] || null
-        _play_montarWidget(sessao, tarefaUnica, numProc, posSalvaAtual, slotIndex, nomeTarefa, widgetParams, temporizador)
-    }
-}, 1000)
+		if(!document.getElementById('pjeplay-widget')){
+			let cfg = await obterArmazenamento(['widgetPosSlot', 'tarefaAtiva'])
+			let nomeAtivo = cfg?.tarefaAtiva || nomeTarefa
+			let posSalvaAtual = cfg?.widgetPosSlot?.[nomeAtivo]?.[slotIndex] || null
+
+			if(temporizador && temporizador.ativo){
+				// Aguarda estabilização, sinaliza reinício ao slot 0 e aguarda novo timestamp
+				_play_aguardarEstabilizacao(() => {
+					localStorage.setItem(PLAY_KEY_REINICIAR + sessao, slotIndex)
+					_play_aguardarInicioTimer(sessao, (tsInicio) => {
+						_play_montarWidget(sessao, tarefaUnica, numProc, posSalvaAtual, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio)
+					})
+				})
+			} else {
+				_play_montarWidget(sessao, tarefaUnica, numProc, posSalvaAtual, slotIndex, nomeTarefa, widgetParams, temporizador)
+			}
+		}
+	}, 1000)
 }
+
+
+// ── Slot 0: coordena o início/reinício do timer ───────────────
+//
+// Fica em loop permanente enquanto a sessão estiver ativa.
+// Quando qualquer janela escreve PLAY_KEY_REINICIAR, o slot 0
+// lê quem pediu, limpa a chave e grava um novo timestamp em
+// PLAY_KEY_INICIAR — imediatamente, sem esperar as demais.
+// Todas as janelas (inclusive as que ainda estão carregando)
+// detectam o novo timestamp no seu próprio loop de espera.
+
+function _play_coordenarTimer(sessao, totalJanelas, temporizador){
+	// Aguarda primeira estabilização: espera todas as janelas sinalizarem
+	// antes de liberar o timestamp inicial. Usa timeout de segurança de 60s.
+	let prontas = new Set()
+	let inicialLiberado = false
+
+	let tickInicial = setInterval(() => {
+		// Verifica se a sessão ainda é válida (pipeline não foi cancelado)
+		if(localStorage.getItem(PLAY_KEY_FECHAR + sessao)){
+			clearInterval(tickInicial)
+			return
+		}
+
+		let quem = localStorage.getItem(PLAY_KEY_REINICIAR + sessao)
+		if(quem !== null){
+			prontas.add(String(quem))
+			localStorage.removeItem(PLAY_KEY_REINICIAR + sessao)
+		}
+
+		if(!inicialLiberado && prontas.size >= totalJanelas){
+			inicialLiberado = true
+			clearInterval(tickInicial)
+			localStorage.setItem(PLAY_KEY_INICIAR + sessao, String(Date.now()))
+			// Após liberação inicial, entra no loop de reinícios
+			_play_loopReinicio(sessao)
+		}
+	}, 300)
+
+	// Timeout de segurança: se em 60s não chegarem todas, libera mesmo assim
+	setTimeout(() => {
+		if(!inicialLiberado){
+			inicialLiberado = true
+			clearInterval(tickInicial)
+			localStorage.setItem(PLAY_KEY_INICIAR + sessao, String(Date.now()))
+			_play_loopReinicio(sessao)
+		}
+	}, 60000)
+}
+
+// Loop permanente do slot 0: detecta pedidos de reinício e
+// publica novo timestamp imediatamente (sem esperar as demais).
+function _play_loopReinicio(sessao){
+	let tick = setInterval(() => {
+		// Encerra se a sessão fechou
+		if(localStorage.getItem(PLAY_KEY_FECHAR + sessao)){
+			clearInterval(tick)
+			return
+		}
+
+		let quem = localStorage.getItem(PLAY_KEY_REINICIAR + sessao)
+		if(quem !== null){
+			localStorage.removeItem(PLAY_KEY_REINICIAR + sessao)
+			// Publica novo timestamp — todas as janelas reiniciam o timer
+			localStorage.setItem(PLAY_KEY_INICIAR + sessao, String(Date.now()))
+		}
+	}, 300)
+}
+
+
+// ── Aguarda o timestamp de início publicado pelo slot 0 ───────
+//
+// Cada janela chama esta função após sinalizar o reinício.
+// Quando o timestamp aparece no localStorage, chama o callback
+// com o valor para que o widget seja montado com o tempo correto.
+
+function _play_aguardarInicioTimer(sessao, callback, timeout = 90000){
+	// Guarda o timestamp que estava antes de sinalizar para ignorar
+	// um valor antigo que ainda não foi substituído pelo slot 0.
+	let tsAntes = localStorage.getItem(PLAY_KEY_INICIAR + sessao)
+	let inicio  = Date.now()
+
+	let tick = setInterval(() => {
+		let ts = localStorage.getItem(PLAY_KEY_INICIAR + sessao)
+		// Só aceita se for um timestamp diferente do que havia antes
+		if(ts && ts !== tsAntes){
+			clearInterval(tick)
+			callback(parseInt(ts))
+			return
+		}
+		if(Date.now() - inicio > timeout){
+			clearInterval(tick)
+			// Fallback: inicia com timestamp atual para não travar
+			callback(Date.now())
+		}
+	}, 300)
+}
+
 
 function _play_aguardarEstabilizacao(callback) {
     function comDebounce() {
@@ -632,7 +773,7 @@ function _play_aguardarEstabilizacao(callback) {
 // Fora de _play_montarWidget, no escopo do módulo:
 let _play_geracao = 0  // variável de módulo
 
-function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador){
+function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio = 0){
 	_play_geracao++
 	let minhaGeracao = _play_geracao  // capturada no closure
 	
@@ -691,12 +832,25 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		let segundosTotal = parseInt(temporizador.segundos) || 30
 		let opcoes = (temporizador.opcoes || '').split(',').map(s => s.trim()).filter(Boolean)
 
-		let contadorAtual = segundosTotal
+		// Calcula tempo restante a partir do timestamp de início sincronizado
+		let elapsed = tsInicio > 0 ? Math.floor((Date.now() - tsInicio) / 1000) : 0
+		let contadorAtual = Math.max(0, segundosTotal - elapsed)
+
 		let pausado       = false
 		let intervalo     = null
 		let opcaoEscolhida = null
 		let sinalInicial = localStorage.getItem(PLAY_KEY_BASE + sessao)
 		if (sinalInicial == 'pausado') pausado = true
+
+		// Se o tempo já esgotou antes de montar (janela muito lenta), avança logo
+		if(contadorAtual <= 0 && !pausado){
+			if(minhaGeracao === _play_geracao){
+				let nota = opcaoEscolhida || ''
+				localStorage.setItem('pjeplay_nota_' + sessao, nota)
+				play_sinalizar(sessao, 'proximo')
+			}
+			return
+		}
 
 		// ── Display do contador ───────────────────────────────
 		let divContador = document.createElement('div')
@@ -736,24 +890,38 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			divContador.style.lineHeight = '1.2'
 		}
 
+		// Monitora novo timestamp publicado pelo slot 0 (reinício sincronizado)
+		// Se o timestamp mudou, esta geração do widget se autodestroí e
+		// play_injetarWidget detectará a ausência do widget e montará o novo.
+		let tsAtual = tsInicio
+		let tickReinicio = setInterval(() => {
+			let ts = localStorage.getItem(PLAY_KEY_INICIAR + sessao)
+			if(ts && parseInt(ts) !== tsAtual){
+				clearInterval(tickReinicio)
+				clearInterval(intervalo)
+				// Remove o widget para que o setInterval de reinjection o remonte
+				remover('#pjeplay-widget')
+			}
+		}, 300)
+
 		function iniciarContagem(){
-			
 			if(intervalo) clearInterval(intervalo)
 			intervalo = setInterval(() => {
 				let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
 				if (sinal == 'pausado') pausado = true
 				if(pausado) {
 					pausarContadorDiv()
-					return          // ← pausa o decremento E o disparo do sinal
+					return
 				}
 				contadorAtual--
 				atualizarContador()
 				if(contadorAtual <= 0){
 					clearInterval(intervalo)
+					clearInterval(tickReinicio)
 					if(pausado){
 						pausarContadorDiv()
 						return
-					}     // ← segurança extra (não deve ocorrer, mas garante)
+					}
 					if(minhaGeracao !== _play_geracao) return
 					let nota = opcaoEscolhida || ''
 					localStorage.setItem('pjeplay_nota_' + sessao, nota)
@@ -763,11 +931,12 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		}
 
 		divContador.addEventListener('click', () => {
-			if(pausado) return          // já pausado, ignora cliques adicionais
+			if(pausado) return
 			pausado = true
-			clearInterval(intervalo)   // encerra o timer definitivamente
-    		pausarContadorDiv()                          // direto, sem passar por atualizarContador
-			play_sinalizar(sessao, 'pausado') // sinaliza para outras janelas
+			clearInterval(intervalo)
+			clearInterval(tickReinicio)
+			pausarContadorDiv()
+			play_sinalizar(sessao, 'pausado')
 		})
 
 		widget.appendChild(divContador)
@@ -823,6 +992,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 				btn.addEventListener('click', () => {
 					clearInterval(intervalo)
+					clearInterval(tickReinicio)
 					opcaoEscolhida = opcao
 					localStorage.setItem('pjeplay_nota_' + sessao, opcao)
 					play_sinalizar(sessao, 'proximo')
@@ -846,12 +1016,14 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 		btnProximo.addEventListener('click', () => {
 			clearInterval(intervalo)
+			clearInterval(tickReinicio)
 			let nota = opcaoEscolhida || ''
 			localStorage.setItem('pjeplay_nota_' + sessao, nota)
 			play_sinalizar(sessao, 'proximo')
 		})
 		btnEncerrar.addEventListener('click', () => {
 			clearInterval(intervalo)
+			clearInterval(tickReinicio)
 			let nota = opcaoEscolhida || ''
 			localStorage.setItem('pjeplay_nota_' + sessao, nota)
 			play_sinalizar(sessao, 'encerrar')
