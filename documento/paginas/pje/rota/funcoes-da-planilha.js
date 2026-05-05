@@ -31,7 +31,7 @@
 // ── BUSCA DADOS BÁSICOS ───────────────────────────────────────
 
 async function b(i) {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + i
 	)
 	if (Array.isArray(dados)) return dados[0] || null
@@ -42,7 +42,7 @@ async function b(i) {
 // ── BUSCA CÁLCULOS ────────────────────────────────────────────
 
 async function c(i) {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/calculos/processo?pagina=1&tamanhoPagina=10' +
 		'&ordenacaoCrescente=true&idProcesso=' + i + '&incluirCalculosHomologados=true'
 	)
@@ -55,7 +55,7 @@ async function c(i) {
 // ── BUSCA DOCUMENTOS ─────────────────────────────────────────
 
 async function d(i) {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
 	)
 	if (!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
@@ -65,7 +65,7 @@ async function d(i) {
 // ── BUSCA DOCUMENTOS E MOVIMENTOS ─────────────────────────────────────────
 
 async function dm(i) {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
 	)
 	if (!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
@@ -76,7 +76,7 @@ async function dm(i) {
 // ── BUSCA ETIQUETAS/CHIPS ────────────────────────────────────
 
 async function e(i) {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-etiquetas-api/api/processos/' + i + '/etiquetas'
 	)
 	if (!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
@@ -254,7 +254,7 @@ idOrgaoJulgador	75
 
 async function g(numProc) {
 	
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-gigs-api/api/relatorioatividades/?&numeroProcesso=' + numProc
 	)
 	if (!Array.isArray(dados)) dados = dados?.resultado || []
@@ -265,7 +265,7 @@ async function g(numProc) {
 // ── BUSCA MOVIMENTOS ─────────────────────────────────────────
 
 async function m(i) {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
 	)
 	if (!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
@@ -278,7 +278,7 @@ async function m(i) {
 // p(i, '/partes') → /pje-comum-api/api/processos/id/:i/partes
 
 async function p(i, path = '') {
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + path
 	)
 	if (Array.isArray(dados)) return dados[0] || null

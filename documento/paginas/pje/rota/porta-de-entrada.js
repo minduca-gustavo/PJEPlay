@@ -15,7 +15,7 @@
 // ── BUSCAR POR TAREFA ─────────────────────────────────────────
 
 async function buscarProcessosPorTarefa(nomeTarefa, param = '', opcoes = {}) {
-    let tarefasAtivas = await play_fetch(
+    let tarefasAtivas = await rota_fetch(
         location.origin + '/pje-comum-api/api/agrupamentotarefas/tarefas/todos'
     )
     let tarefa = tarefasAtivas.filter(t => t.nome === nomeTarefa)
@@ -55,7 +55,7 @@ async function buscarProcessosPorTarefa(nomeTarefa, param = '', opcoes = {}) {
 }
 
 async function _idPorPaginaTarefa(pagina, idTarefa, param = '') {
-	let paginacao = await play_fetch(
+	let paginacao = await rota_fetch(
 		location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=' + pagina +
 		'&idTarefa=' + idTarefa + param + '&tamanhoPagina=20'
 	)
@@ -73,7 +73,7 @@ async function buscarProcessosPorSala(nomeSala, qtdeDias = 30, opcoes = {}) {
     let ojAtivo = ojAguarda?.innerText || ''
     relatar('OJ ativo: ' + ojAtivo, '', 'resposta')
 
-    let orgaosJulgadores = await play_fetch(
+    let orgaosJulgadores = await rota_fetch(
         location.origin + '/pje-comum-api/api/orgaosjulgadores/'
     )
     let orgaoJulgadorAtivo = orgaosJulgadores.filter(o => o.descricao === ojAtivo)
@@ -82,7 +82,7 @@ async function buscarProcessosPorSala(nomeSala, qtdeDias = 30, opcoes = {}) {
         return { ids: [], t: [] }
     }
 
-    let salasExistentes = await play_fetch(
+    let salasExistentes = await rota_fetch(
         location.origin + '/pje-comum-api/api/salasaudiencias?idOrgaoJulgador=' + orgaoJulgadorAtivo[0].id
     )
     let salaRequerida = salasExistentes.filter(o => o.nome === nomeSala)
@@ -120,7 +120,7 @@ async function buscarProcessosPorSala(nomeSala, qtdeDias = 30, opcoes = {}) {
 }
 
 async function _idNaSalaPorData(idSala, data) {
-	let pautas = await play_fetch(
+	let pautas = await rota_fetch(
 		location.origin + '/pje-comum-api/api/pautasaudiencias/classificacoes/dia?idSalaAudiencia=' + idSala + '&data=' + data
 	)
 	let pautasDoDia = pautas?.pautasDoDia || []
@@ -142,7 +142,7 @@ async function buscarProcessosPorLista(lista, opcoes = {}) {
     const t   = []
 
     let resultados = await sf_pool(lista, async (numero) => {
-        return await _play_buscarIdProcessoEDados(numero)
+        return await _rota_buscarIdProcessoEDados(numero)
     }, {
         concorrencia: opcoes.concorrencia ?? 5,
         tentativas:   opcoes.tentativas   ?? 2,
@@ -216,10 +216,10 @@ async function entradaComPlanilha(contexto, scripts) {
 	return await planilha_executar(scripts, resultado.ids, resultado.t)
 }
 
-async function _play_buscarIdProcessoEDados(numero){
+async function _rota_buscarIdProcessoEDados(numero){
 	let numLimpo = numero.replace(/[.\-]/g, '')
 	
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
 	)
 	

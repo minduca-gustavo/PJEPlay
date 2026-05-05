@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistente — Rota PJE</title>
+  <link rel="stylesheet" href="assistente.css">
+</head>
+<body>
+
+<div class="assistente-shell">
+
+  <!-- CABEÇALHO -->
+  <header class="assistente-header">
+    <span class="assistente-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="28" height="28">
+        <defs>
+          <linearGradient id="sg" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%"   style="stop-color:#1565C0;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#0D47A1;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <path d="M 64 6 L 108 18 L 114 60 Q 114 95 64 122 Q 14 95 14 60 L 20 18 Z"
+              fill="url(#sg)" />
+        <path d="M 64 14 L 103 24 L 108 62 Q 108 91 64 114 Q 20 91 20 62 L 25 24 Z"
+              fill="none" stroke="white" stroke-width="2.5" />
+        <path d="M 64 14 L 103 24 L 101 42 L 27 42 L 25 24 Z" fill="#F57C00" />
+        <line x1="24" y1="42" x2="104" y2="42" stroke="white" stroke-width="2"/>
+        <text x="64" y="37" text-anchor="middle"
+              font-family="'Arial Black','Impact',sans-serif"
+              font-size="15" font-weight="900" fill="white" letter-spacing="2">ROTA</text>
+        <text x="64" y="88" text-anchor="middle"
+              font-family="'Arial Black','Impact',sans-serif"
+              font-size="36" font-weight="900" fill="white" letter-spacing="1">PJE</text>
+        <line x1="48" y1="97" x2="80" y2="97" stroke="white" stroke-width="1.5"
+              stroke-dasharray="5,4" opacity="0.6"/>
+      </svg>
+    </span>
+
+    <div class="assistente-titulo">
+      <h1>ROTA PJE</h1>
+      <p id="assistente-subtitulo">Pronto</p>
+    </div>
+
+    <button class="assistente-btn-fechar" id="btn-fechar-assistente" title="Fechar">×</button>
+  </header>
+
+  <!-- ABAS -->
+  <nav class="assistente-abas">
+    <button class="assistente-aba ativa" data-aba="roteiro">Roteiro</button>
+    <button class="assistente-aba"       data-aba="filtros">Super Filtros</button>
+    <button class="assistente-aba"       data-aba="historico">Histórico</button>
+  </nav>
+
+  <!-- CORPO -->
+  <div class="assistente-corpo">
+
+    <!-- ABA: Roteiro -->
+    <div class="assistente-pagina ativa" id="aba-roteiro">
+
+      <!-- Navegação entre processos -->
+      <div class="nav-processos">
+        <button class="btn-nav" id="btn-anterior" title="Processo anterior" disabled>&#8592;</button>
+        <div class="nav-processos-info">
+          <span id="nav-posicao">— / —</span>
+          <span class="nav-processos-sub" id="nav-tarefa">nenhuma tarefa ativa</span>
+        </div>
+        <button class="btn-nav" id="btn-proximo" title="Próximo processo">&#8594;</button>
+      </div>
+
+      <!-- Card do processo atual -->
+      <div class="processo-card" id="card-processo" style="display:none">
+        <div class="processo-card-header">
+          <span class="processo-numero" id="processo-numero">—</span>
+          <span class="processo-badge" id="processo-badge">—</span>
+        </div>
+        <div class="processo-info" id="processo-info"></div>
+      </div>
+
+      <!-- Botões de parâmetro (clipboard) -->
+      <div class="params-bloco" id="params-bloco" style="display:none"></div>
+
+      <!-- Anotação -->
+      <div class="anotacao-bloco">
+        <label class="campo-label" for="input-anotacao">Anotação</label>
+        <textarea id="input-anotacao" class="input-anotacao"
+                  placeholder="Anotação sobre este processo…" rows="3"></textarea>
+      </div>
+
+      <!-- Temporizador -->
+      <div class="temporizador-bloco" id="temporizador-bloco" style="display:none">
+        <div class="temporizador-display" id="temporizador-display">00:30</div>
+        <div class="temporizador-opcoes" id="temporizador-opcoes"></div>
+      </div>
+
+      <!-- Avançar -->
+      <button class="btn-avancar" id="btn-avancar">
+        ▶ Avançar processo
+      </button>
+
+      <!-- Aviso / status inline -->
+      <div id="aviso-roteiro" class="aviso aviso-info" style="display:none"></div>
+
+    </div><!-- /aba-roteiro -->
+
+
+    <!-- ABA: Super Filtros -->
+    <div class="assistente-pagina" id="aba-filtros">
+
+      <!-- Modo -->
+      <div class="sf-controles">
+        <div class="sf-row">
+          <span class="sf-label">
+            Modo
+            <span class="sf-hint">como os processos serão buscados</span>
+          </span>
+        </div>
+        <div class="sf-modo-grupo">
+          <button class="sf-modo-btn ativo" data-modo="Tarefa">Tarefa</button>
+          <button class="sf-modo-btn"       data-modo="Sala">Sala</button>
+          <button class="sf-modo-btn"       data-modo="Lista">Lista</button>
+        </div>
+        <input class="sf-input" id="sf-input-valor"
+               placeholder="Número da tarefa, sala ou processos…">
+      </div>
+
+      <!-- Botões de ação -->
+      <div class="sf-botoes-lista" id="sf-botoes-lista">
+        <!-- Preenchido por sf-botoes.js em tempo de execução -->
+      </div>
+
+      <!-- Progresso -->
+      <div class="progresso-bloco" id="sf-progresso" style="display:none">
+        <div class="progresso-label">
+          <span id="sf-progresso-texto">Aguardando…</span>
+          <span id="sf-progresso-num">0 / 0</span>
+        </div>
+        <div class="progresso-bar-track">
+          <div class="progresso-bar-fill" id="sf-progresso-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Resultado -->
+      <div class="resultado-bloco" id="sf-resultado" style="display:none">
+        <div class="resultado-titulo">
+          <span>Resultado</span>
+          <button class="resultado-exportar" id="sf-exportar">⬇ Exportar</button>
+        </div>
+        <div id="sf-resultado-corpo"></div>
+      </div>
+
+    </div><!-- /aba-filtros -->
+
+
+    <!-- ABA: Histórico -->
+    <div class="assistente-pagina" id="aba-historico">
+
+      <div class="resultado-bloco">
+        <div class="resultado-titulo">Processos percorridos nesta sessão</div>
+        <div id="historico-lista" class="resultado-texto">
+          Nenhum processo percorrido ainda.
+        </div>
+      </div>
+
+    </div><!-- /aba-historico -->
+
+  </div><!-- /assistente-corpo -->
+
+  <!-- RODAPÉ FIXO -->
+  <footer class="assistente-rodape">
+    <span class="rodape-status" id="rodape-status">Aguardando…</span>
+  </footer>
+
+</div><!-- /assistente-shell -->
+
+<script src="assistente.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 // ============================================================
-// botao-play.js
-// Botão ▶ PJE PLAY — dividido em TELA e LISTA.
+// botao-rota.js
+// Botão ▶ PJE ROTA — dividido em TELA e LISTA.
 //
 // TELA → varre o body e coleta processos visíveis (comportamento original)
 // LISTA → abre painel de input para colar/digitar lista de processos.
@@ -12,7 +12,7 @@
 
 // ── Configuração de telas ─────────────────────────────────────
 
-const PLAY_BOTOES_CONFIG = [
+const ROTA_BOTOES_CONFIG = [
 	{ url: '/pjekz/painel/',                   ancora: '#brasao-republica', x: 128, y: 0 },
 	{ url: '/pjekz/escaninho',                 ancora: '#brasao-republica', x: 128, y: 0 },
 	{ url: '/pjekz/pauta-audiencias',          ancora: '#brasao-republica', x: 128, y: 0 },
@@ -25,14 +25,14 @@ const PLAY_BOTOES_CONFIG = [
 
 // ── Regex CNJ ─────────────────────────────────────────────────
 
-const PLAY_REGEX_CNJ = /\d{7}[-\.]\d{2}[-\.]\d{4}[-\.]\d[-\.]\d{2}[-\.]\d{4}/g
+const ROTA_REGEX_CNJ = /\d{7}[-\.]\d{2}[-\.]\d{4}[-\.]\d[-\.]\d{2}[-\.]\d{4}/g
 
 
 // ── Parser de lista: extrai números CNJ de qualquer texto ─────
 
-function play_parsearListaProcessos(texto){
+function rota_parsearListaProcessos(texto){
 	if(!texto) return []
-	let matches = [...texto.matchAll(PLAY_REGEX_CNJ)]
+	let matches = [...texto.matchAll(ROTA_REGEX_CNJ)]
 	let vistos  = new Set()
 	let lista   = []
 	for(let m of matches){
@@ -53,7 +53,7 @@ function play_parsearListaProcessos(texto){
 //     fila: [{ numProc, id: null, dadosLinha: [], params: ['info X', 'info Y', ...] }],
 //   }
 
-function play_parsearListaComParametros(texto){
+function rota_parsearListaComParametros(texto){
 	if(!texto) return { fila: [] }
 
 	let linhas = texto.split(/\r?\n/).filter(l => l.trim())
@@ -83,64 +83,64 @@ function play_parsearListaComParametros(texto){
 
 // ── Estado ────────────────────────────────────────────────────
 
-const _play_registros = []
-let   _play_painelLista = null
+const _rota_registros = []
+let   _rota_painelLista = null
 
 
 // ── Inicialização ─────────────────────────────────────────────
 
 function botaoPlay_iniciar(){
-	PLAY_BOTOES_CONFIG.forEach(cfg => {
+	ROTA_BOTOES_CONFIG.forEach(cfg => {
 		let reg = { config: cfg, btn: null, posAnterior: null }
-		_play_registros.push(reg)
-		_play_rastrear(reg)
+		_rota_registros.push(reg)
+		_rota_rastrear(reg)
 	})
 }
 
 function botaoPlay_atualizarUrl(){
-	_play_registros.forEach(reg => _play_sincronizar(reg))
+	_rota_registros.forEach(reg => _rota_sincronizar(reg))
 }
 
 
 // ── Loop de rastreamento ──────────────────────────────────────
 
-function _play_rastrear(reg){
-	function frame(){ _play_sincronizar(reg); requestAnimationFrame(frame) }
+function _rota_rastrear(reg){
+	function frame(){ _rota_sincronizar(reg); requestAnimationFrame(frame) }
 	requestAnimationFrame(frame)
 }
 
-function _play_sincronizar(reg){
+function _rota_sincronizar(reg){
 	let { config } = reg
 	let { url, ancora, x, y } = config
 
 	let urls  = Array.isArray(url) ? url : (url ? [url] : [])
 	let urlOk = urls.length === 0 || urls.some(u => location.href.includes(u))
 	if(!urlOk){
-		if(reg.btn) reg.btn.style.display = 'none'
+		if(reg.btn) reg.btn.style.disrota = 'none'
 		return
 	}
 
 	let ancoraEl = document.querySelector(ancora)
 	if(!ancoraEl){
-		if(reg.btn) reg.btn.style.display = 'none'
+		if(reg.btn) reg.btn.style.disrota = 'none'
 		return
 	}
 
 	if(!reg.btn){
-		reg.btn = _play_criarBotaoDOM()
+		reg.btn = _rota_criarBotaoDOM()
 		document.body.appendChild(reg.btn)
 	}
 
-	_play_posicionar(reg, ancoraEl, x, y)
+	_rota_posicionar(reg, ancoraEl, x, y)
 }
 
-function _play_posicionar(reg, ancoraEl, x, y){
+function _rota_posicionar(reg, ancoraEl, x, y){
 	let btn = reg.btn
 	let r   = ancoraEl.getBoundingClientRect()
 	let vH  = window.innerHeight, vW = window.innerWidth
 
 	if(r.bottom <= 0 || r.top >= vH || r.right <= 0 || r.left >= vW){
-		btn.style.display = 'none'; return
+		btn.style.disrota = 'none'; return
 	}
 
 	// Layout sempre vertical (horizontal descontinuado)
@@ -156,7 +156,7 @@ function _play_posicionar(reg, ancoraEl, x, y){
 		btn.style.bottom = 'auto'
 		reg.posAnterior  = chave
 	}
-	btn.style.display = 'flex'
+	btn.style.disrota = 'flex'
 }
 
 
@@ -164,13 +164,13 @@ function _play_posicionar(reg, ancoraEl, x, y){
 // BOTÃO DIVIDIDO: TELA | LISTA
 // ════════════════════════════════════════════════════════════
 
-function _play_criarBotaoDOM(){
+function _rota_criarBotaoDOM(){
 	let btn = document.createElement('div')
-	btn.id  = 'pjeplay-btn-play'
+	btn.id  = 'pjerota-btn-rota'
 	Object.assign(btn.style, {
 		position:       'fixed',
 		zIndex:         '9000',
-		display:        'none',
+		disrota:        'none',
 		flexDirection:  'column',
 		alignItems:     'center',
 		gap:            '0',
@@ -190,14 +190,14 @@ function _play_criarBotaoDOM(){
 	// ── Linha superior: dois lados clicáveis ─────────────────
 	let linha = document.createElement('div')
 	Object.assign(linha.style, {
-		display:    'flex',
+		disrota:    'flex',
 		alignItems: 'stretch',
 		width:      '100%',
 	})
 
 	// Lado TELA
-	let ladoTela = _play_criarLado('TELA')
-	ladoTela.addEventListener('click', e => { e.stopPropagation(); _play_aoClicarTela() })
+	let ladoTela = _rota_criarLado('TELA')
+	ladoTela.addEventListener('click', e => { e.stopPropagation(); _rota_aoClicarTela() })
 
 	// Divisória
 	let div = document.createElement('div')
@@ -208,8 +208,8 @@ function _play_criarBotaoDOM(){
 	})
 
 	// Lado LISTA
-	let ladoLista = _play_criarLado('LISTA')
-	ladoLista.addEventListener('click', e => { e.stopPropagation(); _play_aoClicarLista(btn) })
+	let ladoLista = _rota_criarLado('LISTA')
+	ladoLista.addEventListener('click', e => { e.stopPropagation(); _rota_aoClicarLista(btn) })
 
 	linha.appendChild(ladoTela)
 	linha.appendChild(div)
@@ -217,7 +217,7 @@ function _play_criarBotaoDOM(){
 
 	// ── Label inferior ────────────────────────────────────────
 	let label = document.createElement('div')
-	label.textContent = 'PJE  PLAY'
+	label.textContent = 'PJE  ROTA'
 	Object.assign(label.style, {
 		fontSize:      '8px',
 		letterSpacing: '1.5px',
@@ -235,10 +235,10 @@ function _play_criarBotaoDOM(){
 	return btn
 }
 
-function _play_criarLado(texto){
+function _rota_criarLado(texto){
 	let lado = document.createElement('div')
 	Object.assign(lado.style, {
-		display:        'flex',
+		disrota:        'flex',
 		flexDirection:  'column',
 		alignItems:     'center',
 		justifyContent: 'center',
@@ -271,16 +271,16 @@ function _play_criarLado(texto){
 
 // ── Ação: TELA ────────────────────────────────────────────────
 
-async function _play_aoClicarTela(){
-	let fila = _play_coletarFilaDaTela()
+async function _rota_aoClicarTela(){
+	let fila = _rota_coletarFilaDaTela()
 
 	if(!fila.length){
-		play_avisoTemporario('Nenhum número de processo encontrado na tela.', 'erro', 4000)
+		rota_avisoTemporario('Nenhum número de processo encontrado na tela.', 'erro', 4000)
 		return
 	}
 
-	play_avisoTemporario('▶ ' + fila.length + ' processo(s) encontrado(s). Iniciando…', 'info', 4000)
-	play_iniciarPipeline({ fila })
+	rota_avisoTemporario('▶ ' + fila.length + ' processo(s) encontrado(s). Iniciando…', 'info', 4000)
+	rota_iniciarPipeline({ fila })
 }
 
 
@@ -288,15 +288,15 @@ async function _play_aoClicarTela(){
 // Abre painel flutuante. Tem checkbox "com parâmetros".
 // Com parâmetros: salva as colunas extras mapeadas por número CNJ.
 
-function _play_aoClicarLista(btnRef){
-	if(_play_painelLista){
-		_play_painelLista.remove()
-		_play_painelLista = null
+function _rota_aoClicarLista(btnRef){
+	if(_rota_painelLista){
+		_rota_painelLista.remove()
+		_rota_painelLista = null
 		return
 	}
 
 	let painel = document.createElement('div')
-	_play_painelLista = painel
+	_rota_painelLista = painel
 
 	let r = btnRef.getBoundingClientRect()
 	Object.assign(painel.style, {
@@ -311,14 +311,14 @@ function _play_aoClicarLista(btnRef){
 		boxShadow:   '0 8px 28px rgba(0,0,0,0.55)',
 		padding:     '10px',
 		fontFamily:  "'Segoe UI', system-ui, sans-serif",
-		display:     'flex',
+		disrota:     'flex',
 		flexDirection:'column',
 		gap:         '8px',
 	})
 
 	// Cabeçalho
 	let cab = document.createElement('div')
-	Object.assign(cab.style, { display:'flex', justifyContent:'space-between', alignItems:'center' })
+	Object.assign(cab.style, { disrota:'flex', justifyContent:'space-between', alignItems:'center' })
 
 	let titPainel = document.createElement('span')
 	titPainel.textContent = '▶ Play por lista'
@@ -330,7 +330,7 @@ function _play_aoClicarLista(btnRef){
 		background:'transparent', border:'none', color:'#5e84a8',
 		fontSize:'18px', cursor:'pointer', lineHeight:'1', padding:'0',
 	})
-	btnX.addEventListener('click', () => { painel.remove(); _play_painelLista = null })
+	btnX.addEventListener('click', () => { painel.remove(); _rota_painelLista = null })
 
 	cab.appendChild(titPainel)
 	cab.appendChild(btnX)
@@ -338,7 +338,7 @@ function _play_aoClicarLista(btnRef){
 	// ── Checkbox "com parâmetros" ─────────────────────────────
 	let wrapCheck = document.createElement('label')
 	Object.assign(wrapCheck.style, {
-		display: 'flex', alignItems: 'center', gap: '6px',
+		disrota: 'flex', alignItems: 'center', gap: '6px',
 		cursor: 'pointer', userSelect: 'none',
 	})
 
@@ -398,7 +398,7 @@ function _play_aoClicarLista(btnRef){
 
 	area.addEventListener('input', () => {
 		if(checkbox.checked){
-			let { fila } = play_parsearListaComParametros(area.value)
+			let { fila } = rota_parsearListaComParametros(area.value)
 			if(!fila.length){
 				preview.textContent = area.value.trim() ? '⚠ Nenhum número CNJ reconhecido.' : ''
 				preview.style.color = '#e74c3c'
@@ -409,7 +409,7 @@ function _play_aoClicarLista(btnRef){
 				preview.style.color = '#2ecc71'
 			}
 		} else {
-			let nums = play_parsearListaProcessos(area.value)
+			let nums = rota_parsearListaProcessos(area.value)
 			if(!nums.length){
 				preview.textContent = area.value.trim() ? '⚠ Nenhum número CNJ reconhecido.' : ''
 				preview.style.color = '#e74c3c'
@@ -422,7 +422,7 @@ function _play_aoClicarLista(btnRef){
 
 	// Rodapé: botão Play
 	let rodape = document.createElement('div')
-	Object.assign(rodape.style, { display:'flex', justifyContent:'flex-end', gap:'6px' })
+	Object.assign(rodape.style, { disrota:'flex', justifyContent:'flex-end', gap:'6px' })
 
 	let btnPlay = document.createElement('button')
 	btnPlay.textContent = '▶ Iniciar'
@@ -444,15 +444,15 @@ function _play_aoClicarLista(btnRef){
 		let fila = []
 
 		if(checkbox.checked){
-			let parsed = play_parsearListaComParametros(area.value)
+			let parsed = rota_parsearListaComParametros(area.value)
 			fila = parsed.fila
 		} else {
-			let nums = play_parsearListaProcessos(area.value)
+			let nums = rota_parsearListaProcessos(area.value)
 			fila = nums.map(numProc => ({ numProc, id: null, dadosLinha: [], params: [] }))
 		}
 
 		if(!fila.length){
-			play_avisoTemporario('Nenhum número de processo reconhecido na lista.', 'erro', 4000)
+			rota_avisoTemporario('Nenhum número de processo reconhecido na lista.', 'erro', 4000)
 			return
 		}
 
@@ -460,16 +460,16 @@ function _play_aoClicarLista(btnRef){
 		if(checkbox.checked){
 			let mapaParams = {}
 			fila.forEach(item => { mapaParams[item.numProc] = item.params })
-			localStorage.setItem('pjeplay_params', JSON.stringify(mapaParams))
+			localStorage.setItem('pjerota_params', JSON.stringify(mapaParams))
 		} else {
-			localStorage.removeItem('pjeplay_params')
+			localStorage.removeItem('pjerota_params')
 		}
 
 		painel.remove()
-		_play_painelLista = null
+		_rota_painelLista = null
 
-		play_avisoTemporario('▶ ' + fila.length + ' processo(s) na lista. Iniciando…', 'info', 4000)
-		play_iniciarPipeline({ fila })
+		rota_avisoTemporario('▶ ' + fila.length + ' processo(s) na lista. Iniciando…', 'info', 4000)
+		rota_iniciarPipeline({ fila })
 	})
 
 	rodape.appendChild(btnPlay)
@@ -489,7 +489,7 @@ function _play_aoClicarLista(btnRef){
 		document.addEventListener('click', function fecharFora(e){
 			if(!painel.contains(e.target) && !btnRef.contains(e.target)){
 				painel.remove()
-				_play_painelLista = null
+				_rota_painelLista = null
 				document.removeEventListener('click', fecharFora)
 			}
 		})
@@ -499,9 +499,9 @@ function _play_aoClicarLista(btnRef){
 
 // ── Coleta todos os processos visíveis no body ────────────────
 
-function _play_coletarFilaDaTela(){
+function _rota_coletarFilaDaTela(){
 	let texto   = document.body.innerText || ''
-	let matches = [...texto.matchAll(PLAY_REGEX_CNJ)]
+	let matches = [...texto.matchAll(ROTA_REGEX_CNJ)]
 
 	let vistos = new Set()
 	let fila   = []
@@ -511,7 +511,7 @@ function _play_coletarFilaDaTela(){
 		if(vistos.has(numProc)) continue
 		vistos.add(numProc)
 
-		let dadosLinha = _play_capturarDadosDoProcesso(numProc)
+		let dadosLinha = _rota_capturarDadosDoProcesso(numProc)
 		fila.push({ numProc, id: null, dadosLinha, params: [] })
 	}
 
@@ -521,7 +521,7 @@ function _play_coletarFilaDaTela(){
 
 // ── Localiza o card/linha do processo no DOM ──────────────────
 
-function _play_capturarDadosDoProcesso(numProc){
+function _rota_capturarDadosDoProcesso(numProc){
 	let xpath  = `//*[contains(text(),'${numProc.slice(0,7)}')]`
 	let result = document.evaluate(xpath, document.body, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null)
 
@@ -529,7 +529,7 @@ function _play_capturarDadosDoProcesso(numProc){
 		let no = result.snapshotItem(i)
 		if(!no.textContent.includes(numProc)) continue
 
-		let conteiner = _play_encontrarConteiner(no)
+		let conteiner = _rota_encontrarConteiner(no)
 		if(!conteiner) continue
 
 		let celulas = conteiner.querySelectorAll('td, [role="cell"], [role="gridcell"]')
@@ -545,7 +545,7 @@ function _play_capturarDadosDoProcesso(numProc){
 
 // ── Sobe na árvore para encontrar o contêiner da linha/card ───
 
-function _play_encontrarConteiner(el){
+function _rota_encontrarConteiner(el){
 	let tagsCandidatas    = ['TR', 'LI', 'MAT-ROW']
 	let rolesCandidatos   = ['row', 'listitem']
 	let classesCandidatas = ['card', 'processo', 'item', 'linha', 'row']
@@ -564,9 +564,9 @@ function _play_encontrarConteiner(el){
 
 // ── Busca ID do processo via API ──────────────────────────────
 
-async function _play_buscarIdProcesso(numero){
+async function _rota_buscarIdProcesso(numero){
 	let numLimpo = numero.replace(/[.\-]/g, '')
-	let dados = await play_fetch(
+	let dados = await rota_fetch(
 		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
 	)
 	if(Array.isArray(dados) && dados.length) return dados[0].id || dados[0].idProcesso || null

@@ -1,13 +1,13 @@
 {
-  "version": "1.0.5",
-  "short_name": "PJEPlay",
-  "name": "PJE Play",
-  "description": "Abre janelas estratégicas por processo a partir da tela do PJE. Destaca documentos por palavras-chave.",
-  "author": "PJE Play",
+  "version": "2.0.0",
+  "short_name": "Rota PJE",
+  "name": "Roteiro Operacional de Tarefas para o PJE",
+  "description": "Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
+  "author": "Rota PJE",
   "manifest_version": 3,
   "browser_specific_settings": {
     "gecko": {
-      "id": "pje-play@extensao.local",
+      "id": "pje-rota@extensao.local",
       "strict_min_version": "128.0",
       "data_collection_permissions": {
         "required": [
@@ -39,7 +39,8 @@
         "utils/pdfjs.mjs",
         "utils/pdfjs.worker.mjs",
         "imagens/*.png",
-        "documento/paginas/pje/play/superfiltro.js"
+        "documento/paginas/pje/rota/superfiltro.js",
+        "rota/assistente/assistente.html"
       ]
     }
   ],
@@ -49,21 +50,31 @@
         "*://*.jus.br/pjekz/*"
       ],
       "js": [
+        "rota/interceptador.js",
         "modulos/definicoes.js",
         "modulos/relatar.js",
         "modulos/dom.js",
         "modulos/execucao.js",
         "modulos/navegador.js",
         "modulos/texto.js",
-        "documento/paginas/pje/play/pintura.js",
-        "documento/paginas/pje/play/botao-play.js",
-        "documento/paginas/pje/play/janelas.js",
-        "documento/paginas/pje/play/iniciar.js",
-        "documento/paginas/pje/play/funcoes-da-planilha.js",
-        "documento/paginas/pje/play/porta-de-entrada.js",
-        "documento/paginas/pje/play/sf-botoes.js",
-        "documento/paginas/pje/play/superfiltro.js",
-        "documento/paginas/pje/play/teste.js"
+        "rota/configuracao.js",
+        "rota/estado.js",
+        "rota/cache.js",
+        "rota/modelo.js",
+        "documento/paginas/pje/rota/pintura.js",
+        "documento/paginas/pje/rota/botao-rota.js",
+        "documento/paginas/pje/rota/janelas.js",
+        "documento/paginas/pje/rota/iniciar.js",
+        "documento/paginas/pje/rota/funcoes-da-planilha.js",
+        "documento/paginas/pje/rota/porta-de-entrada.js",
+        "documento/paginas/pje/rota/sf-botoes.js",
+        "documento/paginas/pje/rota/superfiltro.js",
+        "documento/paginas/pje/rota/teste.js",
+        "rota/acoes.js",
+        "rota/componentes.js",
+        "rota/tarefas/index.js",
+        "rota/tarefas/triagem-inicial/roteiro.js",
+        "rota/tarefas/pos-triagem/roteiro.js"
       ],
       "run_at": "document_idle"
     }

@@ -5,20 +5,20 @@
 
 
 // ── Z-index ───────────────────────────────────────────────────
-const PLAY_Z = { btn: 9000, widget: 9100, aviso: 9300, modal: 9400, painel: 9500 }
+const ROTA_Z = { btn: 9000, widget: 9100, aviso: 9300, modal: 9400, painel: 9500 }
 
 
 // ── Estado global do pipeline ─────────────────────────────────
-let _play_fila         = []
-let _play_cursor       = 0
-let _play_ativo        = false
-let _play_relatorio    = []
-let _play_janelasMundo = []
+let _rota_fila         = []
+let _rota_cursor       = 0
+let _rota_ativo        = false
+let _rota_relatorio    = []
+let _rota_janelasMundo = []
 
 
 // ── Definições de tipos de janela ────────────────────────────
 
-const PLAY_TIPOS_JANELA = {
+const ROTA_TIPOS_JANELA = {
 	'tarefa': {
 		label:    'Tarefa do Processo',
 		requerTarefa: true,
@@ -128,7 +128,7 @@ const PLAY_TIPOS_JANELA = {
 
 // ── Busca de documentos por tipo ─────────────────────────────
 
-async function play_buscarDocumentos(idProcesso, tipoDoc, selecao){
+async function rota_buscarDocumentos(idProcesso, tipoDoc, selecao){
 	let dados = await d(idProcesso)
 
 	let filtrados = dados.filter(d => {
@@ -148,8 +148,8 @@ async function play_buscarDocumentos(idProcesso, tipoDoc, selecao){
 
 // ── Busca homologação de acordo ─────────────────────────────
 
-async function play_buscarDocumentoHomologatorio(idProcesso) {
-	let dados = await play_fetch(
+async function rota_buscarDocumentoHomologatorio(idProcesso) {
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + idProcesso + '/acordos/?codigoAcordoJudicialTipo=A'
 	)
 
@@ -158,7 +158,7 @@ async function play_buscarDocumentoHomologatorio(idProcesso) {
 	const idAcordoJudicial = dados[0]?.idAcordoJudicial
 	if (!idAcordoJudicial) return null
 
-	let resposta = await play_fetch(
+	let resposta = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + idProcesso + '/acordos/id/' + idAcordoJudicial + '/documentohomologatorio'
 	)
 
@@ -172,8 +172,8 @@ async function play_buscarDocumentoHomologatorio(idProcesso) {
 	return docId
 }
 
-async function play_buscarDocumentosNaoApreciados(idProcesso){
-	let dados = await play_fetch(
+async function rota_buscarDocumentosNaoApreciados(idProcesso){
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + idProcesso + '/timeline'
 	)
 	if(!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
@@ -210,8 +210,8 @@ async function play_buscarDocumentosNaoApreciados(idProcesso){
 
 // ── Busca tarefa mais recente do processo ─────────────────────
 
-async function play_buscarTarefa(idProcesso){
-	let dados = await play_fetch(
+async function rota_buscarTarefa(idProcesso){
+	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + idProcesso + '/tarefas?maisRecente=true'
 	)
 	if(!dados) return null
@@ -234,20 +234,20 @@ async function play_buscarTarefa(idProcesso){
 
 // ── Montagem das URLs a partir dos slots ──────────────────────
 
-async function play_montarUrls(idProcesso, slots, numProc = ''){
+async function rota_montarUrls(idProcesso, slots, numProc = ''){
 	let urls = []
 
 	let idTarefa = null
-	if(slots.some(s => PLAY_TIPOS_JANELA[s.tipo]?.requerTarefa)){
-		idTarefa = await play_buscarTarefa(idProcesso)
+	if(slots.some(s => ROTA_TIPOS_JANELA[s.tipo]?.requerTarefa)){
+		idTarefa = await rota_buscarTarefa(idProcesso)
 	}
 
 	for(let slot of slots){
-		let def = PLAY_TIPOS_JANELA[slot.tipo]
+		let def = ROTA_TIPOS_JANELA[slot.tipo]
 		if(!def) continue
 
 		if(slot.tipo === 'documento'){
-			let docs = await play_buscarDocumentos(idProcesso, slot.tipoDoc || '', slot.selecao || 'recente')
+			let docs = await rota_buscarDocumentos(idProcesso, slot.tipoDoc || '', slot.selecao || 'recente')
 			let resultado = def.montarUrl(idProcesso, idTarefa, slot, docs)
 			let urlsDoc   = Array.isArray(resultado) ? resultado : (resultado ? [resultado] : [])
 			urlsDoc.filter(Boolean).forEach(u => {
@@ -261,7 +261,7 @@ async function play_montarUrls(idProcesso, slots, numProc = ''){
 			})
 		}
 		else if(slot.tipo === 'homologacaoAcordo'){
-			const docId = await play_buscarDocumentoHomologatorio(idProcesso)
+			const docId = await rota_buscarDocumentoHomologatorio(idProcesso)
 			if(docId === null) continue
 
 			let u = def.montarUrl(idProcesso, docId)
@@ -285,7 +285,7 @@ async function play_montarUrls(idProcesso, slots, numProc = ''){
 			})
 		}
 		else if(slot.tipo === 'nao_apreciados'){
-			let docs = await play_buscarDocumentosNaoApreciados(idProcesso)
+			let docs = await rota_buscarDocumentosNaoApreciados(idProcesso)
 			let resultado = def.montarUrl(idProcesso, docs)
 			let urlsDoc   = Array.isArray(resultado) ? resultado : (resultado ? [resultado] : [])
 			urlsDoc.filter(Boolean).forEach(u => {
@@ -317,7 +317,7 @@ async function play_montarUrls(idProcesso, slots, numProc = ''){
 
 // ── Posicionamento de janelas ─────────────────────────────────
 
-function play_calcularGeometria(posicao) {
+function rota_calcularGeometria(posicao) {
     // ✅ Sempre o monitor inteiro — ignora onde a janela atual está
     const sw = window.screen.width
     const sh = window.screen.height
@@ -360,23 +360,23 @@ function play_calcularGeometria(posicao) {
 
 // ── Comunicação entre janelas ─────────────────────────────────
 
-const PLAY_KEY_BASE      = 'pjeplay_sinal_'
-const PLAY_KEY_FECHAR    = 'pjeplay_fechar_'
-const PLAY_KEY_INICIAR   = 'pjeplay_iniciar_'   // timestamp de início do timer (escrito só pelo slot 0)
-const PLAY_KEY_REINICIAR = 'pjeplay_reiniciar_'  // qualquer janela pede reinício ao slot 0
+const ROTA_KEY_BASE      = 'pjerota_sinal_'
+const ROTA_KEY_FECHAR    = 'pjerota_fechar_'
+const ROTA_KEY_INICIAR   = 'pjerota_iniciar_'   // timestamp de início do timer (escrito só pelo slot 0)
+const ROTA_KEY_REINICIAR = 'pjerota_reiniciar_'  // qualquer janela pede reinício ao slot 0
 
-function play_sinalizar(sessao, acao){
-	localStorage.setItem(PLAY_KEY_BASE + sessao, acao)
+function rota_sinalizar(sessao, acao){
+	localStorage.setItem(ROTA_KEY_BASE + sessao, acao)
 }
 
-function play_aguardarSinal(sessao, timeout = 28800000){
+function rota_aguardarSinal(sessao, timeout = 28800000){
 	return new Promise(resolver => {
 		let inicio = Date.now()
 		let tick = setInterval(() => {
-			let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
+			let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
 			if(sinal && sinal !== 'pausado'){
 				clearInterval(tick)
-				localStorage.removeItem(PLAY_KEY_BASE + sessao)
+				localStorage.removeItem(ROTA_KEY_BASE + sessao)
 				resolver(sinal)
 				return
 			}
@@ -385,15 +385,15 @@ function play_aguardarSinal(sessao, timeout = 28800000){
 	})
 }
 
-function play_fecharJanelas(sessao){
-	localStorage.setItem(PLAY_KEY_FECHAR + sessao, '1')
+function rota_fecharJanelas(sessao){
+	localStorage.setItem(ROTA_KEY_FECHAR + sessao, '1')
 }
 
-function play_monitorarFechamento(sessao){
+function rota_monitorarFechamento(sessao){
 	let tick = setInterval(() => {
-		if(localStorage.getItem(PLAY_KEY_FECHAR + sessao)){
+		if(localStorage.getItem(ROTA_KEY_FECHAR + sessao)){
 			clearInterval(tick)
-			localStorage.removeItem(PLAY_KEY_FECHAR + sessao)
+			localStorage.removeItem(ROTA_KEY_FECHAR + sessao)
 			window.close()
 		}
 	}, 300)
@@ -402,34 +402,34 @@ function play_monitorarFechamento(sessao){
 
 // ── Cancelar pipeline ativo ───────────────────────────────────
 
-function play_cancelarPipelineAtivo(){
-	if(!_play_ativo) return
-	_play_ativo  = false
-	_play_cursor = 0
-	_play_fila   = []
-	_play_fecharTodasJanelas()
+function rota_cancelarPipelineAtivo(){
+	if(!_rota_ativo) return
+	_rota_ativo  = false
+	_rota_cursor = 0
+	_rota_fila   = []
+	_rota_fecharTodasJanelas()
 	Object.keys(localStorage)
 		.filter(k =>
-			k.startsWith(PLAY_KEY_BASE)      ||
-			k.startsWith(PLAY_KEY_FECHAR)    ||
-			k.startsWith(PLAY_KEY_INICIAR)   ||
-			k.startsWith(PLAY_KEY_REINICIAR)
+			k.startsWith(ROTA_KEY_BASE)      ||
+			k.startsWith(ROTA_KEY_FECHAR)    ||
+			k.startsWith(ROTA_KEY_INICIAR)   ||
+			k.startsWith(ROTA_KEY_REINICIAR)
 		)
 		.forEach(k => localStorage.removeItem(k))
 }
 
-function _play_fecharTodasJanelas(){
-	_play_janelasMundo.forEach(w => { try{ w.close() } catch(_){} })
-	_play_janelasMundo = []
+function _rota_fecharTodasJanelas(){
+	_rota_janelasMundo.forEach(w => { try{ w.close() } catch(_){} })
+	_rota_janelasMundo = []
 }
 
 
 // ── Pipeline principal ────────────────────────────────────────
 
-async function play_iniciarPipeline({ fila }){
-	if(_play_ativo){
-		play_avisoTemporario('Pipeline anterior cancelado. Iniciando novo…', 'info', 3000)
-		play_cancelarPipelineAtivo()
+async function rota_iniciarPipeline({ fila }){
+	if(_rota_ativo){
+		rota_avisoTemporario('Pipeline anterior cancelado. Iniciando novo…', 'info', 3000)
+		rota_cancelarPipelineAtivo()
 		await suspender(500)
 	}
 
@@ -438,7 +438,7 @@ async function play_iniciarPipeline({ fila }){
 	let tarefa    = cfg?.tarefas?.[nomeAtivo]
 
 	if(!tarefa){
-		play_avisoTemporario('Nenhuma tarefa configurada. Configure no popup.', 'erro', 4000)
+		rota_avisoTemporario('Nenhuma tarefa configurada. Configure no popup.', 'erro', 4000)
 		return
 	}
 
@@ -447,59 +447,59 @@ async function play_iniciarPipeline({ fila }){
 	let temporizador = tarefa.temporizador || { ativo: false, segundos: 30, opcoes: '' }
 
 	if(!slots.length){
-		play_avisoTemporario('A tarefa "' + nomeAtivo + '" não tem janelas configuradas.', 'erro', 4000)
+		rota_avisoTemporario('A tarefa "' + nomeAtivo + '" não tem janelas configuradas.', 'erro', 4000)
 		return
 	}
 
-	_play_fila      = fila
-	_play_cursor    = 0
-	_play_ativo     = true
-	_play_relatorio = []
+	_rota_fila      = fila
+	_rota_cursor    = 0
+	_rota_ativo     = true
+	_rota_relatorio = []
 
-	await play_processarCursor(slots, tarefaUnica, temporizador)
+	await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
 
 
 // ── Processa o processo no cursor atual ───────────────────────
 
-async function play_processarCursor(slots, tarefaUnica, temporizador){
-	if(!_play_ativo) return
+async function rota_processarCursor(slots, tarefaUnica, temporizador){
+	if(!_rota_ativo) return
 
-	if(_play_cursor >= _play_fila.length){
-		_play_ativo = false
-		play_exibirRelatorio()
+	if(_rota_cursor >= _rota_fila.length){
+		_rota_ativo = false
+		rota_exibirRelatorio()
 		return
 	}
 
-	let item = _play_fila[_play_cursor]
-	play_avisoTemporario('▶ ' + (item.numProc || 'processo ' + (_play_cursor+1)), 'info', 5000)
+	let item = _rota_fila[_rota_cursor]
+	rota_avisoTemporario('▶ ' + (item.numProc || 'processo ' + (_rota_cursor+1)), 'info', 5000)
 
 	if(!item.id){
-		item.id = await _play_buscarIdProcesso(item.numProc)
+		item.id = await _rota_buscarIdProcesso(item.numProc)
 		if(!item.id){
-			play_avisoTemporario('ID não encontrado: ' + item.numProc, 'erro', 4000)
-			_play_cursor++
-			await play_processarCursor(slots, tarefaUnica, temporizador)
+			rota_avisoTemporario('ID não encontrado: ' + item.numProc, 'erro', 4000)
+			_rota_cursor++
+			await rota_processarCursor(slots, tarefaUnica, temporizador)
 			return
 		}
 	}
 
-	let urlSlots = await play_montarUrls(item.id, slots, item.numProc)
+	let urlSlots = await rota_montarUrls(item.id, slots, item.numProc)
 	if(!urlSlots.length){
-		_play_cursor++
-		await play_processarCursor(slots, tarefaUnica, temporizador)
+		_rota_cursor++
+		await rota_processarCursor(slots, tarefaUnica, temporizador)
 		return
 	}
 
-	_play_fecharTodasJanelas()
+	_rota_fecharTodasJanelas()
 	await suspender(300)
 
-	let sessao = 'play_' + Date.now()
+	let sessao = 'rota_' + Date.now()
 
-	localStorage.removeItem(PLAY_KEY_BASE    + sessao)
-	localStorage.removeItem(PLAY_KEY_FECHAR  + sessao)
-	localStorage.removeItem(PLAY_KEY_INICIAR + sessao)
-	localStorage.removeItem(PLAY_KEY_REINICIAR + sessao)
+	localStorage.removeItem(ROTA_KEY_BASE    + sessao)
+	localStorage.removeItem(ROTA_KEY_FECHAR  + sessao)
+	localStorage.removeItem(ROTA_KEY_INICIAR + sessao)
+	localStorage.removeItem(ROTA_KEY_REINICIAR + sessao)
 
 	// Carrega posições salvas por slot para esta tarefa
 	let cfgPos   = await obterArmazenamento(['tarefaAtiva', 'widgetPosSlot'])
@@ -515,27 +515,27 @@ async function play_processarCursor(slots, tarefaUnica, temporizador){
 	let totalJanelas = urlSlots.length
 
 	urlSlots.forEach(slot => {
-		let geo = play_calcularGeometria(slot.posicao)
+		let geo = rota_calcularGeometria(slot.posicao)
 		// Recupera posição salva para este slotIndex nesta tarefa
 		let posSalva = widgetPosSlot?.[nomeAtivo]?.[slot.slotIndex] || null
 
 		// Recupera parâmetros salvos para este processo
-		let mapaParamsStr = localStorage.getItem('pjeplay_params') || '{}'
+		let mapaParamsStr = localStorage.getItem('pjerota_params') || '{}'
 		let mapaParams = {}
 		try { mapaParams = JSON.parse(mapaParamsStr) } catch(_) {}
 		let params = mapaParams[item.numProc] || []
 
 		let urlFinal = slot.url
 			+ (slot.url.includes('?') ? '&' : '?')
-			+ 'pjeplay_sessao='    + sessao
-			+ '&pjeplay_tarefaunica=' + encodeURIComponent(tarefaUnica)
-			+ '&pjeplay_num='      + encodeURIComponent(item.numProc)
-			+ '&pjeplay_slot='     + slot.slotIndex
-			+ '&pjeplay_tarefa='   + encodeURIComponent(nomeAtivo)
-			+ '&pjeplay_total='    + totalJanelas
-			+ (posSalva ? '&pjeplay_pos=' + encodeURIComponent(JSON.stringify(posSalva)) : '')
-			+ (params.length ? '&pjeplay_params=' + encodeURIComponent(JSON.stringify(params)) : '')
-			+ (tmrJson ? '&pjeplay_tmr=' + tmrJson : '')
+			+ 'pjerota_sessao='    + sessao
+			+ '&pjerota_tarefaunica=' + encodeURIComponent(tarefaUnica)
+			+ '&pjerota_num='      + encodeURIComponent(item.numProc)
+			+ '&pjerota_slot='     + slot.slotIndex
+			+ '&pjerota_tarefa='   + encodeURIComponent(nomeAtivo)
+			+ '&pjerota_total='    + totalJanelas
+			+ (posSalva ? '&pjerota_pos=' + encodeURIComponent(JSON.stringify(posSalva)) : '')
+			+ (params.length ? '&pjerota_params=' + encodeURIComponent(JSON.stringify(params)) : '')
+			+ (tmrJson ? '&pjerota_tmr=' + tmrJson : '')
 
 		let w = window.open(
 			urlFinal, '_blank',
@@ -543,91 +543,91 @@ async function play_processarCursor(slots, tarefaUnica, temporizador){
 			',left='  + geo.left   + ',top='    + geo.top    +
 			',toolbar=0,menubar=0,resizable=1'
 		)
-		if(w) _play_janelasMundo.push(w)
+		if(w) _rota_janelasMundo.push(w)
 	})
 
-	let sinal = await play_aguardarSinal(sessao)
+	let sinal = await rota_aguardarSinal(sessao)
 
 	// Fecha todas as janelas e limpa chaves de sincronização
-	_play_fecharTodasJanelas()
-	play_fecharJanelas(sessao)
-	localStorage.removeItem(PLAY_KEY_INICIAR   + sessao)
-	localStorage.removeItem(PLAY_KEY_REINICIAR + sessao)
+	_rota_fecharTodasJanelas()
+	rota_fecharJanelas(sessao)
+	localStorage.removeItem(ROTA_KEY_INICIAR   + sessao)
+	localStorage.removeItem(ROTA_KEY_REINICIAR + sessao)
 	await suspender(400)
 
-	let nota = localStorage.getItem('pjeplay_nota_' + sessao) || ''
-	localStorage.removeItem('pjeplay_nota_' + sessao)
+	let nota = localStorage.getItem('pjerota_nota_' + sessao) || ''
+	localStorage.removeItem('pjerota_nota_' + sessao)
 
-	_play_relatorio.push({
+	_rota_relatorio.push({
 		numProc:    item.numProc,
 		nota:       nota,
 		dadosLinha: item.dadosLinha,
 	})
 
 	if(sinal === 'encerrar' || sinal === 'timeout'){
-		_play_ativo = false
-		play_exibirRelatorio()
+		_rota_ativo = false
+		rota_exibirRelatorio()
 		return
 	}
 
-	_play_cursor++
-	await play_processarCursor(slots, tarefaUnica, temporizador)
+	_rota_cursor++
+	await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
 
 
 // ── Widget nota+botões injetado nas janelas filhas ─────────────
 
-async function play_injetarWidget(){
+async function rota_injetarWidget(){
 	let params      = new URL(location.href).searchParams
-	let sessao      = params.get('pjeplay_sessao')
+	let sessao      = params.get('pjerota_sessao')
 	if(!sessao) return
 
-	let tarefaUnica = decodeURIComponent(params.get('pjeplay_tarefaunica') || '')
-	let numProc     = decodeURIComponent(params.get('pjeplay_num') || '')
-	let slotIndex   = parseInt(params.get('pjeplay_slot') || '0')
-	let nomeTarefa  = decodeURIComponent(params.get('pjeplay_tarefa') || '')
-	let totalJanelas = parseInt(params.get('pjeplay_total') || '1')
+	let tarefaUnica = decodeURIComponent(params.get('pjerota_tarefaunica') || '')
+	let numProc     = decodeURIComponent(params.get('pjerota_num') || '')
+	let slotIndex   = parseInt(params.get('pjerota_slot') || '0')
+	let nomeTarefa  = decodeURIComponent(params.get('pjerota_tarefa') || '')
+	let totalJanelas = parseInt(params.get('pjerota_total') || '1')
 
 	// Parâmetros extras (botões de clipboard)
 	let widgetParams = []
-	let paramsParam = params.get('pjeplay_params')
+	let paramsParam = params.get('pjerota_params')
 	if(paramsParam){
 		try{ widgetParams = JSON.parse(decodeURIComponent(paramsParam)) } catch(_){}
 	}
 
 	// Configuração do temporizador
 	let temporizador = null
-	let tmrParam = params.get('pjeplay_tmr')
+	let tmrParam = params.get('pjerota_tmr')
 	if(tmrParam){
 		try{ temporizador = JSON.parse(decodeURIComponent(tmrParam)) } catch(_){}
 	}
 
 	// Recupera posição salva para este slot específico
 	let posSalva = null
-	let posParam = params.get('pjeplay_pos')
+	let posParam = params.get('pjerota_pos')
 	if(posParam){
 		try{ posSalva = JSON.parse(decodeURIComponent(posParam)) } catch(_){}
 	}
 
-	play_monitorarFechamento(sessao)
+	rota_monitorarFechamento(sessao)
 
 	// ── Primeira montagem: aguarda estabilização + mínimo garantido ──
-	_play_aguardarEstabilizacao(async () => {
+	_rota_aguardarEstabilizacao(async () => {
 		if(temporizador && temporizador.ativo){
 			// Slot 0 coordena o timestamp inicial — inicia antes do check-in
-			if(slotIndex === 0) _play_coordenarTimer(sessao, totalJanelas)
+			if(slotIndex === 0) _rota_coordenarTimer(sessao, totalJanelas)
 			// Sinaliza check-in e aguarda timestamp do slot 0
-			localStorage.setItem(PLAY_KEY_REINICIAR + sessao + '_' + slotIndex, '1')
-			_play_aguardarInicioTimer(sessao, async (tsInicio) => {
+			localStorage.setItem(ROTA_KEY_REINICIAR + sessao + '_' + slotIndex, '1')
+			_rota_aguardarInicioTimer(sessao, async (tsInicio) => {
 				let cfg = await obterArmazenamento(['widgetPosSlot', 'tarefaAtiva'])
 				let nome = cfg?.tarefaAtiva || nomeTarefa
 				let pos  = cfg?.widgetPosSlot?.[nome]?.[slotIndex] || posSalva
-				_play_montarWidget(sessao, tarefaUnica, numProc, pos, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio)
+				_rota_montarWidget(sessao, tarefaUnica, numProc, pos, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio)
 				// Após primeira montagem, observa remoção do widget
 				_obsWidget.observe(document.body, { childList: true, subtree: true })
 			})
 		} else {
-			_play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador)
+			_rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador)
 		}
 	})
 
@@ -636,17 +636,17 @@ async function play_injetarWidget(){
 	// pausa o timer em todas as janelas e remonta no estado cancelado.
 	// O usuário vê o widget, entende que precisa clicar em Próximo.
 	let _obsWidget = new MutationObserver(() => {
-		if(document.getElementById('pjeplay-widget')) return
+		if(document.getElementById('pjerota-widget')) return
 		_obsWidget.disconnect()
 		// Pausa em todas as janelas via localStorage
-		play_sinalizar(sessao, 'pausado')
+		rota_sinalizar(sessao, 'pausado')
 		// Remonta localmente já no estado cancelado
 		;(async () => {
 			let cfg = await obterArmazenamento(['widgetPosSlot', 'tarefaAtiva'])
 			let nome = cfg?.tarefaAtiva || nomeTarefa
 			let pos  = cfg?.widgetPosSlot?.[nome]?.[slotIndex] || posSalva
-			let ts   = parseInt(localStorage.getItem(PLAY_KEY_INICIAR + sessao) || '0') || Date.now()
-			_play_montarWidget(sessao, tarefaUnica, numProc, pos, slotIndex, nomeTarefa, widgetParams, temporizador, ts)
+			let ts   = parseInt(localStorage.getItem(ROTA_KEY_INICIAR + sessao) || '0') || Date.now()
+			_rota_montarWidget(sessao, tarefaUnica, numProc, pos, slotIndex, nomeTarefa, widgetParams, temporizador, ts)
 			_obsWidget.observe(document.body, { childList: true, subtree: true })
 		})()
 	})
@@ -657,13 +657,13 @@ async function play_injetarWidget(){
 // ── Slot 0: coordena o início/reinício do timer ───────────────
 //
 // Fica em loop permanente enquanto a sessão estiver ativa.
-// Quando qualquer janela escreve PLAY_KEY_REINICIAR, o slot 0
+// Quando qualquer janela escreve ROTA_KEY_REINICIAR, o slot 0
 // lê quem pediu, limpa a chave e grava um novo timestamp em
-// PLAY_KEY_INICIAR — imediatamente, sem esperar as demais.
+// ROTA_KEY_INICIAR — imediatamente, sem esperar as demais.
 // Todas as janelas (inclusive as que ainda estão carregando)
 // detectam o novo timestamp no seu próprio loop de espera.
 
-function _play_coordenarTimer(sessao, totalJanelas){
+function _rota_coordenarTimer(sessao, totalJanelas){
 	// Aguarda check-in de todas as janelas antes de liberar o timestamp inicial.
 	// Cada janela usa chave individual por slot para evitar colisão.
 	// Timeout de segurança: 60s — libera mesmo que nem todas cheguem.
@@ -674,15 +674,15 @@ function _play_coordenarTimer(sessao, totalJanelas){
 		liberado = true
 		clearInterval(tick)
 		for(let i = 0; i < totalJanelas; i++)
-			localStorage.removeItem(PLAY_KEY_REINICIAR + sessao + '_' + i)
-		localStorage.setItem(PLAY_KEY_INICIAR + sessao, String(Date.now()))
+			localStorage.removeItem(ROTA_KEY_REINICIAR + sessao + '_' + i)
+		localStorage.setItem(ROTA_KEY_INICIAR + sessao, String(Date.now()))
 	}
 
 	let tick = setInterval(() => {
-		if(localStorage.getItem(PLAY_KEY_FECHAR + sessao)){ liberar(); return }
+		if(localStorage.getItem(ROTA_KEY_FECHAR + sessao)){ liberar(); return }
 		let prontas = 0
 		for(let i = 0; i < totalJanelas; i++){
-			if(localStorage.getItem(PLAY_KEY_REINICIAR + sessao + '_' + i)) prontas++
+			if(localStorage.getItem(ROTA_KEY_REINICIAR + sessao + '_' + i)) prontas++
 		}
 		if(prontas >= totalJanelas) liberar()
 	}, 300)
@@ -697,14 +697,14 @@ function _play_coordenarTimer(sessao, totalJanelas){
 // Quando o timestamp aparece no localStorage, chama o callback
 // com o valor para que o widget seja montado com o tempo correto.
 
-function _play_aguardarInicioTimer(sessao, callback, timeout = 90000){
+function _rota_aguardarInicioTimer(sessao, callback, timeout = 90000){
 	// Guarda o timestamp que estava antes de sinalizar para ignorar
 	// um valor antigo que ainda não foi substituído pelo slot 0.
-	let tsAntes = localStorage.getItem(PLAY_KEY_INICIAR + sessao)
+	let tsAntes = localStorage.getItem(ROTA_KEY_INICIAR + sessao)
 	let inicio  = Date.now()
 
 	let tick = setInterval(() => {
-		let ts = localStorage.getItem(PLAY_KEY_INICIAR + sessao)
+		let ts = localStorage.getItem(ROTA_KEY_INICIAR + sessao)
 		// Só aceita se for um timestamp diferente do que havia antes
 		if(ts && ts !== tsAntes){
 			clearInterval(tick)
@@ -720,7 +720,7 @@ function _play_aguardarInicioTimer(sessao, callback, timeout = 90000){
 }
 
 
-function _play_aguardarEstabilizacao(callback, minimoMs = 5000) {
+function _rota_aguardarEstabilizacao(callback, minimoMs = 5000) {
     let inicio = Date.now()
 
     function comDebounce() {
@@ -755,20 +755,20 @@ function _play_aguardarEstabilizacao(callback, minimoMs = 5000) {
     }
 }
 
-// Fora de _play_montarWidget, no escopo do módulo:
-let _play_geracao = 0  // variável de módulo
+// Fora de _rota_montarWidget, no escopo do módulo:
+let _rota_geracao = 0  // variável de módulo
 
-function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio = 0){
-	_play_geracao++
-	let minhaGeracao = _play_geracao  // capturada no closure
+function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio = 0){
+	_rota_geracao++
+	let minhaGeracao = _rota_geracao  // capturada no closure
 	
-	remover('#pjeplay-widget')
+	remover('#pjerota-widget')
 
 	let widget = document.createElement('div')
-	widget.id  = 'pjeplay-widget'
+	widget.id  = 'pjerota-widget'
 	Object.assign(widget.style, {
 		position:     'fixed',
-		zIndex:       String(PLAY_Z.widget),
+		zIndex:       String(ROTA_Z.widget),
 		background:   '#0d1b2a',
 		border:       '1px solid rgba(249,183,63,0.4)',
 		borderRadius: '12px',
@@ -785,7 +785,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	// ── Header (arrasto) ──────────────────────────────────────
 	let header = document.createElement('div')
 	Object.assign(header.style, {
-		display:        'flex',
+		disrota:        'flex',
 		alignItems:     'center',
 		justifyContent: 'space-between',
 		cursor:         'move',
@@ -796,7 +796,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 	let titulo = document.createElement('span')
 	Object.assign(titulo.style, { color:'#F9B73F', fontWeight:'700', fontSize:'11px' })
-	titulo.textContent = '▶ PJE PLAY'
+	titulo.textContent = '▶ PJE ROTA'
 
 	let numEl = document.createElement('span')
 	Object.assign(numEl.style, {
@@ -824,20 +824,20 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		let pausado       = false
 		let intervalo     = null
 		let opcaoEscolhida = null
-		let sinalInicial = localStorage.getItem(PLAY_KEY_BASE + sessao)
+		let sinalInicial = localStorage.getItem(ROTA_KEY_BASE + sessao)
 		if (sinalInicial == 'pausado') pausado = true
 
 		// Se o tempo já esgotou antes de montar (janela muito lenta), avança logo
 		if(contadorAtual <= 0 && !pausado){
-			if(minhaGeracao === _play_geracao){
+			if(minhaGeracao === _rota_geracao){
 				let nota = opcaoEscolhida || ''
-				localStorage.setItem('pjeplay_nota_' + sessao, nota)
-				play_sinalizar(sessao, 'proximo')
+				localStorage.setItem('pjerota_nota_' + sessao, nota)
+				rota_sinalizar(sessao, 'proximo')
 			}
 			return
 		}
 
-		// ── Display do contador ───────────────────────────────
+		// ── Disrota do contador ───────────────────────────────
 		let divContador = document.createElement('div')
 		Object.assign(divContador.style, {
 			textAlign:    'center',
@@ -855,7 +855,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		divContador.textContent = contadorAtual
 
 		function atualizarContador(){
-			let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
+			let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
 			if (sinal == 'pausado') pausado = true
 			if(!pausado) divContador.textContent = contadorAtual
 			if(pausado){
@@ -878,7 +878,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		function iniciarContagem(){
 			if(intervalo) clearInterval(intervalo)
 			intervalo = setInterval(() => {
-				let sinal = localStorage.getItem(PLAY_KEY_BASE + sessao)
+				let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
 				if (sinal == 'pausado') pausado = true
 				if(pausado) {
 					pausarContadorDiv()
@@ -892,10 +892,10 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 						pausarContadorDiv()
 						return
 					}
-					if(minhaGeracao !== _play_geracao) return
+					if(minhaGeracao !== _rota_geracao) return
 					let nota = opcaoEscolhida || ''
-					localStorage.setItem('pjeplay_nota_' + sessao, nota)
-					play_sinalizar(sessao, 'proximo')
+					localStorage.setItem('pjerota_nota_' + sessao, nota)
+					rota_sinalizar(sessao, 'proximo')
 				}
 			}, 1000)
 		}
@@ -905,7 +905,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			pausado = true
 			clearInterval(intervalo)
 			pausarContadorDiv()
-			play_sinalizar(sessao, 'pausado')
+			rota_sinalizar(sessao, 'pausado')
 		})
 
 		widget.appendChild(divContador)
@@ -914,7 +914,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		if(opcoes.length){
 			let divOpcoes = document.createElement('div')
 			Object.assign(divOpcoes.style, {
-				display:       'flex',
+				disrota:       'flex',
 				flexDirection: 'column',
 				gap:           '4px',
 				marginBottom:  '6px',
@@ -962,8 +962,8 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 				btn.addEventListener('click', () => {
 					clearInterval(intervalo)
 					opcaoEscolhida = opcao
-					localStorage.setItem('pjeplay_nota_' + sessao, opcao)
-					play_sinalizar(sessao, 'proximo')
+					localStorage.setItem('pjerota_nota_' + sessao, opcao)
+					rota_sinalizar(sessao, 'proximo')
 				})
 
 				divOpcoes.appendChild(btn)
@@ -976,8 +976,8 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		let btnProximo  = document.createElement('button')
 		let btnEncerrar = document.createElement('button')
 
-		_play_estilizarBtnProximo(btnProximo)
-		_play_estilizarBtnEncerrar(btnEncerrar)
+		_rota_estilizarBtnProximo(btnProximo)
+		_rota_estilizarBtnEncerrar(btnEncerrar)
 
 		btnProximo.textContent  = '▶ Próximo'
 		btnEncerrar.textContent = '■ Encerrar'
@@ -985,24 +985,24 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		btnProximo.addEventListener('click', () => {
 			clearInterval(intervalo)
 			let nota = opcaoEscolhida || ''
-			localStorage.setItem('pjeplay_nota_' + sessao, nota)
-			play_sinalizar(sessao, 'proximo')
+			localStorage.setItem('pjerota_nota_' + sessao, nota)
+			rota_sinalizar(sessao, 'proximo')
 		})
 		btnEncerrar.addEventListener('click', () => {
 			clearInterval(intervalo)
 			let nota = opcaoEscolhida || ''
-			localStorage.setItem('pjeplay_nota_' + sessao, nota)
-			play_sinalizar(sessao, 'encerrar')
+			localStorage.setItem('pjerota_nota_' + sessao, nota)
+			rota_sinalizar(sessao, 'encerrar')
 		})
 
 		let linhaBotoes = document.createElement('div')
-		Object.assign(linhaBotoes.style, { display:'flex', gap:'6px', marginTop:'4px' })
+		Object.assign(linhaBotoes.style, { disrota:'flex', gap:'6px', marginTop:'4px' })
 		linhaBotoes.appendChild(btnEncerrar)
 		linhaBotoes.appendChild(btnProximo)
 		widget.appendChild(linhaBotoes)
 
 		document.body.appendChild(widget)
-		_play_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
+		_rota_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
 		if(!pausado){
 			iniciarContagem()
 		} else {
@@ -1027,26 +1027,26 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		outline:'none', marginBottom:'6px', boxSizing:'border-box',
 	})
 	input.addEventListener('input', () => {
-		localStorage.setItem('pjeplay_nota_' + sessao, input.value)
+		localStorage.setItem('pjerota_nota_' + sessao, input.value)
 	})
-	localStorage.setItem('pjeplay_nota_' + sessao, input.value)
+	localStorage.setItem('pjerota_nota_' + sessao, input.value)
 	widget.appendChild(input)
 
 	// ── Botões Encerrar / Próximo ─────────────────────────────
 	let btnProximo  = document.createElement('button')
 	let btnEncerrar = document.createElement('button')
 
-	_play_estilizarBtnProximo(btnProximo)
-	_play_estilizarBtnEncerrar(btnEncerrar)
+	_rota_estilizarBtnProximo(btnProximo)
+	_rota_estilizarBtnEncerrar(btnEncerrar)
 
 	btnProximo.textContent  = '▶ Próximo'
 	btnEncerrar.textContent = '■ Encerrar'
 
-	btnProximo.addEventListener('click',  () => play_sinalizar(sessao, 'proximo'))
-	btnEncerrar.addEventListener('click', () => play_sinalizar(sessao, 'encerrar'))
+	btnProximo.addEventListener('click',  () => rota_sinalizar(sessao, 'proximo'))
+	btnEncerrar.addEventListener('click', () => rota_sinalizar(sessao, 'encerrar'))
 
 	let linhaBotoes = document.createElement('div')
-	Object.assign(linhaBotoes.style, { display:'flex', gap:'6px', marginBottom:'6px' })
+	Object.assign(linhaBotoes.style, { disrota:'flex', gap:'6px', marginBottom:'6px' })
 	linhaBotoes.appendChild(btnEncerrar)
 	linhaBotoes.appendChild(btnProximo)
 	widget.appendChild(linhaBotoes)
@@ -1057,7 +1057,7 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	if(widgetParams && widgetParams.length){
 		let divParams = document.createElement('div')
 		Object.assign(divParams.style, {
-			display:       'flex',
+			disrota:       'flex',
 			flexDirection: 'column',
 			gap:           '4px',
 			borderTop:     '1px solid rgba(255,255,255,0.08)',
@@ -1129,14 +1129,14 @@ function _play_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	}
 
 	document.body.appendChild(widget)
-	_play_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
+	_rota_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
 }
 
 // [ALTERAÇÃO 1] Vertical usa metade da largura do widget horizontal
-function _play_montarConteudo(orientacao, input, btnProximo, btnEncerrar){
+function _rota_montarConteudo(orientacao, input, btnProximo, btnEncerrar){
 	let div = document.createElement('div')
 	if(orientacao === 'horizontal'){
-		Object.assign(div.style, { display:'flex', flexDirection:'column', gap:'6px' })
+		Object.assign(div.style, { disrota:'flex', flexDirection:'column', gap:'6px' })
 		Object.assign(input.style, {
 			width:'100%', background:'rgba(255,255,255,0.06)',
 			border:'1px solid rgba(255,255,255,0.12)', borderRadius:'7px',
@@ -1144,14 +1144,14 @@ function _play_montarConteudo(orientacao, input, btnProximo, btnEncerrar){
 			outline:'none', marginBottom:'0', boxSizing:'border-box', minWidth:'200px',
 		})
 		let linha = document.createElement('div')
-		Object.assign(linha.style, { display:'flex', gap:'6px' })
+		Object.assign(linha.style, { disrota:'flex', gap:'6px' })
 		linha.appendChild(btnProximo)
 		linha.appendChild(btnEncerrar)
 		div.appendChild(input)
 		div.appendChild(linha)
 	} else {
 		// Vertical: layout estreito — caixa compacta em coluna
-		Object.assign(div.style, { display:'flex', flexDirection:'column', gap:'6px', width:'110px' })
+		Object.assign(div.style, { disrota:'flex', flexDirection:'column', gap:'6px', width:'110px' })
 		Object.assign(input.style, {
 			width:'100%', background:'rgba(255,255,255,0.06)',
 			border:'1px solid rgba(255,255,255,0.12)', borderRadius:'7px',
@@ -1167,7 +1167,7 @@ function _play_montarConteudo(orientacao, input, btnProximo, btnEncerrar){
 	return div
 }
 
-function _play_estilizarBtnProximo(btn){
+function _rota_estilizarBtnProximo(btn){
 	Object.assign(btn.style, {
 		flex:'1', background:'#F9B73F', color:'#072B57',
 		border:'none', borderRadius:'7px', padding:'7px 12px',
@@ -1175,7 +1175,7 @@ function _play_estilizarBtnProximo(btn){
 		fontFamily:"'Segoe UI', system-ui, sans-serif",
 	})
 }
-function _play_estilizarBtnEncerrar(btn){
+function _rota_estilizarBtnEncerrar(btn){
 	Object.assign(btn.style, {
 		flex:'1', background:'#1a3350', color:'#cce0f5',
 		border:'1px solid rgba(255,255,255,0.15)', borderRadius:'7px',
@@ -1183,7 +1183,7 @@ function _play_estilizarBtnEncerrar(btn){
 		cursor:'pointer', fontFamily:"'Segoe UI', system-ui, sans-serif",
 	})
 }
-function _play_estilizarBtnSecundario(btn){
+function _rota_estilizarBtnSecundario(btn){
 	Object.assign(btn.style, {
 		background:'#112235', color:'#5e84a8',
 		border:'1px solid rgba(255,255,255,0.08)', borderRadius:'5px',
@@ -1196,7 +1196,7 @@ function _play_estilizarBtnSecundario(btn){
 // ── Arrastar widget e salvar posição por slot ─────────────────
 // [ALTERAÇÃO 2] Posição salva por slotIndex dentro da tarefa
 
-function _play_tornarArrastavel(el, alca, slotIndex, nomeTarefa){
+function _rota_tornarArrastavel(el, alca, slotIndex, nomeTarefa){
 	let ox=0, oy=0, mx=0, my=0
 	alca.addEventListener('mousedown', e => {
 		e.preventDefault()
@@ -1212,7 +1212,7 @@ function _play_tornarArrastavel(el, alca, slotIndex, nomeTarefa){
 		let soltar = () => {
 			document.removeEventListener('mousemove', mover)
 			document.removeEventListener('mouseup',   soltar)
-			_play_salvarPosicaoSlot(
+			_rota_salvarPosicaoSlot(
 				{ top: el.style.top, left: el.style.left, right:'auto', bottom:'auto' },
 				slotIndex, nomeTarefa
 			)
@@ -1222,7 +1222,7 @@ function _play_tornarArrastavel(el, alca, slotIndex, nomeTarefa){
 	})
 }
 
-async function _play_salvarPosicaoSlot(pos, slotIndex, nomeTarefa){
+async function _rota_salvarPosicaoSlot(pos, slotIndex, nomeTarefa){
 	let cfg          = await obterArmazenamento(['widgetPosSlot'])
 	let widgetPosSlot = cfg?.widgetPosSlot || {}
 	if(!widgetPosSlot[nomeTarefa]) widgetPosSlot[nomeTarefa] = {}
@@ -1230,7 +1230,7 @@ async function _play_salvarPosicaoSlot(pos, slotIndex, nomeTarefa){
 	await armazenar({ widgetPosSlot })
 }
 
-async function _play_salvarOrientacaoWidget(orientacao, slotIndex, nomeTarefa){
+async function _rota_salvarOrientacaoWidget(orientacao, slotIndex, nomeTarefa){
 	let cfg  = await obterArmazenamento(['tarefas'])
 	let tarefas = cfg?.tarefas || {}
 	if(!tarefas[nomeTarefa]) return
@@ -1243,16 +1243,16 @@ async function _play_salvarOrientacaoWidget(orientacao, slotIndex, nomeTarefa){
 
 // ── Avisos visuais ────────────────────────────────────────────
 
-function play_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
-	let c = document.getElementById('pjeplay-avisos')
+function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
+	let c = document.getElementById('pjerota-avisos')
 	if(!c){
 		c = document.createElement('div')
-		c.id = 'pjeplay-avisos'
+		c.id = 'pjerota-avisos'
 		Object.assign(c.style, {
 			position:'fixed', top:'16px', left:'50%',
 			transform:'translateX(-50%)',
-			zIndex: String(PLAY_Z.aviso),
-			display:'flex', flexDirection:'column', gap:'6px',
+			zIndex: String(ROTA_Z.aviso),
+			disrota:'flex', flexDirection:'column', gap:'6px',
 			maxWidth:'420px', width:'max-content',
 			fontFamily:"'Segoe UI', system-ui, sans-serif",
 			pointerEvents:'none',
@@ -1277,22 +1277,22 @@ function play_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
 
 // ── Relatório final ───────────────────────────────────────────
 
-function play_exibirRelatorio(){
-	if(!_play_relatorio.length){
-		play_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
+function rota_exibirRelatorio(){
+	if(!_rota_relatorio.length){
+		rota_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
 		return
 	}
 
-	remover('#pjeplay-relatorio')
+	remover('#pjerota-relatorio')
 
 	let painel = document.createElement('div')
-	painel.id  = 'pjeplay-relatorio'
+	painel.id  = 'pjerota-relatorio'
 	Object.assign(painel.style, {
 		position:     'fixed',
 		inset:        '0',
 		background:   'rgba(0,0,0,0.65)',
-		zIndex:       String(PLAY_Z.modal),
-		display:      'flex',
+		zIndex:       String(ROTA_Z.modal),
+		disrota:      'flex',
 		alignItems:   'center',
 		justifyContent:'center',
 		fontFamily:   "'Segoe UI', system-ui, sans-serif",
@@ -1306,7 +1306,7 @@ function play_exibirRelatorio(){
 		padding:      '24px',
 		maxWidth:     '90vw',
 		maxHeight:    '80vh',
-		display:      'flex',
+		disrota:      'flex',
 		flexDirection:'column',
 		gap:          '14px',
 		boxShadow:    '0 12px 40px rgba(0,0,0,0.7)',
@@ -1314,10 +1314,10 @@ function play_exibirRelatorio(){
 	})
 
 	let cab = document.createElement('div')
-	Object.assign(cab.style, { display:'flex', alignItems:'center', justifyContent:'space-between' })
+	Object.assign(cab.style, { disrota:'flex', alignItems:'center', justifyContent:'space-between' })
 	let tit = document.createElement('span')
 	Object.assign(tit.style, { color:'#F9B73F', fontWeight:'700', fontSize:'15px' })
-	tit.textContent = '▶ PJE PLAY — Relatório (' + _play_relatorio.length + ' processos)'
+	tit.textContent = '▶ PJE ROTA — Relatório (' + _rota_relatorio.length + ' processos)'
 	let btnX = document.createElement('button')
 	Object.assign(btnX.style, {
 		background:'transparent', border:'none', color:'#5e84a8',
@@ -1354,7 +1354,7 @@ function play_exibirRelatorio(){
 	thead.appendChild(trH); tabela.appendChild(thead)
 
 	let tbody = document.createElement('tbody')
-	_play_relatorio.forEach((item, idx) => {
+	_rota_relatorio.forEach((item, idx) => {
 		let tr = document.createElement('tr')
 		tr.style.background = idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.03)'
 
@@ -1381,13 +1381,13 @@ function play_exibirRelatorio(){
 	})
 	btnCopiar.textContent = '📋 Copiar como tabela'
 	btnCopiar.addEventListener('click', () => {
-		let linhas = _play_relatorio.map(item => {
+		let linhas = _rota_relatorio.map(item => {
 			return [item.numProc, item.nota || ''].join('\t')
 		})
 		let tsv = cabCols.join('\t') + '\n' + linhas.join('\n')
 		navigator.clipboard.writeText(tsv)
 			.then(() => { btnCopiar.textContent = '✅ Copiado!'; setTimeout(()=>{ btnCopiar.textContent='📋 Copiar como tabela' }, 2000) })
-			.catch(() => play_avisoTemporario('Erro ao copiar.', 'erro', 3000))
+			.catch(() => rota_avisoTemporario('Erro ao copiar.', 'erro', 3000))
 	})
 
 	caixa.appendChild(cab)

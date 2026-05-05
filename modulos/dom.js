@@ -30,9 +30,9 @@ function remover(seletor = ''){
 }
 
 function estilizar({ css = '', id = '' } = {}){
-	if(id) remover('#pjeplay-estilo-' + id)
+	if(id) remover('#pjerota-estilo-' + id)
 	let s = document.createElement('style')
-	if(id) s.id = 'pjeplay-estilo-' + id
+	if(id) s.id = 'pjerota-estilo-' + id
 	s.textContent = css
 	document.head.appendChild(s)
 	return s

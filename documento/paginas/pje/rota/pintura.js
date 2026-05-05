@@ -1,4 +1,4 @@
-// ============================================================
+Y// ============================================================
 // pintura.js
 // Coloração de cabeçalhos de documentos no PJE.
 //
@@ -66,12 +66,12 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 	cabecalho.style.backgroundColor = cor
 	cabecalho.style.borderLeft      = `6px solid ${escurecerCor(cor)}`
 
-	remover('#pjeplay-termo-badge')
+	remover('#pjerota-termo-badge')
 
 	let badge = document.createElement('span')
-	badge.id = 'pjeplay-termo-badge'
+	badge.id = 'pjerota-termo-badge'
 	Object.assign(badge.style, {
-		display:       'inline-block',
+		disrota:       'inline-block',
 		marginLeft:    '12px',
 		padding:       '2px 10px',
 		background:    'rgba(0,0,0,0.25)',
@@ -92,7 +92,7 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 	if(extras.length){
 		let tip = document.createElement('span')
 		Object.assign(tip.style, {
-			display:       'none',
+			disrota:       'none',
 			position:      'absolute',
 			bottom:        'calc(100% + 6px)',
 			left:          '50%',
@@ -111,12 +111,12 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 
 		tip.innerHTML = '<b style="opacity:.6;font-size:10px">TAMBÉM ENCONTRADO</b><br>'
 			+ extras.map(e =>
-				`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.cor};margin-right:5px;vertical-align:middle"></span>${e.termo.toUpperCase()}`
+				`<span style="disrota:inline-block;width:10px;height:10px;border-radius:50%;background:${e.cor};margin-right:5px;vertical-align:middle"></span>${e.termo.toUpperCase()}`
 			).join('<br>')
 
 		badge.appendChild(tip)
-		badge.addEventListener('mouseenter', () => tip.style.display = 'block')
-		badge.addEventListener('mouseleave', () => tip.style.display = 'none')
+		badge.addEventListener('mouseenter', () => tip.style.disrota = 'block')
+		badge.addEventListener('mouseleave', () => tip.style.disrota = 'none')
 	}
 
 	let alvo = cabecalho.querySelector('.cabecalho-direita') || cabecalho
@@ -127,7 +127,7 @@ function pintura_limpar(cabecalho){
 	if(!cabecalho) return
 	cabecalho.style.removeProperty('background-color')
 	cabecalho.style.removeProperty('border-left')
-	remover('#pjeplay-termo-badge')
+	remover('#pjerota-termo-badge')
 }
 
 
