@@ -24,7 +24,7 @@
               fill="url(#sg)" />
         <path d="M 64 14 L 103 24 L 108 62 Q 108 91 64 114 Q 20 91 20 62 L 25 24 Z"
               fill="none" stroke="white" stroke-width="2.5" />
-        <path d="M 64 14 L 103 24 L 101 42 L 27 42 L 25 24 Z" fill="#F57C00" />
+        <path d="M 64 14 L 103 24 L 101 42 L 27 42 L 25 24 Z" fill="#ffa726" />
         <line x1="24" y1="42" x2="104" y2="42" stroke="white" stroke-width="2"/>
         <text x="64" y="37" text-anchor="middle"
               font-family="'Arial Black','Impact',sans-serif"
@@ -72,7 +72,7 @@
       <div class="processo-card" id="card-processo" style="display:none">
         <div class="processo-card-header">
           <span class="processo-numero" id="processo-numero">—</span>
-          <span class="processo-badge" id="processo-badge">—</span>
+          <span class="processo-badge"  id="processo-badge">—</span>
         </div>
         <div class="processo-info" id="processo-info"></div>
       </div>
@@ -90,11 +90,11 @@
       <!-- Temporizador -->
       <div class="temporizador-bloco" id="temporizador-bloco" style="display:none">
         <div class="temporizador-display" id="temporizador-display">00:30</div>
-        <div class="temporizador-opcoes" id="temporizador-opcoes"></div>
+        <div class="temporizador-opcoes"  id="temporizador-opcoes"></div>
       </div>
 
       <!-- Avançar -->
-      <button class="btn-avancar" id="btn-avancar">
+      <button class="btn-avancar" id="btn-avancar" disabled style="opacity:0.4">
         ▶ Avançar processo
       </button>
 
@@ -107,7 +107,6 @@
     <!-- ABA: Super Filtros -->
     <div class="assistente-pagina" id="aba-filtros">
 
-      <!-- Modo -->
       <div class="sf-controles">
         <div class="sf-row">
           <span class="sf-label">
@@ -124,12 +123,8 @@
                placeholder="Número da tarefa, sala ou processos…">
       </div>
 
-      <!-- Botões de ação -->
-      <div class="sf-botoes-lista" id="sf-botoes-lista">
-        <!-- Preenchido por sf-botoes.js em tempo de execução -->
-      </div>
+      <div class="sf-botoes-lista" id="sf-botoes-lista"></div>
 
-      <!-- Progresso -->
       <div class="progresso-bloco" id="sf-progresso" style="display:none">
         <div class="progresso-label">
           <span id="sf-progresso-texto">Aguardando…</span>
@@ -140,13 +135,12 @@
         </div>
       </div>
 
-      <!-- Resultado -->
       <div class="resultado-bloco" id="sf-resultado" style="display:none">
         <div class="resultado-titulo">
           <span>Resultado</span>
           <button class="resultado-exportar" id="sf-exportar">⬇ Exportar</button>
         </div>
-        <div id="sf-resultado-corpo"></div>
+        <div id="sf-resultado-corpo" class="resultado-texto"></div>
       </div>
 
     </div><!-- /aba-filtros -->
@@ -173,6 +167,20 @@
 
 </div><!-- /assistente-shell -->
 
+<!-- Scripts — ordem obrigatória -->
+<script src="../../modulos/definicoes.js"></script>
+<script src="../../modulos/relatar.js"></script>
+<script src="../../modulos/dom.js"></script>
+<script src="../../modulos/navegador.js"></script>
+<script src="../../modulos/texto.js"></script>
+<script src="../../rota/configuracao.js"></script>
+<script src="../../rota/estado.js"></script>
+<script src="../../rota/cache.js"></script>
+<script src="../../rota/componentes.js"></script>
+<script src="../../rota/tarefas/index.js"></script>
+<script src="../../rota/tarefas/triagem-inicial/roteiro.js"></script>
+<script src="../../rota/tarefas/pos-triagem/roteiro.js"></script>
+<script src="conector.js"></script>
 <script src="assistente.js"></script>
 </body>
 </html>

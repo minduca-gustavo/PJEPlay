@@ -28,11 +28,11 @@ const ROTA_LARGURA_ASSISTENTE = 0.20   // 20%
 //
 // Mantido compatível com o PLAY_Z já existente.
 
-const ROTA_Z = {
-    aviso:  9300,
-    modal:  9400,
-    painel: 9500,
-}
+//const ROTA_Z = {
+//    aviso:  9300,
+//    modal:  9400,
+//    painel: 9500,
+//}
 
 
 // ── Storage — chaves ─────────────────────────────────────────

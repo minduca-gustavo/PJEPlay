@@ -1,4 +1,4 @@
-Y// ============================================================
+// ============================================================
 // pintura.js
 // Coloração de cabeçalhos de documentos no PJE.
 //
@@ -71,7 +71,7 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 	let badge = document.createElement('span')
 	badge.id = 'pjerota-termo-badge'
 	Object.assign(badge.style, {
-		disrota:       'inline-block',
+		display:       'inline-block',
 		marginLeft:    '12px',
 		padding:       '2px 10px',
 		background:    'rgba(0,0,0,0.25)',
@@ -92,7 +92,7 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 	if(extras.length){
 		let tip = document.createElement('span')
 		Object.assign(tip.style, {
-			disrota:       'none',
+			display:       'none',
 			position:      'absolute',
 			bottom:        'calc(100% + 6px)',
 			left:          '50%',
@@ -111,12 +111,12 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
 
 		tip.innerHTML = '<b style="opacity:.6;font-size:10px">TAMBÉM ENCONTRADO</b><br>'
 			+ extras.map(e =>
-				`<span style="disrota:inline-block;width:10px;height:10px;border-radius:50%;background:${e.cor};margin-right:5px;vertical-align:middle"></span>${e.termo.toUpperCase()}`
+				`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.cor};margin-right:5px;vertical-align:middle"></span>${e.termo.toUpperCase()}`
 			).join('<br>')
 
 		badge.appendChild(tip)
-		badge.addEventListener('mouseenter', () => tip.style.disrota = 'block')
-		badge.addEventListener('mouseleave', () => tip.style.disrota = 'none')
+		badge.addEventListener('mouseenter', () => tip.style.display = 'block')
+		badge.addEventListener('mouseleave', () => tip.style.display = 'none')
 	}
 
 	let alvo = cabecalho.querySelector('.cabecalho-direita') || cabecalho

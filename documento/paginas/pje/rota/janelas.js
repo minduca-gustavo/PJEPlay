@@ -427,36 +427,65 @@ function _rota_fecharTodasJanelas(){
 // ── Pipeline principal ────────────────────────────────────────
 
 async function rota_iniciarPipeline({ fila }){
-	if(_rota_ativo){
-		rota_avisoTemporario('Pipeline anterior cancelado. Iniciando novo…', 'info', 3000)
-		rota_cancelarPipelineAtivo()
-		await suspender(500)
-	}
+    if(_rota_ativo){
+        rota_avisoTemporario('Pipeline anterior cancelado. Iniciando novo…', 'info', 3000)
+        rota_cancelarPipelineAtivo()
+        await suspender(500)
+    }
 
-	let cfg       = await obterArmazenamento(['tarefaAtiva','tarefas'])
-	let nomeAtivo = cfg?.tarefaAtiva || ''
-	let tarefa    = cfg?.tarefas?.[nomeAtivo]
+    let cfg          = await obterArmazenamento(['tarefaAtiva', 'tarefas', 'tarefaAtivaIsSistema'])
+    let nomeAtivo    = cfg?.tarefaAtiva || ''
+    let isSistema    = cfg?.tarefaAtivaIsSistema === true
+    let tarefa       = null
 
-	if(!tarefa){
-		rota_avisoTemporario('Nenhuma tarefa configurada. Configure no popup.', 'erro', 4000)
-		return
-	}
+    if(isSistema){
+        // Tarefa 🤖 do sistema — busca no catálogo
+        let itemCatalogo = typeof catalogo_obter === 'function'
+            ? catalogo_obter(nomeAtivo) : null
 
-	let slots       = tarefa.slots || []
-	let tarefaUnica = tarefa.tarefaUnica || ''
-	let temporizador = tarefa.temporizador || { ativo: false, segundos: 30, opcoes: '' }
+        if(!itemCatalogo){
+            rota_avisoTemporario('Tarefa do sistema não encontrada.', 'erro', 4000)
+            return
+        }
 
-	if(!slots.length){
-		rota_avisoTemporario('A tarefa "' + nomeAtivo + '" não tem janelas configuradas.', 'erro', 4000)
-		return
-	}
+        // Monta tarefa sintética com janela de detalhes
+        // O modo guiado usa o roteiro — as janelas são abertas pelo pipeline normalmente
+        tarefa = {
+            slots:       [{ tipo: 'detalhes', posicao: 'cheia', ordem: 0, slotIndex: 0 }],
+            tarefaUnica: '',
+            temporizador:{ ativo: false, segundos: 30, opcoes: '' },
+        }
+    } else {
+        // Tarefa 👤 do usuário — busca no storage
+        tarefa = cfg?.tarefas?.[nomeAtivo]
+    }
 
-	_rota_fila      = fila
-	_rota_cursor    = 0
-	_rota_ativo     = true
-	_rota_relatorio = []
+    if(!tarefa){
+        rota_avisoTemporario('Nenhuma tarefa configurada. Configure no popup.', 'erro', 4000)
+        return
+    }
 
-	await rota_processarCursor(slots, tarefaUnica, temporizador)
+    let slots        = tarefa.slots || []
+    let tarefaUnica  = tarefa.tarefaUnica || ''
+    let temporizador = tarefa.temporizador || { ativo: false, segundos: 30, opcoes: '' }
+
+    if(!slots.length){
+        rota_avisoTemporario('A tarefa "' + nomeAtivo + '" não tem janelas configuradas.', 'erro', 4000)
+        return
+    }
+
+    _rota_fila      = fila
+    _rota_cursor    = 0
+    _rota_ativo     = true
+    _rota_relatorio = []
+
+    // Se for tarefa do sistema, inicia sessão guiada no storage
+    if(isSistema){
+        const processos = fila.map(item => item.numProc || item.id || '')
+        await estado_iniciar(nomeAtivo, processos)
+    }
+
+    await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
 
 
@@ -769,11 +798,11 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	Object.assign(widget.style, {
 		position:     'fixed',
 		zIndex:       String(ROTA_Z.widget),
-		background:   '#0d1b2a',
-		border:       '1px solid rgba(249,183,63,0.4)',
+		background:   '#0078aa',
+		border:       '1px solid rgba(255,167,38,0.4)',
 		borderRadius: '12px',
 		padding:      '10px',
-		boxShadow:    '0 6px 24px rgba(0,0,0,0.55)',
+		boxShadow:    '0 4px 16px rgba(0,0,0,0.12)',
 		fontFamily:   "'Segoe UI', system-ui, sans-serif",
 		cursor:       'default',
 		width:        '220px',
@@ -785,7 +814,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	// ── Header (arrasto) ──────────────────────────────────────
 	let header = document.createElement('div')
 	Object.assign(header.style, {
-		disrota:        'flex',
+		display:        'flex',
 		alignItems:     'center',
 		justifyContent: 'space-between',
 		cursor:         'move',
@@ -795,12 +824,12 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	})
 
 	let titulo = document.createElement('span')
-	Object.assign(titulo.style, { color:'#F9B73F', fontWeight:'700', fontSize:'11px' })
+	Object.assign(titulo.style, { color:'#f9f9fa', fontWeight:'700', fontSize:'11px' })
 	titulo.textContent = '▶ PJE ROTA'
 
 	let numEl = document.createElement('span')
 	Object.assign(numEl.style, {
-		color:'#5e84a8', fontSize:'10px', flex:'1',
+		color:'#f9f9fa', fontSize:'10px', flex:'1',
 		textAlign:'right', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
 	})
 	numEl.textContent = numProc
@@ -843,7 +872,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			textAlign:    'center',
 			fontSize:     '36px',
 			fontWeight:   '800',
-			color:        '#F9B73F',
+			color:        '#ffa726',
 			padding:      '6px 0 8px',
 			cursor:       'pointer',
 			userSelect:   'none',
@@ -861,14 +890,14 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			if(pausado){
 				pausarContadorDiv()
 			} else if(contadorAtual <= 5){
-				divContador.style.color = '#e74c3c'
+				divContador.style.color = '#c62828'
 			} else {
-				divContador.style.color = '#F9B73F'
+				divContador.style.color = '#ffa726'
 			}
 		}
 
 		function pausarContadorDiv(){
-			divContador.style.color = '#5e84a8'
+			divContador.style.color = '#6b7c93'
 			divContador.innerText = 'Contador Cancelado.\nClique em PRÓXIMO para continuar.'
 			divContador.style.fontSize = '15px'
 			divContador.style.fontWeight = '500'
@@ -914,7 +943,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		if(opcoes.length){
 			let divOpcoes = document.createElement('div')
 			Object.assign(divOpcoes.style, {
-				disrota:       'flex',
+				display:       'flex',
 				flexDirection: 'column',
 				gap:           '4px',
 				marginBottom:  '6px',
@@ -925,10 +954,10 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 				let textoExibido = opcao.length > 28 ? opcao.slice(0, 26) + '…' : opcao
 
 				Object.assign(btn.style, {
-					background:   '#112235',
-					border:       '1px solid rgba(255,255,255,0.1)',
+					background:   '#f9f9fa',
+					border:       '1px solid #dcdcdc',
 					borderRadius: '6px',
-					color:        '#cce0f5',
+					color:        '#2c3e50',
 					padding:      '6px 8px',
 					fontSize:     '12px',
 					cursor:       'pointer',
@@ -946,18 +975,18 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 				function setAtivo(ativo){
 					if(ativo){
-						btn.style.background  = 'rgba(249,183,63,0.2)'
-						btn.style.borderColor = 'rgba(249,183,63,0.6)'
-						btn.style.color       = '#F9B73F'
+						btn.style.background  = 'rgba(255,167,38,0.15)'
+						btn.style.borderColor = 'rgba(255,167,38,0.6)'
+						btn.style.color       = '#ffa726'
 					} else {
-						btn.style.background  = '#112235'
-						btn.style.borderColor = 'rgba(255,255,255,0.1)'
-						btn.style.color       = '#cce0f5'
+						btn.style.background  = '#f9f9fa'
+						btn.style.borderColor = '#dcdcdc'
+						btn.style.color       = '#2c3e50'
 					}
 				}
 
-				btn.addEventListener('mouseenter', () => { if(opcaoEscolhida !== opcao) btn.style.background = 'rgba(255,255,255,0.05)' })
-				btn.addEventListener('mouseleave', () => { if(opcaoEscolhida !== opcao) btn.style.background = '#112235' })
+				btn.addEventListener('mouseenter', () => { if(opcaoEscolhida !== opcao) btn.style.background = 'rgba(0,0,0,0.02)' })
+				btn.addEventListener('mouseleave', () => { if(opcaoEscolhida !== opcao) btn.style.background = '#f9f9fa' })
 
 				btn.addEventListener('click', () => {
 					clearInterval(intervalo)
@@ -996,7 +1025,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		})
 
 		let linhaBotoes = document.createElement('div')
-		Object.assign(linhaBotoes.style, { disrota:'flex', gap:'6px', marginTop:'4px' })
+		Object.assign(linhaBotoes.style, { display:'flex', gap:'6px', marginTop:'4px' })
 		linhaBotoes.appendChild(btnEncerrar)
 		linhaBotoes.appendChild(btnProximo)
 		widget.appendChild(linhaBotoes)
@@ -1021,9 +1050,9 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	input.placeholder = tarefaUnica || 'Anotação…'
 	input.value       = tarefaUnica
 	Object.assign(input.style, {
-		width:'100%', background:'rgba(255,255,255,0.06)',
-		border:'1px solid rgba(255,255,255,0.12)', borderRadius:'7px',
-		color:'#cce0f5', padding:'7px 10px', fontSize:'12px',
+		width:'100%', background:'rgba(0,0,0,0.04)',
+		border:'1px solid #dcdcdc', borderRadius:'7px',
+		color:'#f9f9fa', padding:'7px 10px', fontSize:'12px',
 		outline:'none', marginBottom:'6px', boxSizing:'border-box',
 	})
 	input.addEventListener('input', () => {
@@ -1046,7 +1075,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	btnEncerrar.addEventListener('click', () => rota_sinalizar(sessao, 'encerrar'))
 
 	let linhaBotoes = document.createElement('div')
-	Object.assign(linhaBotoes.style, { disrota:'flex', gap:'6px', marginBottom:'6px' })
+	Object.assign(linhaBotoes.style, { display:'flex', gap:'6px', marginBottom:'6px' })
 	linhaBotoes.appendChild(btnEncerrar)
 	linhaBotoes.appendChild(btnProximo)
 	widget.appendChild(linhaBotoes)
@@ -1057,10 +1086,10 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	if(widgetParams && widgetParams.length){
 		let divParams = document.createElement('div')
 		Object.assign(divParams.style, {
-			disrota:       'flex',
+			display:       'flex',
 			flexDirection: 'column',
 			gap:           '4px',
-			borderTop:     '1px solid rgba(255,255,255,0.08)',
+			borderTop:     '1px solid #dcdcdc',
 			paddingTop:    '6px',
 			marginTop:     '2px',
 		})
@@ -1072,10 +1101,10 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			let textoExibido = param.length > 28 ? param.slice(0, 26) + '…' : param
 
 			Object.assign(btn.style, {
-				background:   '#112235',
-				border:       '1px solid rgba(255,255,255,0.1)',
+				background:   '#f9f9fa',
+				border:       '1px solid #dcdcdc',
 				borderRadius: '6px',
-				color:        '#cce0f5',
+				color:        '#2c3e50',
 				padding:      '5px 8px',
 				fontSize:     '11px',
 				cursor:       'pointer',
@@ -1090,24 +1119,24 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			btn.title = param  // tooltip com texto completo
 
 			btn.addEventListener('mouseenter', () => {
-				btn.style.background  = 'rgba(249,183,63,0.15)'
-				btn.style.borderColor = 'rgba(249,183,63,0.4)'
-				btn.style.color       = '#F9B73F'
+				btn.style.background  = 'rgba(255,167,38,0.1)'
+				btn.style.borderColor = 'rgba(255,167,38,0.4)'
+				btn.style.color       = '#ffa726'
 			})
 			btn.addEventListener('mouseleave', () => {
-				btn.style.background  = '#112235'
-				btn.style.borderColor = 'rgba(255,255,255,0.1)'
-				btn.style.color       = '#cce0f5'
+				btn.style.background  = '#f9f9fa'
+				btn.style.borderColor = '#dcdcdc'
+				btn.style.color       = '#2c3e50'
 			})
 
 			btn.addEventListener('click', () => {
 				navigator.clipboard.writeText(param).then(() => {
 					let orig = btn.textContent
 					btn.textContent = '✅ Copiado!'
-					btn.style.color = '#2ecc71'
+					btn.style.color = '#2e7d32'
 					setTimeout(() => {
 						btn.textContent = textoExibido
-						btn.style.color = '#cce0f5'
+						btn.style.color = '#2c3e50'
 					}, 1500)
 				}).catch(() => {
 					// Fallback: cria textarea temporário
@@ -1136,26 +1165,26 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 function _rota_montarConteudo(orientacao, input, btnProximo, btnEncerrar){
 	let div = document.createElement('div')
 	if(orientacao === 'horizontal'){
-		Object.assign(div.style, { disrota:'flex', flexDirection:'column', gap:'6px' })
+		Object.assign(div.style, { display:'flex', flexDirection:'column', gap:'6px' })
 		Object.assign(input.style, {
-			width:'100%', background:'rgba(255,255,255,0.06)',
-			border:'1px solid rgba(255,255,255,0.12)', borderRadius:'7px',
-			color:'#cce0f5', padding:'7px 10px', fontSize:'12px',
+			width:'100%', background:'rgba(0,0,0,0.04)',
+			border:'1px solid #dcdcdc', borderRadius:'7px',
+			color:'#2c3e50', padding:'7px 10px', fontSize:'12px',
 			outline:'none', marginBottom:'0', boxSizing:'border-box', minWidth:'200px',
 		})
 		let linha = document.createElement('div')
-		Object.assign(linha.style, { disrota:'flex', gap:'6px' })
+		Object.assign(linha.style, { display:'flex', gap:'6px' })
 		linha.appendChild(btnProximo)
 		linha.appendChild(btnEncerrar)
 		div.appendChild(input)
 		div.appendChild(linha)
 	} else {
 		// Vertical: layout estreito — caixa compacta em coluna
-		Object.assign(div.style, { disrota:'flex', flexDirection:'column', gap:'6px', width:'110px' })
+		Object.assign(div.style, { display:'flex', flexDirection:'column', gap:'6px', width:'110px' })
 		Object.assign(input.style, {
-			width:'100%', background:'rgba(255,255,255,0.06)',
-			border:'1px solid rgba(255,255,255,0.12)', borderRadius:'7px',
-			color:'#cce0f5', padding:'5px 7px', fontSize:'11px',
+			width:'100%', background:'rgba(0,0,0,0.04)',
+			border:'1px solid #dcdcdc', borderRadius:'7px',
+			color:'#2c3e50', padding:'5px 7px', fontSize:'11px',
 			outline:'none', marginBottom:'0', boxSizing:'border-box', minWidth:'0',
 		})
 		Object.assign(btnProximo.style,  { flex:'', width:'100%', padding:'6px 4px', fontSize:'11px' })
@@ -1169,7 +1198,7 @@ function _rota_montarConteudo(orientacao, input, btnProximo, btnEncerrar){
 
 function _rota_estilizarBtnProximo(btn){
 	Object.assign(btn.style, {
-		flex:'1', background:'#F9B73F', color:'#072B57',
+		flex:'1', background:'#ffa726', color:'#ffffff',
 		border:'none', borderRadius:'7px', padding:'7px 12px',
 		fontWeight:'700', fontSize:'12px', cursor:'pointer',
 		fontFamily:"'Segoe UI', system-ui, sans-serif",
@@ -1177,16 +1206,16 @@ function _rota_estilizarBtnProximo(btn){
 }
 function _rota_estilizarBtnEncerrar(btn){
 	Object.assign(btn.style, {
-		flex:'1', background:'#1a3350', color:'#cce0f5',
-		border:'1px solid rgba(255,255,255,0.15)', borderRadius:'7px',
+		flex:'1', background:'#f9f9fa', color:'#2c3e50',
+		border:'1px solid #dcdcdc', borderRadius:'7px',
 		padding:'7px 12px', fontWeight:'700', fontSize:'12px',
 		cursor:'pointer', fontFamily:"'Segoe UI', system-ui, sans-serif",
 	})
 }
 function _rota_estilizarBtnSecundario(btn){
 	Object.assign(btn.style, {
-		background:'#112235', color:'#5e84a8',
-		border:'1px solid rgba(255,255,255,0.08)', borderRadius:'5px',
+		background:'#f9f9fa', color:'#6b7c93',
+		border:'1px solid #dcdcdc', borderRadius:'5px',
 		padding:'3px 7px', fontSize:'13px', cursor:'pointer',
 		fontFamily:"'Segoe UI', system-ui, sans-serif",
 	})
@@ -1252,7 +1281,7 @@ function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
 			position:'fixed', top:'16px', left:'50%',
 			transform:'translateX(-50%)',
 			zIndex: String(ROTA_Z.aviso),
-			disrota:'flex', flexDirection:'column', gap:'6px',
+			display:'flex', flexDirection:'column', gap:'6px',
 			maxWidth:'420px', width:'max-content',
 			fontFamily:"'Segoe UI', system-ui, sans-serif",
 			pointerEvents:'none',
@@ -1261,12 +1290,12 @@ function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
 	}
 	let el = document.createElement('div')
 	Object.assign(el.style, {
-		background: tipo==='erro'?'#7b1c1c': tipo==='sucesso'?'#1a4d2e':'#0d1b2a',
-		color:'#fff',
-		borderLeft: '4px solid ' + (tipo==='erro'?'#e74c3c':tipo==='sucesso'?'#2ecc71':'#F9B73F'),
+		background: tipo==='erro'?'#fdecea': tipo==='sucesso'?'#e8f5e9':'#ffffff',
+		color:'#2c3e50',
+		borderLeft: '4px solid ' + (tipo==='erro'?'#c62828':tipo==='sucesso'?'#2e7d32':'#ffa726'),
 		borderRadius:'8px', padding:'10px 16px',
 		fontSize:'13px', lineHeight:'1.4',
-		boxShadow:'0 4px 16px rgba(0,0,0,0.5)',
+		boxShadow:'0 4px 16px rgba(0,0,0,0.08)',
 		opacity:'1', transition:'opacity 0.35s', whiteSpace:'pre-wrap',
 	})
 	el.textContent = msg
@@ -1278,121 +1307,150 @@ function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
 // ── Relatório final ───────────────────────────────────────────
 
 function rota_exibirRelatorio(){
-	if(!_rota_relatorio.length){
-		rota_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
-		return
-	}
+    if(!_rota_relatorio.length){
+        rota_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
+        return
+    }
+    remover('#pjerota-relatorio')
 
-	remover('#pjerota-relatorio')
+    let painel = document.createElement('div')
+    painel.id  = 'pjerota-relatorio'
+    Object.assign(painel.style, {
+        position:      'fixed',
+        inset:         '0',
+        background:    'rgba(0,0,0,0.5)',
+        zIndex:        String(ROTA_Z.modal),
+        display:       'flex',
+        alignItems:    'center',
+        justifyContent:'center',
+        fontFamily:    "'Segoe UI', system-ui, sans-serif",
+    })
 
-	let painel = document.createElement('div')
-	painel.id  = 'pjerota-relatorio'
-	Object.assign(painel.style, {
-		position:     'fixed',
-		inset:        '0',
-		background:   'rgba(0,0,0,0.65)',
-		zIndex:       String(ROTA_Z.modal),
-		disrota:      'flex',
-		alignItems:   'center',
-		justifyContent:'center',
-		fontFamily:   "'Segoe UI', system-ui, sans-serif",
-	})
+    let caixa = document.createElement('div')
+    Object.assign(caixa.style, {
+        background:   '#ffffff',
+        border:       '1px solid #dcdcdc',
+        borderRadius: '10px',
+        padding:      '24px',
+        maxWidth:     '90vw',
+        maxHeight:    '80vh',
+        display:      'flex',
+        flexDirection:'column',
+        gap:          '14px',
+        boxShadow:    '0 8px 32px rgba(0,0,0,0.18)',
+        overflow:     'hidden',
+    })
 
-	let caixa = document.createElement('div')
-	Object.assign(caixa.style, {
-		background:   '#0d1b2a',
-		border:       '1px solid rgba(249,183,63,0.3)',
-		borderRadius: '14px',
-		padding:      '24px',
-		maxWidth:     '90vw',
-		maxHeight:    '80vh',
-		disrota:      'flex',
-		flexDirection:'column',
-		gap:          '14px',
-		boxShadow:    '0 12px 40px rgba(0,0,0,0.7)',
-		overflow:     'hidden',
-	})
+    // ── Cabeçalho
+    let cab = document.createElement('div')
+    Object.assign(cab.style, { display:'flex', alignItems:'center', justifyContent:'space-between', gap:'12px' })
 
-	let cab = document.createElement('div')
-	Object.assign(cab.style, { disrota:'flex', alignItems:'center', justifyContent:'space-between' })
-	let tit = document.createElement('span')
-	Object.assign(tit.style, { color:'#F9B73F', fontWeight:'700', fontSize:'15px' })
-	tit.textContent = '▶ PJE ROTA — Relatório (' + _rota_relatorio.length + ' processos)'
-	let btnX = document.createElement('button')
-	Object.assign(btnX.style, {
-		background:'transparent', border:'none', color:'#5e84a8',
-		fontSize:'22px', cursor:'pointer', lineHeight:'1', padding:'0 4px',
-	})
-	btnX.textContent = '×'
-	btnX.addEventListener('click', () => painel.remove())
-	cab.appendChild(tit); cab.appendChild(btnX)
+    let tit = document.createElement('span')
+    Object.assign(tit.style, { color:'#0078aa', fontWeight:'700', fontSize:'15px' })
+    tit.textContent = '▶ PJE ROTA — Relatório (' + _rota_relatorio.length + ' processo' + (_rota_relatorio.length > 1 ? 's' : '') + ')'
 
-	let area = document.createElement('div')
-	Object.assign(area.style, { overflowY:'auto', overflowX:'auto', flex:'1' })
+    let btnX = document.createElement('button')
+    Object.assign(btnX.style, {
+        background:'transparent', border:'none', color:'#6b7c93',
+        fontSize:'22px', cursor:'pointer', lineHeight:'1', padding:'0 4px', flexShrink:'0',
+    })
+    btnX.textContent = '×'
+    btnX.addEventListener('click', () => painel.remove())
 
-	let tabela = document.createElement('table')
-	Object.assign(tabela.style, {
-		width:'100%', borderCollapse:'collapse',
-		fontSize:'12px', color:'#cce0f5',
-	})
+    cab.appendChild(tit)
+    cab.appendChild(btnX)
 
-	let thead = document.createElement('thead')
-	let trH   = document.createElement('tr')
-	let cabCols = ['Processo', 'Anotação / Opção']
+    // ── Tabela
+    let area = document.createElement('div')
+    Object.assign(area.style, { overflowY:'auto', overflowX:'auto', flex:'1' })
 
-	cabCols.forEach(c => {
-		let th = document.createElement('th')
-		Object.assign(th.style, {
-			padding:'8px 12px', textAlign:'left',
-			background:'#112235', color:'#F9B73F',
-			borderBottom:'1px solid rgba(255,255,255,0.1)',
-			whiteSpace:'nowrap', fontWeight:'700',
-		})
-		th.textContent = c
-		trH.appendChild(th)
-	})
-	thead.appendChild(trH); tabela.appendChild(thead)
+    let tabela = document.createElement('table')
+    Object.assign(tabela.style, {
+        width:'100%', borderCollapse:'collapse',
+        fontSize:'12px', color:'#2c3e50',
+    })
 
-	let tbody = document.createElement('tbody')
-	_rota_relatorio.forEach((item, idx) => {
-		let tr = document.createElement('tr')
-		tr.style.background = idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.03)'
+    let thead = document.createElement('thead')
+    let trH   = document.createElement('tr')
+    let cabCols = ['Processo', 'Anotação / Opção']
+    cabCols.forEach(c => {
+        let th = document.createElement('th')
+        Object.assign(th.style, {
+            padding:     '8px 12px',
+            textAlign:   'left',
+            background:  '#0078aa',
+            color:       '#ffffff',
+            borderBottom:'1px solid #dcdcdc',
+            whiteSpace:  'nowrap',
+            fontWeight:  '700',
+        })
+        th.textContent = c
+        trH.appendChild(th)
+    })
+    thead.appendChild(trH)
+    tabela.appendChild(thead)
 
-		let cellNum = document.createElement('td')
-		Object.assign(cellNum.style, { padding:'7px 12px', borderBottom:'1px solid rgba(255,255,255,0.05)', whiteSpace:'nowrap' })
-		cellNum.textContent = item.numProc
-		tr.appendChild(cellNum)
+    let tbody = document.createElement('tbody')
+    _rota_relatorio.forEach((item, idx) => {
+        let tr = document.createElement('tr')
+        tr.style.background = idx % 2 === 0 ? '#ffffff' : '#f9f9fa'
 
-		let cellNota = document.createElement('td')
-		Object.assign(cellNota.style, { padding:'7px 12px', borderBottom:'1px solid rgba(255,255,255,0.05)' })
-		cellNota.textContent = item.nota || ''
-		tr.appendChild(cellNota)
+        let cellNum = document.createElement('td')
+        Object.assign(cellNum.style, {
+            padding:     '7px 12px',
+            borderBottom:'1px solid #dcdcdc',
+            whiteSpace:  'nowrap',
+            color:       '#0078aa',
+            fontWeight:  '500',
+        })
+        cellNum.textContent = item.numProc
 
-		tbody.appendChild(tr)
-	})
-	tabela.appendChild(tbody)
-	area.appendChild(tabela)
+        let cellNota = document.createElement('td')
+        Object.assign(cellNota.style, {
+            padding:     '7px 12px',
+            borderBottom:'1px solid #dcdcdc',
+            color:       '#2c3e50',
+        })
+        cellNota.textContent = item.nota || ''
 
-	let btnCopiar = document.createElement('button')
-	Object.assign(btnCopiar.style, {
-		background:'#F9B73F', color:'#072B57', border:'none',
-		borderRadius:'8px', padding:'9px 20px', fontWeight:'700',
-		fontSize:'13px', cursor:'pointer', alignSelf:'flex-end',
-	})
-	btnCopiar.textContent = '📋 Copiar como tabela'
-	btnCopiar.addEventListener('click', () => {
-		let linhas = _rota_relatorio.map(item => {
-			return [item.numProc, item.nota || ''].join('\t')
-		})
-		let tsv = cabCols.join('\t') + '\n' + linhas.join('\n')
-		navigator.clipboard.writeText(tsv)
-			.then(() => { btnCopiar.textContent = '✅ Copiado!'; setTimeout(()=>{ btnCopiar.textContent='📋 Copiar como tabela' }, 2000) })
-			.catch(() => rota_avisoTemporario('Erro ao copiar.', 'erro', 3000))
-	})
+        tr.appendChild(cellNum)
+        tr.appendChild(cellNota)
+        tbody.appendChild(tr)
+    })
+    tabela.appendChild(tbody)
+    area.appendChild(tabela)
 
-	caixa.appendChild(cab)
-	caixa.appendChild(area)
-	caixa.appendChild(btnCopiar)
-	painel.appendChild(caixa)
-	document.body.appendChild(painel)
+    // ── Botão copiar
+    let btnCopiar = document.createElement('button')
+    Object.assign(btnCopiar.style, {
+        background:  '#ffa726',
+        color:       '#ffffff',
+        border:      'none',
+        borderRadius:'6px',
+        padding:     '9px 20px',
+        fontWeight:  '700',
+        fontSize:    '13px',
+        cursor:      'pointer',
+        alignSelf:   'flex-end',
+        transition:  'background 0.15s',
+    })
+    btnCopiar.textContent = '📋 Copiar como tabela'
+    btnCopiar.addEventListener('mouseenter', () => btnCopiar.style.background = '#D68C20')
+    btnCopiar.addEventListener('mouseleave', () => btnCopiar.style.background = '#ffa726')
+    btnCopiar.addEventListener('click', () => {
+        let linhas = _rota_relatorio.map(item => [item.numProc, item.nota || ''].join('\t'))
+        let tsv    = cabCols.join('\t') + '\n' + linhas.join('\n')
+        navigator.clipboard.writeText(tsv)
+            .then(() => {
+                btnCopiar.textContent = '✅ Copiado!'
+                setTimeout(() => { btnCopiar.textContent = '📋 Copiar como tabela' }, 2000)
+            })
+            .catch(() => rota_avisoTemporario('Erro ao copiar.', 'erro', 3000))
+    })
+
+    caixa.appendChild(cab)
+    caixa.appendChild(area)
+    caixa.appendChild(btnCopiar)
+    painel.appendChild(caixa)
+    document.body.appendChild(painel)
 }

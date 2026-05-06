@@ -1,11 +1,11 @@
 // ============================================================
-// programa.js — lógica completa do popup PJE Play
+// programa.js — lógica completa do popup Rota PJE
 // ============================================================
 
 const NAV = (typeof browser !== 'undefined') ? browser : chrome
 
 const TOTAL_PAGINAS = 3
-const SUBTITULOS    = ['Editor de Tarefa', 'Configurações de Pintura', 'Super Filtros']
+const SUBTITULOS    = ['Editor de Tarefa', 'Configurações de Pintura', 'Desenvolvedores']
 
 const TIPOS_JANELA = [
 	{ valor:'detalhes',  label:'Detalhes do Processo' },
@@ -127,7 +127,7 @@ async function iniciar(){
 		tabs.forEach(tab => {
 			NAV.scripting.executeScript({
 				target: { tabId: tab.id },
-				func: (h) => { window._pjeplay_habilitado = h },
+				func: (h) => { window._pjerota_habilitado = h },
 				args: [habilitado],
 			}).catch(()=>{})
 		})
@@ -367,7 +367,7 @@ async function iniciar(){
 				target: { tabId: tab.id },
 				func: (dados) => {
 					window._superfiltro_ativo = dados.ativo
-					window.dispatchEvent(new CustomEvent('pjeplay:superfiltro-atualizado', { detail: dados }))
+					window.dispatchEvent(new CustomEvent('pjerota:superfiltro-atualizado', { detail: dados }))
 				},
 				args: [{ ativo: storeDados.superfiltro_ativo === true }],
 			}).catch(()=>{})

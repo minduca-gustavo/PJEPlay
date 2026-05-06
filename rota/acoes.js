@@ -17,7 +17,7 @@
 // ── Utilitário interno ────────────────────────────────────────
 
 async function _acao_fetch(url = '', metodo = 'GET', corpo = null) {
-    const token    = play_cookie('Xsrf-Token') || play_cookie('XSRF-TOKEN')
+    const token    = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
     const instancia = CONFIGURACAO?.pessoa?.instancia || '1'
     try {
         const opts = {
@@ -25,7 +25,7 @@ async function _acao_fetch(url = '', metodo = 'GET', corpo = null) {
             mode:        'cors',
             credentials: 'include',
             headers: {
-                'Idempotency-Key':  play_idempotencia(),
+                'Idempotency-Key':  rota_idempotencia(),
                 'X-Grau-Instancia': instancia,
                 'X-XSRF-TOKEN':     token,
                 'Content-Type':     'application/json',

@@ -1,0 +1,574 @@
+/* ============================================================
+   assistente.css
+   Estilos da janela assistente do Rota PJE.
+   Paleta institucional: azul #0078aa + laranja #ffa726
+   ============================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --azul:         #0078aa;
+  --azul-claro:   #2a5a8c;
+  --laranja:      #ffa726;
+  --laranja-esc:  #D68C20;
+  --branco:       #ffffff;
+  --fundo:        #f9f9fa;
+  --borda:        #dcdcdc;
+  --texto:        #2c3e50;
+  --texto-suave:  #6b7c93;
+  --info-bg:      #eaf2fb;
+  --info-borda:   #add8e6;
+  --info-texto:   #1a3a5c;
+  --perigo:       #c62828;
+  --sucesso:      #2e7d32;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--fundo);
+  color: var(--texto);
+  font-size: 13px;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.assistente-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+
+/* ── Cabeçalho ─────────────────────────────────────────────── */
+
+.assistente-header {
+  background: var(--azul);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.assistente-logo svg { display: block; flex-shrink: 0; }
+
+.assistente-titulo { flex: 1; min-width: 0; }
+.assistente-titulo h1 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.assistente-titulo p {
+  font-size: 10px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assistente-btn-fechar {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: rgba(255,255,255,0.8);
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  line-height: 1;
+  padding: 0;
+}
+.assistente-btn-fechar:hover { background: rgba(255,255,255,0.2); }
+
+
+/* ── Abas ──────────────────────────────────────────────────── */
+
+.assistente-abas {
+  display: flex;
+  background: var(--branco);
+  border-bottom: 1px solid var(--borda);
+  flex-shrink: 0;
+}
+
+.assistente-aba {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.assistente-aba:hover { color: var(--azul); }
+.assistente-aba.ativa {
+  color: var(--azul);
+  border-bottom-color: var(--azul);
+}
+
+
+/* ── Corpo / páginas ───────────────────────────────────────── */
+
+.assistente-corpo {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.assistente-pagina {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+.assistente-pagina.ativa { display: flex; }
+
+
+/* ── Navegação entre processos ─────────────────────────────── */
+
+.nav-processos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.btn-nav {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--borda);
+  background: var(--fundo);
+  border-radius: 5px;
+  color: var(--texto-suave);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  padding: 0;
+}
+.btn-nav:hover:not(:disabled) { background: var(--azul); color: #fff; border-color: var(--azul); }
+.btn-nav:disabled { opacity: 0.3; cursor: default; }
+
+.nav-processos-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+#nav-posicao {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--azul);
+}
+
+.nav-processos-sub {
+  font-size: 10px;
+  color: var(--texto-suave);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+
+/* ── Card do processo ──────────────────────────────────────── */
+
+.processo-card {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.processo-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--borda);
+  background: var(--info-bg);
+}
+
+.processo-numero {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--azul);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.processo-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 2px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.processo-info {
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--texto-suave);
+  line-height: 1.5;
+}
+
+
+/* ── Blocos de parâmetros ──────────────────────────────────── */
+
+.params-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.param-btn {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--borda);
+  background: var(--branco);
+  font-size: 11px;
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.param-btn:hover {
+  background: var(--info-bg);
+  border-color: var(--info-borda);
+  color: var(--azul);
+}
+
+
+/* ── Anotação ──────────────────────────────────────────────── */
+
+.anotacao-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+.input-anotacao {
+  width: 100%;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 7px;
+  color: var(--texto);
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.input-anotacao:focus { border-color: var(--azul); }
+.input-anotacao::placeholder { color: var(--borda); }
+
+
+/* ── Temporizador ──────────────────────────────────────────── */
+
+.temporizador-bloco {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.temporizador-display {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--azul);
+  letter-spacing: -1px;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.temporizador-display.urgente { color: var(--perigo); }
+.temporizador-display.pausado { color: var(--texto-suave); font-size: 14px; font-weight: 500; text-align: center; line-height: 1.4; }
+
+.temporizador-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.tmr-opcao-btn {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--borda);
+  background: var(--fundo);
+  font-size: 11px;
+  color: var(--texto);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: inherit;
+  font-weight: 500;
+}
+.tmr-opcao-btn:hover { background: var(--info-bg); border-color: var(--info-borda); color: var(--azul); }
+.tmr-opcao-btn.ativa { background: var(--laranja); border-color: var(--laranja); color: #fff; }
+
+
+/* ── Botão avançar ─────────────────────────────────────────── */
+
+.btn-avancar {
+  width: 100%;
+  padding: 10px;
+  border-radius: 7px;
+  border: none;
+  background: var(--azul);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+.btn-avancar:hover { background: var(--azul-claro); }
+.btn-avancar.encerrar {
+  background: var(--fundo);
+  color: var(--texto-suave);
+  border: 1px solid var(--borda);
+}
+.btn-avancar.encerrar:hover { background: var(--borda); }
+
+
+/* ── Avisos inline ─────────────────────────────────────────── */
+
+.aviso {
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-left: 3px solid;
+}
+.aviso-info    { background: var(--info-bg);          color: var(--info-texto);    border-color: var(--info-borda); }
+.aviso-alerta  { background: rgba(255,167,38,0.1);    color: #7a4800;              border-color: var(--laranja); }
+.aviso-erro    { background: rgba(198,40,40,0.08);    color: var(--perigo);        border-color: var(--perigo); }
+.aviso-sucesso { background: rgba(46,125,50,0.08);    color: var(--sucesso);       border-color: var(--sucesso); }
+
+
+/* ── Super Filtros ─────────────────────────────────────────── */
+
+.sf-controles {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sf-row { display: flex; align-items: center; gap: 6px; }
+
+.sf-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto);
+  flex: 1;
+}
+.sf-hint { font-size: 10px; font-weight: 400; color: var(--texto-suave); margin-left: 4px; }
+
+.sf-modo-grupo { display: flex; gap: 4px; }
+
+.sf-modo-btn {
+  flex: 1;
+  padding: 5px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--fundo);
+  color: var(--texto-suave);
+  border: 1px solid var(--borda);
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+  font-family: inherit;
+}
+.sf-modo-btn.ativo { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+.sf-input {
+  width: 100%;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: 7px;
+  color: var(--texto);
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+.sf-input:focus { border-color: var(--azul); }
+.sf-input::placeholder { color: var(--borda); }
+
+.sf-botoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+/* ── Progresso ─────────────────────────────────────────────── */
+
+.progresso-bloco {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progresso-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--texto-suave);
+}
+
+.progresso-bar-track {
+  height: 5px;
+  background: var(--fundo);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progresso-bar-fill {
+  height: 100%;
+  background: var(--azul);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+
+/* ── Resultado / histórico ─────────────────────────────────── */
+
+.resultado-bloco {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.resultado-titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--borda);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto);
+  background: var(--info-bg);
+}
+
+.resultado-exportar {
+  background: none;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 10px;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.resultado-exportar:hover { border-color: var(--azul); color: var(--azul); }
+
+.resultado-texto {
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--texto-suave);
+  line-height: 1.6;
+}
+
+#historico-lista {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.historico-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--borda);
+  font-size: 11px;
+}
+.historico-item:last-child { border-bottom: none; }
+.historico-num  { color: var(--azul); font-weight: 600; flex-shrink: 0; }
+.historico-nota { color: var(--texto-suave); flex: 1; }
+
+
+/* ── Rodapé ────────────────────────────────────────────────── */
+
+.assistente-rodape {
+  padding: 7px 14px;
+  border-top: 1px solid var(--borda);
+  background: var(--branco);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rodape-status {
+  font-size: 10px;
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--fundo); }
+::-webkit-scrollbar-thumb { background: var(--borda); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--texto-suave); }
