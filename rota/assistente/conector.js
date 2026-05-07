@@ -12,6 +12,38 @@
 // ============================================================
 
 
+// ── Leitura de dados do PJE via storage ───────────────────────
+//
+// No contexto do assistente (janela separada), as metatags da página
+// do PJE não são acessíveis. O interceptador.js espelha os dados
+// interceptados no storage.local sob as chaves rotaDados_*.
+// Estas funções substituem as interceptador_ler*() do PJE,
+// expondo a mesma interface para que os roteiros funcionem
+// sem distinção de contexto.
+//
+// ATENÇÃO: são síncronas por compatibilidade com infoPJE() dos roteiros,
+// mas dependem de _con_dadosCache abastecido assincronamente.
+
+let _con_dadosCache = {}
+
+async function conector_atualizarCache() {
+    const cfg = await obterArmazenamento([
+        'rotaDados_processo',
+        'rotaDados_processo_partes',
+        'rotaDados_audiencias',
+        'rotaDados_responsaveis',
+        'rotaDados_documentos',
+    ])
+    _con_dadosCache = cfg || {}
+}
+
+function interceptador_lerProcesso()     { return _con_dadosCache['rotaDados_processo']         || null }
+function interceptador_lerPartes()       { return _con_dadosCache['rotaDados_processo_partes']   || null }
+function interceptador_lerAudiencias()   { return _con_dadosCache['rotaDados_audiencias']        || null }
+function interceptador_lerResponsaveis() { return _con_dadosCache['rotaDados_responsaveis']      || null }
+function interceptador_lerDocumentos()   { return _con_dadosCache['rotaDados_documentos']        || null }
+
+
 // ── Mapa de roteiros ──────────────────────────────────────────
 //
 // Cada ID de tarefa do catálogo aponta para seu roteiro.
@@ -44,6 +76,15 @@ async function conector_iniciar() {
         const tarefaMudou = !!mudancas['tarefaAtiva'] || !!mudancas['tarefaAtivaIsSistema']
         if (tarefaMudou) {
             await conector_montar()
+            return
+        }
+
+        // Dados do PJE chegaram → atualiza cache e remonta infoPJE
+        const chavesDados = ['rotaDados_processo', 'rotaDados_processo_partes', 'rotaDados_audiencias', 'rotaDados_responsaveis', 'rotaDados_documentos']
+        if (chavesDados.some(c => !!mudancas[c])) {
+            await conector_atualizarCache()
+            // Remonta apenas a infoPJE da etapa atual, sem remontar o painel inteiro
+            document.dispatchEvent(new CustomEvent('RotaMetaTagAtualizada'))
             return
         }
 
@@ -103,6 +144,7 @@ async function conector_montar() {
     console.log("[Conector] iniciando montar")
 
     try {
+        await conector_atualizarCache()
         const cfg     = await obterArmazenamento([ROTA_CHAVES.sessao, 'tarefaAtiva', 'tarefaAtivaIsSistema'])
         const sessao  = cfg?.[ROTA_CHAVES.sessao]
         const idTarefa = cfg?.['tarefaAtiva']
@@ -238,7 +280,7 @@ function conector_montarNavegacaoEtapa(container, etapa, roteiro, sessao) {
     })
 
     // Personaliza texto do botão conforme contexto
-    const btnProximo = rodape.querySelector('.btn-avancar, button:last-child')
+    const btnProximo = rodape.btnProximo
     if (btnProximo) {
         if (!temProxima && ultimo) {
             btnProximo.textContent = '■ Encerrar sessão'

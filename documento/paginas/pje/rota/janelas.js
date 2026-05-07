@@ -314,32 +314,6 @@ async function rota_montarUrls(idProcesso, slots, numProc = ''){
 	return urls
 }
 
-// ── Abertura do assistente no modo guiado ─────────────────────
-//
-// Redimensiona a janela atual do PJE para 80% da tela (esquerda)
-// e abre o assistente como nova janela em 20% (direita).
-
-function rota_abrirAssistente() {
-    const sw = window.screen.width
-    const sh = window.screen.height
-
-    const larguraPJE        = Math.round(sw * ROTA_LARGURA_PJE)        // 80%
-    const larguraAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
-
-    const urlAssistente = extensao_raiz('rota/assistente/assistente.html')
-    const assistente = window.open(
-        urlAssistente,
-        'rota-pje-assistente',
-        'width='   + larguraAssistente +
-        ',height=' + sh +
-        ',left='   + larguraPJE +
-        ',top=0'   +
-        ',toolbar=0,menubar=0,resizable=1'
-    )
-
-    if (assistente) _rota_janelasMundo.push(assistente)
-    return assistente
-}
 
 // ── Posicionamento de janelas ─────────────────────────────────
 
@@ -396,8 +370,8 @@ function rota_calcularGeometria(posicao) {
 // Substitui rota_calcularGeometria para o tipo 'esquerdaAssistida'.
 
 function rota_geometriaModoAssistido() {
-    const sw   = window.screen.width
-    const sh   = window.screen.height
+    const sw   = window.screen.availWidth
+    const sh   = window.screen.availHeight
     const topo = Math.round(sh * 0.15 * 1.1)  // mesmo cálculo do original
 
     const largAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
@@ -436,10 +410,13 @@ function rota_abrirAssistente() {
         ',top='    + geo.assistente.top    +
         ',toolbar=0,menubar=0,resizable=1'
     )
-
+	armazenar({ rotaGeometria: geo.assistente })
     if (assistente) _rota_janelasMundo.push(assistente)
     return assistente
 }
+
+
+//armazenar({ rotaGeometria: geo.assistente })
 
 // ── Comunicação entre janelas ─────────────────────────────────
 

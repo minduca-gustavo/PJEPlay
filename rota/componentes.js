@@ -657,5 +657,9 @@ function criarRodape({ aoProximo, aoEncerrar } = {}) {
 
     wrap.appendChild(btnEncerrar)
     wrap.appendChild(btnProximo)
+
+    wrap.btnProximo  = btnProximo
+    wrap.btnEncerrar = btnEncerrar
+
     return wrap
 }
