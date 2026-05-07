@@ -23,13 +23,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     ass_iniciarAbas()
 
     // Lê sessão e monta interface
-    await conector_iniciar()
     await ass_atualizar()
+
+    // Inicia o conector do roteiro guiado
+    if (typeof conector_iniciar === 'function') {
+        conector_iniciar()
+    }
 
     // Ouve mudanças no storage (pipeline avança, dados chegam)
     browser.storage.onChanged.addListener(async (mudancas) => {
+        // Sessão avançou — atualiza painel principal E conector
         if (mudancas[ROTA_CHAVES.sessao]) {
             await ass_atualizar()
+            await conector_montar()
+            return
+        }
+
+        // Tarefa mudou — remonta o conector
+        if (mudancas['tarefaAtiva'] || mudancas['tarefaAtivaIsSistema']) {
+            await conector_montar()
+            return
+        }
+
+        // Dados do processo chegaram — só atualiza o card, não remonta o roteiro
+        const chavesProcesso = ['rotaDados_processo', 'rotaDados_processo_partes', 'rotaDados_audiencias']
+        if (chavesProcesso.some(c => mudancas[c])) {
+            await ass_atualizarInfoProcesso()
         }
     })
 
@@ -307,19 +326,31 @@ async function ass_atualizarInfoProcesso() {
     if (!infoEl || !_ass_sessao?.ativa) return
 
     // Tenta ler dados básicos do storage (salvos pelo interceptador via background)
-    const cfg = await obterArmazenamento(['rotaDadosProcesso'])
-    const dados = cfg?.rotaDadosProcesso
+    const cfg = await obterArmazenamento(['rotaDados_processo', 'rotaDados_processo_partes'])
+    const dados   = cfg?.rotaDados_processo
+    const partes  = cfg?.rotaDados_processo_partes
 
     if (!dados) {
         infoEl.textContent = ''
         return
     }
 
-    const partes = [
-        dados.reclamante ? `Reclamante: ${dados.reclamante}` : null,
-        dados.reclamada  ? `Reclamada: ${dados.reclamada}`   : null,
-        dados.valor      ? `Valor: ${dados.valor}`            : null,
+    // Extrai reclamante e reclamada das partes
+    let nomeReclamante = '', nomeReclamada = ''
+    if(Array.isArray(partes)){
+        const rec  = partes.find(p => (p.tipoParte||p.polo||'').toLowerCase().includes('reclamante') || (p.tipoParte||p.polo||'').toLowerCase().includes('ativo'))
+        const reda = partes.find(p => (p.tipoParte||p.polo||'').toLowerCase().includes('reclamada') || (p.tipoParte||p.polo||'').toLowerCase().includes('passivo'))
+        nomeReclamante = rec?.nome  || rec?.pessoaFisica?.nome  || rec?.pessoaJuridica?.nome  || ''
+        nomeReclamada  = reda?.nome || reda?.pessoaFisica?.nome || reda?.pessoaJuridica?.nome || ''
+    }
+
+    const linhas = [
+        nomeReclamante ? `👤 ${nomeReclamante}` : null,
+        nomeReclamada  ? `🏢 ${nomeReclamada}`  : null,
+        dados?.valorDaCausa ? `💰 R$ ${Number(dados.valorDaCausa).toLocaleString('pt-BR', {minimumFractionDigits:2})}` : null,
+        dados?.justicaGratuita ? '✅ Justiça gratuita' : null,
+        dados?.tutelaOuLiminar ? '⚠️ Tutela/Liminar pendente' : null,
     ].filter(Boolean).join('\n')
 
-    infoEl.textContent = partes
+    infoEl.textContent = linhas
 }

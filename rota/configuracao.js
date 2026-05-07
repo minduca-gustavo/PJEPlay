@@ -24,17 +24,6 @@ const ROTA_LARGURA_PJE        = 0.80   // 80%
 const ROTA_LARGURA_ASSISTENTE = 0.20   // 20%
 
 
-// ── Z-index ───────────────────────────────────────────────────
-//
-// Mantido compatível com o PLAY_Z já existente.
-
-//const ROTA_Z = {
-//    aviso:  9300,
-//    modal:  9400,
-//    painel: 9500,
-//}
-
-
 // ── Storage — chaves ─────────────────────────────────────────
 //
 // Todas as chaves usadas no storage.local pelo modo assistente.
@@ -81,21 +70,29 @@ const ROTA_EMOJI = {
 
 // ── Cores do assistente ───────────────────────────────────────
 //
-// Paleta baseada na identidade visual do Rota PJE.
-// Azul escuro do PJE + laranja de destaque + branco.
+// Paleta institucional do Rota PJE.
+// Baseada nas cores do PJE — azul #0078aa + laranja #ffa726.
 
 const ROTA_CORES = {
-    azulEscuro:  '#0D47A1',
-    azulMedio:   '#1565C0',
-    laranja:     '#F57C00',
-    laranjaClaro:'#FFB74D',
-    branco:      '#FFFFFF',
-    texto:       '#E3F2FD',
-    textoSuave:  '#90CAF9',
-    fundoEscuro: '#0a1929',
-    fundoMedio:  '#112240',
-    fundoClaro:  '#1a3356',
-    borda:       'rgba(255,255,255,0.12)',
+    // Principais
+    azul:        '#0078aa',
+    azulClaro:   '#2a5a8c',
+    laranja:     '#ffa726',
+    laranjaEsc:  '#D68C20',
+
+    // Neutros
+    branco:      '#ffffff',
+    fundo:       '#f9f9fa',
+    borda:       '#dcdcdc',
+    texto:       '#2c3e50',
+    textoSuave:  '#6b7c93',
+
+    // Info
+    infoBg:      '#eaf2fb',
+    infoBorda:   '#add8e6',
+    infoTexto:   '#1a3a5c',
+
+    // Status
     perigo:      '#c62828',
     sucesso:     '#2e7d32',
 }

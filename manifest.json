@@ -66,7 +66,17 @@
         "*://*.jus.br/pjekz/*"
       ],
       "js": [
-        "rota/interceptador.js",
+        "rota/interceptador-xhr.js"
+      ],
+      "all_frames": true,
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.jus.br/pjekz/*"
+      ],
+      "js": [
         "modulos/definicoes.js",
         "modulos/relatar.js",
         "modulos/dom.js",
@@ -77,6 +87,7 @@
         "rota/estado.js",
         "rota/cache.js",
         "rota/modelo.js",
+        "rota/interceptador.js",
         "documento/paginas/pje/rota/pintura.js",
         "documento/paginas/pje/rota/janelas.js",
         "documento/paginas/pje/rota/botao-rota.js",

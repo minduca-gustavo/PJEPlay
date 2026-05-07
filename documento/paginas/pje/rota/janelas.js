@@ -314,6 +314,32 @@ async function rota_montarUrls(idProcesso, slots, numProc = ''){
 	return urls
 }
 
+// ── Abertura do assistente no modo guiado ─────────────────────
+//
+// Redimensiona a janela atual do PJE para 80% da tela (esquerda)
+// e abre o assistente como nova janela em 20% (direita).
+
+function rota_abrirAssistente() {
+    const sw = window.screen.width
+    const sh = window.screen.height
+
+    const larguraPJE        = Math.round(sw * ROTA_LARGURA_PJE)        // 80%
+    const larguraAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
+
+    const urlAssistente = extensao_raiz('rota/assistente/assistente.html')
+    const assistente = window.open(
+        urlAssistente,
+        'rota-pje-assistente',
+        'width='   + larguraAssistente +
+        ',height=' + sh +
+        ',left='   + larguraPJE +
+        ',top=0'   +
+        ',toolbar=0,menubar=0,resizable=1'
+    )
+
+    if (assistente) _rota_janelasMundo.push(assistente)
+    return assistente
+}
 
 // ── Posicionamento de janelas ─────────────────────────────────
 
@@ -339,6 +365,11 @@ function rota_calcularGeometria(posicao) {
         }
     }
 
+	if (posicao === 'esquerdaAssistida') {
+		const geo = rota_geometriaModoAssistido()
+		return geo.pje
+	}
+
     if (posicao === 'direita') {
         return {
             width:  Math.ceil(sw / 2.1),
@@ -357,6 +388,58 @@ function rota_calcularGeometria(posicao) {
     }
 }
 
+// ── Geometria do modo assistido ───────────────────────────────
+//
+// Calcula PJE (80%) e assistente (20%) de forma coordenada,
+// garantindo que as duas janelas se encostem sem gap ou sobreposição.
+//
+// Substitui rota_calcularGeometria para o tipo 'esquerdaAssistida'.
+
+function rota_geometriaModoAssistido() {
+    const sw   = window.screen.width
+    const sh   = window.screen.height
+    const topo = Math.round(sh * 0.15 * 1.1)  // mesmo cálculo do original
+
+    const largAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
+    const GAP = 20
+	const largPJE        = sw - largAssistente - GAP                     // 80% exato
+	
+    return {
+        pje: {
+            width:  largPJE,
+            height: sh,
+            left:   0,
+            top:    0,
+        },
+        assistente: {
+            width:  largAssistente,
+            height: sh,          // assistente ocupa altura total
+            left:   largPJE + GAP,     // cola exatamente onde o PJE termina
+            top:    0,
+        },
+    }
+}
+
+
+// ── Abertura do assistente no modo guiado ─────────────────────
+
+function rota_abrirAssistente() {
+    const geo = rota_geometriaModoAssistido()
+    const url = extensao_raiz('rota/assistente/assistente.html')
+
+    const assistente = window.open(
+        url,
+        'rota-pje-assistente',
+        'width='   + geo.assistente.width  +
+        ',height=' + geo.assistente.height +
+        ',left='   + geo.assistente.left   +
+        ',top='    + geo.assistente.top    +
+        ',toolbar=0,menubar=0,resizable=1'
+    )
+
+    if (assistente) _rota_janelasMundo.push(assistente)
+    return assistente
+}
 
 // ── Comunicação entre janelas ─────────────────────────────────
 
@@ -448,10 +531,9 @@ async function rota_iniciarPipeline({ fila }){
             return
         }
 
-        // Monta tarefa sintética com janela de detalhes
-        // O modo guiado usa o roteiro — as janelas são abertas pelo pipeline normalmente
+        // Tarefa sintética com janela de detalhes
         tarefa = {
-            slots:       [{ tipo: 'detalhes', posicao: 'cheia', ordem: 0, slotIndex: 0 }],
+            slots:       [{ tipo: 'detalhes', posicao: 'esquerdaAssistida', ordem: 0, slotIndex: 0 }],
             tarefaUnica: '',
             temporizador:{ ativo: false, segundos: 30, opcoes: '' },
         }
@@ -479,10 +561,13 @@ async function rota_iniciarPipeline({ fila }){
     _rota_ativo     = true
     _rota_relatorio = []
 
-    // Se for tarefa do sistema, inicia sessão guiada no storage
+    // Se for tarefa do sistema: inicia sessão guiada + abre assistente
     if(isSistema){
         const processos = fila.map(item => item.numProc || item.id || '')
         await estado_iniciar(nomeAtivo, processos)
+        await suspender(200)
+        rota_abrirAssistente()
+        await suspender(800)  // aguarda assistente abrir antes de abrir o PJE
     }
 
     await rota_processarCursor(slots, tarefaUnica, temporizador)

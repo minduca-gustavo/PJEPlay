@@ -421,7 +421,7 @@ function _criarCelulaExecutar(aoClicar) {
     })
 
     const texto = _comp_el('span', {
-        fontSize:      '8px',
+        fontSize:      '10px',
         fontWeight:    '500',
         color:         '#fff',
         writingMode:   'vertical-rl',

@@ -38,17 +38,40 @@ let _con_montando    = false
 // Monta o painel e ouve mudanças de sessão.
 
 async function conector_iniciar() {
-    await conector_montar()
-
-    // Reage a mudanças no storage
+    // Registra listener primeiro
     browser.storage.onChanged.addListener(async (mudancas) => {
-        const sessaoMudou  = !!mudancas[ROTA_CHAVES.sessao]
-        const tarefaMudou  = !!mudancas[ROTA_CHAVES.tarefaAtiva]
-
-        if (sessaoMudou || tarefaMudou) {
+        // Tarefa mudou → remonta
+        const tarefaMudou = !!mudancas['tarefaAtiva'] || !!mudancas['tarefaAtivaIsSistema']
+        if (tarefaMudou) {
             await conector_montar()
+            return
+        }
+
+        // Cursor avançou → remonta
+        const sessaoMudou = mudancas[ROTA_CHAVES.sessao]
+        if (sessaoMudou) {
+            const antes  = sessaoMudou.oldValue
+            const depois = sessaoMudou.newValue
+            if (antes?.cursor !== depois?.cursor) {
+                await conector_montar()
+            }
         }
     })
+
+    // Tenta montar — se sessão já está no storage, monta imediatamente
+    // Se não está, fica tentando a cada 500ms até 15 segundos
+    let montou = false
+    for (let i = 0; i < 30 && !montou; i++) {
+        const cfg     = await obterArmazenamento([ROTA_CHAVES.sessao, 'tarefaAtiva', 'tarefaAtivaIsSistema'])
+        const sessao  = cfg?.[ROTA_CHAVES.sessao]
+        const isSistema = cfg?.['tarefaAtivaIsSistema'] === true
+        if (sessao?.ativa && isSistema) {
+            await conector_montar()
+            montou = true
+        } else {
+            await new Promise(r => setTimeout(r, 500))
+        }
+    }
 
     // Reage ao evento de avanço de etapa (disparado por acao_painel_proximaEtapa)
     document.addEventListener('RotaAvancarEtapa', async (e) => {
@@ -59,17 +82,34 @@ async function conector_iniciar() {
 
 // ── Montar painel completo ────────────────────────────────────
 
+
+async function conector_aguardarSessaoEMontar(tentativas = 20, intervalo = 500) {
+    for (let i = 0; i < tentativas; i++) {
+        const cfg    = await obterArmazenamento([ROTA_CHAVES.sessao, 'tarefaAtiva', 'tarefaAtivaIsSistema'])
+        const sessao = cfg?.[ROTA_CHAVES.sessao]
+        if (sessao?.ativa && cfg?.tarefaAtivaIsSistema === true) {
+            await conector_montar()
+            return
+        }
+        await new Promise(r => setTimeout(r, intervalo))
+    }
+    // Após timeout, monta mesmo assim (pode exibir painel padrão)
+    await conector_montar()
+}
+
 async function conector_montar() {
-    if (_con_montando) return
+    if (_con_montando) { console.log("[Conector] bloqueado - já montando"); return }
     _con_montando = true
+    console.log("[Conector] iniciando montar")
 
     try {
-        const cfg     = await obterArmazenamento([ROTA_CHAVES.sessao, ROTA_CHAVES.tarefaAtiva])
+        const cfg     = await obterArmazenamento([ROTA_CHAVES.sessao, 'tarefaAtiva', 'tarefaAtivaIsSistema'])
         const sessao  = cfg?.[ROTA_CHAVES.sessao]
-        const idTarefa = cfg?.[ROTA_CHAVES.tarefaAtiva]
+        const idTarefa = cfg?.['tarefaAtiva']
 
         // Sem sessão ativa ou tarefa de sistema → painel padrão
-        if (!sessao?.ativa || !idTarefa) {
+        const isSistema = cfg?.['tarefaAtivaIsSistema'] === true
+        if (!sessao?.ativa || !idTarefa || !isSistema) {
             conector_exibirPainelPadrao()
             return
         }
@@ -85,6 +125,7 @@ async function conector_montar() {
 
         // Determina a etapa atual
         const idEtapa = sessao.etapaAtual || roteiro.etapaInicial
+        console.log('[Conector] etapa:', idEtapa, 'roteiro:', !!roteiro)
         await conector_montarEtapa(idEtapa, roteiro, sessao)
 
     } finally {
@@ -99,9 +140,9 @@ async function conector_montarEtapa(idEtapa, roteiro, sessao) {
 
     // Se não recebeu roteiro, busca novamente
     if (!roteiro) {
-        const cfg      = await obterArmazenamento([ROTA_CHAVES.sessao, ROTA_CHAVES.tarefaAtiva])
+        const cfg      = await obterArmazenamento([ROTA_CHAVES.sessao, 'tarefaAtiva', 'tarefaAtivaIsSistema'])
         sessao         = cfg?.[ROTA_CHAVES.sessao]
-        const idTarefa = cfg?.[ROTA_CHAVES.tarefaAtiva]
+        const idTarefa = cfg?.['tarefaAtiva']
         roteiro        = ROTA_ROTEIROS[idTarefa]
         if (!roteiro) return
         idEtapa = idEtapa || sessao?.etapaAtual || roteiro.etapaInicial
@@ -114,9 +155,6 @@ async function conector_montarEtapa(idEtapa, roteiro, sessao) {
     }
 
     _con_etapaAtual = idEtapa
-
-    // Salva etapa atual na sessão
-    await estado_avancarEtapa(idEtapa)
 
     // Monta os elementos no container
     const container = document.getElementById('aba-roteiro')
