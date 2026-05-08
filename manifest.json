@@ -46,6 +46,15 @@
   "content_scripts": [
     {
       "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "melhor-leitura/conteudo.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
         "*://*.jus.br/pjekz/*"
       ],
       "js": [

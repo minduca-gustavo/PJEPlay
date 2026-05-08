@@ -20,7 +20,7 @@
     </button>
     <div class="nav-setas">
       <button class="seta" id="seta-esq" disabled>&#8592;</button>
-      <span class="nav-ind" id="nav-ind">1 / 3</span>
+      <span class="nav-ind" id="nav-ind">1 / 4</span>
       <button class="seta" id="seta-dir">&#8594;</button>
     </div>
   </header>
@@ -97,9 +97,66 @@
 
   </div><!-- /pagina-2 -->
 
-
-  <!-- PÁGINA 3 — Super Filtros (protegida por senha) -->
+  <!-- PÁGINA 3 — Melhor Leitura -->
   <div class="pagina" id="pagina-3" style="display:none">
+
+    <div class="bloco">
+      <label class="bloco-label">
+        Melhor Leitura
+        <span class="bloco-hint">Alt+Clique em qualquer elemento para ler seu texto</span>
+      </label>
+    </div>
+
+    <div class="bloco">
+      <label class="bloco-label">Cor do fundo</label>
+      <div class="bloco-row">
+        <span class="ml-swatch" id="ml-bgSwatch"></span>
+        <input type="text" class="input-texto ml-hex" id="ml-bgColor" value="#000000" maxlength="7" spellcheck="false" style="font-family:monospace;">
+      </div>
+      <div class="ml-paleta" id="ml-paletaFundo"></div>
+    </div>
+
+    <div class="bloco">
+      <label class="bloco-label">Cor do texto</label>
+      <div class="bloco-row">
+        <span class="ml-swatch" id="ml-textSwatch"></span>
+        <input type="text" class="input-texto ml-hex" id="ml-textColor" value="#ffdd00" maxlength="7" spellcheck="false" style="font-family:monospace;">
+      </div>
+      <div class="ml-paleta" id="ml-paletaTexto"></div>
+    </div>
+
+    <div class="bloco">
+      <label class="bloco-label">Tamanho da letra</label>
+      <div class="velocidade-ctrl">
+        <input type="range" id="ml-fontSize" min="14" max="48" value="22" style="flex:1;accent-color:#F9B73F;">
+        <span class="vel-val" id="ml-fontSizeLabel">22px</span>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <label class="bloco-label">Largura do box</label>
+      <div class="velocidade-ctrl">
+        <input type="range" id="ml-boxWidth" min="240" max="800" step="20" value="480" style="flex:1;accent-color:#F9B73F;">
+        <span class="vel-val" id="ml-boxWidthLabel">480px</span>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <label class="bloco-label">Pré-visualização</label>
+      <div id="ml-preview" style="border-radius:8px;padding:14px 18px;text-align:center;font-weight:600;line-height:1.5;transition:background 0.2s,color 0.2s,font-size 0.2s;word-break:break-word;min-height:50px;display:flex;align-items:center;justify-content:center;">
+        Texto de exemplo para leitura
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <span id="ml-status" class="status-msg"></span>
+      <button id="ml-btnSalvar" class="btn-salvar">Salvar</button>
+    </div>
+
+  </div><!-- /pagina-3 Melhor Leitura -->
+
+  <!-- PÁGINA 4 — Super Filtros (protegida por senha) -->
+  <div class="pagina" id="pagina-4" style="display:none">
 
     <!-- Tela de senha (visível quando não autenticado) -->
     <div id="superfiltro-senha" class="bloco" style="display:none">
@@ -133,7 +190,7 @@
 
     </div><!-- /superfiltro-conteudo -->
 
-  </div><!-- /pagina-3 -->
+  </div><!-- /pagina-4 -->
 
 </div>
 <script src="programa.js"></script>

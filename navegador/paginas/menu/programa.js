@@ -4,8 +4,8 @@
 
 const NAV = (typeof browser !== 'undefined') ? browser : chrome
 
-const TOTAL_PAGINAS = 3
-const SUBTITULOS    = ['Editor de Tarefa', 'Configurações de Pintura', 'Super Filtros']
+const TOTAL_PAGINAS = 4
+const SUBTITULOS    = ['Editor de Tarefa', 'Configurações de Pintura', 'Melhor Leitura','Super Filtros']
 
 const TIPOS_JANELA = [
 	{ valor:'detalhes',  label:'Detalhes do Processo' },
@@ -301,7 +301,7 @@ async function iniciar(){
 	let _irParaOriginal = irPara
 	irPara = async function(n) {
 		_irParaOriginal(n)
-		if (n === 3) _mostrarSuperfiltro(await _superfiltroAutenticado())
+		if (n === 4) _mostrarSuperfiltro(await _superfiltroAutenticado())
 	}
 
 	_mostrarSuperfiltro(await _superfiltroAutenticado())
@@ -373,6 +373,101 @@ async function iniciar(){
 			}).catch(()=>{})
 		})
 	}
+
+	// ════════════════════════════════════════════════════════
+	// PÁGINA 3 — MELHOR LEITURA
+	// ════════════════════════════════════════════════════════
+ 
+	const ML_KEY      = 'melhorLeitura_config'
+	const ML_DEFAULTS = { bgColor: '#000000', textColor: '#ffdd00', fontSize: 22, boxWidth: 480 }
+ 
+	const ML_CORES_FUNDO = ['#000000','#1a1a1a','#0d1b2a','#1a1a2e','#ffffff','#fffde7','#1b5e20','#0d47a1','#4a0000']
+	const ML_CORES_TEXTO = ['#ffdd00','#ffffff','#000000','#76ff03','#40c4ff','#ff6d00','#ea80fc','#cccccc','#ff5252']
+ 
+	let mlBgColor       = document.getElementById('ml-bgColor')
+	let mlBgSwatch      = document.getElementById('ml-bgSwatch')
+	let mlTextColor     = document.getElementById('ml-textColor')
+	let mlTextSwatch    = document.getElementById('ml-textSwatch')
+	let mlFontSize      = document.getElementById('ml-fontSize')
+	let mlFontSizeLabel = document.getElementById('ml-fontSizeLabel')
+	let mlBoxWidth      = document.getElementById('ml-boxWidth')
+	let mlBoxWidthLabel = document.getElementById('ml-boxWidthLabel')
+	let mlPreview       = document.getElementById('ml-preview')
+	let mlBtnSalvar     = document.getElementById('ml-btnSalvar')
+	let mlStatus        = document.getElementById('ml-status')
+	let mlPaletaFundo   = document.getElementById('ml-paletaFundo')
+	let mlPaletaTexto   = document.getElementById('ml-paletaTexto')
+ 
+	function mlHexValido(v) { return /^#[0-9a-fA-F]{6}$/.test(v) }
+ 
+	function mlAplicarPreview() {
+		let bg   = mlHexValido(mlBgColor.value)   ? mlBgColor.value   : ML_DEFAULTS.bgColor
+		let text = mlHexValido(mlTextColor.value) ? mlTextColor.value : ML_DEFAULTS.textColor
+		mlPreview.style.background    = bg
+		mlPreview.style.color         = text
+		mlPreview.style.fontSize      = mlFontSize.value + 'px'
+		mlBgSwatch.style.background   = bg
+		mlTextSwatch.style.background = text
+		mlFontSizeLabel.textContent   = mlFontSize.value + 'px'
+		mlBoxWidthLabel.textContent   = mlBoxWidth.value + 'px'
+	}
+ 
+	function mlOnHexInput(inputEl) {
+		let v = inputEl.value.trim()
+		if (v.length > 0 && v[0] !== '#') inputEl.value = '#' + v
+		inputEl.classList.toggle('invalido', !mlHexValido(inputEl.value))
+		mlAplicarPreview()
+	}
+ 
+	function mlCriarPaleta(containerEl, cores, targetInputEl) {
+		cores.forEach(cor => {
+			let btn = document.createElement('span')
+			btn.className = 'ml-cor'
+			btn.style.background = cor
+			btn.title = cor
+			btn.addEventListener('click', () => {
+				targetInputEl.value = cor
+				targetInputEl.classList.remove('invalido')
+				mlAplicarPreview()
+			})
+			containerEl.appendChild(btn)
+		})
+	}
+ 
+	// Carrega config salva
+	let mlStore = await NAV.storage.local.get(ML_KEY)
+	let mlCfg   = mlStore[ML_KEY] || ML_DEFAULTS
+	mlBgColor.value   = mlCfg.bgColor   || ML_DEFAULTS.bgColor
+	mlTextColor.value = mlCfg.textColor || ML_DEFAULTS.textColor
+	mlFontSize.value  = mlCfg.fontSize  || ML_DEFAULTS.fontSize
+	mlBoxWidth.value  = mlCfg.boxWidth  || ML_DEFAULTS.boxWidth
+	mlAplicarPreview()
+ 
+	// Monta paletas
+	mlCriarPaleta(mlPaletaFundo, ML_CORES_FUNDO, mlBgColor)
+	mlCriarPaleta(mlPaletaTexto, ML_CORES_TEXTO, mlTextColor)
+ 
+	// Eventos
+	mlBgColor.addEventListener('input',   () => mlOnHexInput(mlBgColor))
+	mlTextColor.addEventListener('input', () => mlOnHexInput(mlTextColor))
+	mlFontSize.addEventListener('input',  mlAplicarPreview)
+	mlBoxWidth.addEventListener('input',  mlAplicarPreview)
+ 
+	mlBtnSalvar.addEventListener('click', async () => {
+		if (!mlHexValido(mlBgColor.value) || !mlHexValido(mlTextColor.value)) {
+			mostrarStatus(mlStatus, '⚠ Cor inválida — use #rrggbb', '#e74c3c')
+			return
+		}
+		let cfg = {
+			bgColor:   mlBgColor.value,
+			textColor: mlTextColor.value,
+			fontSize:  Number(mlFontSize.value),
+			boxWidth:  Number(mlBoxWidth.value),
+		}
+		await NAV.storage.local.set({ [ML_KEY]: cfg })
+		mostrarStatus(mlStatus, '✅ Salvo!', '#2ecc71')
+	})
+ 
 
 
 	// ════════════════════════════════════════════════════════
