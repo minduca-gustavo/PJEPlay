@@ -648,3 +648,25 @@ header {
   display: block;
   width: 100%;
 }
+
+/* ── Melhor Leitura — página 3 ───────────────────────────── */
+
+.ml-swatch {
+  width: 32px; height: 32px;
+  border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+  flex-shrink: 0; display: inline-block;
+}
+
+.ml-paleta {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;
+}
+
+.ml-cor {
+  width: 24px; height: 24px;
+  border-radius: 5px; border: 2px solid transparent;
+  cursor: pointer; transition: border-color 0.1s, transform 0.1s;
+  flex-shrink: 0; display: inline-block;
+}
+.ml-cor:hover { border-color: #F9B73F; transform: scale(1.18); }
+
+.ml-hex.invalido { border-color: #e74c3c !important; }

@@ -135,7 +135,9 @@ function _rota_sincronizar(reg){
 		return
 	}
 
-	if(!reg.btn){
+	if(!reg.btn || !document.body.contains(reg.btn)){
+		// Remove qualquer botão órfão antes de criar novo
+		document.getElementById('pjerota-btn-rota')?.remove()
 		reg.btn = _rota_criarBotaoDOM()
 		document.body.appendChild(reg.btn)
 	}
