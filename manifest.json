@@ -109,6 +109,7 @@
         "rota/acoes.js",
         "rota/componentes.js",
         "rota/tarefas/index.js",
+        "rota/tarefas/balcao-virtual/roteiro.js",
         "rota/tarefas/triagem-inicial/roteiro.js",
         "rota/tarefas/pos-triagem/roteiro.js"
       ],

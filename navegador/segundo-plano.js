@@ -52,11 +52,17 @@ NAVEGADOR.runtime.onInstalled.addListener(async (detalhes) => {
 
     const geo = cfg?.['rotaGeometria']
     const url = NAVEGADOR.runtime.getURL('rota/assistente/assistente.html')
-    NAVEGADOR.windows.create({
+    let heightRecriada
+	if (modoDev = true){
+		heightRecriada = window.screen.availHeight - 50
+	} else{
+		heightRecriada = window.screen.availHeight
+	}
+	NAVEGADOR.windows.create({
         url,
         type:   'popup',
         width:  geo?.width  || 400,
-        height: window.screen.availHeight || 900,
+        height: heightRecriada || 900,
         left:   geo?.left   || 1200,
         top:    geo?.top    || 0,
     })

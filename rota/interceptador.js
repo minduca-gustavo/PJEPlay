@@ -6,31 +6,33 @@
 
 
 const INTERCEPTADOR_URL = {
-    processo:       /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
-    processoPartes: /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
-    tarefas:        /\/pje-comum-api\/api\/agrupamentotarefas$/i,
-    tarefasAtivas:  /\/pje-comum-api\/api\/tarefas\/ativas/i,
-    perfis:         /\/api\/token\/perfis/i,
-    recursos:       /\/api\/token\/permissoes\/recursos/i,
-    pauta:          /\/pje-comum-api\/api\/pautasaudiencias/i,
-    audiencias:     /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
-    responsaveis:   /\/pje-comum-api\/api\/usuarios\/internos\/pororgaojulgador/i,
-    dadosBasicos:   /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
-    documentos:     /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
+    processo:           /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
+    processoPartes:     /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
+    tarefas:            /\/pje-comum-api\/api\/agrupamentotarefas$/i,
+    tarefasAtivas:      /\/pje-comum-api\/api\/tarefas\/ativas/i,
+    perfis:             /\/api\/token\/perfis\/trocar/i,
+    recursos:           /\/api\/token\/permissoes\/recursos/i,
+    pauta:              /\/pje-comum-api\/api\/pautasaudiencias/i,
+    audiencias:         /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
+    responsaveis:       /\/pje-comum-api\/api\/usuarios\/internos\/pororgaojulgador/i,
+    dadosBasicos:       /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
+    documentos:         /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
+    orgaosJulgadores:   /\/pje-comum-api\/api\/orgaosjulgadores/i,
 }
 
 const INTERCEPTADOR_ROTULO = {
-    processo:       'processo',
-    processoPartes: 'processo-partes',
-    tarefas:        'tarefas',
-    tarefasAtivas:  'tarefas-ativas',
-    perfis:         'perfis',
-    recursos:       'recursos',
-    pauta:          'pauta',
-    audiencias:     'audiencias',
-    responsaveis:   'responsaveis',
-    dadosBasicos:   'dados-basicos',
-    documentos:     'documentos',
+    processo:           'processo',
+    processoPartes:     'processo-partes',
+    tarefas:            'tarefas',
+    tarefasAtivas:      'tarefas-ativas',
+    perfis:             'perfis',
+    recursos:           'recursos',
+    pauta:              'pauta',
+    audiencias:         'audiencias',
+    responsaveis:       'responsaveis',
+    dadosBasicos:       'dados-basicos',
+    documentos:         'documentos',
+    orgaosJulgadores:   'orgaosJulgadores',
 }
 
 
@@ -108,13 +110,14 @@ function interceptador_ler(rotulo = ''){
     try{ return JSON.parse(content) } catch{ return content }
 }
 
-function interceptador_lerProcesso()     { return interceptador_ler('processo')        }
-function interceptador_lerPartes()       { return interceptador_ler('processo-partes') }
-function interceptador_lerTarefas()      { return interceptador_ler('tarefas')         }
-function interceptador_lerPerfis()       { return interceptador_ler('perfis')          }
-function interceptador_lerAudiencias()   { return interceptador_ler('audiencias')      }
-function interceptador_lerResponsaveis() { return interceptador_ler('responsaveis')    }
-function interceptador_lerDocumentos()   { return interceptador_ler('documentos')      }
+function interceptador_lerProcesso()            { return interceptador_ler('processo')        }
+function interceptador_lerPartes()              { return interceptador_ler('processo-partes') }
+function interceptador_lerTarefas()             { return interceptador_ler('tarefas')         }
+function interceptador_lerPerfis()              { return interceptador_ler('perfis')          }
+function interceptador_lerAudiencias()          { return interceptador_ler('audiencias')      }
+function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')    }
+function interceptador_lerDocumentos()          { return interceptador_ler('documentos')      }
+function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')      }
 
 
 // ── Aguardar dado ─────────────────────────────────────────────
