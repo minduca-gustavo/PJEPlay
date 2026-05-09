@@ -56,7 +56,7 @@ NAVEGADOR.runtime.onInstalled.addListener(async (detalhes) => {
         url,
         type:   'popup',
         width:  geo?.width  || 400,
-        height: geo?.height || 900,
+        height: window.screen.availHeight || 900,
         left:   geo?.left   || 1200,
         top:    geo?.top    || 0,
     })
