@@ -41,7 +41,7 @@
 //(async ()=> {
 //    let testando = 0
 //    if (testando !== 1) return
-//    let d = await p(3896542, '/partes')
+//    let d = await buscarProcesso(3896542, '/partes')
 //    let r = d?.PASSIVO
 //    for (let j of r){
 //        relatar(JSON.stringify(j.documento),'','teste')
@@ -58,7 +58,7 @@
 //    let testando = 0
 //    if (testando !== 1) return
 //    let d = []
-//    let gigs = await g('0011054-19.2025.5.15.0074')
+//    let gigs = await buscarGigs('0011054-19.2025.5.15.0074')
 //    relatar('gigs: ' + JSON.stringify(gigs), '', 'teste')  // nova API que traz tudo junto
 //    let ativos     = gigs.filter(gig => gig.statusAtividade !== 'Concluído')
 //    let concluidos = gigs.filter(gig => gig.statusAtividade === 'Concluído')

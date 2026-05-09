@@ -129,7 +129,7 @@ const ROTA_TIPOS_JANELA = {
 // ── Busca de documentos por tipo ─────────────────────────────
 
 async function rota_buscarDocumentos(idProcesso, tipoDoc, selecao){
-	let dados = await d(idProcesso)
+	let dados = await buscarDocumentos(idProcesso)
 
 	let filtrados = dados.filter(d => {
 		let texto = [d.titulo, d.tipo].filter(Boolean).map(normalizar).join(' ')

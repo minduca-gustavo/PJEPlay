@@ -4,6 +4,7 @@
 
 obterArmazenamento().then(async armazenamento => {
 	CONFIGURACAO = armazenamento
+	MODO_DEV     = armazenamento?.modoDev === true
 
 	relatar('Rota PJE iniciando…', '', 'execucao')
 

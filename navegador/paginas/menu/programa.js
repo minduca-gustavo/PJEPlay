@@ -78,6 +78,10 @@ async function iniciar(){
 	let btnAtivarFiltros     = document.getElementById('btn-ativar-filtros')
 	let statusFiltros        = document.getElementById('status-filtros')
 
+	// Referências página 4 — Modo Desenvolvedor
+	let btnModoDev           = document.getElementById('btn-modo-dev')
+	let statusModoDev        = document.getElementById('status-modo-dev')
+
 	// Navegação
 	let setaEsq    = document.getElementById('seta-esq')
 	let setaDir    = document.getElementById('seta-dir')
@@ -95,6 +99,8 @@ async function iniciar(){
 		navInd.textContent   = n + ' / ' + TOTAL_PAGINAS
 		setaEsq.disabled     = n===1
 		setaDir.disabled     = n===TOTAL_PAGINAS
+		// Verifica autenticação ao entrar na página 4
+		if(n === 4) _superfiltroAutenticado().then(auth => _mostrarSuperfiltro(auth))
 	}
 	setaEsq.addEventListener('click', () => { if(paginaAtual>1) irPara(paginaAtual-1) })
 	setaDir.addEventListener('click', () => { if(paginaAtual<TOTAL_PAGINAS) irPara(paginaAtual+1) })
@@ -145,6 +151,12 @@ async function iniciar(){
 		tarefas['Padrão'] = _tarefaPadrao()
 		nomeAtivo = 'Padrão'
 		await NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+	}
+
+	// Garante que nomeAtivo aponta para uma tarefa existente
+	if(!nomeAtivo || !tarefas[nomeAtivo]){
+		nomeAtivo = Object.keys(tarefas)[0] || ''
+		await NAV.storage.local.set({ tarefaAtiva: nomeAtivo })
 	}
 
 	_popularSelectTarefas()
@@ -300,13 +312,6 @@ async function iniciar(){
 		divConteudo.style.display = autenticado ? 'block' : 'none'
 	}
 
-	// Checa ao navegar para página 3
-	let _irParaOriginal = irPara
-	irPara = async function(n) {
-		_irParaOriginal(n)
-		if (n === 3) _mostrarSuperfiltro(await _superfiltroAutenticado())
-	}
-
 	_mostrarSuperfiltro(await _superfiltroAutenticado())
 
 	btnSenha.addEventListener('click', async () => {
@@ -376,6 +381,48 @@ async function iniciar(){
 			}).catch(()=>{})
 		})
 	}
+
+	// ════════════════════════════════════════════════════════
+	// MODO DESENVOLVEDOR
+	// ════════════════════════════════════════════════════════
+	const DEV_KEY = 'modoDev'
+
+	let devAtivo = false
+
+	let storeDevAtivo = await NAV.storage.local.get([DEV_KEY])
+	devAtivo = storeDevAtivo[DEV_KEY] === true  // default = desligado
+
+	function _aplicarEstadoModoDev(ativo) {
+		devAtivo = ativo
+		if (ativo) {
+			btnModoDev.classList.add('ativo')
+			btnModoDev.title = 'Modo dev ativo — clique para desativar'
+			statusModoDev.textContent = '✅ Logs ativos no console'
+			statusModoDev.style.color = '#2ecc71'
+		} else {
+			btnModoDev.classList.remove('ativo')
+			btnModoDev.title = 'Modo dev inativo — clique para ativar'
+			statusModoDev.textContent = '○ Console silenciado'
+			statusModoDev.style.color = '#5e84a8'
+		}
+	}
+
+	_aplicarEstadoModoDev(devAtivo)
+
+	btnModoDev.addEventListener('click', async () => {
+		devAtivo = !devAtivo
+		await NAV.storage.local.set({ [DEV_KEY]: devAtivo })
+		_aplicarEstadoModoDev(devAtivo)
+		// Propaga para as abas abertas do PJE
+		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
+		tabs.forEach(tab => {
+			NAV.scripting.executeScript({
+				target: { tabId: tab.id },
+				func: (ativo) => { window.MODO_DEV = ativo },
+				args: [devAtivo],
+			}).catch(() => {})
+		})
+	})
 
 	const ML_KEY      = 'melhorLeitura_config'
 	const ML_DEFAULTS = { bgColor: '#000000', textColor: '#ffdd00', fontSize: 22, boxWidth: 480 }

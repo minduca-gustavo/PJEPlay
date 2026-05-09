@@ -140,31 +140,12 @@ body {
 .nav-processos {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   background: var(--branco);
   border: 1px solid var(--borda);
   border-radius: 8px;
   padding: 8px 10px;
 }
-
-.btn-nav {
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--borda);
-  background: var(--fundo);
-  border-radius: 5px;
-  color: var(--texto-suave);
-  font-size: 13px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.15s;
-  padding: 0;
-}
-.btn-nav:hover:not(:disabled) { background: var(--azul); color: #fff; border-color: var(--azul); }
-.btn-nav:disabled { opacity: 0.3; cursor: default; }
 
 .nav-processos-info {
   flex: 1;

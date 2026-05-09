@@ -95,7 +95,7 @@
             Modo Temporizador
           </label>
         </div>
-        <div id="temporizador-config">
+        <div id="temporizador-config" style="display:none">
           <div style="display:flex;align-items:center;gap:6px;">
             <label class="bloco-hint" style="white-space:nowrap;">Segundos:</label>
             <input id="input-timer-segundos" class="input-texto" type="number"
@@ -134,7 +134,7 @@
     </div><!-- /pagina-2 -->
 
     <!-- PÁGINA 3 — Melhor Leitura -->
-    <div class="pagina" id="pagina-3" style="display:none">
+    <div class="pagina" id="pagina-3">
 
       <div class="bloco">
         <div class="bloco-row">
@@ -214,6 +214,19 @@
 
       <!-- Conteúdo real (visível quando autenticado) -->
       <div id="superfiltro-conteudo" style="display:none">
+
+        <div class="bloco">
+          <div class="bloco-row">
+            <label class="bloco-label" style="flex:1">
+              Modo Desenvolvedor
+              <span class="bloco-hint">ativa logs no console (relatar)</span>
+            </label>
+            <button class="btn-filtro-liga" id="btn-modo-dev" title="Ativar/Desativar modo desenvolvedor">🛠️</button>
+          </div>
+          <div style="margin-top:5px;">
+            <span id="status-modo-dev" class="status-filtros-inline"></span>
+          </div>
+        </div>
 
         <div class="bloco">
           <div class="bloco-row">

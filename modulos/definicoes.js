@@ -6,6 +6,7 @@ const
 	EXTENSAO	= _definirExtensao()
 
 var CONFIGURACAO = {}
+var MODO_DEV     = false   // ativado via popup página 4 — controla o relatar()
 
 
 function _definirNavegador(){

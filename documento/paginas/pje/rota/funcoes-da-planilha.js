@@ -10,13 +10,14 @@
 //       quando o modo for Lista — verifique antes de usar)
 //
 // Funções disponíveis:
-//   b(i)         → dados básicos do processo (pje-consulta-api)
-//   c(i)         → cálculos do processo
-//   d(i)         → documentos da timeline (documento===true)
-//   e(i)         → etiquetas/chips do processo
-//   g(i, concluida) → gigs do processo (concluida=false por padrão)
-//   m(i)         → movimentos da timeline (documento===false)
-//   p(i, path)   → endpoint genérico: /pje-comum-api/api/processos/id/:i + path
+//   buscarDadosBasicos(i)             → dados básicos do processo (pje-consulta-api)
+//   buscarCalculos(i)                 → cálculos do processo
+//   buscarDocumentos(i)               → documentos da timeline (documento===true)
+//   buscarDocumentosEMovimentos(i)    → toda a timeline (documentos + movimentos)
+//   buscarChips(i)                    → etiquetas/chips do processo
+//   buscarGigs(numProc)               → gigs do processo (recebe número, ex: '0011486-22...')
+//   buscarMovimentos(i)               → movimentos da timeline (documento===false)
+//   buscarProcesso(i, path)           → endpoint genérico: /pje-comum-api/api/processos/id/:i + path
 //
 // O script deve retornar string, número, array ou null/undefined.
 // Arrays são joinados com tab. Objetos genéricos têm seus valores joinados.
@@ -30,7 +31,7 @@
 
 // ── BUSCA DADOS BÁSICOS ───────────────────────────────────────
 
-async function b(i) {
+async function buscarDadosBasicos(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + i
 	)
@@ -41,7 +42,7 @@ async function b(i) {
 
 // ── BUSCA CÁLCULOS ────────────────────────────────────────────
 
-async function c(i) {
+async function buscarCalculos(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/calculos/processo?pagina=1&tamanhoPagina=10' +
 		'&ordenacaoCrescente=true&idProcesso=' + i + '&incluirCalculosHomologados=true'
@@ -54,7 +55,7 @@ async function c(i) {
 
 // ── BUSCA DOCUMENTOS ─────────────────────────────────────────
 
-async function d(i) {
+async function buscarDocumentos(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
 	)
@@ -64,7 +65,7 @@ async function d(i) {
 
 // ── BUSCA DOCUMENTOS E MOVIMENTOS ─────────────────────────────────────────
 
-async function dm(i) {
+async function buscarDocumentosEMovimentos(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
 	)
@@ -75,7 +76,7 @@ async function dm(i) {
 
 // ── BUSCA ETIQUETAS/CHIPS ────────────────────────────────────
 
-async function e(i) {
+async function buscarChips(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-etiquetas-api/api/processos/' + i + '/etiquetas'
 	)
@@ -252,7 +253,7 @@ destaque	false
 idOrgaoJulgador	75
 */
 
-async function g(numProc) {
+async function buscarGigs(numProc) {
 	
 	let dados = await rota_fetch(
 		location.origin + '/pje-gigs-api/api/relatorioatividades/?&numeroProcesso=' + numProc
@@ -264,7 +265,7 @@ async function g(numProc) {
 
 // ── BUSCA MOVIMENTOS ─────────────────────────────────────────
 
-async function m(i) {
+async function buscarMovimentos(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
 	)
@@ -277,7 +278,7 @@ async function m(i) {
 // p(i)         → /pje-comum-api/api/processos/id/:i
 // p(i, '/partes') → /pje-comum-api/api/processos/id/:i/partes
 
-async function p(i, path = '') {
+async function buscarProcesso(i, path = '') {
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + path
 	)

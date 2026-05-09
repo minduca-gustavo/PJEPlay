@@ -17,7 +17,8 @@
 //     → { ids, t }  (t = objeto já buscado, paralelo a ids)
 //   sf_pool(itens, fn, { concorrencia, tentativas, pausaMs, onProgresso })
 //     → array de resultados na mesma ordem de itens
-//   p(id, path) / d(id) / m(id) / b(id) / c(id) / e(id) / g(id)
+//   buscarProcesso(id, path) / buscarDocumentos(id) / buscarMovimentos(id)
+//   buscarDadosBasicos(id) / buscarCalculos(id) / buscarChips(id) / buscarGigs(numProc)
 //
 // O retorno da funcao pode ser:
 //   string         → exibida diretamente
@@ -43,7 +44,7 @@ const SF_BOTOES = [
 			let d = []
 
 			let resultados = await sf_pool(ids, async (id, idx) => {
-				return await p(id, '/partes')
+				return await buscarProcesso(id, '/partes')
 			}, {
 				concorrencia: contexto.concorrencia,
 				tentativas:   contexto.tentativas,
@@ -107,7 +108,7 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 			await sf_pool(numeros, async (numero, idx) => {
 // ESTOU AQUI. a função nova do gig não está pronta. tem que conferir se t.numProcesso é a variável certa.
 				
-				let gigs = await g(numero)  // nova API que traz tudo junto
+				let gigs = await buscarGigs(numero)  // nova API que traz tudo junto
 				let ativos     = gigs.filter(gig => gig.statusAtividade !== 'Concluído')
 				let concluidos = gigs.filter(gig => gig.statusAtividade === 'Concluído')
 
@@ -159,7 +160,7 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 			
 // ESTOU AQUI. a função nova do gig não está pronta. tem que conferir se t.numProcesso é a variável certa.
 				relatar('ids: ' + JSON.stringify(ids), '', 'teste')
-				let calculos = await c(id)  // nova API que traz tudo junto
+				let calculos = await buscarCalculos(id)  // nova API que traz tudo junto
 				relatar('calculos: ' + JSON.stringify(calculos), '', 'teste')
 				if (calculos?.totalRegistros === 0) {
 					d.push({
@@ -220,7 +221,7 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 
 				let acordo_ou_improcedencia = ''  // ← declaração no topo
 
-				let documentosemovimentos = await dm(id)
+				let documentosemovimentos = await buscarDocumentosEMovimentos(id)
 
 				// Improcedência
 				if (documentosemovimentos.some(doc => /julgado\(s\) improcedente/i.test(doc.titulo))) {
@@ -315,7 +316,7 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 
 				let acordo_ou_improcedencia = ''  // ← declaração no topo
 
-				let documentosemovimentos = await dm(id)
+				let documentosemovimentos = await buscarDocumentosEMovimentos(id)
 
 				// Improcedência
 				if (documentosemovimentos.some(doc => /julgado\(s\) improcedente/i.test(doc.titulo))) {
@@ -366,7 +367,7 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 	// 		if (!ids.length) return 'Nenhum processo encontrado.'
 	//
 	// 		let resultados = await sf_pool(ids, async (id, idx) => {
-	// 			return await p(id, '/partes')  // ou qualquer outra função
+	// 			return await buscarProcesso(id, '/partes')  // ou qualquer outra função
 	// 		}, {
 	// 			concorrencia: 5,
 	// 			onProgresso:  contexto.progresso,

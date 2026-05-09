@@ -59,12 +59,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Botão avançar
     document.getElementById('btn-avancar')
         ?.addEventListener('click', ass_avancar)
-
-    // Botões de navegação entre processos (só leitura — não avança o pipeline)
-    document.getElementById('btn-anterior')
-        ?.addEventListener('click', () => ass_navegarHistorico(-1))
-    document.getElementById('btn-proximo')
-        ?.addEventListener('click', ass_avancar)
 })
 
 
@@ -136,10 +130,6 @@ function ass_exibirSessaoAtiva(sessao) {
     // Navegação
     document.getElementById('nav-posicao').textContent = `${atual} / ${total}`
     document.getElementById('nav-tarefa').textContent  = tarefa || '—'
-
-    document.getElementById('btn-anterior').disabled =
-        (cursor || 0) === 0
-    document.getElementById('btn-proximo').disabled  = false
 
     // Card do processo
     const card = document.getElementById('card-processo')
