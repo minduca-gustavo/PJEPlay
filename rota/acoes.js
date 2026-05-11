@@ -61,7 +61,7 @@ async function acao_navegacao_detalhes(idProcesso = '') {
     const id  = idProcesso || _acao_idProcesso()
     if (!id) return relatar('acao_navegacao_detalhes: ID não encontrado', '', 'erro')
     const url = `${location.origin}/pjekz/processo/${id}/detalhe`
-    window.open(url, 'rota-pje-detalhe')
+    window.open(url, 'rota-pje-detalhe' + id)
 }
 
 // Abre a tarefa mais recente do processo
