@@ -34,3 +34,36 @@ async function _extrairPDF(bytes){
 	}
 	return texto
 }
+
+
+// ── Reabertura automática do assistente após reload ───────────
+//
+// Quando a extensão é recarregada em modo desenvolvedor,
+// runtime.onInstalled dispara com reason === 'update'.
+// Se havia sessão ativa, reabre o assistente automaticamente.
+
+NAVEGADOR.runtime.onInstalled.addListener(async (detalhes) => {
+    if (detalhes.reason !== 'update') return
+
+    await _PRONTO
+    const cfg    = await obterArmazenamento(['rotaSessao', 'rotaGeometria'])
+    const sessao = cfg?.['rotaSessao']
+    if (!sessao?.ativa) return
+
+    const geo = cfg?.['rotaGeometria']
+    const url = NAVEGADOR.runtime.getURL('rota/assistente/assistente.html')
+    let heightRecriada
+	if (modoDev = true){
+		heightRecriada = window.screen.availHeight - 50
+	} else{
+		heightRecriada = window.screen.availHeight
+	}
+	NAVEGADOR.windows.create({
+        url,
+        type:   'popup',
+        width:  geo?.width  || 400,
+        height: heightRecriada || 900,
+        left:   geo?.left   || 1200,
+        top:    geo?.top    || 0,
+    })
+})

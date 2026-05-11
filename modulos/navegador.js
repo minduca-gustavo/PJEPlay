@@ -2,7 +2,7 @@ function extensao_raiz(arquivo = ''){
 	return NAVEGADOR.runtime.getURL(arquivo)
 }
 
-function play_cookie(nome = ''){
+function rota_cookie(nome = ''){
 	let todos  = `; ${document.cookie}`
 	let pref   = `; ${nome}=`
 	let idx    = todos.indexOf(pref)
@@ -12,19 +12,34 @@ function play_cookie(nome = ''){
 	return decodeURIComponent(fim === -1 ? todos.substring(ini) : todos.substring(ini, fim))
 }
 
-function play_idempotencia(){
+function rota_idempotencia(){
 	return `"${Math.random().toString().slice(2,20)}${Date.now()}"`
 }
 
-async function play_fetch(url = ''){
-	let token    = play_cookie('Xsrf-Token') || play_cookie('XSRF-TOKEN')
+async function post(url, corpo) {
+    const token = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
+    return fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/plain, */*',
+            'X-XSRF-TOKEN': token,
+        },
+        body: JSON.stringify(corpo)
+    })
+}
+
+async function rota_fetch(url = ''){
+	let token    = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
 	let instancia = CONFIGURACAO?.pessoa?.instancia || '1'
 	try{
 		relatar('GET ' + url, '', 'requisicao')
 		let r = await fetch(url, {
 			method: 'GET', mode: 'cors', credentials: 'include',
 			headers:{
-				'Idempotency-Key':  play_idempotencia(),
+				'Idempotency-Key':  rota_idempotencia(),
 				'X-Grau-Instancia': instancia,
 				'X-XSRF-TOKEN':     token,
 				'Content-Type':     'application/json',

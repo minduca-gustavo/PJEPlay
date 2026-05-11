@@ -1,11 +1,11 @@
 // ============================================================
-// programa.js — lógica completa do popup PJE Play
+// programa.js — lógica completa do popup Rota PJE
 // ============================================================
 
 const NAV = (typeof browser !== 'undefined') ? browser : chrome
 
-const TOTAL_PAGINAS = 3
-const SUBTITULOS    = ['Editor de Tarefa', 'Configurações de Pintura', 'Super Filtros']
+const TOTAL_PAGINAS = 4
+const SUBTITULOS    = ['Editor de Tarefa', 'Configurações de Pintura', 'Melhor Leitura', 'Desenvolvedores']
 
 const TIPOS_JANELA = [
 	{ valor:'detalhes',  label:'Detalhes do Processo' },
@@ -71,9 +71,16 @@ async function iniciar(){
 	let btnSalvarPintura= document.getElementById('btn-salvar-pintura')
 	let statusPintura   = document.getElementById('status-pintura')
 
-	// Referências página 3
+	// Referências página 3 — Melhor Leitura
+	let btnAtivarML          = document.getElementById('btn-ativar-melhor-leitura')
+
+	// Referências página 4 — Super Filtros
 	let btnAtivarFiltros     = document.getElementById('btn-ativar-filtros')
 	let statusFiltros        = document.getElementById('status-filtros')
+
+	// Referências página 4 — Modo Desenvolvedor
+	let btnModoDev           = document.getElementById('btn-modo-dev')
+	let statusModoDev        = document.getElementById('status-modo-dev')
 
 	// Navegação
 	let setaEsq    = document.getElementById('seta-esq')
@@ -92,6 +99,8 @@ async function iniciar(){
 		navInd.textContent   = n + ' / ' + TOTAL_PAGINAS
 		setaEsq.disabled     = n===1
 		setaDir.disabled     = n===TOTAL_PAGINAS
+		// Verifica autenticação ao entrar na página 4
+		if(n === 4) _superfiltroAutenticado().then(auth => _mostrarSuperfiltro(auth))
 	}
 	setaEsq.addEventListener('click', () => { if(paginaAtual>1) irPara(paginaAtual-1) })
 	setaDir.addEventListener('click', () => { if(paginaAtual<TOTAL_PAGINAS) irPara(paginaAtual+1) })
@@ -127,7 +136,7 @@ async function iniciar(){
 		tabs.forEach(tab => {
 			NAV.scripting.executeScript({
 				target: { tabId: tab.id },
-				func: (h) => { window._pjeplay_habilitado = h },
+				func: (h) => { window._pjerota_habilitado = h },
 				args: [habilitado],
 			}).catch(()=>{})
 		})
@@ -144,13 +153,19 @@ async function iniciar(){
 		await NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
 	}
 
+	// Garante que nomeAtivo aponta para uma tarefa existente
+	if(!nomeAtivo || !tarefas[nomeAtivo]){
+		nomeAtivo = Object.keys(tarefas)[0] || ''
+		await NAV.storage.local.set({ tarefaAtiva: nomeAtivo })
+	}
+
 	_popularSelectTarefas()
 	_carregarTarefaAtiva()
 
 	// ── Seletor de tarefa ────────────────────────────────────
 	selTarefa.addEventListener('change', () => {
 		nomeAtivo = selTarefa.value
-		NAV.storage.local.set({ tarefaAtiva: nomeAtivo })
+		// tarefaAtiva gerenciado pelo botão Rota
 		_carregarTarefaAtiva()
 	})
 
@@ -173,7 +188,7 @@ async function iniciar(){
 		inputNomeTarefa.style.display = 'none'
 		btnSalvarNome.style.display   = 'none'
 		selTarefa.style.display       = 'block'
-		NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		NAV.storage.local.set({ tarefas })
 		mostrarStatus(statusTarefa,'✅ Tarefa criada!','#2ecc71')
 	})
 
@@ -187,7 +202,7 @@ async function iniciar(){
 		nomeAtivo = Object.keys(tarefas)[0]
 		_popularSelectTarefas()
 		_carregarTarefaAtiva()
-		NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		NAV.storage.local.set({ tarefas })
 		mostrarStatus(statusTarefa,'Tarefa excluída.','#F9B73F')
 	})
 
@@ -217,7 +232,7 @@ async function iniciar(){
 			segundos: parseInt(inputTimerSegundos.value) || 30,
 			opcoes:   inputTimerOpcoes.value.trim(),
 		}
-		NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		NAV.storage.local.set({ tarefas })
 		mostrarStatus(statusTarefa,'✅ Tarefa salva!','#2ecc71')
 	})
 
@@ -297,13 +312,6 @@ async function iniciar(){
 		divConteudo.style.display = autenticado ? 'block' : 'none'
 	}
 
-	// Checa ao navegar para página 3
-	let _irParaOriginal = irPara
-	irPara = async function(n) {
-		_irParaOriginal(n)
-		if (n === 3) _mostrarSuperfiltro(await _superfiltroAutenticado())
-	}
-
 	_mostrarSuperfiltro(await _superfiltroAutenticado())
 
 	btnSenha.addEventListener('click', async () => {
@@ -367,13 +375,185 @@ async function iniciar(){
 				target: { tabId: tab.id },
 				func: (dados) => {
 					window._superfiltro_ativo = dados.ativo
-					window.dispatchEvent(new CustomEvent('pjeplay:superfiltro-atualizado', { detail: dados }))
+					window.dispatchEvent(new CustomEvent('pjerota:superfiltro-atualizado', { detail: dados }))
 				},
 				args: [{ ativo: storeDados.superfiltro_ativo === true }],
 			}).catch(()=>{})
 		})
 	}
 
+	// ════════════════════════════════════════════════════════
+	// MODO DESENVOLVEDOR
+	// ════════════════════════════════════════════════════════
+	const DEV_KEY = 'modoDev'
+
+	let devAtivo = false
+
+	let storeDevAtivo = await NAV.storage.local.get([DEV_KEY])
+	devAtivo = storeDevAtivo[DEV_KEY] === true  // default = desligado
+
+	function _aplicarEstadoModoDev(ativo) {
+		devAtivo = ativo
+		if (ativo) {
+			btnModoDev.classList.add('ativo')
+			btnModoDev.title = 'Modo dev ativo — clique para desativar'
+			statusModoDev.textContent = '✅ Logs ativos no console'
+			statusModoDev.style.color = '#2ecc71'
+		} else {
+			btnModoDev.classList.remove('ativo')
+			btnModoDev.title = 'Modo dev inativo — clique para ativar'
+			statusModoDev.textContent = '○ Console silenciado'
+			statusModoDev.style.color = '#5e84a8'
+		}
+	}
+
+	_aplicarEstadoModoDev(devAtivo)
+
+	btnModoDev.addEventListener('click', async () => {
+		devAtivo = !devAtivo
+		await NAV.storage.local.set({ [DEV_KEY]: devAtivo })
+		_aplicarEstadoModoDev(devAtivo)
+		// Propaga para as abas abertas do PJE
+		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
+		tabs.forEach(tab => {
+			NAV.scripting.executeScript({
+				target: { tabId: tab.id },
+				func: (ativo) => { window.MODO_DEV = ativo },
+				args: [devAtivo],
+			}).catch(() => {})
+		})
+	})
+
+	const ML_KEY      = 'melhorLeitura_config'
+	const ML_DEFAULTS = { bgColor: '#000000', textColor: '#ffdd00', fontSize: 22, boxWidth: 480 }
+
+	const ML_CORES_FUNDO = ['#000000','#1a1a1a','#0d1b2a','#1a1a2e','#ffffff','#fffde7','#1b5e20','#0d47a1','#4a0000']
+	const ML_CORES_TEXTO = ['#ffdd00','#ffffff','#000000','#76ff03','#40c4ff','#ff6d00','#ea80fc','#cccccc','#ff5252']
+
+	let mlBgColor       = document.getElementById('ml-bgColor')
+	let mlBgSwatch      = document.getElementById('ml-bgSwatch')
+	let mlTextColor     = document.getElementById('ml-textColor')
+	let mlTextSwatch    = document.getElementById('ml-textSwatch')
+	let mlFontSize      = document.getElementById('ml-fontSize')
+	let mlFontSizeLabel = document.getElementById('ml-fontSizeLabel')
+	let mlBoxWidth      = document.getElementById('ml-boxWidth')
+	let mlBoxWidthLabel = document.getElementById('ml-boxWidthLabel')
+	let mlPreview       = document.getElementById('ml-preview')
+	let mlBtnSalvar     = document.getElementById('ml-btnSalvar')
+	let mlStatus        = document.getElementById('ml-status')
+	let mlPaletaFundo   = document.getElementById('ml-paletaFundo')
+	let mlPaletaTexto   = document.getElementById('ml-paletaTexto')
+
+	function mlHexValido(v) { return /^#[0-9a-fA-F]{6}$/.test(v) }
+
+	function mlAplicarPreview() {
+		let bg   = mlHexValido(mlBgColor.value)   ? mlBgColor.value   : ML_DEFAULTS.bgColor
+		let text = mlHexValido(mlTextColor.value) ? mlTextColor.value : ML_DEFAULTS.textColor
+		mlPreview.style.background    = bg
+		mlPreview.style.color         = text
+		mlPreview.style.fontSize      = mlFontSize.value + 'px'
+		mlBgSwatch.style.background   = bg
+		mlTextSwatch.style.background = text
+		mlFontSizeLabel.textContent   = mlFontSize.value + 'px'
+		mlBoxWidthLabel.textContent   = mlBoxWidth.value + 'px'
+	}
+
+	function mlOnHexInput(inputEl) {
+		let v = inputEl.value.trim()
+		if (v.length > 0 && v[0] !== '#') inputEl.value = '#' + v
+		inputEl.classList.toggle('invalido', !mlHexValido(inputEl.value))
+		mlAplicarPreview()
+	}
+
+	function mlCriarPaleta(containerEl, cores, targetInputEl) {
+		cores.forEach(cor => {
+			let btn = document.createElement('span')
+			btn.className = 'ml-cor'
+			btn.style.background = cor
+			btn.title = cor
+			btn.addEventListener('click', () => {
+				targetInputEl.value = cor
+				targetInputEl.classList.remove('invalido')
+				mlAplicarPreview()
+			})
+			containerEl.appendChild(btn)
+		})
+	}
+
+	// Carrega config salva
+	let mlStore = await NAV.storage.local.get(ML_KEY)
+	let mlCfg   = mlStore[ML_KEY] || ML_DEFAULTS
+	mlBgColor.value   = mlCfg.bgColor   || ML_DEFAULTS.bgColor
+	mlTextColor.value = mlCfg.textColor || ML_DEFAULTS.textColor
+	mlFontSize.value  = mlCfg.fontSize  || ML_DEFAULTS.fontSize
+	mlBoxWidth.value  = mlCfg.boxWidth  || ML_DEFAULTS.boxWidth
+	mlAplicarPreview()
+
+	// Monta paletas
+	mlCriarPaleta(mlPaletaFundo, ML_CORES_FUNDO, mlBgColor)
+	mlCriarPaleta(mlPaletaTexto, ML_CORES_TEXTO, mlTextColor)
+
+	// Eventos
+	mlBgColor.addEventListener('input',   () => mlOnHexInput(mlBgColor))
+	mlTextColor.addEventListener('input', () => mlOnHexInput(mlTextColor))
+	mlFontSize.addEventListener('input',  mlAplicarPreview)
+	mlBoxWidth.addEventListener('input',  mlAplicarPreview)
+
+	mlBtnSalvar.addEventListener('click', async () => {
+		if (!mlHexValido(mlBgColor.value) || !mlHexValido(mlTextColor.value)) {
+			mostrarStatus(mlStatus, '⚠ Cor inválida — use #rrggbb', '#e74c3c')
+			return
+		}
+		let cfg = {
+			bgColor:   mlBgColor.value,
+			textColor: mlTextColor.value,
+			fontSize:  Number(mlFontSize.value),
+			boxWidth:  Number(mlBoxWidth.value),
+		}
+		await NAV.storage.local.set({ [ML_KEY]: cfg })
+		mostrarStatus(mlStatus, '✅ Salvo!', '#2ecc71')
+	})
+
+	// ════════════════════════════════════════════════════════
+	// MELHOR LEITURA — botão on/off
+	// ════════════════════════════════════════════════════════
+	const ML_ATIVO_KEY = 'melhorLeitura_ativo'
+
+	let mlAtivo = false
+
+	let storeMLAtivo = await NAV.storage.local.get([ML_ATIVO_KEY])
+	mlAtivo = storeMLAtivo[ML_ATIVO_KEY] === true  // default = desligado
+
+	function _aplicarEstadoML(ativo) {
+		mlAtivo = ativo
+		if (ativo) {
+			btnAtivarML.classList.add('ativo')
+			btnAtivarML.title = 'Melhor Leitura ativa — clique para desativar'
+		} else {
+			btnAtivarML.classList.remove('ativo')
+			btnAtivarML.title = 'Melhor Leitura inativa — clique para ativar'
+		}
+	}
+
+	_aplicarEstadoML(mlAtivo)
+
+	btnAtivarML.addEventListener('click', async () => {
+		mlAtivo = !mlAtivo
+		await NAV.storage.local.set({ [ML_ATIVO_KEY]: mlAtivo })
+		_aplicarEstadoML(mlAtivo)
+		// Notifica abas do PJE
+		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
+		tabs.forEach(tab => {
+			NAV.scripting.executeScript({
+				target: { tabId: tab.id },
+				func: (ativo) => {
+					window._melhorLeitura_ativo = ativo
+					window.dispatchEvent(new CustomEvent('pjerota:melhorleitura-atualizado', { detail: { ativo } }))
+				},
+				args: [mlAtivo],
+			}).catch(() => {})
+		})
+	})
 
 	// ════════════════════════════════════════════════════════
 	// HELPERS internos

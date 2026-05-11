@@ -8,6 +8,10 @@ function selecionar(seletor = '', ancestral = '', todos = false){
 	} catch(e){ relatar('selecionar erro:', e, 'erro'); return '' }
 }
 
+function confereJanela(...janelas) {
+    return janelas.some(regex => regex.test(location.href))
+}
+
 async function aguardarElemento(seletor = '', timeout = 0){
 	return new Promise(resolver => {
 		let el = selecionar(seletor)
@@ -30,9 +34,9 @@ function remover(seletor = ''){
 }
 
 function estilizar({ css = '', id = '' } = {}){
-	if(id) remover('#pjeplay-estilo-' + id)
+	if(id) remover('#pjerota-estilo-' + id)
 	let s = document.createElement('style')
-	if(id) s.id = 'pjeplay-estilo-' + id
+	if(id) s.id = 'pjerota-estilo-' + id
 	s.textContent = css
 	document.head.appendChild(s)
 	return s
