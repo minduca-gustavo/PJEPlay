@@ -7,6 +7,28 @@
 // ============================================================
 
 
+// ── Humanização do nome da tarefa ─────────────────────────────
+
+const _ass_nomesTarefa = {
+    'balcao-virtual':    'Balcão Virtual',
+    'triagem-inicial':   'Triagem Inicial',
+    'pos-triagem':       'Pós-Triagem',
+    'audiencia':         'Audiência',
+    'cumprimento':       'Cumprimento de Sentença',
+    'execucao':          'Execução',
+    'sentenca':          'Sentença',
+    'instrucao':         'Instrução',
+    'julgamento':        'Julgamento',
+}
+
+function ass_nomeTarefa(id) {
+    if (!id) return '—'
+    if (_ass_nomesTarefa[id]) return _ass_nomesTarefa[id]
+    // Fallback: converte kebab-case para Title Case
+    return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+
 // ── Estado local ──────────────────────────────────────────────
 
 let _ass_sessao       = null   // sessão ativa lida do storage
@@ -18,9 +40,6 @@ let _ass_historico    = []
 // ── Inicialização ─────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
-
-    // Inicializa abas
-    ass_iniciarAbas()
 
     // Lê sessão e monta interface
     await ass_atualizar()
@@ -44,12 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await conector_montar()
             return
         }
-
-        // Dados do processo chegaram — só atualiza o card, não remonta o roteiro
-        const chavesProcesso = ['rotaDados_processo', 'rotaDados_processo_partes', 'rotaDados_audiencias']
-        if (chavesProcesso.some(c => mudancas[c])) {
-            await ass_atualizarInfoProcesso()
-        }
     })
 
     // Botão fechar
@@ -60,21 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('btn-avancar')
         ?.addEventListener('click', ass_avancar)
 })
-
-
-// ── Abas ──────────────────────────────────────────────────────
-
-function ass_iniciarAbas() {
-    document.querySelectorAll('.assistente-aba').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const aba = btn.dataset.aba
-            document.querySelectorAll('.assistente-aba').forEach(b => b.classList.remove('ativa'))
-            document.querySelectorAll('.assistente-pagina').forEach(p => p.classList.remove('ativa'))
-            btn.classList.add('ativa')
-            document.getElementById('aba-' + aba)?.classList.add('ativa')
-        })
-    })
-}
 
 
 // ── Atualização principal ─────────────────────────────────────
@@ -97,12 +95,11 @@ async function ass_atualizar() {
 // ── Sem sessão ────────────────────────────────────────────────
 
 function ass_exibirSemSessao() {
-    document.getElementById('assistente-subtitulo').textContent = 'Aguardando…'
-    document.getElementById('nav-posicao').textContent          = '— / —'
-    document.getElementById('nav-tarefa').textContent           = 'nenhuma tarefa ativa'
-    document.getElementById('card-processo').style.display      = 'none'
+    document.getElementById('assistente-tarefa').textContent   = '—'
+    document.getElementById('assistente-processo').textContent = '—'
+    document.getElementById('nav-posicao').textContent         = '— / —'
     document.getElementById('temporizador-bloco').style.display = 'none'
-    document.getElementById('rodape-status').textContent        = 'Nenhuma sessão ativa'
+    document.getElementById('rodape-status').textContent       = 'Nenhuma sessão ativa'
 
     const btnAvancar = document.getElementById('btn-avancar')
     if (btnAvancar) {
@@ -123,20 +120,12 @@ function ass_exibirSessaoAtiva(sessao) {
     const atual   = (cursor || 0) + 1
     const numProc = processos?.[cursor || 0] || '—'
 
-    // Cabeçalho
-    document.getElementById('assistente-subtitulo').textContent =
-        tarefa ? `Tarefa: ${tarefa}` : 'Sessão ativa'
+    // Faixa 1: tarefa humanizada
+    document.getElementById('assistente-tarefa').textContent   = ass_nomeTarefa(tarefa)
 
-    // Navegação
-    document.getElementById('nav-posicao').textContent = `${atual} / ${total}`
-    document.getElementById('nav-tarefa').textContent  = tarefa || '—'
-
-    // Card do processo
-    const card = document.getElementById('card-processo')
-    card.style.display = 'block'
-    document.getElementById('processo-numero').textContent = numProc
-    document.getElementById('processo-badge').textContent  =
-        etapaAtual ? `Etapa: ${etapaAtual}` : 'Em andamento'
+    // Faixa 2: número do processo + posição
+    document.getElementById('assistente-processo').textContent = numProc
+    document.getElementById('nav-posicao').textContent         = `${atual}/${total}`
 
     // Botão avançar
     const btnAvancar = document.getElementById('btn-avancar')
@@ -305,36 +294,3 @@ function ass_exibirAviso(msg = '', tipo = 'info', ms = 4000) {
 }
 
 
-// ── Atualizar info do processo (via metatags) ─────────────────
-//
-// Chamado quando a janela do PJE sinaliza que dados chegaram.
-// A janela do PJE não tem acesso direto a esta janela, mas
-// ambas compartilham o storage — a comunicação é indireta.
-
-async function ass_atualizarInfoProcesso() {
-    const infoEl = document.getElementById('processo-info')
-    if (!infoEl || !_ass_sessao?.ativa) return
-
-    // Tenta ler dados básicos do storage (salvos pelo interceptador via background)
-    const cfg = await obterArmazenamento(['rotaDados_processo', 'rotaDados_processo_partes'])
-    const dados   = cfg?.rotaDados_processo
-    const partes  = cfg?.rotaDados_processo_partes
-
-    if (!dados) {
-        infoEl.textContent = ''
-        return
-    }
-
-    // Extrai reclamante e reclamada das partes
-    let nomeReclamante = partes?.ATIVO[0]?.nome  || ''
-    let nomeReclamada  = partes?.PASSIVO[0]?.nome || ''
-
-    const linhas = [
-        nomeReclamante ? `👤 ${nomeReclamante}` : null,
-        nomeReclamada  ? `🏢 ${nomeReclamada}`  : null,
-        dados?.valorDaCausa ? `💰 R$ ${Number(dados.valorDaCausa).toLocaleString('pt-BR', {minimumFractionDigits:2})}` : null,
-        dados?.justicaGratuita ? '✅ Justiça gratuita' : null,
-        dados?.tutelaOuLiminar && !dados?.apreciadoTutelaLiminar ? '⚠️ Tem Tutela/Liminar não apreciada.' : null,    ].filter(Boolean).join('\n')
-
-    infoEl.textContent = linhas
-}

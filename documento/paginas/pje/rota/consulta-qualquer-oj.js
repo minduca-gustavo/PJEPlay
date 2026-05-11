@@ -252,13 +252,28 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
             },
             body: JSON.stringify({ id_perfil: perfil.idPerfil })
         })
-        url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + numeroDoProcesso
-        consulta_qualquer_ojNavegar(url)
+        
         //await clicar(dadosUsuario)
         //let oj = aguardarElemento(`[aria-label*='${dadosProcesso?.orgaoJulgador?.descricao}']`) 
         //await clicar (oj)
     }
+    
+    await armazenar({pjerota_consulta_qualquer_oj: dadosBasicos?.id})
+    url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + numeroDoProcesso
+    await consulta_qualquer_ojNavegar(url)
 }
+
+async function consulta_qualquer_ojAbreDetalhes(){
+    let cfg = await obterArmazenamento('pjerota_consulta_qualquer_oj')
+    let id = cfg?.pjerota_consulta_qualquer_oj
+    if (!id) return
+    await removerArmazenamento('pjerota_consulta_qualquer_oj')
+    let confirmacao = await obterArmazenamento('pjerota_consulta_qualquer_oj')
+    if (confirmacao?.pjerota_consulta_qualquer_oj) return
+    await acao_navegacao_detalhes(id)
+}
+
+consulta_qualquer_ojAbreDetalhes()
 
 async function consulta_qualquer_ojErroNumero(erro = '') {
     let mensagem = ''

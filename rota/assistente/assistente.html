@@ -10,70 +10,25 @@
 
 <div class="assistente-shell">
 
-  <!-- CABEÇALHO -->
+  <!-- CABEÇALHO: faixa 1 — marca + tarefa -->
   <header class="assistente-header">
-    <span class="assistente-logo">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="28" height="28">
-        <defs>
-          <linearGradient id="sg" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%"   style="stop-color:#1565C0;stop-opacity:1" />
-            <stop offset="100%" style="stop-color:#0D47A1;stop-opacity:1" />
-          </linearGradient>
-        </defs>
-        <path d="M 64 6 L 108 18 L 114 60 Q 114 95 64 122 Q 14 95 14 60 L 20 18 Z"
-              fill="url(#sg)" />
-        <path d="M 64 14 L 103 24 L 108 62 Q 108 91 64 114 Q 20 91 20 62 L 25 24 Z"
-              fill="none" stroke="white" stroke-width="2.5" />
-        <path d="M 64 14 L 103 24 L 101 42 L 27 42 L 25 24 Z" fill="#ffa726" />
-        <line x1="24" y1="42" x2="104" y2="42" stroke="white" stroke-width="2"/>
-        <text x="64" y="37" text-anchor="middle"
-              font-family="'Arial Black','Impact',sans-serif"
-              font-size="15" font-weight="900" fill="white" letter-spacing="2">ROTA</text>
-        <text x="64" y="88" text-anchor="middle"
-              font-family="'Arial Black','Impact',sans-serif"
-              font-size="36" font-weight="900" fill="white" letter-spacing="1">PJE</text>
-        <line x1="48" y1="97" x2="80" y2="97" stroke="white" stroke-width="1.5"
-              stroke-dasharray="5,4" opacity="0.6"/>
-      </svg>
-    </span>
-
-    <div class="assistente-titulo">
-      <h1>ROTA PJE</h1>
-      <p id="assistente-subtitulo">Pronto</p>
-    </div>
-
+    <span class="assistente-marca">ROTA PJE</span>
+    <span class="assistente-sep">·</span>
+    <span class="assistente-tarefa" id="assistente-tarefa">—</span>
     <button class="assistente-btn-fechar" id="btn-fechar-assistente" title="Fechar">×</button>
   </header>
 
-  <!-- ABAS -->
-  <nav class="assistente-abas">
-    <button class="assistente-aba ativa" data-aba="roteiro">Roteiro</button>
-    <button class="assistente-aba"       data-aba="filtros">Super Filtros</button>
-    <button class="assistente-aba"       data-aba="historico">Histórico</button>
-  </nav>
+  <!-- CABEÇALHO: faixa 2 — processo + posição -->
+  <div class="assistente-subheader">
+    <span class="assistente-num-processo" id="assistente-processo">—</span>
+    <span class="assistente-posicao"      id="nav-posicao">— / —</span>
+  </div>
 
   <!-- CORPO -->
   <div class="assistente-corpo">
 
-    <!-- ABA: Roteiro -->
+    <!-- CONTEÚDO PRINCIPAL (antes: aba-roteiro) -->
     <div class="assistente-pagina ativa" id="aba-roteiro">
-
-      <!-- Navegação entre processos -->
-      <div class="nav-processos">
-        <div class="nav-processos-info">
-          <span id="nav-posicao">— / —</span>
-          <span class="nav-processos-sub" id="nav-tarefa">nenhuma tarefa ativa</span>
-        </div>
-      </div>
-
-      <!-- Card do processo atual -->
-      <div class="processo-card" id="card-processo" style="display:none">
-        <div class="processo-card-header">
-          <span class="processo-numero" id="processo-numero">—</span>
-          <span class="processo-badge"  id="processo-badge">—</span>
-        </div>
-        <div class="processo-info" id="processo-info"></div>
-      </div>
 
       <!-- Botões de parâmetro (clipboard) -->
       <div class="params-bloco" id="params-bloco" style="display:none"></div>

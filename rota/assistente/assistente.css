@@ -44,78 +44,93 @@ body {
 
 .assistente-header {
   background: var(--azul);
-  padding: 10px 14px;
+  padding: 0 10px;
+  height: 28px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.assistente-marca {
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.8px;
   flex-shrink: 0;
 }
 
-.assistente-logo svg { display: block; flex-shrink: 0; }
-
-.assistente-titulo { flex: 1; min-width: 0; }
-.assistente-titulo h1 {
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.5px;
-}
-.assistente-titulo p {
+.assistente-sep {
   font-size: 10px;
-  color: rgba(255,255,255,0.6);
-  margin-top: 1px;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+}
+
+.assistente-tarefa {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--laranja);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .assistente-btn-fechar {
-  background: rgba(255,255,255,0.1);
+  background: none;
   border: none;
-  color: rgba(255,255,255,0.8);
-  font-size: 18px;
-  width: 28px;
-  height: 28px;
+  color: rgba(255,255,255,0.5);
+  font-size: 15px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.15s;
+  transition: color 0.15s;
   line-height: 1;
   padding: 0;
+  margin-left: 2px;
 }
-.assistente-btn-fechar:hover { background: rgba(255,255,255,0.2); }
+.assistente-btn-fechar:hover { color: #fff; }
 
+/* ── Sub-cabeçalho: processo + posição ──────────────────────── */
 
-/* ── Abas ──────────────────────────────────────────────────── */
-
-.assistente-abas {
+.assistente-subheader {
+  background: var(--info-bg);
+  border-bottom: 1px solid var(--info-borda);
+  padding: 0 10px;
+  height: 26px;
   display: flex;
-  background: var(--branco);
-  border-bottom: 1px solid var(--borda);
+  align-items: center;
+  justify-content: space-between;
   flex-shrink: 0;
 }
 
-.assistente-aba {
+.assistente-num-processo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--azul);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   flex: 1;
-  padding: 8px 4px;
-  border: none;
-  background: transparent;
-  color: var(--texto-suave);
+  min-width: 0;
+}
+
+.assistente-posicao {
   font-size: 11px;
   font-weight: 600;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s;
-  font-family: inherit;
+  color: var(--texto-suave);
+  flex-shrink: 0;
+  margin-left: 8px;
 }
-.assistente-aba:hover { color: var(--azul); }
-.assistente-aba.ativa {
-  color: var(--azul);
-  border-bottom-color: var(--azul);
-}
+
+
 
 
 /* ── Corpo / páginas ───────────────────────────────────────── */
@@ -135,89 +150,8 @@ body {
 .assistente-pagina.ativa { display: flex; }
 
 
-/* ── Navegação entre processos ─────────────────────────────── */
-
-.nav-processos {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--branco);
-  border: 1px solid var(--borda);
-  border-radius: 8px;
-  padding: 8px 10px;
-}
-
-.nav-processos-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-}
-
-#nav-posicao {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--azul);
-}
-
-.nav-processos-sub {
-  font-size: 10px;
-  color: var(--texto-suave);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
 
 
-/* ── Card do processo ──────────────────────────────────────── */
-
-.processo-card {
-  background: var(--branco);
-  border: 1px solid var(--borda);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.processo-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--borda);
-  background: var(--info-bg);
-}
-
-.processo-numero {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--azul);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-}
-
-.processo-badge {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--texto-suave);
-  background: var(--fundo);
-  border: 1px solid var(--borda);
-  border-radius: 10px;
-  padding: 2px 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.processo-info {
-  padding: 8px 12px;
-  font-size: 11px;
-  color: var(--texto-suave);
-  line-height: 1.5;
-}
 
 
 /* ── Blocos de parâmetros ──────────────────────────────────── */

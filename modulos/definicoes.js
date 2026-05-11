@@ -38,3 +38,7 @@ async function obterArmazenamento(chave = null){
 	try{ return await NAVEGADOR.storage.local.get(chave) }
 	catch(e){ return chave === null ? {} : null }
 }
+
+async function removerArmazenamento(chave) {
+    await NAVEGADOR.storage.local.remove(chave)
+}
