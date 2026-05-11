@@ -8,6 +8,10 @@ function selecionar(seletor = '', ancestral = '', todos = false){
 	} catch(e){ relatar('selecionar erro:', e, 'erro'); return '' }
 }
 
+function confereJanela(...janelas) {
+    return janelas.some(regex => regex.test(location.href))
+}
+
 async function aguardarElemento(seletor = '', timeout = 0){
 	return new Promise(resolver => {
 		let el = selecionar(seletor)

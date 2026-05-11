@@ -1,3 +1,4 @@
+// em desenvolvimento
 // ============================================================
 // tarefas/acordo-vencido/roteiro.js
 // Roteiro do Acordo Vencido.
@@ -13,7 +14,7 @@
 // Cada etapa define o que aparece no painel assistente.
 // A navegação entre etapas é linear por padrão,
 // mas pode ser condicional via campo 'proximo'.
-
+/*
 const ROTEIRO_TRIAGEM_INICIAL = {
 
     // Etapa de entrada — sempre a primeira
@@ -185,3 +186,4 @@ async function triagem_conclusao() {
     // Por ora abre detalhes — seletor de juiz será implementado no componente específico
     await acao_navegacao_detalhes()
 }
+*/

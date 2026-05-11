@@ -326,21 +326,15 @@ async function ass_atualizarInfoProcesso() {
     }
 
     // Extrai reclamante e reclamada das partes
-    let nomeReclamante = '', nomeReclamada = ''
-    if(Array.isArray(partes)){
-        const rec  = partes.find(p => (p.tipoParte||p.polo||'').toLowerCase().includes('reclamante') || (p.tipoParte||p.polo||'').toLowerCase().includes('ativo'))
-        const reda = partes.find(p => (p.tipoParte||p.polo||'').toLowerCase().includes('reclamada') || (p.tipoParte||p.polo||'').toLowerCase().includes('passivo'))
-        nomeReclamante = rec?.nome  || rec?.pessoaFisica?.nome  || rec?.pessoaJuridica?.nome  || ''
-        nomeReclamada  = reda?.nome || reda?.pessoaFisica?.nome || reda?.pessoaJuridica?.nome || ''
-    }
+    let nomeReclamante = partes?.ATIVO[0]?.nome  || ''
+    let nomeReclamada  = partes?.PASSIVO[0]?.nome || ''
 
     const linhas = [
         nomeReclamante ? `👤 ${nomeReclamante}` : null,
         nomeReclamada  ? `🏢 ${nomeReclamada}`  : null,
         dados?.valorDaCausa ? `💰 R$ ${Number(dados.valorDaCausa).toLocaleString('pt-BR', {minimumFractionDigits:2})}` : null,
         dados?.justicaGratuita ? '✅ Justiça gratuita' : null,
-        dados?.tutelaOuLiminar ? '⚠️ Tutela/Liminar pendente' : null,
-    ].filter(Boolean).join('\n')
+        dados?.tutelaOuLiminar && !dados?.apreciadoTutelaLiminar ? '⚠️ Tem Tutela/Liminar não apreciada.' : null,    ].filter(Boolean).join('\n')
 
     infoEl.textContent = linhas
 }

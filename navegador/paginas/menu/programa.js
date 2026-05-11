@@ -165,7 +165,7 @@ async function iniciar(){
 	// ── Seletor de tarefa ────────────────────────────────────
 	selTarefa.addEventListener('change', () => {
 		nomeAtivo = selTarefa.value
-		NAV.storage.local.set({ tarefaAtiva: nomeAtivo })
+		// tarefaAtiva gerenciado pelo botão Rota
 		_carregarTarefaAtiva()
 	})
 
@@ -188,7 +188,7 @@ async function iniciar(){
 		inputNomeTarefa.style.display = 'none'
 		btnSalvarNome.style.display   = 'none'
 		selTarefa.style.display       = 'block'
-		NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		NAV.storage.local.set({ tarefas })
 		mostrarStatus(statusTarefa,'✅ Tarefa criada!','#2ecc71')
 	})
 
@@ -202,7 +202,7 @@ async function iniciar(){
 		nomeAtivo = Object.keys(tarefas)[0]
 		_popularSelectTarefas()
 		_carregarTarefaAtiva()
-		NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		NAV.storage.local.set({ tarefas })
 		mostrarStatus(statusTarefa,'Tarefa excluída.','#F9B73F')
 	})
 
@@ -232,7 +232,7 @@ async function iniciar(){
 			segundos: parseInt(inputTimerSegundos.value) || 30,
 			opcoes:   inputTimerOpcoes.value.trim(),
 		}
-		NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		NAV.storage.local.set({ tarefas })
 		mostrarStatus(statusTarefa,'✅ Tarefa salva!','#2ecc71')
 	})
 

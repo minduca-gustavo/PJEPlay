@@ -1,0 +1,242 @@
+Manifest-Version: 1.0
+
+Name: manifest.json
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: eaX2B3/iW2C9RV65THrjo7kOIpc=
+SHA256-Digest: J21qfmdXFhLrW9hVWjbqArzcHDcwUNGBOZl1H+dCyYQ=
+
+Name: melhor-leitura/conteudo.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: bsBHrbE4cLjOAzkzNgzKDZ4L1Ak=
+SHA256-Digest: lLZtSp4aP3NKbY+Xa+PGU+D5OF8kg9Piox52lK8eqhM=
+
+Name: imagens/icon16.png
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: 6AChngGl9/qU7cbl7vTqunVZUAs=
+SHA256-Digest: 7TtSK6nRvyIKaj0LPJdbd/JwMU7lLVRLMYYPSigrVf8=
+
+Name: imagens/icon48.png
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: g+igyd0ex+qT9ayKMK0Td8b0UPc=
+SHA256-Digest: 1KUQAVL7805L1Z616bM8H9LbLbWIAEBQHUic7vR/Lxc=
+
+Name: imagens/icon128.png
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: x3HCaCW/VfqF5pOw8n/zDjEqZdk=
+SHA256-Digest: 0xghzQydQSW+zCcmKpJ0KtqEbAiGk8/iR3CYz02vQNE=
+
+Name: imagens/icon32.png
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: ILoTEk5pKT0XSa8DVhxjPda5h6A=
+SHA256-Digest: e9JFc/lznQs8AuIu7B9ARG6ZJV4qvjEIUs3DXyjUMU8=
+
+Name: documento/paginas/pje/rota/botao-rota.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: Qf+uC0JHM8xHMr6f3IfqcAe+9gk=
+SHA256-Digest: ns5vhMLp1CtUVDnhBT/Otg/XWz2kx/x726W2FbXhWKE=
+
+Name: documento/paginas/pje/rota/porta-de-entrada.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: aBcCIRuWBlbOLvz5AQNeMhRYsWI=
+SHA256-Digest: HPvhu9FVxpPn3+6T02z1+NckzvQPH0GX1Air3C3BfkM=
+
+Name: documento/paginas/pje/rota/janelas.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: qUTPlmHzajL3DW1sRROMkMRW+nI=
+SHA256-Digest: 8ZN0qO5gn/3sen6D5OAfaabNYtkoDQEPUT4PvGnxMiQ=
+
+Name: documento/paginas/pje/rota/iniciar.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: 9qCZpCGQiPPoPWCceKK+rJHVQno=
+SHA256-Digest: vbEjKINmkokY5WesB8n/OmUG4oqxq4CjK195HPj1wcc=
+
+Name: documento/paginas/pje/rota/pintura.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: nulnoQIqMAgztMrvcXImcaagffM=
+SHA256-Digest: D0skZlp2ock2shqBjtJTWSdFu8rL33XyV9CkPMOB8h0=
+
+Name: documento/paginas/pje/rota/consulta-qualquer-oj.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: i1wWPL3+HnavPWFaMZqA0xBTv8U=
+SHA256-Digest: s36flyI9oEPDaDUx0MVmrhQr55Hc3TX8CBwfimYxKGw=
+
+Name: documento/paginas/pje/rota/funcoes-da-planilha.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: zRjzphHqYcyGoEEjYUmGquML4fY=
+SHA256-Digest: yeXeqmMZFELaa29YkJqBnyyfu81rLQtRuwpyrVZUjpg=
+
+Name: documento/paginas/pje/rota/sf-botoes.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: rCDOoO1GMcG3g3Khaxf5hrZX5fY=
+SHA256-Digest: e1y/aZKall4vS4xld5ilQ+M/+EWvAEtsqYlEbFzn6qk=
+
+Name: documento/paginas/pje/rota/teste.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: zLvKTMcKvxGSDAqXAlry10ysMy8=
+SHA256-Digest: 4SQ0fmSZyy6DqVe0+ejIZrl3ubrn6JOqHypshAndqSY=
+
+Name: documento/paginas/pje/rota/superfiltro.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: H1qp+dL5eRD2omj4/57HHd+ik2w=
+SHA256-Digest: mpRV9CTh3vSyVUQADeWucu9r5UawSIyeMZi0bh97SZ4=
+
+Name: modulos/execucao.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: dzfkyN9VsBmpKgj/ZkyLnDFEJSE=
+SHA256-Digest: tNBnMubrI53c7OEfcDXb4teKtRgXqDRj6Z7ML4luxvE=
+
+Name: modulos/navegador.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: Ot40aGPSQW3Syl+7gPfu7xGP3ik=
+SHA256-Digest: 3ksMOWfXMUoUrCWo5TA9/PEJmqR6tBQFOLvko1XRSKA=
+
+Name: modulos/definicoes.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: ZKE4bPP4HeykygwhwjLC2CBmAcI=
+SHA256-Digest: bVuttosPOjUZ0rJjpnAlhSC8EqsDErSTOj4QDKu2jxY=
+
+Name: modulos/dom.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: lIKjZ31/vPbRCzfuH+jY+0REcdE=
+SHA256-Digest: RAiXFIw+Fybo3clQhz+I+/f8lQQqmxz5sN4OBdehHYo=
+
+Name: modulos/relatar.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: 18tA1yZ01uN6olKWalXQvziLako=
+SHA256-Digest: rDFT7V5MpK/dkPda9WF9CK+Y+l43QHuADsLuVrTDO9Y=
+
+Name: modulos/texto.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: aHjFzz91FTa84jdY+E7vhUuVKhc=
+SHA256-Digest: hy+NOPuoBPZ2fCGCM0kR/GdaiCt9tT9QFnl108xJjR8=
+
+Name: navegador/compatibilizacao.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: Qrw7pROpzKoksADUmQJQdoydIuo=
+SHA256-Digest: gjf2CoKsFNRExmamZ59MMBHELu0BACR1otIzu2VhZtc=
+
+Name: navegador/segundo-plano.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: j8ZX5SAztJ+kHlkqo5LEbYPCxDI=
+SHA256-Digest: gmFBUv0YyPUhhATihp5a3JJiwzfBQzIsELtN1Pa6dh8=
+
+Name: navegador/paginas/menu/estilo.css
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: pCplQ/U4f+XgQ0K9oMUBcziF2uY=
+SHA256-Digest: zJeUFnbR3lx1i/ZojGmEtlJ8chR8AMcZTDsAvuxBaW0=
+
+Name: navegador/paginas/menu/pagina.htm
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: QsDMb0/0+6pi6OpQ7DMfp7GhQ70=
+SHA256-Digest: Z0wYS1V5CjFztM4982D1qb9xwei1fQ0JacWFG9WMN9Y=
+
+Name: navegador/paginas/menu/programa.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: FRj3NqAdvPwL0uf1aa0vIdSSsmU=
+SHA256-Digest: cuTky1nvOgCxReadjBSfDRFINMgKP/aSG2hqMf29Ays=
+
+Name: utils/pdfjs.worker.mjs
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: wWOufx9ro1cYpPuqwQPULM2+FAM=
+SHA256-Digest: OoTvlmkDMtxxt2W0bjZz/OvX8UdVC/CvviUFaehs76A=
+
+Name: utils/pdfjs.mjs
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: LrZfaaOyIONZlAzoUvGDzp516eU=
+SHA256-Digest: 2pdfQhQPFvqgcWvYBIYU9zW1FEEiX1EUmGTOjkoBaAQ=
+
+Name: rota/estado.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: 4Uf/R27SeycFDK+7hgZvios4rQg=
+SHA256-Digest: aUpbrSsYoSIbouysmaw4b+uE6rxlZlYz3X6t3TQaqTU=
+
+Name: rota/acoes.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: DZwiSfW5Nm26c62qEqaGFOM5iIQ=
+SHA256-Digest: 6RPDvYvN/0CUWIH6019bTCKfBhBXAF5aW1ZUyQmq8QM=
+
+Name: rota/configuracao.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: tDQ1tRvw7QY1SCRDgP7VgdrVUSU=
+SHA256-Digest: MKy9JuGTTenj51y3o62r2OuqdjMuh5bMXkY82IHSTpE=
+
+Name: rota/modelo.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: HWDbu9p2s6udDVWoI6vBh1QfWB8=
+SHA256-Digest: Cv2UGjAKlc9hno7yw4fU6W1k5lJhN6ejFlpuRZdmaQk=
+
+Name: rota/interceptador.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: vhZuG9F8nR6pRA4XT2LY1aaY/3E=
+SHA256-Digest: xaaC+9m+mllSepx9cKN0sW49PH7jGaqUD//ljbNdDE8=
+
+Name: rota/componentes.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: lDomvaztEARQQf3oeAkJ7I3Fb4A=
+SHA256-Digest: 6S9NJNu+64671LOf1NM38WZnxk6B1agA+SUV36sZoEo=
+
+Name: rota/interceptador-xhr.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: +lAmVdRECoDs468l4nlYJ28RY1E=
+SHA256-Digest: hqX2MDtWJszCJid+zvGXxb/6+odEt/A+Mdkf79reh6w=
+
+Name: rota/cache.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: 4kETiXTQcNQ0yVVwVnvuUwhyFyA=
+SHA256-Digest: XgY2b1T960GuUdmgqOl+qY4ubBxRfYI9Od33S5Kwgu4=
+
+Name: rota/assistente/conector.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: M/C6J3/DuFsJxNgz47nj5uuK5/k=
+SHA256-Digest: 1Ng25Pgaqjp1x9e2meSLyU2hfYPtdUOU85+2dmUH5tk=
+
+Name: rota/assistente/assistente.html
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: koR7snyjNxBtoaBu7hJ5G5vCG1k=
+SHA256-Digest: NKQdeYswxkDhcxOLEelPhhJJvMhjOpaSzvA1nZJUF28=
+
+Name: rota/assistente/assistente.css
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: r37zqlWXaP0ThOwLem8eMVRm9aY=
+SHA256-Digest: KnPK2QE6Imst05DFMgDPtriRjKYDJKteDU+YJaTjSEQ=
+
+Name: rota/assistente/assistente.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: TPfYaeANH56dEHxhKc71+L/HfAY=
+SHA256-Digest: ogZBKdeNdwpXgoTmtMlXTOUXpvA6WtQZOE8QXxwwTO8=
+
+Name: rota/tarefas/index.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: wXjghGjkYdeEfeuGuXMuK7kv4ag=
+SHA256-Digest: ZnwQ7s6ptKbIgqaO6uEQP74q9oZQt5n/3tfdhSWD0rk=
+
+Name: rota/tarefas/acordo-vencido/roteiro.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: pQGDL8x8neu0G55Waa1ICaBBMGo=
+SHA256-Digest: Rwzvp/lvbRCts2+VPCIdbupTt7ycOuEzaepU4xYYKfE=
+
+Name: rota/tarefas/triagem-inicial/roteiro.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: zvDEsSgN1gFmKaaRSGKb0R6Rtxg=
+SHA256-Digest: 7M0uQUylA1Lyjvsp7KeztS4qvmn1q/ONyZZw0lPfdV0=
+
+Name: rota/tarefas/pos-triagem/roteiro.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: J3QKlB2J8cChYNXklw9Cc9HBPSQ=
+SHA256-Digest: fwVtNKaJLoP7khZa747kpvRD61eLcVW158tWrYSjwMc=
+
+Name: rota/tarefas/balcao-virtual/roteiro.js
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: J3QKlB2J8cChYNXklw9Cc9HBPSQ=
+SHA256-Digest: fwVtNKaJLoP7khZa747kpvRD61eLcVW158tWrYSjwMc=
+
+Name: META-INF/cose.manifest
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: QTbpuOzHmRf/M3+l9JdCtodC+sU=
+SHA256-Digest: 725bUKNItbeUrJe2j4YI7Gmwv8XV48GxrcNFe7klnWs=
+
+Name: META-INF/cose.sig
+Digest-Algorithms: SHA1 SHA256
+SHA1-Digest: CF1snAQ2IckZeAC02YMsPAfZqpg=
+SHA256-Digest: jf5SULHPHoqcR0F40wH7TiyXxwq7zAVVtMsh3gY+sRw=
+

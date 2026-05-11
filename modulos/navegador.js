@@ -16,6 +16,21 @@ function rota_idempotencia(){
 	return `"${Math.random().toString().slice(2,20)}${Date.now()}"`
 }
 
+async function post(url, corpo) {
+    const token = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
+    return fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/plain, */*',
+            'X-XSRF-TOKEN': token,
+        },
+        body: JSON.stringify(corpo)
+    })
+}
+
 async function rota_fetch(url = ''){
 	let token    = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
 	let instancia = CONFIGURACAO?.pessoa?.instancia || '1'

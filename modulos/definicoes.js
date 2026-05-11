@@ -7,7 +7,13 @@ const
 
 var CONFIGURACAO = {}
 var MODO_DEV     = false   // ativado via popup página 4 — controla o relatar()
-
+var JANELA = {
+    meuPainel:          /\/pjekz\/gigs\/meu-painel/,
+    painelGlobal:      	/\/pjekz\/painel\/global/,
+    painelGlobalTodos: 	/\/pjekz\/painel\/global\/todos\/lista-processos/,
+    detalhes:          	/\/pjekz\/processo\/\d*\/detalhe/,
+	escaninho: 			/\/pjekz\/escaninho/,
+}
 
 function _definirNavegador(){
 	if(typeof browser === 'undefined' && typeof chrome !== 'undefined') return chrome

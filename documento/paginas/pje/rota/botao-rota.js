@@ -379,7 +379,9 @@ async function _rota_aoClicarTarefa(btnRef){
 	let store = await obterArmazenamento(['tarefas', 'tarefaAtiva'])
 	let tarefas   = store?.tarefas   || {}
 	let nomeAtivo = store?.tarefaAtiva || ''
+	if (nomeAtivo) await armazenar({ tarefaAtiva: nomeAtivo })
 	let nomes     = Object.keys(tarefas)
+	
 
 	let menu = document.createElement('div')
 	_rota_menuTarefa = menu

@@ -1,3 +1,4 @@
+// em desenvolvimento
 // ============================================================
 // tarefas/triagem-inicial/roteiro.js
 // Roteiro da Triagem Inicial.
@@ -14,6 +15,9 @@
 // A navegação entre etapas é linear por padrão,
 // mas pode ser condicional via campo 'proximo'.
 
+
+
+/*
 const ROTEIRO_TRIAGEM_INICIAL = {
 
     // Etapa de entrada — sempre a primeira
@@ -29,12 +33,11 @@ const ROTEIRO_TRIAGEM_INICIAL = {
             infoPJE: async () => {
                 // Tenta ler partes interceptadas
                 const partes = interceptador_lerPartes()
+                relatar ('partes: ', partes, 'teste')
+                
                 if (!partes?.length) return null
 
-                const rec  = partes.find(p =>
-                    (p.tipoParte || p.polo || '').toLowerCase().includes('reclamante') ||
-                    (p.tipoParte || p.polo || '').toLowerCase().includes('ativo')
-                )
+                const recte  = partes.ATIVO[0].nome
                 const reda = partes.find(p =>
                     (p.tipoParte || p.polo || '').toLowerCase().includes('reclamada') ||
                     (p.tipoParte || p.polo || '').toLowerCase().includes('passivo')
@@ -42,7 +45,7 @@ const ROTEIRO_TRIAGEM_INICIAL = {
                 const proc = interceptador_lerProcesso()
 
                 return [
-                    rec?.nome  ? `Reclamante: ${rec.nome}`           : null,
+                    recte? `Reclamante: ${recte}`           : null,
                     reda?.nome ? `Reclamada: ${reda.nome}`           : null,
                     proc?.valorCausa ? `Valor: ${proc.valorCausa}`   : null,
                 ].filter(Boolean).join('\n')
@@ -185,3 +188,4 @@ async function triagem_conclusao() {
     // Por ora abre detalhes — seletor de juiz será implementado no componente específico
     await acao_navegacao_detalhes()
 }
+*/
