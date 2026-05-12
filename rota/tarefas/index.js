@@ -21,6 +21,7 @@ const ROTA_CATALOGO = [
         descricao: 'Abre o processo onde estiver, aponta no assistente as informações e cria botões de GIGs do DAA.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
+   
     */
     {
         id:        'triagem-inicial',

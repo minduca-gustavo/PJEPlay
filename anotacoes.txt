@@ -12,3 +12,10 @@ Filtrar SEM PJC.
 Filtrar ACORDO no recebimento da instancia superior nas VARAS e também:
 SENTENÇA ANULADA
 IMPROCEDÊNCIA MANTIDA
+
+
+função importante aguarda todos:
+    let [timeline, gigs] = await Promise.all([
+        interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
+        interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
+    ])

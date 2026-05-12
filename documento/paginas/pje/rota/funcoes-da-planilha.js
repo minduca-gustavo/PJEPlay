@@ -286,6 +286,13 @@ async function buscarProcesso(i, path = '') {
 	return dados || null
 }
 
+async function buscarSalas(idOrgaoJulgador) {
+	let dados = await rota_fetch(
+		location.origin + '/pje-comum-api/api/salasaudiencias?idOrgaoJulgador=' + idOrgaoJulgador
+	)
+	return dados || null
+}
+
 
 
 // ── POOL DE CONCORRÊNCIA ──────────────────────────────────────

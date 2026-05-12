@@ -286,6 +286,10 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
         let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
         relatar ('perfis: ', perfis, 'teste')
         let perfil = perfis.find(el => el.idOrgaoJulgador === dadosProcesso?.orgaoJulgador?.id)
+        if (!perfil) {
+            consulta_qualquer_ojErroNumero('erro perfil')
+            return
+        }
         relatar ('perfil: ', perfil, 'teste')
         await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
             method: 'POST',
@@ -328,6 +332,10 @@ async function consulta_qualquer_ojErroNumero(erro = '') {
     if (erro === 'nao encontrado'){
         mensagem = 'Verifique o dígito.'
     }
+    if (erro === 'erro perfil'){
+        mensagem = 'Você não possui o perfil da OJ.'
+    }
+
     let campo =  document.getElementById('pjerota-consulta_qualquer_oj-input')
     campo.placeholder = mensagem
     campo.value = ''

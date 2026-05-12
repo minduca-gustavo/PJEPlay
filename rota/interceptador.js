@@ -3,10 +3,12 @@
 // Processa as requisições interceptadas pelo interceptador-xhr.js
 // e salva os dados úteis como <meta> no <head> da página.
 // ============================================================
-
+//https://pje-web-hm.trt15.jus.br/pje-gigs-api/api/atividade/processo/3997133
+//    /pje-gigs-api/api/processo/4642553
 
 const INTERCEPTADOR_URL = {
-    gigs:               /\/pje-gigs-api\/api\/processo/
+    gigs:               /\/pje-gigs-api\/api\/atividade\/processo\/\d+$/i,
+    gigsConcluidos:     /\/pje-gigs-api\/api\/atividade\/processo\/\d+\/concluida/i,
     processo:           /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
     processoPartes:     /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
     tarefas:            /\/pje-comum-api\/api\/agrupamentotarefas$/i,
@@ -24,6 +26,7 @@ const INTERCEPTADOR_URL = {
 
 const INTERCEPTADOR_ROTULO = {
     gigs:               'gigs',
+    gigsConcluidos:     'gigs-concluidos',
     processo:           'processo',
     processoPartes:     'processo-partes',
     tarefas:            'tarefas',
@@ -123,7 +126,7 @@ function interceptador_lerDocumentos()          { return interceptador_ler('docu
 function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')}
 function interceptador_lerTimeline()            { return interceptador_ler('timeline')        }
 function interceptador_lerGigs()                { return interceptador_ler('gigs')            }
-
+function interceptador_lerGigsConcluidos()      { return interceptador_ler('gigs-concluidos') }
 
 // ── Aguardar dado ─────────────────────────────────────────────
 
@@ -142,7 +145,7 @@ function interceptador_aguardar(rotulo = '', timeout = 8000){
 
         let timer = setTimeout(() => {
             document.removeEventListener('RotaMetaTagAtualizada', handler)
-            rejeitar(new Error('[Rota PJE] Timeout aguardando: rota-' + rotulo))
+            resolver(null)  // ← em vez de rejeitar
         }, timeout)
     })
 }

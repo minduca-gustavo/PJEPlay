@@ -9,9 +9,21 @@ function aoAbrirDetalhesDoProcesso(){
 }
 
 async function triagem_inicial_janelaDetalhes(){
-    let timeline    = await interceptador_lerTimeline()
-    let gigs        = await interceptador_lerGigs()
-    console.log ('linha 13 timeline: ' + JSON.stringify(timeline[timeline.length - 1]?.idUnicoDocumento) + 'gigs: ' + JSON.stringify(gigs))
+    let [timeline, gigs, gigsConcluidos, processo] = await Promise.all([
+        interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
+        interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
+        interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
+        interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || []),
+    ])
+    let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
+    let juizSimetriaPeloGig = gig?.nomeUsuarioDestinatario
+    let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento
+    let salas = await buscarSalas(processo?.orgaoJulgador?.id)
+    relatar('salas: ', salas, 'teste')
+    relatar('processo: ', processo?.orgaoJulgador?.id, 'teste')
+    relatar('juizSimetriaPeloGig: ', juizSimetriaPeloGig, 'teste')
+    relatar('peticaoInicial: ', peticaoInicialId, 'teste')
+
 }
 
 aoAbrirDetalhesDoProcesso()
