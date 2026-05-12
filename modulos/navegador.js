@@ -31,6 +31,12 @@ async function post(url, corpo) {
     })
 }
 
+function rota_buscarParametros(nome = '') {
+    return new URLSearchParams(location.search).get(nome)
+        ?? new URLSearchParams(location.hash.split('?')[1] ?? '').get(nome)
+        ?? null
+}
+
 async function rota_fetch(url = ''){
 	let token    = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
 	let instancia = CONFIGURACAO?.pessoa?.instancia || '1'

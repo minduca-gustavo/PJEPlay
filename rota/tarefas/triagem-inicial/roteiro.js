@@ -1,3 +1,22 @@
+console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
+function aoAbrirDetalhesDoProcesso(){
+    console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
+    let janela = confereJanela(JANELA.detalhes)
+    if (!janela) return
+    let parametros = rota_buscarParametros('pjerota_tarefa')
+    if (parametros !== 'triagem-inicial') return
+    triagem_inicial_janelaDetalhes()
+}
+
+async function triagem_inicial_janelaDetalhes(){
+    let timeline = await interceptador_lerTimeline()
+    console.log ('linha 13 timeline: ' + JSON.stringify(timeline[timeline.length - 1]?.idUnicoDocumento))
+
+}
+
+aoAbrirDetalhesDoProcesso()
+
+
 // em desenvolvimento
 // ============================================================
 // tarefas/triagem-inicial/roteiro.js

@@ -18,6 +18,7 @@ const INTERCEPTADOR_URL = {
     dadosBasicos:       /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
     documentos:         /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
     orgaosJulgadores:   /\/pje-comum-api\/api\/orgaosjulgadores/i,
+    timeline:           /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
 }
 
 const INTERCEPTADOR_ROTULO = {
@@ -31,7 +32,7 @@ const INTERCEPTADOR_ROTULO = {
     audiencias:         'audiencias',
     responsaveis:       'responsaveis',
     dadosBasicos:       'dados-basicos',
-    documentos:         'documentos',
+    timeline:           'timeline',
     orgaosJulgadores:   'orgaosJulgadores',
 }
 
@@ -118,6 +119,7 @@ function interceptador_lerAudiencias()          { return interceptador_ler('audi
 function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')    }
 function interceptador_lerDocumentos()          { return interceptador_ler('documentos')      }
 function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')      }
+function interceptador_lerTimeline()            { return interceptador_ler('timeline')            }
 
 
 // ── Aguardar dado ─────────────────────────────────────────────

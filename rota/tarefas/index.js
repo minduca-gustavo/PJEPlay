@@ -14,21 +14,21 @@
 
 
 const ROTA_CATALOGO = [
-    
+    /*
     {
         id:        'balcao-virtual',
         label:     'Balcão Virtual',
         descricao: 'Abre o processo onde estiver, aponta no assistente as informações e cria botões de GIGs do DAA.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
-    /*
+    */
     {
         id:        'triagem-inicial',
         label:     'Triagem Inicial',
         descricao: 'Análise da petição inicial, autuação e encaminhamento.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
-    
+    /*
     {
         id:        'pos-triagem',
         label:     'Pós-Triagem',

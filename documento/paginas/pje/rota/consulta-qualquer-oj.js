@@ -31,8 +31,17 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         textoSuave: '#6b7c93',
     }
 
-    let store = await NAVEGADOR.storage.local.get([STORAGE_POS])
-    let pos   = store[STORAGE_POS] || { top: 80, left: 20 }
+    let store  = await obterArmazenamento([STORAGE_POS, 'consulta_qualquer_oj_recolhido'])
+    let pos    = store[STORAGE_POS] || { top: 80, left: 20 }
+    let recolhido = store['consulta_qualquer_oj_recolhido'] ?? false
+
+    // Garante que o widget não monte fora da janela atual
+    const maxLeft = Math.max(0, window.innerWidth  - 240)
+    const maxTop  = Math.max(0, window.innerHeight - 120)
+    pos = {
+        left: Math.min(Math.max(0, pos.left), maxLeft),
+        top:  Math.min(Math.max(0, pos.top),  maxTop),
+    }
     let _arrastando = false
 
     // ── Raiz ─────────────────────────────────────────────────
@@ -76,6 +85,25 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         letterSpacing: '0.4px',
     })
 
+    let btnToggle = document.createElement('button')
+    btnToggle.textContent = '▲'
+    _s(btnToggle, {
+        background: 'transparent',
+        border:     'none',
+        color:      'rgba(255,255,255,0.6)',
+        fontSize:   '11px',
+        cursor:     'pointer',
+        padding:    '0 6px 0 0',
+        lineHeight: '1',
+    })
+    btnToggle.addEventListener('click', (e) => {
+        e.stopPropagation()
+        const recolhido = corpo.style.display === 'none'
+        corpo.style.display   = recolhido ? 'flex' : 'none'
+        btnToggle.textContent = recolhido ? '▲' : '▼'
+        armazenar({ consulta_qualquer_oj_recolhido: !recolhido })
+    })
+
     let btnFechar = document.createElement('button')
     btnFechar.textContent = '×'
     _s(btnFechar, {
@@ -92,6 +120,7 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
     btnFechar.addEventListener('click', (e) => { e.stopPropagation(); widget.remove() })
 
     barra.appendChild(titulo)
+    barra.appendChild(btnToggle)  // ← linha nova
     barra.appendChild(btnFechar)
 
     // ── Corpo ─────────────────────────────────────────────────
@@ -175,13 +204,26 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         lineHeight: '1.4',
     })
 
+    let aviso = document.createElement('span')
+    aviso.innerHTML = '<strong style="text-decoration:underline">ATENÇÃO</strong>: em teletrabalho, só funciona com a VPN ligada.'
+    _s(aviso, {
+        fontSize:   '10px',
+        color:      C.textoSuave,
+        lineHeight: '1.4',
+    })
+
     corpo.appendChild(rotulo)
     corpo.appendChild(wrapInput)
     corpo.appendChild(rodape)
+    corpo.appendChild(aviso)
 
     widget.appendChild(barra)
     widget.appendChild(corpo)
     document.body.appendChild(widget)
+    if (recolhido) {
+        corpo.style.display   = 'none'
+        btnToggle.textContent = '▼'
+    }
 
     let tarefaAtiva = await obterArmazenamento('tarefaAtiva')
 
@@ -219,9 +261,13 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
     function _s(el, styles) { Object.assign(el.style, styles) }
 }
 
+
+
 async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
+    let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
+    let ROTA_REGEX_CNJ_SEM_DIVISOR = /\d{20}/
     console.log(JSON.stringify(numeroDoProcesso))
-    let numeroVerificado = ROTA_REGEX_CNJ.test(numeroDoProcesso)
+    let numeroVerificado = ROTA_REGEX_CNJ.test(numeroDoProcesso) || ROTA_REGEX_CNJ_SEM_DIVISOR.test(numeroDoProcesso)
     if (!numeroVerificado) {
         await consulta_qualquer_ojErroNumero('fora do padrao')
         return
@@ -257,9 +303,8 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
         //let oj = aguardarElemento(`[aria-label*='${dadosProcesso?.orgaoJulgador?.descricao}']`) 
         //await clicar (oj)
     }
-    
     await armazenar({pjerota_consulta_qualquer_oj: dadosBasicos?.id})
-    url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + numeroDoProcesso
+    url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + dadosBasicos?.numero
     await consulta_qualquer_ojNavegar(url)
 }
 

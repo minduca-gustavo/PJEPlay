@@ -48,7 +48,7 @@ const ROTA_BOTOES_CONFIG = [
 // ── Regex CNJ ─────────────────────────────────────────────────
 
 const ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/g
-
+const ROTA_REGEX_CNJ_SEM_DIVISOR = /\d{20}/g
 
 // ── Parser de lista ───────────────────────────────────────────
 
