@@ -9,9 +9,9 @@ function aoAbrirDetalhesDoProcesso(){
 }
 
 async function triagem_inicial_janelaDetalhes(){
-    let timeline = await interceptador_lerTimeline()
-    console.log ('linha 13 timeline: ' + JSON.stringify(timeline[timeline.length - 1]?.idUnicoDocumento))
-
+    let timeline    = await interceptador_lerTimeline()
+    let gigs        = await interceptador_lerGigs()
+    console.log ('linha 13 timeline: ' + JSON.stringify(timeline[timeline.length - 1]?.idUnicoDocumento) + 'gigs: ' + JSON.stringify(gigs))
 }
 
 aoAbrirDetalhesDoProcesso()

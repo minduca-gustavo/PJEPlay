@@ -6,6 +6,7 @@
 
 
 const INTERCEPTADOR_URL = {
+    gigs:               /\/pje-gigs-api\/api\/processo/
     processo:           /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
     processoPartes:     /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
     tarefas:            /\/pje-comum-api\/api\/agrupamentotarefas$/i,
@@ -22,6 +23,7 @@ const INTERCEPTADOR_URL = {
 }
 
 const INTERCEPTADOR_ROTULO = {
+    gigs:               'gigs',
     processo:           'processo',
     processoPartes:     'processo-partes',
     tarefas:            'tarefas',
@@ -118,8 +120,9 @@ function interceptador_lerPerfis()              { return interceptador_ler('perf
 function interceptador_lerAudiencias()          { return interceptador_ler('audiencias')      }
 function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')    }
 function interceptador_lerDocumentos()          { return interceptador_ler('documentos')      }
-function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')      }
-function interceptador_lerTimeline()            { return interceptador_ler('timeline')            }
+function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')}
+function interceptador_lerTimeline()            { return interceptador_ler('timeline')        }
+function interceptador_lerGigs()                { return interceptador_ler('gigs')            }
 
 
 // ── Aguardar dado ─────────────────────────────────────────────
