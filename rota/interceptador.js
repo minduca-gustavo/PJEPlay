@@ -94,9 +94,15 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
         )
 
         // Espelha dados importantes no storage para o assistente ler
-        const rotulosParaStorage = ['processo', 'processo-partes', 'audiencias', 'responsaveis', 'documentos']
+        const rotulosParaStorage = [
+            'processo',
+            'processo-partes',
+            'audiencias',
+            'responsaveis',
+            'documentos'
+        ]
         if(rotulosParaStorage.includes(rotulo)){
-            let chaveStorage = 'rotaDados_' + rotulo.replace('-', '_')
+            let chaveStorage = 'rotaDados_' + rotulo.replaceAll('-', '_')
             armazenar({ [chaveStorage]: dados }).catch(() => {})
         }
 

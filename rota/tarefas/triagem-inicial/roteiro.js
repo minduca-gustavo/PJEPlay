@@ -49,6 +49,7 @@ async function triagem_inicial_janelaDetalhes(){
     relatar('juizSimetriaPeloGig: ', juizSimetriaPeloGig, 'teste')
     relatar('peticaoInicial: ', peticaoInicialId, 'teste')
     dadosTriagem.partes = partes
+    await armazenar({ rotaDados_processo_partes: partes })
     dadosTriagem.processo = processo
     dadosTriagem.gig = gig
     dadosTriagem.salas = salas
@@ -80,7 +81,7 @@ aoAbrirDetalhesDoProcesso()
 
 
 
-
+/*
 const ROTEIRO_TRIAGEM_INICIAL = {
 
     // Etapa de entrada — sempre a primeira
@@ -92,30 +93,34 @@ const ROTEIRO_TRIAGEM_INICIAL = {
         autuacao: {
             id:     'autuacao',
             titulo: 'Autuação',
-
+                
             infoPJE: async () => {
                 // Tenta ler partes interceptadas
                 const partes = interceptador_lerPartes()
-                relatar ('partes: ', partes, 'teste')
+                if (!partes?.length) return null    
                 
-                if (!partes?.length) return null
+                //if (!partes?.length) return null
 
                 const recte  = partes.ATIVO[0].nome
-                const reda = partes.find(p =>
-                    (p.tipoParte || p.polo || '').toLowerCase().includes('reclamada') ||
-                    (p.tipoParte || p.polo || '').toLowerCase().includes('passivo')
-                )
-                const proc = interceptador_lerProcesso()
-
+                //const reda = partes.find(p =>
+                //    (p.tipoParte || p.polo || '').toLowerCase().includes('reclamada') ||
+                //    (p.tipoParte || p.polo || '').toLowerCase().includes('passivo')
+                //)
+                //const proc = interceptador_lerProcesso()
+                //
                 return [
                     recte? `Reclamante: ${recte}`           : null,
-                    reda?.nome ? `Reclamada: ${reda.nome}`           : null,
-                    proc?.valorCausa ? `Valor: ${proc.valorCausa}`   : null,
+                    //reda?.nome ? `Reclamada: ${reda.nome}`           : null,
+                    //proc?.valorCausa ? `Valor: ${proc.valorCausa}`   : null,
                 ].filter(Boolean).join('\n')
             },
 
-            instrucaoRapida: 'Confira se as partes e dados do processo estão corretos.',
-
+            //instrucaoRapida: 'Confira se a autuação está correta. Para mais detalhes, clique abaixo para ver a instrução completa da tarefa.',
+            let partesInstruc = interceptador_lerPartes(),
+            instrucaoRapida: async() => {
+                let partesInstruc = interceptador_lerPartes()
+                return JSON.stringify(partesInstruc)
+            },
             instrucaoLonga: `Verifique:
 • Nome completo do reclamante (sem abreviações)
 • Nome/razão social da reclamada
@@ -189,7 +194,82 @@ Se houver erro em qualquer campo, utilize os botões de retificação abaixo.`,
         },
     },
 }
+*/
 
+const ROTEIRO_TRIAGEM_INICIAL = {
+
+    etapaInicial: 'autuacao',
+
+    etapas: {
+
+        autuacao: {
+            id:     'autuacao',
+            titulo: 'Autuação',
+
+            infoPJE: {
+                rotulo: '📋 Partes do processo',
+                detalhe: async () => {
+                    const partes = conector_lerPartes()
+                    return formatarPartes(partes)
+                }
+            },
+
+            instrucaoRapida: async () => {
+                const partes = conector_lerPartes()
+                return formatarPartes(partes)
+            },
+
+            instrucaoLonga: `Verifique:
+- Nome completo do reclamante (sem abreviações)
+- Nome/razão social da reclamada
+- CPF/CNPJ das partes
+- Valor da causa
+- Classe processual correta
+- Órgão julgador correto
+
+Se houver erro em qualquer campo, utilize os botões de retificação abaixo.`,
+
+            acoes: [
+                { label: 'Retificar — reclamante',      acao: 'triagem_retificarReclamante', primario: false },
+                { label: 'Retificar — reclamada',        acao: 'triagem_retificarReclamada',  primario: false },
+                { label: 'Retificar — dados do processo',acao: 'triagem_retificarDados',      primario: false },
+            ],
+
+            proximo: 'passos',
+        },
+
+        passos: {
+            id:     'passos',
+            titulo: 'Próximos Passos',
+
+            infoPJE: null,
+
+            instrucaoRapida: 'Defina o encaminhamento do processo.',
+
+            instrucaoLonga: `Critérios de encaminhamento:
+- Tutela: encaminhar para conclusão imediata (ver observação no sistema)
+- Processo comum: marcar audiência de instrução e julgamento
+- Acordo já firmado: verificar homologação
+- Dúvida sobre competência: retificar autuação antes de pautar`,
+
+            acoes: [
+                {
+                    label:    'Marcar audiência',
+                    acao:     'triagem_marcarAudiencia',
+                    primario: true,
+                    submenu: [
+                        { label: 'Instrução e julgamento', acao: 'triagem_audienciaInstrucao'  },
+                        { label: 'Conciliação',            acao: 'triagem_audienciaConciliacao' },
+                    ],
+                },
+                { label: 'Despacho',                    acao: 'triagem_despacho',   primario: false },
+                { label: 'Encaminhar para conclusão',   acao: 'triagem_conclusao',  primario: false },
+            ],
+
+            proximo: null,
+        },
+    },
+}
 
 // ── Ações específicas da triagem inicial ──────────────────────
 //

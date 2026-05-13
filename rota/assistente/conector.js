@@ -15,9 +15,9 @@
 // ── Leitura de dados do PJE via storage ───────────────────────
 //
 // No contexto do assistente (janela separada), as metatags da página
-// do PJE não são acessíveis. O interceptador.js espelha os dados
+// do PJE não são acessíveis. O conector.js espelha os dados
 // interceptados no storage.local sob as chaves rotaDados_*.
-// Estas funções substituem as interceptador_ler*() do PJE,
+// Estas funções substituem as conector_ler*() do PJE,
 // expondo a mesma interface para que os roteiros funcionem
 // sem distinção de contexto.
 //
@@ -31,17 +31,17 @@ async function conector_atualizarCache() {
         'rotaDados_processo',
         'rotaDados_processo_partes',
         'rotaDados_audiencias',
-        'rotaDados_responsaveis',
         'rotaDados_documentos',
     ])
     _con_dadosCache = cfg || {}
 }
 
-function interceptador_lerProcesso()     { return _con_dadosCache['rotaDados_processo']         || null }
-function interceptador_lerPartes()       { return _con_dadosCache['rotaDados_processo_partes']   || null }
-function interceptador_lerAudiencias()   { return _con_dadosCache['rotaDados_audiencias']        || null }
-function interceptador_lerResponsaveis() { return _con_dadosCache['rotaDados_responsaveis']      || null }
-function interceptador_lerDocumentos()   { return _con_dadosCache['rotaDados_documentos']        || null }
+function conector_lerProcesso()     { return _con_dadosCache['rotaDados_processo']          || null }
+function conector_lerPartes() { 
+    return _con_dadosCache['rotaDados_processo_partes'] || null 
+}
+function conector_lerAudiencias()   { return _con_dadosCache['rotaDados_audiencias']        || null }
+function conector_lerDocumentos()   { return _con_dadosCache['rotaDados_documentos']        || null }
 
 
 // ── Mapa de roteiros ──────────────────────────────────────────
@@ -78,13 +78,12 @@ async function conector_iniciar() {
             await conector_montar()
             return
         }
-
+        const chavesDados = ['rotaDados_processo', 'rotaDados_processo_partes', 'rotaDados_audiencias', 'rotaDados_documentos']
         // Dados do PJE chegaram → atualiza cache e remonta infoPJE
-        const chavesDados = ['rotaDados_processo', 'rotaDados_processo_partes', 'rotaDados_audiencias', 'rotaDados_responsaveis', 'rotaDados_documentos']
         if (chavesDados.some(c => !!mudancas[c])) {
+            console.log('[Conector] chave de dados mudou, remontando etapa:', _con_etapaAtual)
             await conector_atualizarCache()
-            // Remonta apenas a infoPJE da etapa atual, sem remontar o painel inteiro
-            document.dispatchEvent(new CustomEvent('RotaMetaTagAtualizada'))
+            await conector_montarEtapa(_con_etapaAtual)
             return
         }
 
@@ -206,33 +205,31 @@ async function conector_montarEtapa(idEtapa, roteiro, sessao) {
     conector_limparContainer(container)
 
     // ── Bloco principal da etapa
-    const bloco = criarBloco({ titulo: etapa.titulo })
+    const bloco = await criarBloco({ titulo: etapa.titulo })
 
     // Info PJE (assíncrona)
     if (etapa.infoPJE) {
-        const infoEl = criarInfoPJE({
-            rotulo:  '📋 Dados extraídos do PJE — passe o mouse',
-            detalhe: '',
-        })
+        const rotulo  = etapa.infoPJE.rotulo ?? '📋 Dados extraídos do PJE — passe o mouse'
+        const infoEl  = criarInfoPJE({ rotulo, detalhe: '' })
         bloco.corpo.appendChild(infoEl)
 
-        // Carrega os dados assincronamente e atualiza
-        etapa.infoPJE().then(detalhe => {
+        etapa.infoPJE.detalhe().then(detalhe => {
             if (detalhe) infoEl.atualizarDetalhe(detalhe)
         }).catch(() => {})
     }
 
     // Instrução rápida
     if (etapa.instrucaoRapida) {
-        bloco.corpo.appendChild(
-            criarInstrucaoRapida({ texto: etapa.instrucaoRapida })
-        )
+        const texto = typeof etapa.instrucaoRapida === 'function'
+            ? await etapa.instrucaoRapida()
+            : etapa.instrucaoRapida
+        bloco.corpo.appendChild(await criarInstrucaoRapida({ texto }))
     }
 
     // Instrução longa
     if (etapa.instrucaoLonga) {
         bloco.corpo.appendChild(
-            criarInstrucaoLonga({ texto: etapa.instrucaoLonga })
+            await criarInstrucaoLonga({ texto: etapa.instrucaoLonga })
         )
     }
 
@@ -243,7 +240,7 @@ async function conector_montarEtapa(idEtapa, roteiro, sessao) {
 
     // Tabela de ações
     if (etapa.acoes?.length) {
-        bloco.corpo.appendChild(criarTabelaAcoes(etapa.acoes))
+        bloco.corpo.appendChild(await criarTabelaAcoes(etapa.acoes))
     }
 
     container.appendChild(bloco.el)
@@ -335,7 +332,7 @@ function conector_limparContainer(container) {
 
 // ── Atualizar info PJE em tempo real ─────────────────────────
 //
-// Chamado quando o interceptador sinaliza novos dados.
+// Chamado quando o conector sinaliza novos dados.
 // Atualiza os blocos de info sem remontar tudo.
 
 document.addEventListener('RotaMetaTagAtualizada', async (e) => {

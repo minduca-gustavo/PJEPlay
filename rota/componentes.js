@@ -31,7 +31,9 @@ function _comp_cor(nome) {
 //   corpo → div interna onde se inserem os sub-componentes
 //   check → o checkbox do bloco (para manipulação externa)
 
-function criarBloco({ titulo = '', iniciarMarcado = false } = {}) {
+async function criarBloco({ titulo = '', iniciarMarcado = false } = {}) {
+
+    const tituloTexto = typeof titulo === 'function' ? await titulo() : titulo
 
     const el = _comp_el('div', {
         background:   _comp_cor('branco'),
@@ -75,7 +77,7 @@ function criarBloco({ titulo = '', iniciarMarcado = false } = {}) {
         color:      _comp_cor('texto'),
         flex:       '1',
     })
-    tituloEl.textContent = titulo
+    tituloEl.textContent = tituloTexto
 
     cabecalho.appendChild(check)
     cabecalho.appendChild(tituloEl)
@@ -127,6 +129,7 @@ function criarInfoPJE({ rotulo = '', detalhe = '' } = {}) {
     })
 
     const label = _comp_el('div', { fontWeight: '500', display: 'flex', alignItems: 'center', gap: '5px' })
+    label.className = 'info-pje-label'
     label.textContent = rotulo
     el.appendChild(label)
 
@@ -146,8 +149,23 @@ function criarInfoPJE({ rotulo = '', detalhe = '' } = {}) {
 
     // Permite atualizar o detalhe em tempo real (dados chegam assíncronos)
     el.atualizarDetalhe = (novoDetalhe) => {
-        const det = el.querySelector('div:last-child')
-        if (det) det.textContent = novoDetalhe
+        console.log('[infoPJE] atualizarDetalhe chamado:', novoDetalhe)
+        let det = el.querySelector('.info-pje-detalhe')
+        if (!det) {
+            det = _comp_el('div', {
+                marginTop:  '5px',
+                color:      _comp_cor('azulClaro'),
+                display:    'none',
+                lineHeight: '1.5',
+                whiteSpace: 'pre-line',
+            })
+            det.className = 'info-pje-detalhe'
+            el.appendChild(det)
+            el.style.cursor = 'pointer'
+            el.addEventListener('mouseenter', () => det.style.display = 'block')
+            el.addEventListener('mouseleave', () => det.style.display = 'none')
+        }
+        det.textContent = novoDetalhe
     }
 
     return el
@@ -156,7 +174,8 @@ function criarInfoPJE({ rotulo = '', detalhe = '' } = {}) {
 
 // ── INSTRUÇÃO RÁPIDA ──────────────────────────────────────────
 
-function criarInstrucaoRapida({ texto = '' } = {}) {
+async function criarInstrucaoRapida({ texto = '' } = {}) {
+    const textoFinal = typeof texto === 'function' ? await texto() : texto
     const el = _comp_el('p', {
         fontSize:   '12px',
         fontWeight: '500',
@@ -164,7 +183,7 @@ function criarInstrucaoRapida({ texto = '' } = {}) {
         lineHeight: '1.5',
         margin:     '0',
     })
-    el.textContent = texto
+    el.textContent = textoFinal
     return el
 }
 
@@ -173,7 +192,8 @@ function criarInstrucaoRapida({ texto = '' } = {}) {
 //
 // Oculta por padrão, com toggle ▼/▲.
 
-function criarInstrucaoLonga({ texto = '' } = {}) {
+async function criarInstrucaoLonga({ texto = '' } = {}) {
+    const textoFinal = typeof texto === 'function' ? await texto() : texto
 
     const wrapper = _comp_el('div', { display: 'flex', flexDirection: 'column', gap: '4px' })
 
@@ -197,7 +217,7 @@ function criarInstrucaoLonga({ texto = '' } = {}) {
         display:     'none',
         whiteSpace:  'pre-line',
     })
-    conteudo.textContent = texto
+    conteudo.textContent = textoFinal
 
     toggle.addEventListener('click', () => {
         const visivel          = conteudo.style.display !== 'none'
@@ -233,7 +253,7 @@ function criarDivisor() {
 //   primario {boolean}  estilo laranja
 //   submenu  {array}    [ { label, acao } ]
 
-function criarTabelaAcoes(acoes = []) {
+async function criarTabelaAcoes(acoes = []) {
 
     if (!acoes.length) return document.createDocumentFragment()
 
@@ -248,7 +268,7 @@ function criarTabelaAcoes(acoes = []) {
 
     const uid = `ta${Date.now()}`
 
-    acoes.forEach((acao, idx) => {
+    for (const [idx, acao] of acoes.entries()) {
 
         const tr    = document.createElement('tr')
         const btnId = `${uid}-${idx}`
@@ -257,12 +277,13 @@ function criarTabelaAcoes(acoes = []) {
         const tdAcao         = document.createElement('td')
         tdAcao.style.cssText = 'width:100%;padding:0;'
 
-        const btn = _criarBotaoAcao(acao.label, acao.acao, acao.primario)
+        const labelTexto = typeof acao.label === 'function' ? await acao.label() : acao.label
+        const btn = await _criarBotaoAcao(labelTexto, acao.acao, acao.primario)
         btn.id    = btnId
         tdAcao.appendChild(btn)
 
         if (acao.submenu?.length) {
-            tdAcao.appendChild(_criarSubmenuEl(acao.submenu))
+            tdAcao.appendChild(await _criarSubmenuEl(acao.submenu))
         }
 
         // ── Célula: checkbox de execução
@@ -299,7 +320,7 @@ function criarTabelaAcoes(acoes = []) {
         }
 
         tbody.appendChild(tr)
-    })
+    }
 
     return tabela
 }
@@ -336,7 +357,7 @@ function _criarBotaoAcao(label = '', acao = '', primario = false) {
     return btn
 }
 
-function _criarSubmenuEl(itens = []) {
+async function _criarSubmenuEl(itens = []) {
     const wrap = _comp_el('div', {
         marginTop:     '3px',
         marginLeft:    '12px',
@@ -347,7 +368,8 @@ function _criarSubmenuEl(itens = []) {
         paddingLeft:   '8px',
     })
 
-    itens.forEach(({ label = '', acao = '' }) => {
+    for (const { label = '', acao = '' } of itens) {
+        const labelTexto = typeof label === 'function' ? await label() : label
         const btn = _comp_el('button', {
             padding:      '5px 10px',
             borderRadius: '4px',
@@ -360,7 +382,7 @@ function _criarSubmenuEl(itens = []) {
             transition:   'background 0.15s',
             width:        '100%',
         })
-        btn.textContent = label
+        btn.textContent = labelTexto
         btn.addEventListener('mouseenter', () => {
             btn.style.color      = _comp_cor('texto')
             btn.style.background = _comp_cor('branco')
@@ -373,7 +395,7 @@ function _criarSubmenuEl(itens = []) {
             if (typeof window[acao] === 'function') window[acao](btn)
         })
         wrap.appendChild(btn)
-    })
+    }
 
     return wrap
 }
