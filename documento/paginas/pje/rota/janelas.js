@@ -15,6 +15,45 @@ let _rota_ativo        = false
 let _rota_relatorio    = []
 let _rota_janelasMundo = []
 
+// ── Chave de persistência do pipeline (sobrevive ao reload) ──
+const ROTA_KEY_PIPELINE = 'pjerota_pipeline_retomar'
+
+// Contexto do processarCursor em execução — acessível por _rota_garantirOJCorreta
+let _rota_slots_ativos        = []
+let _rota_tarefaUnica_ativa   = ''
+let _rota_temporizador_ativo  = { ativo: false, segundos: 30, opcoes: '' }
+
+// Salva fila + cursor + config da tarefa no storage antes de recarregar
+async function rota_pipeline_salvar(slots, tarefaUnica, temporizador){
+	let cfg = await obterArmazenamento(['tarefaAtiva', 'tarefas', 'tarefaAtivaIsSistema'])
+	await armazenar({
+		[ROTA_KEY_PIPELINE]: {
+			fila:        _rota_fila,
+			cursor:      _rota_cursor,
+			slots:       slots,
+			tarefaUnica: tarefaUnica,
+			temporizador:temporizador,
+			tarefaAtiva: cfg?.tarefaAtiva || '',
+			isSistema:   cfg?.tarefaAtivaIsSistema === true,
+		}
+	})
+}
+
+// Tenta retomar pipeline persistido após reload
+async function rota_pipeline_retomar(){
+	let cfg = await obterArmazenamento(ROTA_KEY_PIPELINE)
+	let dados = cfg?.[ROTA_KEY_PIPELINE]
+	if(!dados || !dados.fila?.length) return
+	// Limpa imediatamente para não retomar duas vezes
+	await armazenar({ [ROTA_KEY_PIPELINE]: null })
+	_rota_fila      = dados.fila
+	_rota_cursor    = dados.cursor ?? 0
+	_rota_ativo     = true
+	_rota_relatorio = []
+	rota_avisoTemporario('🔄 Retomando pipeline após atualização…', 'info', 3000)
+	await rota_processarCursor(dados.slots, dados.tarefaUnica, dados.temporizador)
+}
+
 
 // ── Definições de tipos de janela ────────────────────────────
 
@@ -557,6 +596,10 @@ async function rota_iniciarPipeline({ fila }){
 
 async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	if(!_rota_ativo) return
+	// Mantém contexto acessível para persistência em caso de reload por troca de OJ
+	_rota_slots_ativos       = slots
+	_rota_tarefaUnica_ativa  = tarefaUnica
+	_rota_temporizador_ativo = temporizador
 
 	if(_rota_cursor >= _rota_fila.length){
 		_rota_ativo = false
@@ -1518,3 +1561,8 @@ function rota_exibirRelatorio(){
     painel.appendChild(caixa)
     document.body.appendChild(painel)
 }
+
+// ── Retomada automática após reload por troca de OJ ──────────
+// Executa assim que o script carrega. Se houver pipeline persistido
+// no storage (salvo antes do reload), retoma do ponto exato.
+rota_pipeline_retomar()

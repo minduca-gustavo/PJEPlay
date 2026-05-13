@@ -838,15 +838,126 @@ function _rota_encontrarConteiner(el){
 }
 
 
-// ── Busca ID do processo via API ──────────────────────────────
-
+// ── Busca ID do processo via API (+ garante OJ correta) ──────
+//
+// Ponto único de entrada antes de qualquer navegação de processo.
+// Verifica e corrige a OJ da sessão se necessário — sem que o
+// pipeline externo precise saber disso.
+//
 async function _rota_buscarIdProcesso(numero){
 	let numLimpo = numero.replace(/[.\-]/g, '')
 	let dados = await rota_fetch(
 		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
 	)
-	if(Array.isArray(dados) && dados.length) return dados[0].id || dados[0].idProcesso || null
-	if(dados?.id)         return dados.id
-	if(dados?.idProcesso) return dados.idProcesso
-	return null
+	let id = null
+	if(Array.isArray(dados) && dados.length) id = dados[0].id || dados[0].idProcesso || null
+	else if(dados?.id)         id = dados.id
+	else if(dados?.idProcesso) id = dados.idProcesso
+
+	if(!id) return null
+
+	// Verifica e corrige a OJ antes de qualquer navegação
+	let ojCheck = await _rota_garantirOJCorreta(numero)
+	if(!ojCheck.ok){
+		let msg = _ROTA_OJ_ERROS[ojCheck.motivo] || 'Erro ao verificar OJ.'
+		rota_avisoTemporario('⚠ ' + msg, 'erro', 6000)
+		return null  // sinaliza ao pipeline para pular/abortar este processo
+	}
+	if(ojCheck.recarregar){
+		// Pipeline salvo — recarrega para corrigir o Angular após troca de OJ
+		location.href = location.href
+		return null  // interrompe este tick; retomada acontece após reload
+	}
+	if(ojCheck.trocou){
+		rota_avisoTemporario('🔄 OJ ajustada automaticamente.', 'info', 3000)
+	}
+
+	return id
+}
+
+
+// ── Garante que o usuário está na OJ correta antes de abrir ──
+//
+// Fluxo:
+//   1. Busca dados básicos do processo
+//   2. Busca dados completos para obter orgaoJulgador.id
+//   3. Compara com a OJ atual do usuário
+//   4. Se diferente → salva pipeline + POST + sinaliza reload
+//   5. Retorna { ok, trocou, recarregar }
+//
+async function _rota_garantirOJCorreta(numero){
+	try {
+		let dadosBasicos = typeof buscarDadosBasicos === 'function'
+			? await buscarDadosBasicos(numero)
+			: await (async () => {
+				let numLimpo = numero.replace(/[.\-]/g, '')
+				let res = await rota_fetch(
+					location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
+				)
+				return Array.isArray(res) ? res[0] : res
+			})()
+
+		if(!dadosBasicos) return { ok: false, motivo: 'nao_encontrado' }
+
+		let idProcesso = dadosBasicos.id || dadosBasicos.idProcesso
+		if(!idProcesso) return { ok: false, motivo: 'sem_id' }
+
+		let dadosProcesso = typeof buscarProcesso === 'function'
+			? await buscarProcesso(idProcesso)
+			: await rota_fetch(location.origin + '/pje-consulta-api/api/processos/' + idProcesso)
+
+		let idOJProcesso = dadosProcesso?.orgaoJulgador?.id
+		if(!idOJProcesso) return { ok: true }
+
+		let ojAtual = typeof interceptador_lerOrgaosJulgadores === 'function'
+			? interceptador_lerOrgaosJulgadores()
+			: null
+
+		if(!ojAtual || ojAtual.id === idOJProcesso) return { ok: true }
+
+		let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
+		if(!Array.isArray(perfis)) return { ok: false, motivo: 'erro_perfis' }
+
+		let perfil = perfis.find(p => p.idOrgaoJulgador === idOJProcesso)
+		if(!perfil) return { ok: false, motivo: 'sem_perfil_oj' }
+
+		// Persiste o pipeline ANTES do POST (o reload vai apagar a memória)
+		if(typeof rota_pipeline_salvar === 'function'){
+			await rota_pipeline_salvar(
+				_rota_slots_ativos,
+				_rota_tarefaUnica_ativa,
+				_rota_temporizador_ativo
+			)
+		}
+
+		await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
+			method:      'POST',
+			mode:        'cors',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+				'Accept':       'application/json, text/plain, */*',
+				'X-XSRF-TOKEN': rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN'),
+			},
+			body: JSON.stringify({ id_perfil: perfil.idPerfil }),
+		})
+
+		relatar('_rota_garantirOJCorreta: perfil trocado para OJ', idOJProcesso, 'rota')
+		return { ok: true, trocou: true, recarregar: true, ojAnterior: ojAtual.id, ojNova: idOJProcesso }
+
+	} catch(e) {
+		relatar('_rota_garantirOJCorreta: erro inesperado', e, 'rota')
+		return { ok: false, motivo: 'excecao', erro: e }
+	}
+}
+
+
+// ── Mensagens de erro de OJ ───────────────────────────────────
+
+const _ROTA_OJ_ERROS = {
+	nao_encontrado: 'Processo não encontrado na base.',
+	sem_id:         'Não foi possível identificar o processo.',
+	erro_perfis:    'Erro ao consultar perfis de OJ.',
+	sem_perfil_oj:  'Você não possui perfil nesta OJ.',
+	excecao:        'Erro ao verificar OJ do processo.',
 }
