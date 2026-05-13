@@ -373,6 +373,8 @@ function rota_geometriaModoAssistido() {
     const sw   = window.screen.availWidth
     const sh   = window.screen.availHeight
     const topo = Math.round(sh * 0.15 * 1.1)  // mesmo cálculo do original
+	let shAssistente = sh
+	if(MODO_DEV === true) shAssistente = window.screen.availHeight - 50
 
     const largAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
     const GAP = 20
@@ -387,7 +389,7 @@ function rota_geometriaModoAssistido() {
         },
         assistente: {
             width:  largAssistente,
-            height: sh,          // assistente ocupa altura total
+            height: shAssistente,          // assistente ocupa altura total
             left:   largPJE + GAP,     // cola exatamente onde o PJE termina
             top:    0,
         },

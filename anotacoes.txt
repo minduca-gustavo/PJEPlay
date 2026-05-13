@@ -14,8 +14,11 @@ SENTENÇA ANULADA
 IMPROCEDÊNCIA MANTIDA
 
 
-função importante aguarda todos:
+função aguarda todos:
     let [timeline, gigs] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
     ])
+
+função tira duplicações:
+    let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))];

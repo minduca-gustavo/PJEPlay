@@ -44,6 +44,7 @@ async function _extrairPDF(bytes){
 
 NAVEGADOR.runtime.onInstalled.addListener(async (detalhes) => {
     if (detalhes.reason !== 'update') return
+	if (MODO_DEV = false) return
 
     await _PRONTO
     const cfg    = await obterArmazenamento(['rotaSessao', 'rotaGeometria'])
@@ -53,7 +54,7 @@ NAVEGADOR.runtime.onInstalled.addListener(async (detalhes) => {
     const geo = cfg?.['rotaGeometria']
     const url = NAVEGADOR.runtime.getURL('rota/assistente/assistente.html')
     let heightRecriada
-	if (modoDev = true){
+	if (MODO_DEV = true){
 		heightRecriada = window.screen.availHeight - 50
 	} else{
 		heightRecriada = window.screen.availHeight

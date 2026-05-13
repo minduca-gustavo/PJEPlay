@@ -293,6 +293,12 @@ async function buscarSalas(idOrgaoJulgador) {
 	return dados || null
 }
 
+async function buscarSalasHorariosVagos(idSala) {
+	let dados = await rota_fetch(
+		location.origin + '/pje-comum-api/api/pautasaudiencias/horariosvagos?idSalaFisica=' + idSala
+	)
+	return dados || null
+}
 
 
 // ── POOL DE CONCORRÊNCIA ──────────────────────────────────────

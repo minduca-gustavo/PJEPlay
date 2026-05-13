@@ -22,14 +22,14 @@ const ROTA_CATALOGO = [
         tipo:      ROTA_TIPO.SISTEMA,
     },
    
-    */
+    
     {
         id:        'triagem-inicial',
         label:     'Triagem Inicial',
         descricao: 'Análise da petição inicial, autuação e encaminhamento.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
-    /*
+    
     {
         id:        'pos-triagem',
         label:     'Pós-Triagem',

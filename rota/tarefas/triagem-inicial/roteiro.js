@@ -1,4 +1,14 @@
 console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
+const dadosTriagem = {
+    partes: null,
+    processo: null,
+    gig: null,
+    salas: null,
+    salaJuizes: null,
+    horariosVagosPorSala: null,
+    juizSimetriaPeloGig: null,
+    peticaoInicialId: null,
+}
 function aoAbrirDetalhesDoProcesso(){
     console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
     let janela = confereJanela(JANELA.detalhes)
@@ -15,15 +25,37 @@ async function triagem_inicial_janelaDetalhes(){
         interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || []),
     ])
-    let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
-    let juizSimetriaPeloGig = gig?.nomeUsuarioDestinatario
+    let gig = gigs.filter(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
+    let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))];
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento
     let salas = await buscarSalas(processo?.orgaoJulgador?.id)
+    let salaJuizes = []
+    for(let juiz of juizSimetriaPeloGig){
+        let sala = salas.find(sala => sala?.nome == juiz)
+        if(sala) salaJuizes.push(sala)
+    }
+    let horariosVagosPorSala = {}
+    for (let sala of salaJuizes){
+        let horariosVagos = await buscarSalasHorariosVagos(sala.id)
+        horariosVagosPorSala[sala.id] = horariosVagos
+    }
+    let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true')
+    relatar('partes: ', partes, 'teste')
+    relatar('horariosVagosPorSala: ', horariosVagosPorSala, 'teste')
+    relatar('gig: ', gig, 'teste')
     relatar('salas: ', salas, 'teste')
-    relatar('processo: ', processo?.orgaoJulgador?.id, 'teste')
+    relatar('salaJuizes: ', salaJuizes, 'teste')
+    relatar('processo: ', processo, 'teste')
     relatar('juizSimetriaPeloGig: ', juizSimetriaPeloGig, 'teste')
     relatar('peticaoInicial: ', peticaoInicialId, 'teste')
-
+    dadosTriagem.partes = partes
+    dadosTriagem.processo = processo
+    dadosTriagem.gig = gig
+    dadosTriagem.salas = salas
+    dadosTriagem.salaJuizes = salaJuizes
+    dadosTriagem.horariosVagosPorSala = horariosVagosPorSala
+    dadosTriagem.juizSimetriaPeloGig = juizSimetriaPeloGig
+    dadosTriagem.peticaoInicialId = peticaoInicialId
 }
 
 aoAbrirDetalhesDoProcesso()
@@ -48,7 +80,7 @@ aoAbrirDetalhesDoProcesso()
 
 
 
-/*
+
 const ROTEIRO_TRIAGEM_INICIAL = {
 
     // Etapa de entrada — sempre a primeira
@@ -219,4 +251,3 @@ async function triagem_conclusao() {
     // Por ora abre detalhes — seletor de juiz será implementado no componente específico
     await acao_navegacao_detalhes()
 }
-*/
