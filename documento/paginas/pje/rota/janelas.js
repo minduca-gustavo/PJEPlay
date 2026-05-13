@@ -30,6 +30,7 @@ async function rota_pipeline_salvar(slots, tarefaUnica, temporizador){
 		[ROTA_KEY_PIPELINE]: {
 			fila:        _rota_fila,
 			cursor:      _rota_cursor,
+			relatorio:   _rota_relatorio,
 			slots:       slots,
 			tarefaUnica: tarefaUnica,
 			temporizador:temporizador,
@@ -48,8 +49,8 @@ async function rota_pipeline_retomar(){
 	await armazenar({ [ROTA_KEY_PIPELINE]: null })
 	_rota_fila      = dados.fila
 	_rota_cursor    = dados.cursor ?? 0
+	_rota_relatorio = dados.relatorio || []
 	_rota_ativo     = true
-	_rota_relatorio = []
 	rota_avisoTemporario('🔄 Retomando pipeline após atualização…', 'info', 3000)
 	await rota_processarCursor(dados.slots, dados.tarefaUnica, dados.temporizador)
 }
