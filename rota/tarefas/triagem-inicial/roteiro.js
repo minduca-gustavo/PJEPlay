@@ -1,5 +1,5 @@
 console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
-const dadosTriagem = {
+const dadosTriagemInicial = {
     partes: null,
     processo: null,
     gig: null,
@@ -48,15 +48,15 @@ async function triagem_inicial_janelaDetalhes(){
     relatar('processo: ', processo, 'teste')
     relatar('juizSimetriaPeloGig: ', juizSimetriaPeloGig, 'teste')
     relatar('peticaoInicial: ', peticaoInicialId, 'teste')
-    dadosTriagem.partes = partes
-    await armazenar({ rotaDados_processo_partes: partes })
-    dadosTriagem.processo = processo
-    dadosTriagem.gig = gig
-    dadosTriagem.salas = salas
-    dadosTriagem.salaJuizes = salaJuizes
-    dadosTriagem.horariosVagosPorSala = horariosVagosPorSala
-    dadosTriagem.juizSimetriaPeloGig = juizSimetriaPeloGig
-    dadosTriagem.peticaoInicialId = peticaoInicialId
+    dadosTriagemInicial.partes = partes
+    dadosTriagemInicial.processo = processo
+    dadosTriagemInicial.gig = gig
+    dadosTriagemInicial.salas = salas
+    dadosTriagemInicial.salaJuizes = salaJuizes
+    dadosTriagemInicial.horariosVagosPorSala = horariosVagosPorSala
+    dadosTriagemInicial.juizSimetriaPeloGig = juizSimetriaPeloGig
+    dadosTriagemInicial.peticaoInicialId = peticaoInicialId
+    armazenar({rota_dadosTriagemInicial: dadosTriagemInicial})
 }
 
 aoAbrirDetalhesDoProcesso()
@@ -209,14 +209,14 @@ const ROTEIRO_TRIAGEM_INICIAL = {
             infoPJE: {
                 rotulo: '📋 Partes do processo',
                 detalhe: async () => {
-                    const partes = conector_lerPartes()
-                    return formatarPartes(partes)
+                    const dados = await obterArmazenamento('rota_dadosTriagemInicial')
+                    return formatarPartes(dados.rota_dadosTriagemInicial.partes)
                 }
             },
 
             instrucaoRapida: async () => {
-                const partes = conector_lerPartes()
-                return formatarPartes(partes)
+                const dados = await obterArmazenamento('rota_dadosTriagemInicial')
+                return JSON.stringify(dados.rota_dadosTriagemInicial.partes)
             },
 
             instrucaoLonga: `Verifique:
