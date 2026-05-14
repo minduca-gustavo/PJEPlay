@@ -1,3 +1,4 @@
+//     ?pjerota_tarefa=triagem-inicial
 console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
 const dadosTriagemInicial = {
     partes: null,
@@ -9,12 +10,14 @@ const dadosTriagemInicial = {
     juizSimetriaPeloGig: null,
     peticaoInicialId: null,
 }
-function aoAbrirDetalhesDoProcesso(){
+async function aoAbrirDetalhesDoProcesso(){
     console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
-    let parametros = rota_buscarParametros('pjerota_tarefa')
-    if (parametros !== 'triagem-inicial') return
+    const chaveJanela = sessionStorage.getItem('pjerota_chave_janela')
+    if (!chaveJanela) return
+    const ctx = await obterArmazenamento(chaveJanela)
+    if (ctx?.[chaveJanela]?.nomeTarefa !== 'triagem-inicial') return
     triagem_inicial_janelaDetalhes()
 }
 
@@ -56,7 +59,28 @@ async function triagem_inicial_janelaDetalhes(){
     dadosTriagemInicial.horariosVagosPorSala = horariosVagosPorSala
     dadosTriagemInicial.juizSimetriaPeloGig = juizSimetriaPeloGig
     dadosTriagemInicial.peticaoInicialId = peticaoInicialId
-    armazenar({rota_dadosTriagemInicial: dadosTriagemInicial})
+    await armazenar({rota_dadosTriagemInicial: dadosTriagemInicial})
+    await armazenar({ rota_dadosTriagemInicialNumero: processo.numero })
+    await armazenar({ rota_dadosProntos: true })
+    let peticaoInicial = await aguardarElemento('#abrirdoc_' + dadosTriagemInicial.peticaoInicialId)
+    //let peticaoInicialAnexos = document.querySelector('#doc_' + dadosTriagemInicial.peticaoInicialId)
+    console.log('peticaoInicial: ' + peticaoInicial)
+    //console.log('peticaoInicialAnexos: ' + JSON.stringify(peticaoInicialAnexos))
+    //let botaoAnexos = peticaoInicialAnexos.querySelector('button.botao-anexos')
+    //console.log('botaoAnexos: ' + JSON.stringify(botaoAnexos))
+    let botaoAnexos = document.querySelectorAll('button.botao-anexos')
+    if(!botaoAnexos){
+        console.log('Botão de anexos não encontrado para a petição inicial.')
+        //return
+    }
+    await clicar(peticaoInicial)
+    console.log('Vou clicar')
+    
+    await suspender(3000)
+    await clicar(botaoAnexos[botaoAnexos.length - 1])
+    
+    await aguardarElemento('[aria-label*="Anexos"]')
+    
 }
 
 aoAbrirDetalhesDoProcesso()
@@ -209,15 +233,16 @@ const ROTEIRO_TRIAGEM_INICIAL = {
             infoPJE: {
                 rotulo: '📋 Partes do processo',
                 detalhe: async () => {
+                    if (!await comparaChavesProcesso('rota_dadosTriagemInicialNumero')) return '⏳ Carregando...'
+
                     const dados = await obterArmazenamento('rota_dadosTriagemInicial')
-                    return formatarPartes(dados.rota_dadosTriagemInicial.partes)
+                    const triagem = dados?.rota_dadosTriagemInicial
+                    
+                    return formatarPartes(triagem.partes)
                 }
             },
 
-            instrucaoRapida: async () => {
-                const dados = await obterArmazenamento('rota_dadosTriagemInicial')
-                return JSON.stringify(dados.rota_dadosTriagemInicial.partes)
-            },
+            instrucaoRapida: `Confira se a autuação está correta. Para mais detalhes, clique abaixo para ver a instrução completa da tarefa.`,
 
             instrucaoLonga: `Verifique:
 - Nome completo do reclamante (sem abreviações)
@@ -275,6 +300,7 @@ Se houver erro em qualquer campo, utilize os botões de retificação abaixo.`,
 //
 // Estas funções são chamadas pelos botões do painel.
 // Ficam no escopo global para que criarTabelaAcoes() as encontre.
+
 
 async function triagem_retificarReclamante() {
     await acao_navegacao_detalhes()

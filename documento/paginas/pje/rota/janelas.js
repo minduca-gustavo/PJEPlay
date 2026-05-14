@@ -714,36 +714,57 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 // ── Widget nota+botões injetado nas janelas filhas ─────────────
 
-async function rota_injetarWidget(){
-	let params      = new URL(location.href).searchParams
-	let sessao      = params.get('pjerota_sessao')
-	if(!sessao) return
+async function rota_injetarWidget(ctxSalvo = null){
+	let sessao, tarefaUnica, numProc, slotIndex, nomeTarefa,
+	    totalJanelas, widgetParams, temporizador, posSalva
 
-	let tarefaUnica = decodeURIComponent(params.get('pjerota_tarefaunica') || '')
-	let numProc     = decodeURIComponent(params.get('pjerota_num') || '')
-	let slotIndex   = parseInt(params.get('pjerota_slot') || '0')
-	let nomeTarefa  = decodeURIComponent(params.get('pjerota_tarefa') || '')
-	let totalJanelas = parseInt(params.get('pjerota_total') || '1')
+	if(ctxSalvo){
+		// ── Contexto recuperado do storage após recarregamento ────
+		;({ sessao, tarefaUnica, numProc, slotIndex, nomeTarefa,
+		    totalJanelas, widgetParams, temporizador, posSalva } = ctxSalvo)
+	} else {
+		// ── Contexto vindo da URL (primeira abertura da janela) ───
+		let params = new URL(location.href).searchParams
+		sessao     = params.get('pjerota_sessao')
+		if(!sessao) return
 
-	// Parâmetros extras (botões de clipboard)
-	let widgetParams = []
-	let paramsParam = params.get('pjerota_params')
-	if(paramsParam){
-		try{ widgetParams = JSON.parse(decodeURIComponent(paramsParam)) } catch(_){}
-	}
+		tarefaUnica  = decodeURIComponent(params.get('pjerota_tarefaunica') || '')
+		numProc      = decodeURIComponent(params.get('pjerota_num') || '')
+		slotIndex    = parseInt(params.get('pjerota_slot') || '0')
+		nomeTarefa   = decodeURIComponent(params.get('pjerota_tarefa') || '')
+		totalJanelas = parseInt(params.get('pjerota_total') || '1')
 
-	// Configuração do temporizador
-	let temporizador = null
-	let tmrParam = params.get('pjerota_tmr')
-	if(tmrParam){
-		try{ temporizador = JSON.parse(decodeURIComponent(tmrParam)) } catch(_){}
-	}
+		// Parâmetros extras (botões de clipboard)
+		widgetParams = []
+		let paramsParam = params.get('pjerota_params')
+		if(paramsParam){
+			try{ widgetParams = JSON.parse(decodeURIComponent(paramsParam)) } catch(_){}
+		}
 
-	// Recupera posição salva para este slot específico
-	let posSalva = null
-	let posParam = params.get('pjerota_pos')
-	if(posParam){
-		try{ posSalva = JSON.parse(decodeURIComponent(posParam)) } catch(_){}
+		// Configuração do temporizador
+		temporizador = null
+		let tmrParam = params.get('pjerota_tmr')
+		if(tmrParam){
+			try{ temporizador = JSON.parse(decodeURIComponent(tmrParam)) } catch(_){}
+		}
+
+		// Recupera posição salva para este slot específico
+		posSalva = null
+		let posParam = params.get('pjerota_pos')
+		if(posParam){
+			try{ posSalva = JSON.parse(decodeURIComponent(posParam)) } catch(_){}
+		}
+
+		// ── Persiste contexto no storage + sessionStorage ─────────
+		// Garante que, após qualquer recarregamento, esta aba consiga
+		// se reidentificar como janela filha e remontar o widget.
+		const chaveJanela = 'rotaJanela_' + sessao + '_' + slotIndex
+		await armazenar({ [chaveJanela]: {
+			sessao, tarefaUnica, numProc, slotIndex,
+			nomeTarefa, totalJanelas, widgetParams,
+			temporizador, posSalva,
+		}})
+		sessionStorage.setItem('pjerota_chave_janela', chaveJanela)
 	}
 
 	rota_monitorarFechamento(sessao)

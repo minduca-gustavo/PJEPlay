@@ -34,3 +34,11 @@ function formatarPartes(partes) {
 
     return linhas.join('\n')
 }
+
+async function comparaChavesProcesso(chave) {
+    const cfg = await obterArmazenamento([ROTA_CHAVES.sessao])
+    const sessao = cfg?.[ROTA_CHAVES.sessao]
+    const valorSessao = sessao?.processos?.[sessao.cursor || 0]
+    const dados = await obterArmazenamento([chave])
+    return dados?.[chave] === valorSessao
+}

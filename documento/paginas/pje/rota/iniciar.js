@@ -8,7 +8,6 @@ obterArmazenamento().then(async armazenamento => {
 
 	relatar('Rota PJE iniciando…', '', 'execucao')
 
-	// [ALTERAÇÃO 4] Verifica se a extensão está habilitada
 	let habilitado = CONFIGURACAO?.habilitado !== false  // padrão: habilitado
 
 	if(location.search.includes('pjerota_sessao=')){
@@ -16,7 +15,20 @@ obterArmazenamento().then(async armazenamento => {
 		pintura_iniciar().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 		rota_injetarWidget().catch(e => relatar('Widget: ' + e.message, '', 'erro'))
 	} else {
-		// Telas de listagem: respeita o toggle
+		// ── Verifica se esta aba é uma janela filha que recarregou ─
+		// sessionStorage sobrevive a recarregamentos mas morre ao fechar a aba.
+		const chaveJanela = sessionStorage.getItem('pjerota_chave_janela')
+		if(chaveJanela){
+			const ctx = await obterArmazenamento(chaveJanela)
+			const ctxSalvo = ctx?.[chaveJanela]
+			if(ctxSalvo){
+				relatar('Janela filha recarregada — restaurando widget…', '', 'execucao')
+				pintura_iniciar().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
+				rota_injetarWidget(ctxSalvo).catch(e => relatar('Widget (restaurado): ' + e.message, '', 'erro'))
+				return
+			}
+		}
+		// Telas de listagem normais: respeita o toggle
 		if(habilitado){
 			pintura_iniciar().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 			botaoRota_iniciar()
@@ -33,16 +45,28 @@ new MutationObserver(() => {
 		pintura_iniciar().catch(()=>{})
 
 		if(location.search.includes('pjerota_sessao=')){
-			// Janela filha — remonta o widget após navegação interna
+			// Janela filha — remonta o widget após navegação interna (URL ainda tem params)
 			rota_injetarWidget().catch(e => relatar('Widget (SPA): ' + e.message, '', 'erro'))
 		} else {
-			obterArmazenamento(['habilitado']).then(cfg => {
-				let habilitado = cfg?.habilitado !== false
-				if(habilitado){
-					botaoRota_atualizarUrl()
-					window.dispatchEvent(new CustomEvent('pjerota:url-mudou'))
-				}
-			})
+			// ── Verifica se perdemos os params mas ainda somos janela filha ─
+			const chaveJanela = sessionStorage.getItem('pjerota_chave_janela')
+			if(chaveJanela){
+				obterArmazenamento(chaveJanela).then(ctx => {
+					const ctxSalvo = ctx?.[chaveJanela]
+					if(ctxSalvo){
+						relatar('Widget (SPA sem params) — restaurando…', '', 'execucao')
+						rota_injetarWidget(ctxSalvo).catch(e => relatar('Widget (SPA restaurado): ' + e.message, '', 'erro'))
+					}
+				})
+			} else {
+				obterArmazenamento(['habilitado']).then(cfg => {
+					let habilitado = cfg?.habilitado !== false
+					if(habilitado){
+						botaoRota_atualizarUrl()
+						window.dispatchEvent(new CustomEvent('pjerota:url-mudou'))
+					}
+				})
+			}
 		}
 	}
 }).observe(document.body, { childList:true, subtree:true })
