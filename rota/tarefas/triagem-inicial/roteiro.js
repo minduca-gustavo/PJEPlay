@@ -1,5 +1,6 @@
+// o domicilio eletronico é outra api.
 //     ?pjerota_tarefa=triagem-inicial
-console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
+//console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
 const dadosTriagemInicial = {
     partes: null,
     processo: null,
@@ -11,27 +12,34 @@ const dadosTriagemInicial = {
     peticaoInicialId: null,
 }
 async function aoAbrirDetalhesDoProcesso(){
-    console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
-    const chaveJanela = sessionStorage.getItem('pjerota_chave_janela')
-    if (!chaveJanela) return
-    const ctx = await obterArmazenamento(chaveJanela)
-    if (ctx?.[chaveJanela]?.nomeTarefa !== 'triagem-inicial') return
+
+    let tarefa = rota_buscarParametros('pjerota_tarefa')
+
+    if (!tarefa) {
+        const salvo = await obterArmazenamento('pjerota_tarefa')
+        tarefa = salvo?.pjerota_tarefa
+    } else {
+        await armazenar({ pjerota_tarefa: tarefa })
+    }
+
+    if (tarefa !== 'triagem-inicial') return
     triagem_inicial_janelaDetalhes()
 }
+
 
 async function triagem_inicial_janelaDetalhes(){
     let [timeline, gigs, gigsConcluidos, processo] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
         interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
-        interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || []),
+        interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
     ])
     let gig = gigs.filter(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
-    let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))];
-    let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento
-    let salas = await buscarSalas(processo?.orgaoJulgador?.id)
+    let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))]
+    let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
+    let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
     let salaJuizes = []
     for(let juiz of juizSimetriaPeloGig){
         let sala = salas.find(sala => sala?.nome == juiz)
@@ -39,48 +47,41 @@ async function triagem_inicial_janelaDetalhes(){
     }
     let horariosVagosPorSala = {}
     for (let sala of salaJuizes){
-        let horariosVagos = await buscarSalasHorariosVagos(sala.id)
+        let horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
         horariosVagosPorSala[sala.id] = horariosVagos
     }
-    let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true')
-    relatar('partes: ', partes, 'teste')
-    relatar('horariosVagosPorSala: ', horariosVagosPorSala, 'teste')
-    relatar('gig: ', gig, 'teste')
-    relatar('salas: ', salas, 'teste')
-    relatar('salaJuizes: ', salaJuizes, 'teste')
-    relatar('processo: ', processo, 'teste')
-    relatar('juizSimetriaPeloGig: ', juizSimetriaPeloGig, 'teste')
-    relatar('peticaoInicial: ', peticaoInicialId, 'teste')
-    dadosTriagemInicial.partes = partes
-    dadosTriagemInicial.processo = processo
-    dadosTriagemInicial.gig = gig
-    dadosTriagemInicial.salas = salas
-    dadosTriagemInicial.salaJuizes = salaJuizes
+    let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true') || []
+
+    dadosTriagemInicial.partes               = partes
+    dadosTriagemInicial.processo             = processo
+    dadosTriagemInicial.gig                  = gig
+    dadosTriagemInicial.salas                = salas
+    dadosTriagemInicial.salaJuizes           = salaJuizes
     dadosTriagemInicial.horariosVagosPorSala = horariosVagosPorSala
-    dadosTriagemInicial.juizSimetriaPeloGig = juizSimetriaPeloGig
-    dadosTriagemInicial.peticaoInicialId = peticaoInicialId
-    await armazenar({rota_dadosTriagemInicial: dadosTriagemInicial})
+    dadosTriagemInicial.juizSimetriaPeloGig  = juizSimetriaPeloGig
+    dadosTriagemInicial.peticaoInicialId     = peticaoInicialId
+
+    await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
     await armazenar({ rota_dadosTriagemInicialNumero: processo.numero })
     await armazenar({ rota_dadosProntos: true })
+    
+    
     let peticaoInicial = await aguardarElemento('#abrirdoc_' + dadosTriagemInicial.peticaoInicialId)
-    //let peticaoInicialAnexos = document.querySelector('#doc_' + dadosTriagemInicial.peticaoInicialId)
-    console.log('peticaoInicial: ' + peticaoInicial)
-    //console.log('peticaoInicialAnexos: ' + JSON.stringify(peticaoInicialAnexos))
-    //let botaoAnexos = peticaoInicialAnexos.querySelector('button.botao-anexos')
-    //console.log('botaoAnexos: ' + JSON.stringify(botaoAnexos))
-    let botaoAnexos = document.querySelectorAll('button.botao-anexos')
-    if(!botaoAnexos){
-        console.log('Botão de anexos não encontrado para a petição inicial.')
-        //return
-    }
+    let botaoAnexos    = document.querySelectorAll('button.botao-anexos')
+
     await clicar(peticaoInicial)
-    console.log('Vou clicar')
-    
-    await suspender(3000)
+
+    for (let i = 0; i < 33; i++) {
+        let cabecalho = await aguardarElemento('.mat-card-title')
+        if (cabecalho.textContent.includes(dadosTriagemInicial.peticaoInicialId)) break
+        await suspender(300)
+    }
+
     await clicar(botaoAnexos[botaoAnexos.length - 1])
-    
     await aguardarElemento('[aria-label*="Anexos"]')
-    
+    let ultimoDoc = await selecionar('.tl-documento', '', true) || []
+    ultimoDoc[ultimoDoc.length - 1]?.scrollIntoView({ block: 'nearest' })
+    await removerArmazenamento('pjerota_tarefa')
 }
 
 aoAbrirDetalhesDoProcesso()
@@ -231,7 +232,7 @@ const ROTEIRO_TRIAGEM_INICIAL = {
             titulo: 'Autuação',
 
             infoPJE: {
-                rotulo: '📋 Partes do processo',
+                rotulo: '📋 Passe o mouse para ver os dados da autuação (partes e endereços).',
                 detalhe: async () => {
                     if (!await comparaChavesProcesso('rota_dadosTriagemInicialNumero')) return '⏳ Carregando...'
 
@@ -244,7 +245,7 @@ const ROTEIRO_TRIAGEM_INICIAL = {
 
             instrucaoRapida: `Confira se a autuação está correta. Para mais detalhes, clique abaixo para ver a instrução completa da tarefa.`,
 
-            instrucaoLonga: `Verifique:
+            instrucaoLonga: `Para fazer a triagem inicial, você deve verificar
 - Nome completo do reclamante (sem abreviações)
 - Nome/razão social da reclamada
 - CPF/CNPJ das partes

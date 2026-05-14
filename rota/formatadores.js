@@ -19,7 +19,7 @@ function formatarPartes(partes) {
             `        ${r.nome.trim()} (${r.tipo})\n        CPF: ${r.documento}\n        OAB: ${r.numeroOab}\n        E-mail: ${r.email}`
         ).join('\n')
 
-        return `    ${p.tipo.toLowerCase()}:\n    ${p.nome.trim()}${habDec}\n    ${doc}${endStr}${reps ? '\n' + reps : ''}`
+        return `    ${p.tipo.toUpperCase()}:\n    ${p.nome.trim()}${habDec}\n    ${doc}${endStr}${reps ? '\n' + reps : ''}`
     }
 
     if (partes.ATIVO?.length) {

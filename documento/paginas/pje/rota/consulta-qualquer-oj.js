@@ -278,10 +278,14 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
         return
     }
     let dadosProcesso = await buscarProcesso(dadosBasicos?.id)
-    let orgaoJulgador = interceptador_lerOrgaosJulgadores()
+    if (!dadosProcesso) {
+        await consulta_qualquer_ojErroNumero('nao conectado')
+        return
+    }
+    let orgaoJulgador = interceptador_lerOrgaosJulgadores() || {}
     relatar('dadosBasicos: ', dadosBasicos, 'teste')
-    relatar('dadosProcesso: ', dadosProcesso?.orgaoJulgador?.id, 'teste')
-    relatar('orgaosJulgadores: ', orgaoJulgador.id, 'teste')
+    relatar('dadosProcesso: ', dadosProcesso, 'teste')
+    relatar('orgaosJulgadores: ', orgaoJulgador, 'teste')
     if (dadosProcesso?.orgaoJulgador?.id !== orgaoJulgador.id){
         let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
         relatar ('perfis: ', perfis, 'teste')
@@ -331,6 +335,9 @@ async function consulta_qualquer_ojErroNumero(erro = '') {
     }
     if (erro === 'nao encontrado'){
         mensagem = 'Verifique o dígito.'
+    }
+    if (erro === 'nao conectado'){
+        mensagem = 'Verifique sua coneção ao PJE.'
     }
     if (erro === 'erro perfil'){
         mensagem = 'Você não possui o perfil da OJ.'
