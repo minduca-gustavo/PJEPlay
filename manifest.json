@@ -52,14 +52,14 @@
         "rota/estado.js",
         "rota/cache.js",
         "rota/componentes.js",
-        "rota/tarefas/index.js",
-        "rota/tarefas/balcao-virtual/roteiro.js",
-        "rota/tarefas/triagem-inicial/roteiro.js",
-        "rota/tarefas/pos-triagem/roteiro.js",
         "modulos/dom.js",
         "modulos/execucao.js",
         "modulos/navegador.js",
-        "modulos/texto.js"
+        "modulos/texto.js",
+        "rota/tarefas/index.js",
+        "rota/tarefas/balcao-virtual/roteiro.js",
+        "rota/tarefas/triagem-inicial/roteiro.js",
+        "rota/tarefas/pos-triagem/roteiro.js"
       ]
     }
   ],

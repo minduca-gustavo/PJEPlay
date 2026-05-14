@@ -22,3 +22,30 @@ função aguarda todos:
 
 função tira duplicações:
     let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))];
+
+Quando o storage muda, cada chave dentro de `mudancas` não é o valor diretamente — é um objeto com dois campos:
+
+```js
+{
+    oldValue: false,  // o que era antes
+    newValue: true    // o que virou agora
+}
+```
+
+Então `mudancas['rota_dadosProntos'].newValue` é o valor **depois** da mudança.
+
+---
+
+**`=== true`**
+
+Compara o valor novo com `true`. Só entra no `if` quando a mudança foi para `true`. Quando o listener dispara pelo `false`, essa comparação falha e passa direto.
+
+---
+
+Juntando tudo em português:
+
+> "Se a chave `rota_dadosProntos` existiu nas mudanças, **e** o valor novo dela for exatamente `true`, então entra."
+if (mudancas['rota_dadosProntos']?.newValue === true) {            await armazenar({ rota_dadosProntos: false })
+            await conector_montar()
+            return
+        }

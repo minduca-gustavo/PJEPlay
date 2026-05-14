@@ -57,7 +57,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             await conector_montar()
             return
         }
-
+        if (mudancas['rota_dadosProntos']?.newValue === true) {            await armazenar({ rota_dadosProntos: false })
+            await conector_montar()
+            return
+        }
         // Tarefa mudou — remonta o conector
         if (mudancas['tarefaAtiva'] || mudancas['tarefaAtivaIsSistema']) {
             await conector_montar()
