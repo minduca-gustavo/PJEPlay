@@ -1,0 +1,162 @@
+// ============================================================
+// janelas-adicoes.js
+// Trechos novos para adicionar ao janelas.js existente.
+//
+// INSTRUÇÕES DE INTEGRAÇÃO:
+//
+// 1. Substituir rota_abrirAssistente() pela nova versão abaixo.
+//    (a função antiga não passa execucao nem tarefa na URL)
+//
+// 2. Adicionar rota_abrirUrl() após rota_abrirAssistente().
+//
+// 3. Em rota_iniciarPipeline(), trocar as duas linhas:
+//       rota_abrirAssistente()
+//       await suspender(800)
+//    pela chamada nova:
+//       await rota_abrirAssistente(nomeAtivo, execucao)
+//       await suspender(800)
+//
+// 4. Em rota_processarCursor(), gerar execucao com Date.now()
+//    e salvar no storage antes de abrir as janelas.
+//    Ver instruções no trecho 4 abaixo.
+// ============================================================
+
+
+// ── TRECHO 1 — Substituir rota_abrirAssistente() ─────────────
+//
+// Nova versão: passa pjerota_execucao e pjerota_tarefa na URL.
+// O assistente.js usa esses parâmetros para validar e preencher
+// o cabeçalho.
+
+function rota_abrirAssistente(idTarefa = '', execucao = '') {
+    const geo = rota_geometriaModoAssistido()
+
+    let url = extensao_raiz('rota/assistente/assistente.html')
+    url += '?pjerota_execucao=' + encodeURIComponent(execucao)
+    url += '&pjerota_tarefa='   + encodeURIComponent(idTarefa)
+
+    const assistente = window.open(
+        url,
+        'rota-pje-assistente',
+        'width='   + geo.assistente.width  +
+        ',height=' + geo.assistente.height +
+        ',left='   + geo.assistente.left   +
+        ',top='    + geo.assistente.top    +
+        ',toolbar=0,menubar=0,resizable=1'
+    )
+    armazenar({ rotaGeometria: geo.assistente })
+    if (assistente) _rota_janelasMundo.push(assistente)
+    return assistente
+}
+
+
+// ── TRECHO 2 — Adicionar após rota_abrirAssistente() ─────────
+//
+// abrirUrl(url, posicao, nomeJanela)
+//
+// Abre uma URL numa posição nomeada, calculando a geometria
+// automaticamente. Usado pelos roteiros do assistente para
+// abrir páginas do PJe sem precisar conhecer os internos
+// do pipeline.
+//
+// posicao: 'esquerda' | 'direita' | 'esquerdaAssistida' |
+//          'direitaAssistente' | 'telaCheia'
+//
+// nomeJanela: nome da janela para window.open (opcional).
+//   Se omitido, usa '_blank'.
+//   Usar nome fixo permite reusar a janela (foca se já aberta).
+//
+// Exemplo no roteiro do assistente:
+//   abrirUrl(
+//     location.origin + '/pjekz/processo/' + id + '/retificar',
+//     'esquerdaAssistida',
+//     'rota-janela-acao'
+//   )
+
+function abrirUrl(url, posicao = 'esquerda', nomeJanela = '_blank') {
+    const geo = rota_calcularGeometria(posicao)
+    const w = window.open(
+        url,
+        nomeJanela,
+        'width='   + geo.width  +
+        ',height=' + geo.height +
+        ',left='   + geo.left   +
+        ',top='    + geo.top    +
+        ',toolbar=0,menubar=0,resizable=1'
+    )
+    if (w) _rota_janelasMundo.push(w)
+    return w
+}
+
+
+// ── TRECHO 3 — Novo nome de janela por execucao ───────────────
+//
+// Gera um nome único de janela para uma dada execução e tipo.
+// Evita conflito entre execuções diferentes abertas ao mesmo tempo.
+//
+// Exemplo:
+//   rota_nomeJanela('detalhe', '1716300000000')
+//   → 'rota-detalhe-1716300000000'
+
+function rota_nomeJanela(tipo, execucao) {
+    return 'rota-' + tipo + '-' + execucao
+}
+
+
+// ── TRECHO 4 — Alterações em rota_processarCursor() ──────────
+//
+// Localizar o trecho atual que gera 'sessao':
+//
+//   let sessao = 'rota_' + Date.now()
+//
+// Substituir por:
+//
+//   let execucao = String(Date.now())
+//   await armazenar({ rotaExecucaoAtual: execucao })
+//   let sessao = execucao   // sessao e execucao são o mesmo valor
+//
+// E no window.open das janelas do pipeline, trocar '_blank' pelo
+// nome gerado:
+//
+//   // ANTES:
+//   let w = window.open(urlFinal, '_blank', ...)
+//
+//   // DEPOIS:
+//   let nomeW = rota_nomeJanela(slot.tipo || 'janela', execucao)
+//   let w = window.open(urlFinal, nomeW, ...)
+//
+// Isso garante que:
+//   - O storage tem o execucao atual para o assistente validar
+//   - Cada janela tem nome único por execução e tipo
+//   - O roteiro da página pode verificar o nome via window.name
+
+
+// ── TRECHO 5 — Alterações em rota_iniciarPipeline() ──────────
+//
+// Localizar:
+//
+//   rota_abrirAssistente()
+//   await suspender(800)
+//
+// Substituir por:
+//
+//   await rota_abrirAssistente(nomeAtivo, execucao)
+//   await suspender(800)
+//
+// Onde 'execucao' é o mesmo valor gerado no processarCursor.
+// Como o pipeline chama iniciarPipeline → processarCursor,
+// o execucao precisa ser gerado em iniciarPipeline e passado
+// para processarCursor. Alternativa mais simples: gerar em
+// iniciarPipeline e salvar no storage antes de abrir o assistente:
+//
+//   const execucao = String(Date.now())
+//   await armazenar({ rotaExecucaoAtual: execucao })
+//   await rota_abrirAssistente(nomeAtivo, execucao)
+//   await suspender(800)
+//
+// E em processarCursor, ler do storage em vez de gerar novo:
+//
+//   let cfg_exec = await obterArmazenamento(['rotaExecucaoAtual'])
+//   let execucao = cfg_exec?.rotaExecucaoAtual || String(Date.now())
+//   // (não salva de novo — já foi salvo em iniciarPipeline)
+//   let sessao = execucao

@@ -24,118 +24,41 @@
     <span class="assistente-posicao"      id="nav-posicao">— / —</span>
   </div>
 
-  <!-- CORPO -->
-  <div class="assistente-corpo">
+  <!-- CORPO ROLÁVEL — preenchido pelo roteiro da tarefa -->
+  <div class="assistente-corpo" id="rota-corpo">
+    <!-- criarCarregando() é inserido aqui pelo assistente.js -->
+    <!-- removerCarregando() + cria*() são chamados pelo roteiro -->
+  </div>
 
-    <!-- CONTEÚDO PRINCIPAL (antes: aba-roteiro) -->
-    <div class="assistente-pagina ativa" id="aba-roteiro">
-
-      <!-- Botões de parâmetro (clipboard) -->
-      <div class="params-bloco" id="params-bloco" style="display:none"></div>
-
-      <!-- Anotação -->
-      <div class="anotacao-bloco">
-        <label class="campo-label" for="input-anotacao">Anotação</label>
-        <textarea id="input-anotacao" class="input-anotacao"
-                  placeholder="Anotação sobre este processo…" rows="3"></textarea>
-      </div>
-
-      <!-- Temporizador -->
-      <div class="temporizador-bloco" id="temporizador-bloco" style="display:none">
-        <div class="temporizador-display" id="temporizador-display">00:30</div>
-        <div class="temporizador-opcoes"  id="temporizador-opcoes"></div>
-      </div>
-
-      <!-- Avançar -->
-      <button class="btn-avancar" id="btn-avancar" disabled style="opacity:0.4">
-        ▶ Avançar processo
-      </button>
-
-      <!-- Aviso / status inline -->
-      <div id="aviso-roteiro" class="aviso aviso-info" style="display:none"></div>
-
-    </div><!-- /aba-roteiro -->
-
-
-    <!-- ABA: Super Filtros -->
-    <div class="assistente-pagina" id="aba-filtros">
-
-      <div class="sf-controles">
-        <div class="sf-row">
-          <span class="sf-label">
-            Modo
-            <span class="sf-hint">como os processos serão buscados</span>
-          </span>
-        </div>
-        <div class="sf-modo-grupo">
-          <button class="sf-modo-btn ativo" data-modo="Tarefa">Tarefa</button>
-          <button class="sf-modo-btn"       data-modo="Sala">Sala</button>
-          <button class="sf-modo-btn"       data-modo="Lista">Lista</button>
-        </div>
-        <input class="sf-input" id="sf-input-valor"
-               placeholder="Número da tarefa, sala ou processos…">
-      </div>
-
-      <div class="sf-botoes-lista" id="sf-botoes-lista"></div>
-
-      <div class="progresso-bloco" id="sf-progresso" style="display:none">
-        <div class="progresso-label">
-          <span id="sf-progresso-texto">Aguardando…</span>
-          <span id="sf-progresso-num">0 / 0</span>
-        </div>
-        <div class="progresso-bar-track">
-          <div class="progresso-bar-fill" id="sf-progresso-fill" style="width:0%"></div>
-        </div>
-      </div>
-
-      <div class="resultado-bloco" id="sf-resultado" style="display:none">
-        <div class="resultado-titulo">
-          <span>Resultado</span>
-          <button class="resultado-exportar" id="sf-exportar">⬇ Exportar</button>
-        </div>
-        <div id="sf-resultado-corpo" class="resultado-texto"></div>
-      </div>
-
-    </div><!-- /aba-filtros -->
-
-
-    <!-- ABA: Histórico -->
-    <div class="assistente-pagina" id="aba-historico">
-
-      <div class="resultado-bloco">
-        <div class="resultado-titulo">Processos percorridos nesta sessão</div>
-        <div id="historico-lista" class="resultado-texto">
-          Nenhum processo percorrido ainda.
-        </div>
-      </div>
-
-    </div><!-- /aba-historico -->
-
-  </div><!-- /assistente-corpo -->
-
-  <!-- RODAPÉ FIXO -->
-  <footer class="assistente-rodape">
-    <span class="rodape-status" id="rodape-status">Aguardando…</span>
+  <!-- RODAPÉ FIXO — preenchido pelo assistente.js -->
+  <footer class="assistente-rodape" id="rota-rodape">
+    <!-- criaBotaoProximoEEncerrar() é inserido aqui pelo assistente.js -->
   </footer>
 
-</div><!-- /assistente-shell -->
+</div>
 
-<!-- Scripts — ordem obrigatória -->
+<!-- ── Módulos base ── -->
 <script src="../../modulos/definicoes.js"></script>
 <script src="../../modulos/relatar.js"></script>
 <script src="../../modulos/dom.js"></script>
 <script src="../../modulos/execucao.js"></script>
 <script src="../../modulos/navegador.js"></script>
 <script src="../../modulos/texto.js"></script>
-<script src="../../rota/formatadores.js"></script>
+
+<!-- ── Rota PJE ── -->
 <script src="../../rota/configuracao.js"></script>
+<script src="../../rota/formatadores.js"></script>
 <script src="../../rota/estado.js"></script>
-<script src="../../rota/cache.js"></script>
-<script src="../../rota/componentes.js"></script>
-<script src="../../rota/tarefas/index.js"></script>
-<script src="../../rota/tarefas/triagem-inicial/roteiro.js"></script>
-<script src="../../rota/tarefas/pos-triagem/roteiro.js"></script>
-<script src="conector.js"></script>
+<script src="../../rota/acoes.js"></script>
+
+<!-- ── UI e bootstrap ── -->
+<script src="../../rota/ui.js"></script>
+<script src="../../documento/paginas/pje/rota/janelas.js"></script>
 <script src="assistente.js"></script>
+
+<!-- ── Roteiros das tarefas (cada um se auto-filtra pelo pjerota_tarefa da URL) ── -->
+<script src="../../rota/tarefas/triagem-inicial/roteiro-assistente.js"></script>
+<!-- adicionar novos roteiros aqui -->
+
 </body>
 </html>

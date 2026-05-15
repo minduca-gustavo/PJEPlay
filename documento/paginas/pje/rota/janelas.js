@@ -439,10 +439,13 @@ function rota_geometriaModoAssistido() {
 
 // ── Abertura do assistente no modo guiado ─────────────────────
 
-function rota_abrirAssistente() {
+function rota_abrirAssistente(idTarefa = '', execucao = '') {
     const geo = rota_geometriaModoAssistido()
-    const url = extensao_raiz('rota/assistente/assistente.html')
-
+ 
+    let url = extensao_raiz('rota/assistente/assistente.html')
+    url += '?pjerota_execucao=' + encodeURIComponent(execucao)
+    url += '&pjerota_tarefa='   + encodeURIComponent(idTarefa)
+ 
     const assistente = window.open(
         url,
         'rota-pje-assistente',
@@ -452,10 +455,30 @@ function rota_abrirAssistente() {
         ',top='    + geo.assistente.top    +
         ',toolbar=0,menubar=0,resizable=1'
     )
-	armazenar({ rotaGeometria: geo.assistente })
+    armazenar({ rotaGeometria: geo.assistente })
     if (assistente) _rota_janelasMundo.push(assistente)
     return assistente
 }
+
+function rota_nomeJanela(tipo, execucao) {
+    return 'rota-' + tipo + '-' + execucao
+}
+
+function abrirUrl(url, posicao = 'esquerdaAssistida', nomeJanela = '_blank') {
+    const geo = rota_calcularGeometria(posicao)
+    const w = window.open(
+        url,
+        nomeJanela,
+        'width='   + geo.width  +
+        ',height=' + geo.height +
+        ',left='   + geo.left   +
+        ',top='    + geo.top    +
+        ',toolbar=0,menubar=0,resizable=1'
+    )
+    if (w) _rota_janelasMundo.push(w)
+    return w
+}
+
 
 
 //armazenar({ rotaGeometria: geo.assistente })
@@ -541,22 +564,20 @@ async function rota_iniciarPipeline({ fila }){
     let tarefa       = null
 
     if(isSistema){
-        // Tarefa 🤖 do sistema — busca no catálogo
-        let itemCatalogo = typeof catalogo_obter === 'function'
-            ? catalogo_obter(nomeAtivo) : null
+		let itemCatalogo = typeof catalogo_obter === 'function'
+			? catalogo_obter(nomeAtivo) : null
 
-        if(!itemCatalogo){
-            rota_avisoTemporario('Tarefa do sistema não encontrada.', 'erro', 4000)
-            return
-        }
+		if(!itemCatalogo){
+			rota_avisoTemporario('Tarefa do sistema não encontrada.', 'erro', 4000)
+			return
+		}
 
-        // Tarefa sintética com janela de detalhes
-        tarefa = {
-            slots:       [{ tipo: 'detalhes', posicao: 'esquerdaAssistida', ordem: 0, slotIndex: 0 }],
-            tarefaUnica: '',
-            temporizador:{ ativo: false, segundos: 30, opcoes: '' },
-        }
-    } else {
+		tarefa = {
+			slots:        catalogo_paraSlots(itemCatalogo),  // ← era hardcoded
+			tarefaUnica:  '',
+			temporizador: { ativo: false, segundos: 30, opcoes: '' },
+		}
+	} else {
         // Tarefa 👤 do usuário — busca no storage
         tarefa = cfg?.tarefas?.[nomeAtivo]
     }
@@ -582,12 +603,14 @@ async function rota_iniciarPipeline({ fila }){
 
     // Se for tarefa do sistema: inicia sessão guiada + abre assistente
     if(isSistema){
-        const processos = fila.map(item => item.numProc || item.id || '')
-        await estado_iniciar(nomeAtivo, processos)
-        await suspender(200)
-        rota_abrirAssistente()
-        await suspender(800)  // aguarda assistente abrir antes de abrir o PJE
-    }
+		const processos = fila.map(item => item.numProc || item.id || '')
+		await estado_iniciar(nomeAtivo, processos)
+		await suspender(200)
+		const execucao = String(Date.now())
+		await armazenar({ rotaExecucaoAtual: execucao })
+		await rota_abrirAssistente(nomeAtivo, execucao)
+		await suspender(800)
+	}
 
     await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
@@ -631,7 +654,10 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	_rota_fecharTodasJanelas()
 	await suspender(300)
 
-	let sessao = 'rota_' + Date.now()
+	let cfg_exec = await obterArmazenamento(['rotaExecucaoAtual'])
+	let execucao = cfg_exec?.rotaExecucaoAtual || String(Date.now())
+	let sessao   = execucao
+
 
 	localStorage.removeItem(ROTA_KEY_BASE    + sessao)
 	localStorage.removeItem(ROTA_KEY_FECHAR  + sessao)
@@ -674,8 +700,9 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 			+ (params.length ? '&pjerota_params=' + encodeURIComponent(JSON.stringify(params)) : '')
 			+ (tmrJson ? '&pjerota_tmr=' + tmrJson : '')
 
+		let nomeW = rota_nomeJanela(slot.slotIndex, execucao)
 		let w = window.open(
-			urlFinal, '_blank',
+			urlFinal, nomeW,   // ← aqui
 			'width='  + geo.width  + ',height=' + geo.height +
 			',left='  + geo.left   + ',top='    + geo.top    +
 			',toolbar=0,menubar=0,resizable=1'

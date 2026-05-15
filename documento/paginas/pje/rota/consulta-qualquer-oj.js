@@ -337,7 +337,7 @@ async function consulta_qualquer_ojErroNumero(erro = '') {
         mensagem = 'Verifique o dígito.'
     }
     if (erro === 'nao conectado'){
-        mensagem = 'Verifique sua coneção ao PJE.'
+        mensagem = 'Verifique sua conexão ao PJE.'
     }
     if (erro === 'erro perfil'){
         mensagem = 'Você não possui o perfil da OJ.'

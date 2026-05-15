@@ -1,5 +1,5 @@
 {
-  "version": "2.0.7",
+  "version": "2.0.8",
   "short_name": "Rota PJE",
   "name": "Rota PJE",
   "description": "Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -100,6 +100,7 @@
         "rota/cache.js",
         "rota/modelo.js",
         "rota/interceptador.js",
+        "rota/ui.js",
         "documento/paginas/pje/rota/pintura.js",
         "documento/paginas/pje/rota/janelas.js",
         "documento/paginas/pje/rota/botao-rota.js",
@@ -115,6 +116,7 @@
         "rota/componentes.js",
         "rota/tarefas/index.js",
         "rota/tarefas/balcao-virtual/roteiro.js",
+        "rota/tarefas/triagem-inicial/roteiro-assistente.js",
         "rota/tarefas/triagem-inicial/roteiro.js",
         "rota/tarefas/pos-triagem/roteiro.js"
       ],

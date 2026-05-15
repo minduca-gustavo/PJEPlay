@@ -1,18 +1,27 @@
 // ============================================================
 // assistente.js
-// Lógica da janela assistente do Rota PJE.
+// Bootstrap da janela assistente do Rota PJE.
 //
-// Esta janela é aberta como popup separado (20% da tela).
-// Comunica com o PJE via browser.storage.local.
+// Responsabilidades:
+//   1. Ler parâmetros da URL (execucao, tarefa)
+//   2. Validar execucao contra o storage — fecha se não bater
+//   3. Preencher cabeçalho fixo (tarefa, processo, posição)
+//   4. Criar rodapé fixo com criaBotaoProximoEEncerrar
+//   5. Expor 'rota-corpo' limpo para o roteiro da tarefa
+//
+// O que NÃO faz:
+//   - Não monta conteúdo da área rolável (responsabilidade do roteiro)
+//   - Não reage a mudanças de storage após a montagem inicial
+//     (o assistente é recriado a cada processo)
 // ============================================================
 
 
 // ── Humanização do nome da tarefa ─────────────────────────────
 
-const _ass_nomesTarefa = {
-    'balcao-virtual':    'Balcão Virtual',
+const _ASS_NOMES_TAREFA = {
     'triagem-inicial':   'Triagem Inicial',
     'pos-triagem':       'Pós-Triagem',
+    'balcao-virtual':    'Balcão Virtual',
     'audiencia':         'Audiência',
     'cumprimento':       'Cumprimento de Sentença',
     'execucao':          'Execução',
@@ -21,279 +30,107 @@ const _ass_nomesTarefa = {
     'julgamento':        'Julgamento',
 }
 
-function ass_nomeTarefa(id) {
+function _ass_nomeTarefa(id) {
     if (!id) return '—'
-    if (_ass_nomesTarefa[id]) return _ass_nomesTarefa[id]
-    // Fallback: converte kebab-case para Title Case
+    if (_ASS_NOMES_TAREFA[id]) return _ASS_NOMES_TAREFA[id]
+    // Fallback: kebab-case → Title Case
     return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
 
-// ── Estado local ──────────────────────────────────────────────
+// ── Parâmetros da URL ─────────────────────────────────────────
 
-let _ass_sessao       = null   // sessão ativa lida do storage
-let _ass_tmrIntervalo = null   // intervalo do temporizador
-let _ass_tmrPausado   = false
-let _ass_historico    = []
+function _ass_params() {
+    const p = new URL(location.href).searchParams
+    return {
+        execucao: p.get('pjerota_execucao') || '',
+        tarefa:   p.get('pjerota_tarefa')   || '',
+    }
+}
 
 
 // ── Inicialização ─────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // Lê sessão e monta interface
-    await ass_atualizar()
+    const { execucao, tarefa } = _ass_params()
 
-    // Inicia o conector do roteiro guiado
-    if (typeof conector_iniciar === 'function') {
-        conector_iniciar()
+    // ── Valida execucao contra o storage ──────────────────────
+    // Se não bater, esta janela é resquício de execução anterior.
+    // Fecha silenciosamente.
+    if (execucao) {
+        const cfg = await obterArmazenamento(['rotaExecucaoAtual'])
+        const execucaoAtual = String(cfg?.rotaExecucaoAtual || '')
+        if (execucaoAtual && execucaoAtual !== execucao) {
+            window.close()
+            return
+        }
     }
 
-    // Ouve mudanças no storage (pipeline avança, dados chegam)
-    browser.storage.onChanged.addListener(async (mudancas) => {
-        // Sessão avançou — atualiza painel principal E conector
-        if (mudancas[ROTA_CHAVES.sessao]) {
-            await ass_atualizar()
-            await conector_montar()
-            return
-        }
-        if (mudancas['rota_dadosProntos']?.newValue === true) {            await armazenar({ rota_dadosProntos: false })
-            await conector_montar()
-            return
-        }
-        // Tarefa mudou — remonta o conector
-        if (mudancas['tarefaAtiva'] || mudancas['tarefaAtivaIsSistema']) {
-            await conector_montar()
-            return
-        }
-    })
+    // ── Preenche cabeçalho fixo ───────────────────────────────
+    await _ass_preencherCabecalho(tarefa)
 
-    // Botão fechar
+    // ── Cria rodapé com Próximo/Encerrar ─────────────────────
+    // O rodapé do HTML original tem só um span de status.
+    // Substituímos pelo par de botões via ui.js.
+    const rodape = document.querySelector('.assistente-rodape')
+    if (rodape) {
+        rodape.innerHTML = ''
+        rodape.id = 'rota-rodape'
+        criaBotaoProximoEEncerrar({ id: 'rota-btn-nav', ancestral: 'rota-rodape' })
+    }
+
+    // ── Botão fechar ──────────────────────────────────────────
     document.getElementById('btn-fechar-assistente')
         ?.addEventListener('click', () => window.close())
 
-    // Botão avançar
-    document.getElementById('btn-avancar')
-        ?.addEventListener('click', ass_avancar)
+    // ── Exibe carregando na área rolável ─────────────────────
+    // O roteiro da tarefa chamará removerCarregando() quando
+    // os dados chegarem e a interface estiver pronta.
+    criarCarregando('rota-corpo')
+
+    // Os roteiros das tarefas se auto-iniciam pelos próprios
+    // scripts declarados no assistente.html, filtrando pelo
+    // parâmetro pjerota_tarefa da URL.
 })
 
 
-// ── Atualização principal ─────────────────────────────────────
+// ── Preencher cabeçalho ───────────────────────────────────────
 
-async function ass_atualizar() {
+async function _ass_preencherCabecalho(idTarefa) {
+
+    // Nome da tarefa
+    const elTarefa = document.getElementById('assistente-tarefa')
+    if (elTarefa) elTarefa.textContent = _ass_nomeTarefa(idTarefa)
+
+    // Processo atual e posição — lidos da sessão no storage
     const cfg    = await obterArmazenamento([ROTA_CHAVES.sessao])
     const sessao = cfg?.[ROTA_CHAVES.sessao]
 
-    _ass_sessao = sessao
+    const elProcesso = document.getElementById('assistente-processo')
+    const elPosicao  = document.getElementById('nav-posicao')
 
     if (!sessao?.ativa) {
-        ass_exibirSemSessao()
+        if (elProcesso) elProcesso.textContent = '—'
+        if (elPosicao)  elPosicao.textContent  = '— / —'
         return
     }
 
-    ass_exibirSessaoAtiva(sessao)
-}
-
-
-// ── Sem sessão ────────────────────────────────────────────────
-
-function ass_exibirSemSessao() {
-    document.getElementById('assistente-tarefa').textContent   = '—'
-    document.getElementById('assistente-processo').textContent = '—'
-    document.getElementById('nav-posicao').textContent         = '— / —'
-    document.getElementById('temporizador-bloco').style.display = 'none'
-    document.getElementById('rodape-status').textContent       = 'Nenhuma sessão ativa'
-
-    const btnAvancar = document.getElementById('btn-avancar')
-    if (btnAvancar) {
-        btnAvancar.textContent = '▶ Avançar processo'
-        btnAvancar.disabled    = true
-        btnAvancar.style.opacity = '0.4'
-    }
-
-    ass_pararTemporizador()
-}
-
-
-// ── Sessão ativa ──────────────────────────────────────────────
-
-function ass_exibirSessaoAtiva(sessao) {
-    const { tarefa, cursor, processos, etapaAtual, checklist } = sessao
-    const total   = processos?.length || 0
-    const atual   = (cursor || 0) + 1
-    const numProc = processos?.[cursor || 0] || '—'
-
-    // Faixa 1: tarefa humanizada
-    document.getElementById('assistente-tarefa').textContent   = ass_nomeTarefa(tarefa)
-
-    // Faixa 2: número do processo + posição
-    document.getElementById('assistente-processo').textContent = numProc
-    document.getElementById('nav-posicao').textContent         = `${atual}/${total}`
-
-    // Botão avançar
-    const btnAvancar = document.getElementById('btn-avancar')
-    if (btnAvancar) {
-        const ultimo = atual >= total
-        btnAvancar.textContent  = ultimo ? '■ Encerrar sessão' : '▶ Avançar processo'
-        btnAvancar.disabled     = false
-        btnAvancar.style.opacity = '1'
-        btnAvancar.className    = 'btn-avancar' + (ultimo ? ' encerrar' : '')
-    }
-
-    // Rodapé
-    document.getElementById('rodape-status').textContent =
-        `${atual} de ${total} processos`
-
-    // Histórico
-    ass_atualizarHistorico(sessao)
-}
-
-
-// ── Avançar / Encerrar ────────────────────────────────────────
-
-async function ass_avancar() {
-    if (!_ass_sessao?.ativa) return
-
-    const sessao  = _ass_sessao
+    const cursor  = sessao.cursor  || 0
     const total   = sessao.processos?.length || 0
-    const cursor  = sessao.cursor || 0
-    const ultimo  = (cursor + 1) >= total
+    const numProc = sessao.processos?.[cursor] || '—'
 
-    // Salva anotação atual
-    const anotacao = document.getElementById('input-anotacao')?.value?.trim() || ''
-    if (anotacao) {
-        const etapa = sessao.etapaAtual || 'manual'
-        await estado_marcarEtapa(etapa, anotacao)
-        document.getElementById('input-anotacao').value = ''
-    }
-
-    ass_pararTemporizador()
-
-    if (ultimo) {
-        // Encerrar sessão
-        await estado_encerrar()
-        ass_exibirSemSessao()
-        document.getElementById('rodape-status').textContent = 'Sessão encerrada.'
-    } else {
-        // Próximo processo
-        await estado_avancarProcesso()
-    }
+    if (elProcesso) elProcesso.textContent = numProc
+    if (elPosicao)  elPosicao.textContent  = `${cursor + 1} / ${total}`
 }
 
 
-// ── Histórico ─────────────────────────────────────────────────
+// ── Limpar área rolável ───────────────────────────────────────
+//
+// Chamado pelo roteiro antes de remontar a interface.
+// Remove tudo dentro de #rota-corpo, incluindo o carregando.
 
-function ass_atualizarHistorico(sessao) {
-    const lista = document.getElementById('historico-lista')
-    if (!lista) return
-
-    const checklist = sessao.checklist || {}
-    const itens     = Object.entries(checklist)
-
-    if (!itens.length) {
-        lista.innerHTML = ''
-        lista.textContent = 'Nenhum processo percorrido ainda.'
-        return
-    }
-
-    lista.innerHTML = ''
-    itens.forEach(([etapa, dados]) => {
-        const item = document.createElement('div')
-        item.className = 'historico-item'
-
-        const num  = document.createElement('span')
-        num.className   = 'historico-num'
-        num.textContent = etapa
-
-        const nota = document.createElement('span')
-        nota.className   = 'historico-nota'
-        nota.textContent = dados.nota || '—'
-
-        item.appendChild(num)
-        item.appendChild(nota)
-        lista.appendChild(item)
-    })
+function ass_limparCorpo() {
+    const corpo = document.getElementById('rota-corpo')
+    if (corpo) corpo.innerHTML = ''
 }
-
-function ass_navegarHistorico(direcao) {
-    // Por enquanto apenas scroll visual — pipeline não é afetado
-    const lista = document.getElementById('historico-lista')
-    if (lista) lista.scrollBy({ top: direcao * 60, behavior: 'smooth' })
-}
-
-
-// ── Temporizador ──────────────────────────────────────────────
-
-function ass_iniciarTemporizador(segundosTotal, opcoes = [], sessao) {
-    ass_pararTemporizador()
-
-    const bloco    = document.getElementById('temporizador-bloco')
-    const display  = document.getElementById('temporizador-display')
-    const opcoesEl = document.getElementById('temporizador-opcoes')
-
-    if (!bloco || !display) return
-
-    bloco.style.display  = 'flex'
-    display.className    = 'temporizador-display'
-    display.textContent  = segundosTotal
-    _ass_tmrPausado      = false
-
-    // Botões de opção
-    opcoesEl.innerHTML = ''
-    opcoes.forEach(opcao => {
-        const btn = document.createElement('button')
-        btn.className   = 'tmr-opcao-btn'
-        btn.textContent = opcao
-        btn.addEventListener('click', () => {
-            opcoesEl.querySelectorAll('.tmr-opcao-btn').forEach(b => b.classList.remove('ativa'))
-            btn.classList.add('ativa')
-            localStorage.setItem('pjerota_nota_' + sessao, opcao)
-        })
-        opcoesEl.appendChild(btn)
-    })
-
-    // Pause ao clicar no display
-    display.addEventListener('click', () => {
-        if (_ass_tmrPausado) return
-        _ass_tmrPausado = true
-        ass_pararTemporizador()
-        display.className   = 'temporizador-display pausado'
-        display.textContent = 'Pausado.\nClique em Avançar para continuar.'
-    })
-
-    let restante = segundosTotal
-    _ass_tmrIntervalo = setInterval(() => {
-        restante--
-        display.textContent = restante
-        if (restante <= 5) display.className = 'temporizador-display urgente'
-        if (restante <= 0) {
-            ass_pararTemporizador()
-            ass_avancar()
-        }
-    }, 1000)
-}
-
-function ass_pararTemporizador() {
-    if (_ass_tmrIntervalo) {
-        clearInterval(_ass_tmrIntervalo)
-        _ass_tmrIntervalo = null
-    }
-}
-
-
-// ── Aviso inline ──────────────────────────────────────────────
-
-function ass_exibirAviso(msg = '', tipo = 'info', ms = 4000) {
-    const el = document.getElementById('aviso-roteiro')
-    if (!el) return
-
-    el.textContent  = msg
-    el.className    = `aviso aviso-${tipo}`
-    el.style.display = 'block'
-
-    if (ms > 0) {
-        setTimeout(() => { el.style.display = 'none' }, ms)
-    }
-}
-
-

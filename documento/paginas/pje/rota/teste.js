@@ -29,7 +29,7 @@
 
 (function () {
   const URL_REGEX = /processo\/\d{7}\/detalhe/;
-
+  
   function extrairNome(trElement) {
     // Tenta Alteração primeiro, depois Criação
     const todosSrOnly = trElement.querySelectorAll('p.sr-only');
@@ -177,7 +177,7 @@
       btnTrash.insertAdjacentElement('afterend', btn);
     });
   }
-
+  
   // ---- Observa mudanças no DOM (Angular renderiza async) ----
   let debounce = null;
   const observer = new MutationObserver(() => {
@@ -188,6 +188,7 @@
 
   // Roda imediatamente também
   adicionarBotoes();
+  
 })();
 
 
