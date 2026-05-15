@@ -295,8 +295,8 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 		}
 	},
 	{
-    nome: 'Recebimento do TRT - Acordo, Improcedência.',
-	modo: ['Tarefa', 'Lista'],
+		nome: 'Recebimento do TRT - Acordo, Improcedência.',
+		modo: ['Tarefa', 'Lista'],
 		funcao: async (contexto) => {
 			let ids = [], t = []
 
@@ -359,6 +359,44 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 			return d.length ? d : 'Nenhum processo encontrado.'
 		}
 	},
+	{
+		nome: 'Listar audiências na sala até a data escolhida.',
+		modo: ['Sala'],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+			let juiz = contexto.valor.split(',')[0]?.trim() || ''
+			let data = contexto.valor.split(',')[1]?.trim() || ''
+			let dataTransformada = sf_botoesDataPraJS(data)
+			relatar('Data transformada: ' + dataTransformada, '', 'teste')
+			let hoje = new Date()
+			let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
+			relatar('Dias até a data: ' + dias, '', 'teste')
+			if (!juiz || !data || !dataTransformada) return 'Por favor, insira o nome do juiz e a data, separados por vírgula. Exemplo: "Fulano de Tal, 2024-12-31".'
+			if (contexto.modo === 'Sala') {
+				;({ ids, t } = await buscarProcessosPorSala(juiz, dias))
+			}
+			relatar('ids', t, 'teste')
+			//return
+			//await suspender (5*60*1000)
+
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			for (let id in t){
+				d.push(
+					{
+						processo: t[id]?.nrProcesso || '',
+						horario: t[id]?.pautaAudienciaHorario?.horaInicial || '',
+						data: t[id]?.data || '',
+						autuacao: t[id]?.processo?.autuadoEm || '',
+					}
+				)
+			}
+
+			return d.length ? d : 'Nenhum processo encontrado.'
+		}
+	},
 	// ── Adicione seus botões abaixo ───────────────────────────
 	// {
 	// 	nome: 'Nome do botão',
@@ -378,3 +416,8 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 	// },
 
 ]
+
+function sf_botoesDataPraJS(str) {
+  const [d, m, a] = str.split('/');
+  return new Date(a, m - 1, d);
+}
