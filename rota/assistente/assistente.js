@@ -55,9 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { execucao, tarefa } = _ass_params()
 
-    // ── Valida execucao contra o storage ──────────────────────
-    // Se não bater, esta janela é resquício de execução anterior.
-    // Fecha silenciosamente.
+    // Valida execucao
     if (execucao) {
         const cfg = await obterArmazenamento(['rotaExecucaoAtual'])
         const execucaoAtual = String(cfg?.rotaExecucaoAtual || '')
@@ -67,12 +65,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // ── Preenche cabeçalho fixo ───────────────────────────────
-    await _ass_preencherCabecalho(tarefa)
+    // Ouve fechamento por nova execução
+    browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
+        if (mudancas['rotaExecucaoAtual']?.newValue) {
+            const novoExecucao = String(mudancas['rotaExecucaoAtual'].newValue)
+            const meuExecucao  = new URL(location.href).searchParams.get('pjerota_execucao')
+            if (novoExecucao !== meuExecucao) {
+                browser.storage.onChanged.removeListener(ouvirExecucao)
+                window.close()
+            }
+        }
+    })
 
-    // ── Cria rodapé com Próximo/Encerrar ─────────────────────
-    // O rodapé do HTML original tem só um span de status.
-    // Substituímos pelo par de botões via ui.js.
+    // Cria rodapé imediatamente
     const rodape = document.querySelector('.assistente-rodape')
     if (rodape) {
         rodape.innerHTML = ''
@@ -80,51 +85,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         criaBotaoProximoEEncerrar({ id: 'rota-btn-nav', ancestral: 'rota-rodape' })
     }
 
-    // ── Botão fechar ──────────────────────────────────────────
     document.getElementById('btn-fechar-assistente')
         ?.addEventListener('click', () => window.close())
 
-    // ── Exibe carregando na área rolável ─────────────────────
-    // O roteiro da tarefa chamará removerCarregando() quando
-    // os dados chegarem e a interface estiver pronta.
+    // Mostra carregando enquanto aguarda dados prontos
     criarCarregando('rota-corpo')
 
-    // Os roteiros das tarefas se auto-iniciam pelos próprios
-    // scripts declarados no assistente.html, filtrando pelo
-    // parâmetro pjerota_tarefa da URL.
+    // Aguarda sinal de dados prontos ANTES de preencher o cabeçalho
+    await new Promise(resolver => {
+        browser.storage.onChanged.addListener(function ouvirDados(mudancas) {
+            if (mudancas['rota_dadosProntos']?.newValue === true) {
+                browser.storage.onChanged.removeListener(ouvirDados)
+                resolver()
+            }
+        })
+    })
+
+    // Agora o pipeline já atualizou o cursor — cabeçalho correto
+    await _ass_preencherCabecalho(tarefa)
 })
 
 
 // ── Preencher cabeçalho ───────────────────────────────────────
 
 async function _ass_preencherCabecalho(idTarefa) {
-
-    // Nome da tarefa
-    const elTarefa = document.getElementById('assistente-tarefa')
-    if (elTarefa) elTarefa.textContent = _ass_nomeTarefa(idTarefa)
-
-    // Processo atual e posição — lidos da sessão no storage
-    const cfg    = await obterArmazenamento([ROTA_CHAVES.sessao])
-    const sessao = cfg?.[ROTA_CHAVES.sessao]
-
+    const elTarefa   = document.getElementById('assistente-tarefa')
     const elProcesso = document.getElementById('assistente-processo')
     const elPosicao  = document.getElementById('nav-posicao')
 
-    if (!sessao?.ativa) {
-        if (elProcesso) elProcesso.textContent = '—'
-        if (elPosicao)  elPosicao.textContent  = '— / —'
-        return
-    }
+    if (elTarefa) elTarefa.textContent = _ass_nomeTarefa(idTarefa)
 
-    const cursor  = sessao.cursor  || 0
-    const total   = sessao.processos?.length || 0
-    const numProc = sessao.processos?.[cursor] || '—'
-
-    if (elProcesso) elProcesso.textContent = numProc
-    if (elPosicao)  elPosicao.textContent  = `${cursor + 1} / ${total}`
+    const cfg = await obterArmazenamento(['rotaProcessoAtual', 'rotaPosicaoAtual', 'rotaTotalProcessos'])
+    if (elProcesso) elProcesso.textContent = cfg?.rotaProcessoAtual  || '—'
+    if (elPosicao)  elPosicao.textContent  = (cfg?.rotaPosicaoAtual || '—') + ' / ' + (cfg?.rotaTotalProcessos || '—')
 }
 
-
+// Fecha sozinho quando uma nova execução começar
+browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
+    if (mudancas['rotaExecucaoAtual']?.newValue) {
+        const novoExecucao = String(mudancas['rotaExecucaoAtual'].newValue)
+        const meuExecucao  = new URL(location.href).searchParams.get('pjerota_execucao')
+        if (novoExecucao !== meuExecucao) {
+            browser.storage.onChanged.removeListener(ouvirExecucao)
+            window.close()
+        }
+    }
+})
 // ── Limpar área rolável ───────────────────────────────────────
 //
 // Chamado pelo roteiro antes de remontar a interface.

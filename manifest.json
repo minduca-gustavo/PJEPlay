@@ -89,6 +89,7 @@
         "*://*.jus.br/pjekz/*"
       ],
       "js": [
+        "modulos/console.js",
         "modulos/definicoes.js",
         "modulos/relatar.js",
         "modulos/dom.js",
@@ -116,7 +117,6 @@
         "rota/componentes.js",
         "rota/tarefas/index.js",
         "rota/tarefas/balcao-virtual/roteiro.js",
-        "rota/tarefas/triagem-inicial/roteiro-assistente.js",
         "rota/tarefas/triagem-inicial/roteiro.js",
         "rota/tarefas/pos-triagem/roteiro.js"
       ],

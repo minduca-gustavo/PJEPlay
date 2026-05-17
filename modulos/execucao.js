@@ -3,6 +3,7 @@ async function suspender(ms = 1000){
 }
 
 function clicar(el = ''){
+	console.log('clicar')
 	if(typeof el === 'string') el = selecionar(el)
 	if(!el) return ''
 	el.click(); return el

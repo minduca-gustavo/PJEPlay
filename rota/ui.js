@@ -155,6 +155,7 @@ function criaTexto({ id, texto, ancestral }) {
     const el = _ui_el('div', {
         fontSize:   '12px',
         color:      UI_CORES.texto,
+        paddingLeft: '8px',
         lineHeight: '1.5',
         fontFamily: "'Segoe UI', system-ui, sans-serif",
         whiteSpace: 'pre-wrap',
@@ -666,8 +667,7 @@ function criaDivExecucao({ id, idColuna, idBotaoExecutar, acaoBotaoExecutar, anc
 // corDoBox: 'azul' | 'laranja' | 'verde' | 'vermelho'
 //
 // criaTextoQueAbrePassandoOMouse({ id, texto, ancestral, corDoBox })
-
-function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ancestral, corDoBox = 'azul' }) {
+function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ancestral, corDoBox = 'azul', textoBox = '' }) {
     const CORES_BOX = {
         azul:     { bg: '#e3f2fd', borda: UI_CORES.azul    },
         laranja:  { bg: '#fff3e0', borda: UI_CORES.laranja  },
@@ -676,61 +676,67 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
     }
     const cor = CORES_BOX[corDoBox] || CORES_BOX.azul
 
-    const wrapper = _ui_el('div', {
-        position:  'relative',
-        marginBottom:'4px',
-    })
-    wrapper.id = id + '-wrapper'
+    let fixado = false  // ← estado que persiste no closure
 
-    // Rótulo clicável
+    const wrapper = _ui_el('div', { position: 'relative', marginBottom: '4px' })
+    wrapper.id = id + '-wrapper'
+    
     const rotulo = _ui_el('div', {
-        fontSize:   '12px',
-        color:      UI_CORES.azul,
-        cursor:     'pointer',
-        fontFamily: "'Segoe UI', system-ui, sans-serif",
-        userSelect: 'none',
-        display:    'inline-block',
-        borderBottom: '1px dashed ' + UI_CORES.azul,
-        paddingBottom:'1px',
+        fontSize: '12px', color: UI_CORES.azul, cursor: 'pointer',
+        fontFamily: "'Segoe UI', system-ui, sans-serif", userSelect: 'none',
+        display: 'inline-block', borderBottom: '1px dashed ' + UI_CORES.azul,
+        paddingBottom: '1px', paddingLeft: '8px', whiteSpace: 'pre-wrap',
     })
-    rotulo.id          = id
+    rotulo.id = id
     rotulo.textContent = texto
 
-    // Box de detalhes (oculto por padrão)
     const box = _ui_el('div', {
-        display:    'none',
-        position:   'absolute',
-        top:        'calc(100% + 4px)',
-        left:       '0',
-        zIndex:     '9999',
-        background: cor.bg,
-        border:     '1px solid ' + cor.borda,
-        borderRadius:'6px',
-        padding:    '10px 12px',
-        fontSize:   '12px',
-        color:      UI_CORES.texto,
-        fontFamily: "'Segoe UI', system-ui, sans-serif",
-        lineHeight: '1.5',
-        whiteSpace: 'pre-wrap',
-        maxWidth:   '320px',
-        boxShadow:  '0 4px 16px rgba(0,0,0,0.10)',
-        minWidth:   '180px',
+        display: 'none', position: 'absolute', top: 'calc(100% + 4px)', left: '0',
+        zIndex: '9999', background: cor.bg, border: '1px solid ' + cor.borda,
+        borderRadius: '6px', padding: '10px 12px', fontSize: '12px',
+        color: UI_CORES.texto, fontFamily: "'Segoe UI', system-ui, sans-serif",
+        lineHeight: '1.5', whiteSpace: 'pre-wrap', maxWidth: '320px',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.10)', minWidth: '180px',
+        cursor: 'pointer',
     })
     box.id = id + '-box'
+    box.textContent = textoBox
 
-    // Mostrar/ocultar
-    rotulo.addEventListener('mouseenter', () => box.style.display = 'block')
-    rotulo.addEventListener('mouseleave', () => {
-        // pequeno delay para o mouse entrar no box
-        setTimeout(() => { if (!box.matches(':hover')) box.style.display = 'none' }, 120)
+    // Hover: só age se não estiver fixado
+    rotulo.addEventListener('mouseenter', () => {
+        if (!fixado) box.style.display = 'block'
     })
-    box.addEventListener('mouseleave', () => box.style.display = 'none')
+    rotulo.addEventListener('mouseleave', () => {
+        if (!fixado) setTimeout(() => { if (!box.matches(':hover')) box.style.display = 'none' }, 100)
+    })
+    box.addEventListener('mouseleave', () => {
+        if (!fixado) box.style.display = 'none'
+    })
+
+    // Clique no rótulo: alterna fixação
+    rotulo.addEventListener('click', () => {
+        fixado = !fixado
+        box.style.display = fixado ? 'block' : 'none'
+        rotulo.style.fontWeight = fixado ? 'bold' : 'normal'  // feedback visual opcional
+    })
+
+    // Clique no box enquanto fixado: desfixa e fecha
+    box.addEventListener('click', () => {
+        if (fixado) {
+            fixado = false
+            box.style.display = 'none'
+            rotulo.style.fontWeight = 'normal'
+            
+        } else {
+            fixado = true
+            rotulo.style.fontWeight = 'bold'
+        }
+    })
 
     wrapper.appendChild(rotulo)
     wrapper.appendChild(box)
     _ui_inserir(wrapper, ancestral)
 
-    // Método para atualizar o conteúdo do box externamente
     wrapper.atualizarConteudo = (conteudo) => { box.textContent = conteudo }
 
     return wrapper
@@ -775,16 +781,16 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     _ui_hoverBotao(btnProximo, UI_CORES.laranja, UI_CORES.laranjaHover)
 
     // Lê a sessão no momento do clique para garantir o valor atual
-    btnEncerrar.addEventListener('click', async () => {
-        const cfg = await obterArmazenamento(['rotaExecucaoAtual'])
-        const sessao = cfg?.rotaExecucaoAtual
-        if (sessao) rota_sinalizar(sessao, 'encerrar')
-    })
-
     btnProximo.addEventListener('click', async () => {
         const cfg = await obterArmazenamento(['rotaExecucaoAtual'])
         const sessao = cfg?.rotaExecucaoAtual
-        if (sessao) rota_sinalizar(sessao, 'proximo')
+        if (sessao) await armazenar({ rotaSinalAssistente: 'proximo' })
+    })
+
+    btnEncerrar.addEventListener('click', async () => {
+        const cfg = await obterArmazenamento(['rotaExecucaoAtual'])
+        const sessao = cfg?.rotaExecucaoAtual
+        if (sessao) await armazenar({ rotaSinalAssistente: 'encerrar' })
     })
 
     linha.appendChild(btnEncerrar)

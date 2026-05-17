@@ -441,14 +441,16 @@ function rota_geometriaModoAssistido() {
 
 function rota_abrirAssistente(idTarefa = '', execucao = '') {
     const geo = rota_geometriaModoAssistido()
- 
+
     let url = extensao_raiz('rota/assistente/assistente.html')
     url += '?pjerota_execucao=' + encodeURIComponent(execucao)
     url += '&pjerota_tarefa='   + encodeURIComponent(idTarefa)
- 
+
+    // Nome único por execucao — garante janela nova a cada processo
+    const nome = 'rota-assistente-' + execucao
+
     const assistente = window.open(
-        url,
-        'rota-pje-assistente',
+        url, nome,
         'width='   + geo.assistente.width  +
         ',height=' + geo.assistente.height +
         ',left='   + geo.assistente.left   +
@@ -495,19 +497,32 @@ function rota_sinalizar(sessao, acao){
 }
 
 function rota_aguardarSinal(sessao, timeout = 28800000){
-	return new Promise(resolver => {
-		let inicio = Date.now()
-		let tick = setInterval(() => {
-			let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
-			if(sinal && sinal !== 'pausado'){
-				clearInterval(tick)
-				localStorage.removeItem(ROTA_KEY_BASE + sessao)
-				resolver(sinal)
-				return
-			}
-			if(Date.now() - inicio > timeout){ clearInterval(tick); resolver('timeout') }
-		}, 300)
-	})
+    return new Promise(resolver => {
+        let inicio = Date.now()
+        let tick = setInterval(async () => {
+
+            // Sinal vindo das janelas do PJe (localStorage — não muda)
+            let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
+            if(sinal && sinal !== 'pausado'){
+                clearInterval(tick)
+                localStorage.removeItem(ROTA_KEY_BASE + sessao)
+                resolver(sinal)
+                return
+            }
+
+            // Sinal vindo do assistente (browser.storage — origem diferente)
+            let cfg = await obterArmazenamento(['rotaSinalAssistente'])
+            let sinalAssistente = cfg?.rotaSinalAssistente
+            if(sinalAssistente && sinalAssistente !== 'pausado'){
+                clearInterval(tick)
+                await armazenar({ rotaSinalAssistente: null })
+                resolver(sinalAssistente)
+                return
+            }
+
+            if(Date.now() - inicio > timeout){ clearInterval(tick); resolver('timeout') }
+        }, 300)
+    })
 }
 
 function rota_fecharJanelas(sessao){
@@ -573,7 +588,7 @@ async function rota_iniciarPipeline({ fila }){
 		}
 
 		tarefa = {
-			slots:        catalogo_paraSlots(itemCatalogo),  // ← era hardcoded
+			slots:        [{ tipo: 'detalhes', posicao: 'esquerdaAssistida', ordem: 0, slotIndex: 0 }],
 			tarefaUnica:  '',
 			temporizador: { ativo: false, segundos: 30, opcoes: '' },
 		}
@@ -606,10 +621,7 @@ async function rota_iniciarPipeline({ fila }){
 		const processos = fila.map(item => item.numProc || item.id || '')
 		await estado_iniciar(nomeAtivo, processos)
 		await suspender(200)
-		const execucao = String(Date.now())
-		await armazenar({ rotaExecucaoAtual: execucao })
-		await rota_abrirAssistente(nomeAtivo, execucao)
-		await suspender(800)
+		// execucao será gerado em processarCursor — não abre assistente aqui
 	}
 
     await rota_processarCursor(slots, tarefaUnica, temporizador)
@@ -618,8 +630,13 @@ async function rota_iniciarPipeline({ fila }){
 
 // ── Processa o processo no cursor atual ───────────────────────
 
+let _rota_processando = false
+
+
 async function rota_processarCursor(slots, tarefaUnica, temporizador){
-	if(!_rota_ativo) return
+    if(!_rota_ativo) return
+    if(_rota_processando) return   // ← trava
+    _rota_processando = true
 	// Mantém contexto acessível para persistência em caso de reload por troca de OJ
 	_rota_slots_ativos       = slots
 	_rota_tarefaUnica_ativa  = tarefaUnica
@@ -638,6 +655,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 		item.id = await _rota_buscarIdProcesso(item.numProc)
 		if(!item.id){
 			rota_avisoTemporario('ID não encontrado: ' + item.numProc, 'erro', 4000)
+			_rota_processando = false   // ← adiciona
 			_rota_cursor++
 			await rota_processarCursor(slots, tarefaUnica, temporizador)
 			return
@@ -646,17 +664,32 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 	let urlSlots = await rota_montarUrls(item.id, slots, item.numProc)
 	if(!urlSlots.length){
+		_rota_processando = false   // ← adiciona
 		_rota_cursor++
 		await rota_processarCursor(slots, tarefaUnica, temporizador)
 		return
 	}
 
-	_rota_fecharTodasJanelas()
+	_rota_fecharTodasJanelas()  // fecha tudo, inclusive assistente anterior
 	await suspender(300)
 
-	let cfg_exec = await obterArmazenamento(['rotaExecucaoAtual'])
-	let execucao = cfg_exec?.rotaExecucaoAtual || String(Date.now())
-	let sessao   = execucao
+	const novoExecucao = String(Date.now())
+	let execucao = novoExecucao   // ← adiciona isso
+	let sessao   = novoExecucao   // ← adiciona isso
+	await armazenar({
+		rotaExecucaoAtual:    novoExecucao,
+		rotaProcessoAtual:    item.numProc,   // ← número do processo
+		rotaPosicaoAtual:     _rota_cursor + 1,
+		rotaTotalProcessos:   _rota_fila.length,
+		rota_dadosProntos:    false,          // ← reseta o sinal
+	})
+
+	// Reabre assistente se for tarefa do sistema
+	let cfgTarefa = await obterArmazenamento(['tarefaAtiva', 'tarefaAtivaIsSistema'])
+	if(cfgTarefa?.tarefaAtivaIsSistema === true){
+		await rota_abrirAssistente(cfgTarefa.tarefaAtiva, execucao)
+		await suspender(500)
+	}
 
 
 	localStorage.removeItem(ROTA_KEY_BASE    + sessao)
@@ -730,12 +763,14 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 	if(sinal === 'encerrar' || sinal === 'timeout'){
 		_rota_ativo = false
+		_rota_processando = false   // ← adiciona
 		rota_exibirRelatorio()
 		return
 	}
 
-	_rota_cursor++
-	await rota_processarCursor(slots, tarefaUnica, temporizador)
+	_rota_processando = false      // ← libera antes de chamar recursivo
+    _rota_cursor++
+    await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
 
 

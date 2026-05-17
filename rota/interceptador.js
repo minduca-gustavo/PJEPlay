@@ -45,7 +45,12 @@ const INTERCEPTADOR_ROTULO = {
 interceptador_iniciar()
 
 function interceptador_iniciar(){
-    relatar('Interceptador: ouvindo requisições…', '', 'xhr')
+    let estilo = 'border-radius:3px;color:hsla(0,100%,100%,1);display:inline-block;font-weight:600;padding:0 3px;'
+	console.log(
+		'%cRota PJE%c✅ interceptador() executado com sucesso!',
+		estilo + 'background:hsla(204,100%,40%,1);',
+		estilo + 'background:rgb(65, 90, 119);margin:0 0 0 3px;'
+	)
     document.addEventListener(
         'RotaRequisicaoInterceptada',
         interceptador_processar
@@ -57,7 +62,12 @@ function interceptador_processar(evento){
     let url      = dados.url      || ''
     let resposta = dados.resposta || ''
 
-    relatar('Requisição interceptada:', url, 'xhr')
+    let estilo = 'border-radius:3px;color:hsla(0,100%,100%,1);display:inline-block;font-weight:600;padding:0 3px;'
+	console.log(
+		'%cRota PJE%c✅ interceptador()' + url,
+		estilo + 'background:hsla(204,100%,40%,1);',
+		estilo + 'background:rgb(65, 90, 119);margin:0 0 0 3px;'
+	)
 
     if(!url.includes('/api/') || !resposta) return
 
@@ -72,12 +82,17 @@ function interceptador_processar(evento){
 
 function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
     if(!rotulo || !resposta) return
+    let estilo = 'border-radius:3px;color:hsla(0,100%,100%,1);display:inline-block;font-weight:600;padding:0 3px;'
     try{
         let name    = 'rota-' + rotulo
         let dados; try{ dados = JSON.parse(resposta) } catch{ dados = resposta }
         let content = typeof dados === 'string' ? dados : JSON.stringify(dados)
 
-        relatar('Salvando metatag:', name, 'resposta')
+        console.log(
+            '%cRota PJE%c Salvando metatag: ' + name,
+            estilo + 'background:hsla(204,100%,40%,1);',
+            estilo + 'background:hsla(120,63%,28%,1);margin:0 0 0 3px;'
+        )
 
         let meta = document.head.querySelector(`meta[name="${name}"]`)
         if(meta){
@@ -107,7 +122,11 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
         }
 
     } catch(erro){
-        relatar('interceptador_salvarMetaTag erro:', erro, 'erro')
+        console.log(
+            '%cRota PJE%c interceptador_salvarMetaTag erro: ' + erro,
+            estilo + 'background:hsla(204,100%,40%,1);',
+            estilo + 'background:hsla(0,100%,40%,1);margin:0 0 0 3px;'
+        )
     }
 }
 

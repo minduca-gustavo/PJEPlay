@@ -1,3 +1,4 @@
+// dá problema quando o interceptador dá errado, ou seja, quando não tem gigs concluídos, por exemplo.
 // o domicilio eletronico é outra api.
 //     ?pjerota_tarefa=triagem-inicial
 //console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
@@ -13,6 +14,7 @@ const dadosTriagemInicial = {
 }
 async function aoAbrirDetalhesDoProcesso(){
     let janela = confereJanela(JANELA.detalhes)
+    let versao = aguardarElemento('#modulo-versao')
     if (!janela) return
 
     let tarefa = rota_buscarParametros('pjerota_tarefa')
@@ -25,17 +27,20 @@ async function aoAbrirDetalhesDoProcesso(){
     }
 
     if (tarefa !== 'triagem-inicial') return
+    
     triagem_inicial_janelaDetalhes()
 }
 
 
 async function triagem_inicial_janelaDetalhes(){
-    let [timeline, gigs, gigsConcluidos, processo] = await Promise.all([
+    
+    let [timeline, gigs, processo] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
-        interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
+        //interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
     ])
+    
     let gig = gigs.filter(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
     let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))]
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
@@ -51,7 +56,7 @@ async function triagem_inicial_janelaDetalhes(){
         horariosVagosPorSala[sala.id] = horariosVagos
     }
     let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true') || []
-
+    
     dadosTriagemInicial.partes               = partes
     dadosTriagemInicial.processo             = processo
     dadosTriagemInicial.gig                  = gig
@@ -60,18 +65,20 @@ async function triagem_inicial_janelaDetalhes(){
     dadosTriagemInicial.horariosVagosPorSala = horariosVagosPorSala
     dadosTriagemInicial.juizSimetriaPeloGig  = juizSimetriaPeloGig
     dadosTriagemInicial.peticaoInicialId     = peticaoInicialId
-
+    
     await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
     await armazenar({ rota_dadosTriagemInicialNumero: processo.numero })
     await armazenar({ rota_dadosProntos: true })
     
-    
-    let peticaoInicial = await aguardarElemento('#abrirdoc_' + dadosTriagemInicial.peticaoInicialId)
-    let botaoAnexos    = document.querySelectorAll('button.botao-anexos')
-
+    //console.log('dadosTriagemInicial.peticaoInicialId: ' + dadosTriagemInicial.peticaoInicialId)
+    await aguardarElemento('.tl-documento')
+    let peticoes = [...document.getElementsByClassName('tl-documento')]
+    let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
+    let botaoAnexos    = document.querySelectorAll('[name="mostrarOuOcultarAnexos"]')
+    console.log('chamou? triagem-inicial')
     await clicar(peticaoInicial)
 
-    for (let i = 0; i < 33; i++) {
+    for (let i = 0; i < 100; i++) {
         let cabecalho = await aguardarElemento('.mat-card-title')
         if (cabecalho.textContent.includes(dadosTriagemInicial.peticaoInicialId)) break
         await suspender(300)
