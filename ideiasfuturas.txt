@@ -1,3 +1,5 @@
 Janela: despachos
     Abrir Campo de comentário quando o usuário clicar no megafone.
     Aparecer o comentário na janela do despacho pro Juiz a hora que abrir.
+Janela: detalhes
+    Botões +5, +10, +15, +30 no GIGs
