@@ -5,30 +5,29 @@ function formatarPartes(partes) {
     const linhas = []
 
     const formatarPessoa = (p) => {
-        const doc    = `${p.tipoDocumento}: ${p.documento}`
+        const doc    = `🪪 ${p.tipoDocumento}: ${p.documento}`
         const isPJ   = p.tipoPessoa === 'J'
-        const habDec = isPJ ? '\n    Habilitado no domicílio Eletrônico/CNJ' : ''
         const email  = p.email || p.emails?.[0] || ''
         const end    = p.endereco
         const endStr = end ? [
-            `\n    ${end.logradouro.trim()}${end.complemento ? ', ' + end.complemento.trim() : ''}, ${end.numero}`,
+            `\n   🏠 ${end.logradouro.trim()}${end.complemento ? ', ' + end.complemento.trim() : ''}, ${end.numero}`,
             `    ${end.bairro} - ${end.municipio} - ${end.estado?.sigla} - CEP: ${end.nroCep}${isPJ && email ? ' (email: ' + email + ')' : ''}`,
         ].join('\n') : ''
 
         const reps = (p.representantes || []).map(r =>
-            `        ${r.nome.trim()} (${r.tipo})\n        CPF: ${r.documento}\n        OAB: ${r.numeroOab}\n        E-mail: ${r.email}`
+            `      👔 ${r.nome.trim()} (${r.tipo})\n        CPF: ${r.documento}\n        OAB: ${r.numeroOab}\n        E-mail: ${r.email}`
         ).join('\n')
 
-        return `    ${p.tipo.toUpperCase()}:\n    ${p.nome.trim()}${habDec}\n    ${doc}${endStr}${reps ? '\n' + reps : ''}`
+        return `    ${p.tipo.toUpperCase()}:\n   🧑‍💼 ${p.nome.trim()}\n    ${doc}${endStr}${reps ? '\n' + reps : ''}`
     }
 
     if (partes.ATIVO?.length) {
-        linhas.push('Polo Ativo\n')
+        linhas.push('POLO ATIVO\n')
         partes.ATIVO.forEach(p => linhas.push(formatarPessoa(p)))
     }
 
     if (partes.PASSIVO?.length) {
-        linhas.push('\nPolo Passivo\n')
+        linhas.push('\nPOLO PASSIVO\n')
         partes.PASSIVO.forEach(p => linhas.push(formatarPessoa(p)))
     }
 

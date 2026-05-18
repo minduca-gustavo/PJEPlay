@@ -34,22 +34,25 @@ async function aoAbrirDetalhesDoProcesso(){
 
 async function triagem_inicial_janelaDetalhes(){
     
-    let [timeline, gigs, processo] = await Promise.all([
+    let [timeline, gigs, gigs_concluidos, processo] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
-        //interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
+        interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
     ])
-    
-    let gig = gigs.filter(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
-    let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))]
+    console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs, null, 2), LOG.teste, 'color:inherit')
+    let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
+    console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig, null, 2), LOG.teste, 'color:inherit')
+    let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
+    console.log('%c[Rota PJE]%c ' + gigNormalizado, LOG.teste, 'color:inherit')
+    let juizSimetriaPeloGig = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim() || ''
+    console.log('%c[Rota PJE]%c ' + juizSimetriaPeloGig, LOG.teste, 'color:inherit')
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
     let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
     let salaJuizes = []
-    for(let juiz of juizSimetriaPeloGig){
-        let sala = salas.find(sala => sala?.nome == juiz)
-        if(sala) salaJuizes.push(sala)
-    }
+    let sala = salas.find(sala => sala?.nome == juizSimetriaPeloGig.toUpperCase()) || {}
+    console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala, null, 2), LOG.teste, 'color:inherit')
+    
     let horariosVagosPorSala = {}
     for (let sala of salaJuizes){
         let horariosVagos = await buscarSalasHorariosVagos(sala.id) || []

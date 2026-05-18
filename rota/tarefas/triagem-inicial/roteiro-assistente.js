@@ -34,84 +34,77 @@ async function triagem_assistente_iniciar() {
 
     // ── Remove o carregando ───────────────────────────────────
     removerCarregando()
-    criaDiv({id: 'bloco-autuacao', ancestral: 'rota-corpo'})
-    criaTitulo({id: 'bloco-autuacao-titulo', texto: 'Autuação', ancestral: 'bloco-autuacao'})
+    let dados = await obterArmazenamento(['rota_dadosTriagemInicial'])
+    console.log('%c[Rota PJE]%c Dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.processo?.id, null, 2), LOG.teste, 'color:inherit')
+    criaDiv({id: 'bloco-inicial', ancestral: 'rota-corpo'})
+    criaTitulo({id: 'bloco-inicial-titulo', texto: 'Triagem Inicial', ancestral: 'bloco-inicial'})
     criaTextoQueAbrePassandoOMouse({
-        id:'bloco-autuacao-instrucao-longa', 
-        texto:`Passe o mouse para ver a instrução da tarefa.
+        id:'bloco-inicial-instrucao-longa', 
+        texto:`Passe o mouse para ver a instrução completa da tarefa.
 Clique para fixar/desafixar.`,
-        textoBox: `Preciso de um texto longo pra testar isso tudo.
-executado:
-associacao bauruense de ensino
-CNPJ: 03.564.615/0001-39
-RUA EXPEDICIONARIOS , 2463
-VILA ZILDA - SAO JOSE DO RIO PRETO - SP - CEP: 15025-030 (email: juridico.setanet@hotmail.com)
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com
-
-executado:
-grafica editora e informatica rio preto ltda - epp
-CNPJ: 58.945.460/0001-72
-RUA SIQUEIRA CAMPOS , 2628 , Fundos
-PARQUE INDUSTRIAL - SAO JOSE DO RIO PRETO - SP - CEP: 15025-055
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com
-
-executado:
-colegio estoril ltda - me
-CNPJ: 06.314.858/0001-07
-RUA EXPEDICIONARIOS , 2463
-VILA ZILDA - SAO JOSE DO RIO PRETO - SP - CEP: 15025-030
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com
-
-executado:
-sociedade educacional tristao de athaide ltda - me
-CNPJ: 49.071.442/0001-18
-Sem endereço cadastrado no processo
-(email: setanet@hotmail.com)
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com
-
-executado:
-colegio inovacao s/s ltda - me
-CNPJ: 06.228.012/0001-54
-AMADEU SEGUNDO CHERUBINI, 700
-JARDIM PANORAMA - SAO JOSE DO RIO PRETO - SP - CEP: 15091-250
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com
-
-executado:
-colegio atheneu s/s ltda - me
-CNPJ: 50.778.463/0001-57
-RUA EXPEDICIONARIOS , 2463
-VILA ZILDA - SAO JOSE DO RIO PRETO - SP - CEP: 15025-030
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com
-
-executado:
-setsis sistema de ensino bauru ltda - me
-CNPJ: 04.948.079/0001-38
-Sem endereço cadastrado no processo
-Maria Christina Dos Santos (ADVOGADO)
-CPF: 736.487.798-34
-OAB: SP56979
-E-mail: juridico.setanet@hotmail.com`,
+        textoBox: `Como utilizar este assistente:
+	- Anote no campo acima o que precisar. Esta anotação é local, e será perdida ao fechar a janela.
+	- O assistente traz informações que podem ser confrontadas com o processo lado a lado. Passe o mouse e clique no box para fixar as informações e fazer a confrontação.
+Confronte a petição inicial com os dados da autuação no sistema:
+	- As partes estão devidamente cadastradas? Há partes mencionadas na petição inicial que não constam da autuação ou vice-versa?
+	- Todas as partes estão com CPF/CNPJ corretos?
+	- Os endereços das partes na autuação conferem com os endereços da petição inicial? Todos têm CEP cadastrado?
+	- O valor da causa na autuação confere com o valor que consta da petição inicial?
+	- Verifique se o Rito está correto, principalmente em casos em que há Órgãos Públicos cadastrados. 
+	- Alguma das reclamadas está em zona rural ou área não atendida pelos Correios? Qual?
+Para fazer essa conferência de maneira mais rápida, utilize este assistente assim:
+Passe o mouse para abrir os dados da autuação, e CLIQUE no box. Isso fixará os dados. Com a petição inicial ao lado, faça a conferência.
+Na petição inicial, verifique:
+	- Há pedidos ilíquidos?
+	- Há pedidos no rol final sem a respectiva fundamentação (causa de pedir)?
+	- Há causa de pedir na fundamentação sem o respectivo pedido no rol final?
+	- Há pedidos ilíquidos (sem valor estimado)?
+    - Há pedido de perícia?
+Verificação dos documentos:
+	- O reclamante juntou seus documentos pessoais?
+	- Há procuração/substabelecimento?
+Após a conferência de todos os itens, utilize os botões para tomar as providências necessárias quanto à retificação da autuação ou minuta de despacho para determinar a retificação pelo reclamante.
+Caso esteja tudo certo, utilize o bloco de designação de audiência para designar a audiência, despachar ou certificar, intimar as partes, se o caso, e colocar o GIG de acompanhamento.`,
+        ancestral: 'bloco-inicial'}
+    )
+    criaInputAnotacao({id: 'rota-triagemInicialAnotacao', placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: 'bloco-inicial'})
+    criaDiv({id: 'bloco-autuacao', ancestral: 'rota-corpo'})
+    criaTitulo({id: 'bloco-autuacao-titulo', texto: 'Autuação/Petição Inicial/Documentos', ancestral: 'bloco-autuacao'})
+    criaTextoQueAbrePassandoOMouse({
+        id:'bloco-autuacao-dados-das-partes', 
+        texto:`Passe o mouse para ver os dados das partes.
+Clique para fixar/desafixar.`,
+        textoBox: `Dados das partes:
+${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: 'bloco-autuacao'}
     )
-    criaTexto({id: 'bloco-autuacao-instrucao-curta', texto: 'Verifique os dados da autuação, se estão corretos e correspondem à petição inicial.', ancestral: 'bloco-autuacao'})
+    
+    criaTexto({
+        id: 'bloco-autuacao-instrucao-curta', 
+        texto: `Verifique os dados da autuação, se estão corretos e correspondem à petição inicial.
+        Tenha atenção aos seguintes pontos:
+        - Documentos das partes;
+        - Endereços (CEP, zona rural ou área não atendida pelos Correios);
+        - Valor da causa;
+        - Rito (atenção especial a casos com Órgãos Públicos);
+        - Pedidos (líquidos/ilíquidos);`, 
+        ancestral: 'bloco-autuacao'})
+    criaBotaoAzul(
+        { id: 'bloco-autuacao-retificar-autuacao-partes', texto: 'Retificar autuação: partes', ancestral: 'bloco-autuacao', acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'partes') },
+    )
+    criaBotaoAzul(
+        { id: 'bloco-autuacao-retificar-autuacao-rito', texto: 'Retificar autuação: rito', ancestral: 'bloco-autuacao', acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'rito') },
+    )
+    criaBotaoAzul(
+        { id: 'bloco-autuacao-retificar-autuacao-assuntos', texto: 'Retificar autuação: assuntos', ancestral: 'bloco-autuacao', acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'assuntos') },
+    )
+    criaBotaoLaranja(
+        { id: 'bloco-autuacao-despacho-emenda-retificacao', texto: 'Despacho: retificar autuação/emendar a inicial', ancestral: 'bloco-autuacao', acao: () => triagem_despacho(dados?.rota_dadosTriagemInicial?.processo?.id, 'retificar-emendar') },
+    )
+    criaDiv({ id: 'bloco-designa-audiencia', ancestral: 'rota-corpo' })
+    criaTitulo({ id: 'bloco-designa-audiencia-titulo', texto: 'Designação de audiência', ancestral: 'bloco-designa-audiencia' })
+    console.log('%c[Rota PJE]%c Juiz: ' + dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig, LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit')
     // ── Interface será montada aqui futuramente ───────────────
     //
     // Exemplo de uso quando chegar a hora:
@@ -124,6 +117,16 @@ E-mail: juridico.setanet@hotmail.com`,
     //   criaTexto({ id: 'texto-partes', texto: formatarPartes(triagem.partes), ancestral: 'bloco-autuacao' })
     //   ...
 }
+
+async function triagem_retificarAutuacao(id, tipo){
+    await alert(tipo + ' em desenvolvimento. ' + id)
+}
+
+async function triagem_despacho(id, tipo){
+    await alert(tipo + ' em desenvolvimento. ' + id)
+}
+
+
 
 // Auto-executa ao carregar o script
 triagem_assistente_iniciar()

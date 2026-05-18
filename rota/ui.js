@@ -59,12 +59,14 @@ function _ui_inserir(el, ancestral) {
 function _ui_estiloBotao(cor, corHover, corTexto = '#ffffff') {
     return {
         display:      'block',
-        width:        '100%',
+        width:        '100% - 6px',
         background:   cor,
         color:        corTexto,
         border:       'none',
         borderRadius: '6px',
         padding:      '8px 12px',
+        marginLeft:   '3px',
+        marginRight:  '3px',
         fontSize:     '12px',
         fontWeight:   '700',
         fontFamily:   "'Segoe UI', system-ui, sans-serif",
@@ -435,7 +437,55 @@ function criaInput({ id, textoEmCima = '', ancestral, placeholder = '' }) {
     return container
 }
 
+function criaInputAnotacao({ id, textoEmCima = '', ancestral, placeholder = '' }) {
+    const container = _ui_el('div', {
+        display:       'flex',
+        padding: '8px',
+        flexDirection: 'column',
+        gap:           '3px',
+        marginBottom:  '6px',
+    })
+    container.id = id + '-container'
 
+    if (textoEmCima) {
+        const label = _ui_el('div', {
+            fontSize:  '11px',
+            color:     UI_CORES.suave,
+            fontFamily:"'Segoe UI', system-ui, sans-serif",
+        })
+        label.textContent = textoEmCima
+        container.appendChild(label)
+    }
+
+    const textarea = _ui_el('textarea', {
+        width:        '100%',
+        border:       '1px solid ' + UI_CORES.borda,
+        borderRadius: '6px',
+        padding:      '7px 10px',
+        fontSize:     '12px',
+        fontFamily:   "'Segoe UI', system-ui, sans-serif",
+        color:        UI_CORES.texto,
+        background:   UI_CORES.branco,
+        outline:      'none',
+        boxSizing:    'border-box',
+        resize:       'none',       // não redimensiona manualmente
+        overflow:     'hidden',     // esconde scrollbar enquanto cresce
+        minHeight:    '34px',
+        lineHeight:   '1.5',
+    })
+    textarea.id          = id
+    textarea.placeholder = placeholder
+
+    // Cresce conforme o conteúdo
+    textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto'
+        textarea.style.height = textarea.scrollHeight + 'px'
+    })
+
+    container.appendChild(textarea)
+    _ui_inserir(container, ancestral)
+    return container
+}
 // ── criaCheckBox ──────────────────────────────────────────────
 //
 // Checkbox com texto ao lado direito.
@@ -697,8 +747,9 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
         zIndex: '9999', background: cor.bg, border: '1px solid ' + cor.borda,
         borderRadius: '6px', padding: '10px 12px', fontSize: '12px',
         color: UI_CORES.texto, fontFamily: "'Segoe UI', system-ui, sans-serif",
-        lineHeight: '1.5', whiteSpace: 'pre-wrap', maxWidth: '320px',
+        lineHeight: '1.5', whiteSpace: 'pre-wrap', maxWidth: parseInt(window.innerWidth * 0.97) + 'px',
         boxShadow: '0 4px 16px rgba(0,0,0,0.10)', minWidth: '180px',
+        textAlign: 'justify',
         cursor: 'pointer',
     })
     box.id = id + '-box'
@@ -720,6 +771,7 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
         fixado = !fixado
         box.style.display = fixado ? 'block' : 'none'
         rotulo.style.fontWeight = fixado ? 'bold' : 'normal'  // feedback visual opcional
+        rotulo.textContent = texto + (fixado ? '▲' : '')  // seta para indicar fixação
     })
 
     // Clique no box enquanto fixado: desfixa e fecha
@@ -728,10 +780,11 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
             fixado = false
             box.style.display = 'none'
             rotulo.style.fontWeight = 'normal'
-            
+            rotulo.textContent = texto
         } else {
             fixado = true
             rotulo.style.fontWeight = 'bold'
+            rotulo.textContent = texto + '▲'
         }
     })
 
@@ -868,4 +921,119 @@ function removerCarregando() {
 function ui_checkboxMarcado(idCheckbox) {
     const el = document.getElementById(idCheckbox)
     return el?.dataset?.marcado === '1'
+}
+
+// ── criaPlaquinha ─────────────────────────────────────────────
+//
+// Plaquinha colorida para destacar informações.
+// cor: 'azul' | 'laranja' | 'amarelo' | 'verde'
+//
+// criaPlaquinha({ id, texto, cor, ancestral })
+
+function criaPlaquinha({ id, texto = '', cor = 'azul', ancestral }) {
+    const CORES_PLAQUINHA = {
+        azul:    { bg: '#e3f2fd', borda: '#0078aa', texto: '#0078aa' },
+        laranja: { bg: '#fff3e0', borda: '#ffa726', texto: '#e65100' },
+        amarelo: { bg: '#fffde7', borda: '#fdd835', texto: '#f57f17' },
+        verde:   { bg: '#e8f5e9', borda: '#43a047', texto: '#2e7d32' },
+    }
+    const c = CORES_PLAQUINHA[cor] || CORES_PLAQUINHA.azul
+
+    const el = _ui_el('span', {
+        display:       'inline-block',
+        background:    c.bg,
+        border:        '1px solid ' + c.borda,
+        borderRadius:  '4px',
+        padding:       '2px 8px',
+        fontSize:      '11px',
+        fontWeight:    '700',
+        color:         c.texto,
+        fontFamily:    "'Segoe UI', system-ui, sans-serif",
+        whiteSpace:    'nowrap',
+        marginRight:   '4px',
+        marginBottom:  '4px',
+        letterSpacing: '0.02em',
+    })
+    el.id          = id
+    el.textContent = texto
+    _ui_inserir(el, ancestral)
+    return el
+}
+
+
+// ── criaPlaquinhaComTooltip ───────────────────────────────────
+//
+// Plaquinha colorida com tooltip ao passar o mouse.
+// cor: 'azul' | 'laranja' | 'amarelo' | 'verde'
+//
+// criaPlaquinhaComTooltip({ id, texto, cor, tooltip, ancestral })
+
+function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', ancestral }) {
+    const CORES_PLAQUINHA = {
+        azul:    { bg: '#e3f2fd', borda: '#0078aa', texto: '#0078aa', tooltipBg: '#0078aa' },
+        laranja: { bg: '#fff3e0', borda: '#ffa726', texto: '#e65100', tooltipBg: '#ffa726' },
+        amarelo: { bg: '#fffde7', borda: '#fdd835', texto: '#f57f17', tooltipBg: '#f9a825' },
+        verde:   { bg: '#e8f5e9', borda: '#43a047', texto: '#2e7d32', tooltipBg: '#43a047' },
+    }
+    const c = CORES_PLAQUINHA[cor] || CORES_PLAQUINHA.azul
+
+    const wrapper = _ui_el('span', {
+        position:     'relative',
+        display:      'inline-block',
+        marginRight:  '4px',
+        marginBottom: '4px',
+    })
+    wrapper.id = id + '-wrapper'
+
+    // Plaquinha
+    const plaquinha = _ui_el('span', {
+        display:       'inline-block',
+        background:    c.bg,
+        border:        '1px solid ' + c.borda,
+        borderRadius:  '4px',
+        padding:       '2px 8px',
+        fontSize:      '11px',
+        fontWeight:    '700',
+        color:         c.texto,
+        fontFamily:    "'Segoe UI', system-ui, sans-serif",
+        whiteSpace:    'nowrap',
+        letterSpacing: '0.02em',
+        cursor:        'default',
+    })
+    plaquinha.id          = id
+    plaquinha.textContent = texto
+
+    // Tooltip
+    const tip = _ui_el('div', {
+        display:      'none',
+        position:     'absolute',
+        bottom:       'calc(100% + 4px)',
+        left:         '50%',
+        transform:    'translateX(-50%)',
+        background:   c.tooltipBg,
+        color:        '#ffffff',
+        borderRadius: '4px',
+        padding:      '5px 10px',
+        fontSize:     '11px',
+        fontFamily:   "'Segoe UI', system-ui, sans-serif",
+        whiteSpace:   'pre-wrap',
+        maxWidth:     '240px',
+        boxShadow:    '0 2px 8px rgba(0,0,0,0.15)',
+        zIndex:       '9999',
+        pointerEvents:'none',
+        lineHeight:   '1.4',
+    })
+    tip.textContent = tooltip
+
+    plaquinha.addEventListener('mouseenter', () => tip.style.display = 'block')
+    plaquinha.addEventListener('mouseleave', () => tip.style.display = 'none')
+
+    wrapper.appendChild(plaquinha)
+    wrapper.appendChild(tip)
+    _ui_inserir(wrapper, ancestral)
+
+    // Método para atualizar tooltip externamente
+    wrapper.atualizarTooltip = (novoTexto) => { tip.textContent = novoTexto }
+
+    return wrapper
 }

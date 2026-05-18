@@ -37,7 +37,6 @@ const SF_BOTOES = [
 		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
 			if (contexto.modo !== 'Tarefa') return 'Este botão só funciona no modo Tarefa.'
-			relatar('Contexto aqui: ' + JSON.stringify(contexto), '', 'teste')
 			let { ids, t } = await filtrarPorTarefa(contexto)
 			if (!ids.length) return 'Nenhum processo encontrado.'
 
@@ -101,10 +100,7 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 */
 			let d = []
 			let numeros = t.map(tt => tt.numero)  // extrai os números dos processos para usar na nova API
-			//relatar('ids: ' + JSON.stringify(ids), '', 'teste')
-			//relatar('t: ' + JSON.stringify(numeros), '', 'teste')
-			//await suspender(5*60*1000)  // pausa para ler os relatos		
-
+			
 			await sf_pool(numeros, async (numero, idx) => {
 // ESTOU AQUI. a função nova do gig não está pronta. tem que conferir se t.numProcesso é a variável certa.
 				
@@ -148,7 +144,8 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 			} else if (contexto.modo === 'Lista') {
 				;({ ids, t } = await filtrarPorLista(contexto))
 			}
-			relatar('ids', t, 'teste')
+			
+			console.log('%c[Rota PJE]%c ids: ' + t, LOG.teste, 'color:inherit')
 			//await suspender (5*60*1000)
 
 			if (!ids.length) return 'Nenhum processo encontrado.'
@@ -360,38 +357,46 @@ modo: ['Tarefa', 'Sala', 'Lista'],
 		}
 	},
 	{
-		nome: 'Listar audiências na sala até a data escolhida.',
+		nome: 'Listar audiências na sala até a data escolhida. Exemplo: "NOME DA SALA, 31/12/2024".',
 		modo: ['Sala'],
 		funcao: async (contexto) => {
 			let ids = [], t = []
 			let juiz = contexto.valor.split(',')[0]?.trim() || ''
 			let data = contexto.valor.split(',')[1]?.trim() || ''
 			let dataTransformada = sf_botoesDataPraJS(data)
-			relatar('Data transformada: ' + dataTransformada, '', 'teste')
+			console.log('%c[Rota PJE]%c Data transformada: ' + dataTransformada, LOG.teste, 'color:inherit')
 			let hoje = new Date()
 			let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
-			relatar('Dias até a data: ' + dias, '', 'teste')
-			if (!juiz || !data || !dataTransformada) return 'Por favor, insira o nome do juiz e a data, separados por vírgula. Exemplo: "Fulano de Tal, 2024-12-31".'
+			console.log('%c[Rota PJE]%c Dias até a data: ' + dias, LOG.teste, 'color:inherit')
+			if (!juiz || !data || !dataTransformada) return 'Por favor, insira o nome do juiz e a data, separados por vírgula. Exemplo: "FULANO DE TAL, 31/12/2024".'
 			if (contexto.modo === 'Sala') {
 				;({ ids, t } = await buscarProcessosPorSala(juiz, dias))
 			}
-			relatar('ids', t, 'teste')
+			console.log('%c[Rota PJE]%c ids: ' + t, LOG.teste, 'color:inherit')
 			//return
 			//await suspender (5*60*1000)
 
 			if (!ids.length) return 'Nenhum processo encontrado.'
 
 			let d = []
+			
+			const formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : '';
+			const formatarData = d => d ? d.slice(0, 10).split('-').reverse().join('/') : '';
+			const limiteSimet = new Date('2025-10-19');
 
-			for (let id in t){
-				d.push(
-					{
-						processo: t[id]?.nrProcesso || '',
-						horario: t[id]?.pautaAudienciaHorario?.horaInicial || '',
-						data: t[id]?.data || '',
-						autuacao: t[id]?.processo?.autuadoEm || '',
-					}
-				)
+			for (let id in t) {
+				const horarioRaw = t[id]?.pautaAudienciaHorario?.horaInicial || '';
+				const dataRaw = t[id]?.data || '';
+				const autuacaoRaw = t[id]?.processo?.autuadoEm || '';
+				const autuacaoDate = new Date(autuacaoRaw.slice(0, 10));
+				const processo = t[id]?.nrProcesso || '';
+
+				d.push({
+					processo: processo,
+					horario: formatarHora(horarioRaw),
+					data: formatarData(dataRaw),
+					autuacao: formatarData(autuacaoRaw),
+					simetriaOuLegado: processo === '' ? '' : autuacaoDate > limiteSimet ? 'SIMETRIA' : 'LEGADO',				});
 			}
 
 			return d.length ? d : 'Nenhum processo encontrado.'
