@@ -14,7 +14,7 @@ const dadosTriagemInicial = {
 }
 async function aoAbrirDetalhesDoProcesso(){
     let janela = confereJanela(JANELA.detalhes)
-    let versao = aguardarElemento('#modulo-versao')
+    //let versao = aguardarElemento('#modulo-versao')
     if (!janela) return
 
     let tarefa = rota_buscarParametros('pjerota_tarefa')

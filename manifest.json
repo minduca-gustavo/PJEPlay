@@ -111,6 +111,7 @@
         "documento/paginas/pje/rota/sf-botoes.js",
         "documento/paginas/pje/rota/superfiltro.js",
         "documento/paginas/pje/rota/teste.js",
+        "documento/paginas/pje/rota/gigs",
         "documento/paginas/pje/rota/consulta-qualquer-oj.js",
         "rota/acoes.js",
         "rota/formatadores.js",
