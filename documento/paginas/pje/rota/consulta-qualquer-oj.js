@@ -15,7 +15,6 @@ consultaQualquerOJ()
 
 async function consulta_qualquer_ojCriaCampoConsulta() {
 
-    
     let WIDGET_ID   = 'pjerota-consulta_qualquer_oj-widget'
     let STORAGE_POS = 'consulta_qualquer_oj_widget_pos'
 
@@ -31,11 +30,11 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         textoSuave: '#6b7c93',
     }
 
-    let store  = await obterArmazenamento([STORAGE_POS, 'consulta_qualquer_oj_recolhido'])
-    let pos    = store[STORAGE_POS] || { top: 80, left: 20 }
+    let store     = await obterArmazenamento([STORAGE_POS, 'consulta_qualquer_oj_recolhido', 'consulta_qualquer_oj_minimo'])
+    let pos       = store[STORAGE_POS] || { top: 80, left: 20 }
     let recolhido = store['consulta_qualquer_oj_recolhido'] ?? false
+    let minimo    = store['consulta_qualquer_oj_minimo']    ?? false
 
-    // Garante que o widget não monte fora da janela atual
     const maxLeft = Math.max(0, window.innerWidth  - 240)
     const maxTop  = Math.max(0, window.innerHeight - 120)
     pos = {
@@ -62,6 +61,7 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         color:        C.texto,
         userSelect:   'none',
         overflow:     'hidden',
+        transition:   'width 0.2s',
     })
 
     // ── Barra de título ───────────────────────────────────────
@@ -75,6 +75,26 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         cursor:      'grab',
     })
 
+    // ── Botão horizontal (◄ / ►) — só aparece quando recolhido pra cima
+    let btnHoriz = document.createElement('button')
+    btnHoriz.textContent = '◄'
+    _s(btnHoriz, {
+        background: 'transparent',
+        border:     'none',
+        color:      'rgba(255,255,255,0.6)',
+        fontSize:   '11px',
+        cursor:     'pointer',
+        padding:    '0 6px 0 0',
+        lineHeight: '1',
+        display:    'none',
+    })
+    btnHoriz.addEventListener('click', (e) => {
+        e.stopPropagation()
+        minimo = !minimo
+        armazenar({ consulta_qualquer_oj_minimo: minimo })
+        aplicarEstado()
+    })
+
     let titulo = document.createElement('span')
     titulo.textContent = 'Consulta em qualquer OJ.'
     _s(titulo, {
@@ -83,8 +103,11 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         fontSize:      '11px',
         color:         '#ffffff',
         letterSpacing: '0.4px',
+        overflow:      'hidden',
+        whiteSpace:    'nowrap',
     })
 
+    // ── Botão vertical (▲ / ▼)
     let btnToggle = document.createElement('button')
     btnToggle.textContent = '▲'
     _s(btnToggle, {
@@ -93,35 +116,23 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         color:      'rgba(255,255,255,0.6)',
         fontSize:   '11px',
         cursor:     'pointer',
-        padding:    '0 6px 0 0',
+        padding:    '0',
         lineHeight: '1',
     })
     btnToggle.addEventListener('click', (e) => {
         e.stopPropagation()
-        const recolhido = corpo.style.display === 'none'
-        corpo.style.display   = recolhido ? 'flex' : 'none'
-        btnToggle.textContent = recolhido ? '▲' : '▼'
-        armazenar({ consulta_qualquer_oj_recolhido: !recolhido })
+        recolhido = !recolhido
+        if (!recolhido) minimo = false    // abrir vertical limpa o mínimo
+        armazenar({
+            consulta_qualquer_oj_recolhido: recolhido,
+            consulta_qualquer_oj_minimo:    minimo,
+        })
+        aplicarEstado()
     })
 
-    let btnFechar = document.createElement('button')
-    btnFechar.textContent = '×'
-    _s(btnFechar, {
-        background: 'transparent',
-        border:     'none',
-        color:      'rgba(255,255,255,0.6)',
-        fontSize:   '17px',
-        cursor:     'pointer',
-        padding:    '0',
-        lineHeight: '1',
-    })
-    btnFechar.addEventListener('mouseover', () => btnFechar.style.color = '#ffffff')
-    btnFechar.addEventListener('mouseout',  () => btnFechar.style.color = 'rgba(255,255,255,0.6)')
-    btnFechar.addEventListener('click', (e) => { e.stopPropagation(); widget.remove() })
-
+    barra.appendChild(btnHoriz)
     barra.appendChild(titulo)
-    barra.appendChild(btnToggle)  // ← linha nova
-    barra.appendChild(btnFechar)
+    barra.appendChild(btnToggle)
 
     // ── Corpo ─────────────────────────────────────────────────
     let corpo = document.createElement('div')
@@ -133,7 +144,6 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         background:    C.fundo,
     })
 
-    // Rótulo superior
     let rotulo = document.createElement('span')
     rotulo.textContent = 'CONSULTE O PROCESSO ABAIXO'
     _s(rotulo, {
@@ -143,7 +153,6 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
         color:         C.textoSuave,
     })
 
-    // Input + botão lupa na mesma linha
     let wrapInput = document.createElement('div')
     _s(wrapInput, { display: 'flex', gap: '4px' })
 
@@ -195,7 +204,6 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
     wrapInput.appendChild(input)
     wrapInput.appendChild(btnLupa)
 
-    // Rodapé informativo
     let rodape = document.createElement('span')
     rodape.textContent = 'A ROTA escolherá a OJ adequada.'
     _s(rodape, {
@@ -220,19 +228,54 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
     widget.appendChild(barra)
     widget.appendChild(corpo)
     document.body.appendChild(widget)
-    if (recolhido) {
-        corpo.style.display   = 'none'
-        btnToggle.textContent = '▼'
+
+    // ── Aplica estado visual ──────────────────────────────────
+    function aplicarEstado() {
+        if (minimo) {
+            // Quadradinho: só ► visível
+            widget.style.width         = '32px'
+            barra.style.padding        = '0'
+            barra.style.justifyContent = 'center'
+            titulo.style.display       = 'none'
+            btnToggle.style.display    = 'none'
+            btnHoriz.style.display     = 'inline'
+            btnHoriz.textContent       = '►'
+            btnHoriz.style.padding     = '0'
+            corpo.style.display        = 'none'
+        } else if (recolhido) {
+            // Barra visível, corpo oculto, ◄ aparece
+            widget.style.width         = '240px'
+            barra.style.padding        = '0 8px'
+            barra.style.justifyContent = ''
+            titulo.style.display       = ''
+            btnToggle.style.display    = 'inline'
+            btnToggle.textContent      = '▼'
+            btnHoriz.style.display     = 'inline'
+            btnHoriz.textContent       = '◄'
+            btnHoriz.style.padding     = '0 6px 0 0'
+            corpo.style.display        = 'none'
+        } else {
+            // Aberto: sem ◄
+            widget.style.width         = '240px'
+            barra.style.padding        = '0 8px'
+            barra.style.justifyContent = ''
+            titulo.style.display       = ''
+            btnToggle.style.display    = 'inline'
+            btnToggle.textContent      = '▲'
+            btnHoriz.style.display     = 'none'
+            corpo.style.display        = 'flex'
+        }
     }
+
+    aplicarEstado()
 
     let tarefaAtiva = await obterArmazenamento('tarefaAtiva')
 
-    // Foca no input automaticamente
-    setTimeout(() => input.focus(), 80)
+    setTimeout(() => { if (!recolhido && !minimo) input.focus() }, 80)
 
     // ── Arrastar ─────────────────────────────────────────────
     barra.addEventListener('mousedown', (e) => {
-        if (btnFechar.contains(e.target)) return
+        if (btnToggle.contains(e.target) || btnHoriz.contains(e.target)) return
         _arrastando = false
         let ox = e.clientX - widget.getBoundingClientRect().left
         let oy = e.clientY - widget.getBoundingClientRect().top
@@ -306,10 +349,6 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
             },
             body: JSON.stringify({ id_perfil: perfil.idPerfil })
         })
-        
-        //await clicar(dadosUsuario)
-        //let oj = aguardarElemento(`[aria-label*='${dadosProcesso?.orgaoJulgador?.descricao}']`) 
-        //await clicar (oj)
     }
     await armazenar({pjerota_consulta_qualquer_oj: dadosBasicos?.id})
     url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + dadosBasicos?.numero
@@ -343,7 +382,7 @@ async function consulta_qualquer_ojErroNumero(erro = '') {
         mensagem = 'Você não possui o perfil da OJ.'
     }
 
-    let campo =  document.getElementById('pjerota-consulta_qualquer_oj-input')
+    let campo = document.getElementById('pjerota-consulta_qualquer_oj-input')
     campo.placeholder = mensagem
     campo.value = ''
     let lupa = document.getElementById('pjerota-consulta_qualquer_oj-lupa')
@@ -352,7 +391,6 @@ async function consulta_qualquer_ojErroNumero(erro = '') {
     lupa.style.background = '#0078aa'
     campo.placeholder = 'Nº do processo…'
     return
-
 }
 
 function consulta_qualquer_ojNavegar(url) {

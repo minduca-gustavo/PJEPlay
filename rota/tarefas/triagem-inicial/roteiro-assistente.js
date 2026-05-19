@@ -82,7 +82,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaTexto({
         id: 'bloco-autuacao-instrucao-curta', 
         texto: `Verifique os dados da autuação, se estão corretos e correspondem à petição inicial.
-        Tenha atenção aos seguintes pontos:
+    Tenha atenção aos seguintes pontos:
         - Documentos das partes;
         - Endereços (CEP, zona rural ou área não atendida pelos Correios);
         - Valor da causa;
@@ -104,7 +104,112 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaDiv({ id: 'bloco-designa-audiencia', ancestral: 'rota-corpo' })
     criaTitulo({ id: 'bloco-designa-audiencia-titulo', texto: 'Designação de audiência', ancestral: 'bloco-designa-audiencia' })
     console.log('%c[Rota PJE]%c Juiz: ' + dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig, LOG.teste, 'color:inherit')
-    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.sala), LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.horariosVagos), LOG.teste, 'color:inherit')
+    
+    criaTexto({
+        id: 'bloco-designa-audiencia-texto',
+        texto: dados?.rota_dadosTriagemInicial?.sala?.nome
+        ? `A extensão identificou a seguinte sala: ${dados.rota_dadosTriagemInicial.sala.nome}.`
+        : 'Não foi identificada sala.',
+        ancestral: 'bloco-designa-audiencia'
+    })
+    if (!dados?.rota_dadosTriagemInicial?.horariosVagos?.length){
+        if (dados?.rota_dadosTriagemInicial?.sala?.nome){
+            criaTexto({
+                id: 'bloco-designa-audiencia-texto-sem-horario',
+                texto: `Não foram encontrados horários vagos para esta sala. Clique no botão abaixo para designar manualmente a audiência.`,
+                ancestral: 'bloco-designa-audiencia'
+            })
+        }
+        criaBotaoAzul({
+            id: 'bloco-designa-audiencia-sem-horario',
+            texto: 'Designar manualmente a audiência',
+            ancestral: 'bloco-designa-audiencia',
+            acao: () => {designaAudiencia({})}
+        })
+
+    } else {
+        criaDivExecucao({
+            id: 'bloco-designa-audiencia-acoes-conjuntas',
+            idColuna: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+            idBotaoExecutar: 'bloco-designa-audiencia-acoes-conjuntas-executar',
+            acaoBotaoExecutar: () => {designaAudienciaExecutar()},
+            ancestral: 'bloco-designa-audiencia',
+
+        })
+        criaTextoQueAbrePassandoOMouse({
+            id: 'bloco-designa-audiencia-texto-escolha-audiência',
+            texto: 'Como usar este bloco? Passe o mouse. Clique para fixar/desafixar.',
+            textoBox: 'Se você clicar em algum dos botões azul, será designada a audiência correspondente. Você pode, também, selecionar os checkbox que deseja, e as ações serão executadas automaticamente ao clicar no botão laranja Executar ao lado.',
+            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna'
+        })
+        let checkBoxPreMarcadoTipoAudiencia = false    
+        let grupoBotoesIds = []
+        let i = 0
+        for (i; i < dados?.rota_dadosTriagemInicial?.horariosVagos?.length; i++) {
+            let horario = dados?.rota_dadosTriagemInicial?.horariosVagos?.[i]
+            let horarioInicial = new Date(horario.horarioInicial)
+            let horarioInicialBotao = `${horario.descricaoTipoAudiencia} - ${horarioInicial.toLocaleDateString('pt-BR')} às ${horarioInicial.getHours()}h${String(horarioInicial.getMinutes()).padStart(2, '0')}`
+            let dadoBotao = {
+                id: 'bloco-designa-audiencia-horario' + i,
+                idCheckbox: 'bloco-designa-audiencia-horario-checkbox' + i,
+                texto: horarioInicialBotao,
+                ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+                acao: () => { designaAudiencia(dados?.rota_dadosTriagemInicial?.horariosVagos[i]) },
+                grupo: 'bloco-designa-audiencia-acoes-conjuntas-designacao'
+            }
+            //grupoBotoesIds.push(dadoBotao.idCheckbox) // ← acumula corretamente
+            criaBotaoAzulComCheckBox({ ...dadoBotao })
+            if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia){
+                const checado = document.getElementById('bloco-designa-audiencia-horario-checkbox' + i)
+                checado.click()
+                checkBoxPreMarcadoTipoAudiencia = true
+            }
+        }
+        criaBotaoAzulComCheckBox({
+            id: 'bloco-designa-audiencia-horario' + i,
+            idCheckbox: 'bloco-designa-audiencia-horario-checkbox' + i,
+            texto: 'Designar audiência manualmente em outra sala',
+            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+            acao: () => { designaAudiencia('') },
+            grupo: 'bloco-designa-audiencia-acoes-conjuntas-designacao'
+        })
+        
+        criaBotaoLaranjaComCheckBox({
+            id: 'bloco-designa-audiencia-despacho',
+            idCheckbox: 'bloco-designa-audiencia-despacho-checkbox',
+            texto: 'Despachar designando.',
+            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+            acao: () => { despacharDesignacaoDeAudiencia() },
+            grupo: 'bloco-designa-audiencia-acoes-conjuntas-despachoOuCertidao'
+        })
+        criaBotaoLaranjaComCheckBox({
+            id: 'bloco-designa-audiencia-certidao',
+            idCheckbox: 'bloco-designa-audiencia-certidao-checkbox',
+            texto: 'Certificar a designação e intimar.',
+            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+            acao: () => { certificarDesignacaoDeAudiencia() },
+            grupo: 'bloco-designa-audiencia-acoes-conjuntas-despachoOuCertidao'
+        })
+        let despachoChecado = document.getElementById('bloco-designa-audiencia-despacho-checkbox')
+        despachoChecado.click()
+        criaBotaoAzulComCheckBox({
+            id: 'bloco-designa-audiencia-gig',
+            idCheckbox: 'bloco-designa-audiencia-gig-checkbox',
+            texto: 'Colocar GIG de acompanhamento.',
+            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+            acao: () => { gigAcompanhamentoAudiencia('') },
+        })
+        let gigChecado = document.getElementById('bloco-designa-audiencia-gig-checkbox')
+        gigChecado.click()
+        console.log('%c[Rota PJE]%c ' + grupoBotoesIds, LOG.teste, 'color:inherit')
+        // Após criar todos, aplica comportamento de seleção única
+        
+        
+    }
+
+
     // ── Interface será montada aqui futuramente ───────────────
     //
     // Exemplo de uso quando chegar a hora:
@@ -118,7 +223,32 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     //   ...
 }
 
+
+
+async function designaAudienciaExecutar(param){
+    await alert(param)
+}
+
+async function designaAudiencia(param){
+    await alert(JSON.stringify(param, null, 2))
+}
+
+async function despacharDesignacaoDeAudiencia(){
+    await alert('Despacho de designação.')
+}
+
+async function gigAcompanhamentoAudiencia(param){
+    await alert('GIG de acompanhamento.')
+}
+
+
+async function certificarDesignacaoDeAudiencia(param){
+    await alert('Certidão de designação.')
+}
+
 async function triagem_retificarAutuacao(id, tipo){
+    url = location.origin + '/pjekz/processo/' + id + '/retificar?pjerota_tarefa=triagem-inicial-retificar-autuacao&pjerota_triagem_inicial_retificar_autuacao_tipo=' + tipo
+    await abrirUrl(url, 'esquerda-assistida', 'triagem-inicial-retificar-autuacao')
     await alert(tipo + ' em desenvolvimento. ' + id)
 }
 

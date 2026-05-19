@@ -294,9 +294,11 @@ async function buscarSalas(idOrgaoJulgador) {
 }
 
 async function buscarSalasHorariosVagos(idSala) {
+	let url = location.origin + '/pje-comum-api/api/pautasaudiencias/horariosvagos?idSalaFisica=' + idSala
 	let dados = await rota_fetch(
-		location.origin + '/pje-comum-api/api/pautasaudiencias/horariosvagos?idSalaFisica=' + idSala
+		url
 	)
+	console.log('%c[Rota PJE]%c requisicao: ' + url, LOG.aviso, 'color:inherit')
 	return dados || null
 }
 

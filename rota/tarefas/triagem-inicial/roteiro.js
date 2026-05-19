@@ -11,12 +11,22 @@ const dadosTriagemInicial = {
     horariosVagosPorSala: null,
     juizSimetriaPeloGig: null,
     peticaoInicialId: null,
+    idPrecaucao: null,
 }
+
 async function aoAbrirDetalhesDoProcesso(){
     let janela = confereJanela(JANELA.detalhes)
     //let versao = aguardarElemento('#modulo-versao')
     if (!janela) return
+    const meuNome   = window.name                          // 'rota-0-1716300000000'
+    const execucao  = meuNome.split('-').pop()             // '1716300000000'
+    const cfg       = await obterArmazenamento(['rotaExecucaoAtual'])
+    const atual     = String(cfg?.rotaExecucaoAtual || '')
 
+    if (execucao !== atual) return  // janela de execução antiga, ignora
+    
+    const match = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)
+    dadosTriagemInicial.idPrecaucao = match?.[1]  // '2992885'
     let tarefa = rota_buscarParametros('pjerota_tarefa')
 
     if (!tarefa) {
@@ -30,6 +40,8 @@ async function aoAbrirDetalhesDoProcesso(){
     
     triagem_inicial_janelaDetalhes()
 }
+
+
 
 
 async function triagem_inicial_janelaDetalhes(){
@@ -50,24 +62,25 @@ async function triagem_inicial_janelaDetalhes(){
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
     let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
     let salaJuizes = []
-    let sala = salas.find(sala => sala?.nome == juizSimetriaPeloGig.toUpperCase()) || {}
+    let sala = salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) || {}
     console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala, null, 2), LOG.teste, 'color:inherit')
-    
-    let horariosVagosPorSala = {}
-    for (let sala of salaJuizes){
-        let horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
-        horariosVagosPorSala[sala.id] = horariosVagos
+    let horariosVagos = []
+    if (sala.id) {
+        horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
     }
+    
+    if (!processo.id) processo.id = rota_dadosTriagemInicial.idPrecaucao
     let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true') || []
     
-    dadosTriagemInicial.partes               = partes
-    dadosTriagemInicial.processo             = processo
-    dadosTriagemInicial.gig                  = gig
-    dadosTriagemInicial.salas                = salas
-    dadosTriagemInicial.salaJuizes           = salaJuizes
-    dadosTriagemInicial.horariosVagosPorSala = horariosVagosPorSala
-    dadosTriagemInicial.juizSimetriaPeloGig  = juizSimetriaPeloGig
-    dadosTriagemInicial.peticaoInicialId     = peticaoInicialId
+    dadosTriagemInicial.partes                  = partes
+    dadosTriagemInicial.processo                = processo
+    dadosTriagemInicial.gig                     = gig
+    dadosTriagemInicial.salas                   = salas
+    dadosTriagemInicial.sala                    = sala
+    dadosTriagemInicial.salaJuizes              = salaJuizes
+    dadosTriagemInicial.horariosVagos           = horariosVagos
+    dadosTriagemInicial.juizSimetriaPeloGig     = juizSimetriaPeloGig
+    dadosTriagemInicial.peticaoInicialId        = peticaoInicialId
     
     await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
     await armazenar({ rota_dadosTriagemInicialNumero: processo.numero })

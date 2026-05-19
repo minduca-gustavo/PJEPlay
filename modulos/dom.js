@@ -12,6 +12,10 @@ function confereJanela(...janelas) {
     return janelas.some(regex => regex.test(location.href))
 }
 
+function confereJanelaNome(nome) {
+    return window.name === nome
+}
+
 async function aguardarElemento(seletor = '', timeout = 0){
 	return new Promise(resolver => {
 		let el = selecionar(seletor)

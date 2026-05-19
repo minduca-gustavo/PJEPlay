@@ -112,6 +112,7 @@
         "documento/paginas/pje/rota/superfiltro.js",
         "documento/paginas/pje/rota/teste.js",
         "documento/paginas/pje/rota/consulta-qualquer-oj.js",
+        "documento/paginas/pje/rota/gigs.js",
         "rota/acoes.js",
         "rota/formatadores.js",
         "rota/componentes.js",

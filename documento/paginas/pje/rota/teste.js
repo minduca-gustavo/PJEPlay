@@ -26,7 +26,7 @@
 }) ()
 */
 // ==== DEVOLVER GIG PARA CRIADOR/ALTERADOR ====
-
+/*
 (function () {
   const URL_REGEX = /processo\/\d{7}\/detalhe/;
   
@@ -192,7 +192,7 @@
 })();
 
 
-
+*/
 
 
 

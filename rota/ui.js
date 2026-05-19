@@ -160,6 +160,7 @@ function criaTexto({ id, texto, ancestral }) {
         fontSize:   '12px',
         color:      UI_CORES.texto,
         paddingLeft: '8px',
+        marginRight:'8px',
         lineHeight: '1.5',
         fontFamily: "'Segoe UI', system-ui, sans-serif",
         whiteSpace: 'pre-wrap',
@@ -216,9 +217,9 @@ function criaBotaoLaranja({ id, texto = 'OK', ancestral, acao }) {
 //
 // criaBotaoAzulComCheckBox({ id, idCheckbox, texto, ancestral, acao })
 
-function criaBotaoAzulComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao }) {
+function criaBotaoAzulComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao, grupo}) {
     return _ui_botaoComCheckBox({
-        id, idCheckbox, texto, ancestral, acao,
+        id, idCheckbox, texto, ancestral, acao, grupo, 
         cor: UI_CORES.azul, corHover: UI_CORES.azulHover,
     })
 }
@@ -230,15 +231,15 @@ function criaBotaoAzulComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, aca
 //
 // criaBotaoLaranjaComCheckBox({ id, idCheckbox, texto, ancestral, acao })
 
-function criaBotaoLaranjaComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao }) {
+function criaBotaoLaranjaComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao, grupo }) {
     return _ui_botaoComCheckBox({
-        id, idCheckbox, texto, ancestral, acao,
+        id, idCheckbox, texto, ancestral, acao, grupo,
         cor: UI_CORES.laranja, corHover: UI_CORES.laranjaHover,
     })
 }
 
 // Implementação compartilhada dos botões com checkbox
-function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, corHover }) {
+function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, corHover, grupo }) {
     // Container linha
     const linha = _ui_el('div', {
         display:     'flex',
@@ -248,7 +249,7 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
     })
     linha.id = id + '-linha'
 
-    // Botão (ocupa todo o espaço disponível)
+    // Botão
     const btn = _ui_el('button', {
         ..._ui_estiloBotao(cor, corHover),
         flex:   '1',
@@ -275,21 +276,37 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
         transition:     'all 0.15s',
         fontSize:       '12px',
     })
-    chk.id               = idCheckbox
-    chk.dataset.marcado  = '0'
+    chk.id              = idCheckbox
+    chk.dataset.marcado = '0'
+    if (grupo) chk.dataset.grupo = grupo
+
+    // Função de desmarcar exposta no elemento
+    chk.desmarcar = () => {
+        chk.dataset.marcado  = '0'
+        chk.style.background = UI_CORES.branco
+        chk.style.borderColor= UI_CORES.borda
+        chk.textContent      = ''
+    }
 
     chk.addEventListener('click', () => {
         if (chk.dataset.marcado === '1') {
-            chk.dataset.marcado  = '0'
-            chk.style.background = UI_CORES.branco
-            chk.style.borderColor= UI_CORES.borda
-            chk.textContent      = ''
+            chk.desmarcar()
         } else {
+            // Marca este
             chk.dataset.marcado  = '1'
             chk.style.background = cor
             chk.style.borderColor= cor
             chk.textContent      = '✓'
             chk.style.color      = '#ffffff'
+
+            // Desmarca os demais do mesmo grupo
+            if (grupo) {
+                document.querySelectorAll(`[data-grupo="${grupo}"]`).forEach(outro => {
+                    if (outro !== chk && typeof outro.desmarcar === 'function') {
+                        outro.desmarcar()
+                    }
+                })
+            }
         }
     })
 
@@ -696,9 +713,12 @@ function criaDivExecucao({ id, idColuna, idBotaoExecutar, acaoBotaoExecutar, anc
         flexShrink:'0',
         padding:   '8px 14px',
         alignSelf: 'stretch',  // ocupa a altura da coluna esquerda
+        writingMode: 'vertical-rl',
+        fontSize:     '12px',
     })
     btn.id          = idBotaoExecutar
-    btn.textContent = '▶ Executar'
+    btn.textContent = 'Executar todos ➡️'
+    
     _ui_hoverBotao(btn, UI_CORES.laranja, UI_CORES.laranjaHover)
     if (typeof acaoBotaoExecutar === 'function') {
         btn.addEventListener('click', acaoBotaoExecutar)

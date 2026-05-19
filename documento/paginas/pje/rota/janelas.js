@@ -543,19 +543,20 @@ function rota_monitorarFechamento(sessao){
 // ── Cancelar pipeline ativo ───────────────────────────────────
 
 function rota_cancelarPipelineAtivo(){
-	if(!_rota_ativo) return
-	_rota_ativo  = false
-	_rota_cursor = 0
-	_rota_fila   = []
-	_rota_fecharTodasJanelas()
-	Object.keys(localStorage)
-		.filter(k =>
-			k.startsWith(ROTA_KEY_BASE)      ||
-			k.startsWith(ROTA_KEY_FECHAR)    ||
-			k.startsWith(ROTA_KEY_INICIAR)   ||
-			k.startsWith(ROTA_KEY_REINICIAR)
-		)
-		.forEach(k => localStorage.removeItem(k))
+    if(!_rota_ativo) return
+    _rota_ativo       = false
+    _rota_processando = false   // ← ADICIONAR esta linha
+    _rota_cursor      = 0
+    _rota_fila        = []
+    _rota_fecharTodasJanelas()
+    Object.keys(localStorage)
+        .filter(k =>
+            k.startsWith(ROTA_KEY_BASE)      ||
+            k.startsWith(ROTA_KEY_FECHAR)    ||
+            k.startsWith(ROTA_KEY_INICIAR)   ||
+            k.startsWith(ROTA_KEY_REINICIAR)
+        )
+        .forEach(k => localStorage.removeItem(k))
 }
 
 function _rota_fecharTodasJanelas(){
