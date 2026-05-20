@@ -178,7 +178,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 idCheckbox: id(bloco, 'acoes-conjuntas', 'horario' + i, 'checkbox'),
                 texto: horarioInicialBotao,
                 ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
-                acao: () => { designaAudiencia(dados?.rota_dadosTriagemInicial?.horariosVagos[i]) },
+                acao: () => { designaAudiencia(horario) },
                 grupo: id(bloco, 'acoes-conjuntas', 'grupo-designacao')
             })
             if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia) {
