@@ -8,7 +8,7 @@
 // Por ora: aguarda os dados chegarem via storage e remove
 // o carregando. A interface será montada aqui futuramente.
 // ============================================================
-
+let janelaPrincipal = ''
 async function triagem_assistente_iniciar() {
 
     // ── Filtra pelo parâmetro da URL ──────────────────────────
@@ -35,12 +35,17 @@ async function triagem_assistente_iniciar() {
     // ── Remove o carregando ───────────────────────────────────
     removerCarregando()
     let dados = await obterArmazenamento(['rota_dadosTriagemInicial'])
+    janelaPrincipal = dados?.rota_dadosTriagemInicial?.nomeDaJanelaPrincipal
     console.log('%c[Rota PJE]%c Dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.processo?.id, null, 2), LOG.teste, 'color:inherit')
-    criaDiv({id: 'bloco-inicial', ancestral: 'rota-corpo'})
-    criaTitulo({id: 'bloco-inicial-titulo', texto: 'Triagem Inicial', ancestral: 'bloco-inicial'})
+
+    // ── Bloco: inicial ────────────────────────────────────────
+    let bloco = 'inicial'
+
+    criaDiv({ id: id(bloco), ancestral: 'rota-corpo' })
+    criaTitulo({ id: id(bloco, 'titulo'), texto: 'Triagem Inicial', ancestral: id(bloco) })
     criaTextoQueAbrePassandoOMouse({
-        id:'bloco-inicial-instrucao-longa', 
-        texto:`Passe o mouse para ver a instrução completa da tarefa.
+        id: id(bloco, 'instrucao-longa'),
+        texto: `Passe o mouse para ver a instrução completa da tarefa.
 Clique para fixar/desafixar.`,
         textoBox: `Como utilizar este assistente:
 	- Anote no campo acima o que precisar. Esta anotação é local, e será perdida ao fechar a janela.
@@ -65,195 +70,209 @@ Verificação dos documentos:
 	- Há procuração/substabelecimento?
 Após a conferência de todos os itens, utilize os botões para tomar as providências necessárias quanto à retificação da autuação ou minuta de despacho para determinar a retificação pelo reclamante.
 Caso esteja tudo certo, utilize o bloco de designação de audiência para designar a audiência, despachar ou certificar, intimar as partes, se o caso, e colocar o GIG de acompanhamento.`,
-        ancestral: 'bloco-inicial'}
-    )
-    criaInputAnotacao({id: 'rota-triagemInicialAnotacao', placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: 'bloco-inicial'})
-    criaDiv({id: 'bloco-autuacao', ancestral: 'rota-corpo'})
-    criaTitulo({id: 'bloco-autuacao-titulo', texto: 'Autuação/Petição Inicial/Documentos', ancestral: 'bloco-autuacao'})
+        ancestral: id(bloco)
+    })
+    criaInputAnotacao({ id: id(bloco, 'anotacao'), placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: id(bloco) })
+
+    // ── Bloco: autuacao ───────────────────────────────────────
+    bloco = 'autuacao'
+
+    criaDiv({ id: id(bloco), ancestral: 'rota-corpo' })
+    criaTitulo({ id: id(bloco, 'titulo'), texto: 'Autuação/Petição Inicial/Documentos', ancestral: id(bloco) })
     criaTextoQueAbrePassandoOMouse({
-        id:'bloco-autuacao-dados-das-partes', 
-        texto:`Passe o mouse para ver os dados das partes.
+        id: id(bloco, 'dados-das-partes'),
+        texto: `Passe o mouse para ver os dados das partes.
 Clique para fixar/desafixar.`,
         textoBox: `Dados das partes:
 ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
-        ancestral: 'bloco-autuacao'}
-    )
-    
+        ancestral: id(bloco)
+    })
     criaTexto({
-        id: 'bloco-autuacao-instrucao-curta', 
+        id: id(bloco, 'instrucao-curta'),
         texto: `Verifique os dados da autuação, se estão corretos e correspondem à petição inicial.
     Tenha atenção aos seguintes pontos:
         - Documentos das partes;
         - Endereços (CEP, zona rural ou área não atendida pelos Correios);
         - Valor da causa;
         - Rito (atenção especial a casos com Órgãos Públicos);
-        - Pedidos (líquidos/ilíquidos);`, 
-        ancestral: 'bloco-autuacao'})
-    criaBotaoAzul(
-        { id: 'bloco-autuacao-retificar-autuacao-partes', texto: 'Retificar autuação: partes', ancestral: 'bloco-autuacao', acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'partes') },
-    )
-    criaBotaoAzul(
-        { id: 'bloco-autuacao-retificar-autuacao-rito', texto: 'Retificar autuação: rito', ancestral: 'bloco-autuacao', acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'rito') },
-    )
-    criaBotaoAzul(
-        { id: 'bloco-autuacao-retificar-autuacao-assuntos', texto: 'Retificar autuação: assuntos', ancestral: 'bloco-autuacao', acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'assuntos') },
-    )
-    criaBotaoLaranja(
-        { id: 'bloco-autuacao-despacho-emenda-retificacao', texto: 'Despacho: retificar autuação/emendar a inicial', ancestral: 'bloco-autuacao', acao: () => triagem_despacho(dados?.rota_dadosTriagemInicial?.processo?.id, 'retificar-emendar') },
-    )
-    criaDiv({ id: 'bloco-designa-audiencia', ancestral: 'rota-corpo' })
-    criaTitulo({ id: 'bloco-designa-audiencia-titulo', texto: 'Designação de audiência', ancestral: 'bloco-designa-audiencia' })
+        - Pedidos (líquidos/ilíquidos);`,
+        ancestral: id(bloco)
+    })
+    criaBotaoAzul({ id: id(bloco, 'retificar-partes'),   texto: 'Retificar autuação: partes',   ancestral: id(bloco), acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'partes') })
+    criaBotaoAzul({ id: id(bloco, 'retificar-rito'),     texto: 'Retificar autuação: rito',     ancestral: id(bloco), acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'rito') })
+    criaBotaoAzul({ id: id(bloco, 'retificar-assuntos'), texto: 'Retificar autuação: assuntos', ancestral: id(bloco), acao: () => triagem_retificarAutuacao(dados?.rota_dadosTriagemInicial?.processo?.id, 'assuntos') })
+    criaBotaoLaranja({ id: id(bloco, 'despacho-emenda-retificacao'), texto: 'Despacho: retificar autuação/emendar a inicial', ancestral: id(bloco), acao: () => triagem_despacho(dados?.rota_dadosTriagemInicial?.processo?.id, 'retificar-emendar') })
+
+    // ── Bloco: designa-audiencia ──────────────────────────────
+    bloco = 'designa-audiencia'
+
+    criaDiv({ id: id(bloco), ancestral: 'rota-corpo' })
+    criaTitulo({ id: id(bloco, 'titulo'), texto: 'Designação de audiência', ancestral: id(bloco) })
     console.log('%c[Rota PJE]%c Juiz: ' + dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig, LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.sala), LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.horariosVagos), LOG.teste, 'color:inherit')
-    
+
     criaTexto({
-        id: 'bloco-designa-audiencia-texto',
+        id: id(bloco, 'texto'),
         texto: dados?.rota_dadosTriagemInicial?.sala?.nome
-        ? `A extensão identificou a seguinte sala: ${dados.rota_dadosTriagemInicial.sala.nome}.`
-        : 'Não foi identificada sala.',
-        ancestral: 'bloco-designa-audiencia'
+            ? `A extensão identificou a seguinte sala: ${dados.rota_dadosTriagemInicial.sala.nome}.`
+            : 'Não foi identificada sala.',
+        ancestral: id(bloco)
     })
-    if (!dados?.rota_dadosTriagemInicial?.horariosVagos?.length){
-        if (dados?.rota_dadosTriagemInicial?.sala?.nome){
+
+    if (!dados?.rota_dadosTriagemInicial?.horariosVagos?.length) {
+
+        if (dados?.rota_dadosTriagemInicial?.sala?.nome) {
             criaTexto({
-                id: 'bloco-designa-audiencia-texto-sem-horario',
+                id: id(bloco, 'sem-horario'),
                 texto: `Não foram encontrados horários vagos para esta sala. Clique no botão abaixo para designar manualmente a audiência.`,
-                ancestral: 'bloco-designa-audiencia'
+                ancestral: id(bloco)
             })
         }
         criaBotaoAzul({
-            id: 'bloco-designa-audiencia-sem-horario',
+            id: id(bloco, 'btn-manual'),
             texto: 'Designar manualmente a audiência',
-            ancestral: 'bloco-designa-audiencia',
-            acao: () => {designaAudiencia({})}
+            ancestral: id(bloco),
+            acao: () => { designaAudiencia({}) }
         })
 
-    } else {
-        criaDivExecucao({
-            id: 'bloco-designa-audiencia-acoes-conjuntas',
-            idColuna: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
-            idBotaoExecutar: 'bloco-designa-audiencia-acoes-conjuntas-executar',
-            acaoBotaoExecutar: () => {designaAudienciaExecutar()},
-            ancestral: 'bloco-designa-audiencia',
+    }
 
-        })
-        criaTextoQueAbrePassandoOMouse({
-            id: 'bloco-designa-audiencia-texto-escolha-audiência',
-            texto: 'Como usar este bloco? Passe o mouse. Clique para fixar/desafixar.',
-            textoBox: 'Se você clicar em algum dos botões azul, será designada a audiência correspondente. Você pode, também, selecionar os checkbox que deseja, e as ações serão executadas automaticamente ao clicar no botão laranja Executar ao lado.',
-            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna'
-        })
-        let checkBoxPreMarcadoTipoAudiencia = false    
-        let grupoBotoesIds = []
+    criaSubTitulo({
+        id: id(bloco, 'acoes-conjuntas', 'subtitulo'),
+        texto: 'Ações conjuntas',
+        ancestral: id(bloco)
+    })
+    
+    criaDivExecucao({
+        id: id(bloco, 'acoes-conjuntas'),
+        idColuna: id(bloco, 'acoes-conjuntas', 'coluna'),
+        idBotaoExecutar: id(bloco, 'acoes-conjuntas', 'executar'),
+        acaoBotaoExecutar: () => { designaAudienciaExecutar() },
+        ancestral: id(bloco)
+    })
+
+
+
+    
+
+    criaTextoQueAbrePassandoOMouse({
+        id: id(bloco, 'acoes-conjuntas', 'instrucao'),
+        texto: 'Como usar este bloco? Passe o mouse. Clique para fixar/desafixar.',
+        textoBox: 'Se você deseja fazer apenas uma das ações, clique no botão azul ou laranja correspondente. Você pode, também, selecionar os checkbox que deseja, e as ações serão executadas uma após a outra ao clicar no botão laranja Executar ao lado.',
+        ancestral: id(bloco, 'acoes-conjuntas', 'coluna')
+    })
+
+    if (dados?.rota_dadosTriagemInicial?.horariosVagos?.length) {
+        
+     
+
+        let checkBoxPreMarcadoTipoAudiencia = false
         let i = 0
         for (i; i < dados?.rota_dadosTriagemInicial?.horariosVagos?.length; i++) {
             let horario = dados?.rota_dadosTriagemInicial?.horariosVagos?.[i]
             let horarioInicial = new Date(horario.horarioInicial)
             let horarioInicialBotao = `${horario.descricaoTipoAudiencia} - ${horarioInicial.toLocaleDateString('pt-BR')} às ${horarioInicial.getHours()}h${String(horarioInicial.getMinutes()).padStart(2, '0')}`
-            let dadoBotao = {
-                id: 'bloco-designa-audiencia-horario' + i,
-                idCheckbox: 'bloco-designa-audiencia-horario-checkbox' + i,
+            criaBotaoAzulComCheckBox({
+                id: id(bloco, 'acoes-conjuntas', 'horario' + i),
+                idCheckbox: id(bloco, 'acoes-conjuntas', 'horario' + i, 'checkbox'),
                 texto: horarioInicialBotao,
-                ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+                ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
                 acao: () => { designaAudiencia(dados?.rota_dadosTriagemInicial?.horariosVagos[i]) },
-                grupo: 'bloco-designa-audiencia-acoes-conjuntas-designacao'
-            }
-            //grupoBotoesIds.push(dadoBotao.idCheckbox) // ← acumula corretamente
-            criaBotaoAzulComCheckBox({ ...dadoBotao })
-            if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia){
-                const checado = document.getElementById('bloco-designa-audiencia-horario-checkbox' + i)
-                checado.click()
+                grupo: id(bloco, 'acoes-conjuntas', 'grupo-designacao')
+            })
+            if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia) {
+                document.getElementById(id(bloco, 'acoes-conjuntas', 'horario' + i, 'checkbox')).click()
                 checkBoxPreMarcadoTipoAudiencia = true
             }
         }
+
         criaBotaoAzulComCheckBox({
-            id: 'bloco-designa-audiencia-horario' + i,
-            idCheckbox: 'bloco-designa-audiencia-horario-checkbox' + i,
-            texto: 'Designar audiência manualmente em outra sala',
-            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
+            id: id(bloco, 'acoes-conjuntas', 'horario' + i),
+            idCheckbox: id(bloco, 'acoes-conjuntas', 'horario' + i, 'checkbox'),
+            texto: 'Designar audiência manualmente em outra sala/horário',
+            ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
             acao: () => { designaAudiencia('') },
-            grupo: 'bloco-designa-audiencia-acoes-conjuntas-designacao'
+            grupo: id(bloco, 'acoes-conjuntas', 'grupo-designacao')
         })
-        
-        criaBotaoLaranjaComCheckBox({
-            id: 'bloco-designa-audiencia-despacho',
-            idCheckbox: 'bloco-designa-audiencia-despacho-checkbox',
-            texto: 'Despachar designando.',
-            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
-            acao: () => { despacharDesignacaoDeAudiencia() },
-            grupo: 'bloco-designa-audiencia-acoes-conjuntas-despachoOuCertidao'
-        })
-        criaBotaoLaranjaComCheckBox({
-            id: 'bloco-designa-audiencia-certidao',
-            idCheckbox: 'bloco-designa-audiencia-certidao-checkbox',
-            texto: 'Certificar a designação e intimar.',
-            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
-            acao: () => { certificarDesignacaoDeAudiencia() },
-            grupo: 'bloco-designa-audiencia-acoes-conjuntas-despachoOuCertidao'
-        })
-        let despachoChecado = document.getElementById('bloco-designa-audiencia-despacho-checkbox')
-        despachoChecado.click()
-        criaBotaoAzulComCheckBox({
-            id: 'bloco-designa-audiencia-gig',
-            idCheckbox: 'bloco-designa-audiencia-gig-checkbox',
-            texto: 'Colocar GIG de acompanhamento.',
-            ancestral: 'bloco-designa-audiencia-acoes-conjuntas-coluna',
-            acao: () => { gigAcompanhamentoAudiencia('') },
-        })
-        let gigChecado = document.getElementById('bloco-designa-audiencia-gig-checkbox')
-        gigChecado.click()
-        console.log('%c[Rota PJE]%c ' + grupoBotoesIds, LOG.teste, 'color:inherit')
-        // Após criar todos, aplica comportamento de seleção única
-        
-        
     }
+    criaBotaoLaranjaComCheckBox({
+        id: id(bloco, 'acoes-conjuntas', 'despacho'),
+        idCheckbox: id(bloco, 'acoes-conjuntas', 'despacho', 'checkbox'),
+        texto: 'Despachar designando.',
+        ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
+        acao: () => { despacharDesignacaoDeAudiencia() },
+        grupo: id(bloco, 'acoes-conjuntas', 'grupo-despacho-ou-certidao')
+    })
+    criaBotaoLaranjaComCheckBox({
+        id: id(bloco, 'acoes-conjuntas', 'certidao'),
+        idCheckbox: id(bloco, 'acoes-conjuntas', 'certidao', 'checkbox'),
+        texto: 'Certificar a designação e intimar.',
+        ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
+        acao: () => { certificarDesignacaoDeAudiencia() },
+        grupo: id(bloco, 'acoes-conjuntas', 'grupo-despacho-ou-certidao')
+    })
+    document.getElementById(id(bloco, 'acoes-conjuntas', 'despacho', 'checkbox')).click()
 
+    criaBotaoAzulComCheckBox({
+        id: id(bloco, 'acoes-conjuntas', 'gig'),
+        idCheckbox: id(bloco, 'acoes-conjuntas', 'gig', 'checkbox'),
+        texto: 'Colocar GIG de acompanhamento.',
+        ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
+        acao: () => { gigAcompanhamentoAudiencia('') }
+    })
+    document.getElementById(id(bloco, 'acoes-conjuntas', 'gig', 'checkbox')).click()
 
-    // ── Interface será montada aqui futuramente ───────────────
-    //
-    // Exemplo de uso quando chegar a hora:
-    //
-    //   const dados = await obterArmazenamento(['rota_dadosTriagemInicial'])
-    //   const triagem = dados?.rota_dadosTriagemInicial
-    //
-    //   criaDiv({ id: 'bloco-autuacao', ancestral: 'rota-corpo' })
-    //   criaTitulo({ id: 'titulo-autuacao', texto: 'Autuação', ancestral: 'bloco-autuacao' })
-    //   criaTexto({ id: 'texto-partes', texto: formatarPartes(triagem.partes), ancestral: 'bloco-autuacao' })
-    //   ...
+    console.log('%c[Rota PJE]%c blocos criados', LOG.teste, 'color:inherit')
+    
 }
 
 
+const vigiar = setInterval(() => {
+  if (janelaPrincipal.closed) {
+    clearInterval(vigiar)
+    window.close() // fecha o assistente
+  }
+}, 500)
 
-async function designaAudienciaExecutar(param){
+// ── Ações ─────────────────────────────────────────────────────
+
+async function designaAudienciaExecutar(param) {
     await alert(param)
 }
 
-async function designaAudiencia(param){
+async function designaAudiencia(param) {
     await alert(JSON.stringify(param, null, 2))
 }
 
-async function despacharDesignacaoDeAudiencia(){
+async function despacharDesignacaoDeAudiencia() {
     await alert('Despacho de designação.')
 }
 
-async function gigAcompanhamentoAudiencia(param){
+async function gigAcompanhamentoAudiencia(param) {
     await alert('GIG de acompanhamento.')
 }
 
-
-async function certificarDesignacaoDeAudiencia(param){
+async function certificarDesignacaoDeAudiencia(param) {
     await alert('Certidão de designação.')
 }
 
-async function triagem_retificarAutuacao(id, tipo){
+async function triagem_retificarAutuacao(id, tipo) {
     url = location.origin + '/pjekz/processo/' + id + '/retificar?pjerota_tarefa=triagem-inicial-retificar-autuacao&pjerota_triagem_inicial_retificar_autuacao_tipo=' + tipo
     await abrirUrl(url, 'esquerda-assistida', 'triagem-inicial-retificar-autuacao')
     await alert(tipo + ' em desenvolvimento. ' + id)
 }
 
-async function triagem_despacho(id, tipo){
+async function triagem_despacho(id, tipo) {
     await alert(tipo + ' em desenvolvimento. ' + id)
+}
+
+
+
+// ── Auxiliares ────────────────────────────────────────────────
+
+function id(...partes) {
+    return ['triagem-inicial', ...partes].filter(Boolean).join('-')
 }
 
 

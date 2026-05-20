@@ -13,6 +13,7 @@ var JANELA = {
     painelGlobalTodos: 	/\/pjekz\/painel\/global\/todos\/lista-processos/,
     detalhes:          	/\/pjekz\/processo\/\d*\/detalhe/,
 	escaninho: 			/\/pjekz\/escaninho/,
+	retificar:			/\/pjekz\/processo\/\d*\/retificar/,
 }
 
 function _definirNavegador(){
@@ -31,7 +32,7 @@ function _definirExtensao(){
 
 function armazenar(chave){
 	try{ return NAVEGADOR.storage.local.set(chave) }
-	catch(e){ console.error('[PJEPlay] armazenar:', e); throw e }
+	catch(e){ console.error('[RotaPJE] armazenar:', e); throw e }
 }
 
 async function obterArmazenamento(chave = null){

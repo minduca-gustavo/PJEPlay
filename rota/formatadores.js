@@ -25,7 +25,7 @@ function formatarPartes(partes) {
             ].filter(Boolean).join('\n')
         }).join('\n')
 
-        return `    ${s(p.tipo).toUpperCase()}:\n   🧑‍💼 ${s(p.nome)}\n    ${doc}${endStr}${reps ? '\n' + reps : ''}`
+        return `    _____________________________________ \n${s(p.tipo).toUpperCase()}:\n   🧑‍💼 ${s(p.nome)}\n    ${doc}${endStr}${reps ? '\n' + reps : ''}`
     }
 
     if (partes.ATIVO?.length) {

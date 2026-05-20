@@ -7,26 +7,26 @@ const dadosTriagemInicial = {
     processo: null,
     gig: null,
     salas: null,
+    sala: null,
     salaJuizes: null,
     horariosVagosPorSala: null,
     juizSimetriaPeloGig: null,
     peticaoInicialId: null,
     idPrecaucao: null,
+    rotaExecucaoAtual: null,
+    nomeDaJanelaPrincipal: null,
 }
 
-async function aoAbrirDetalhesDoProcesso(){
+async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     let janela = confereJanela(JANELA.detalhes)
     //let versao = aguardarElemento('#modulo-versao')
     if (!janela) return
-    const meuNome   = window.name                          // 'rota-0-1716300000000'
-    const execucao  = meuNome.split('-').pop()             // '1716300000000'
-    const cfg       = await obterArmazenamento(['rotaExecucaoAtual'])
-    const atual     = String(cfg?.rotaExecucaoAtual || '')
+    const meuNome                               = window.name                          // 'rota-0-1716300000000'
+    dadosTriagemInicial.nomeDaJanelaPrincipal   = meuNome
+    const execucao                              = meuNome.split('-').pop()             // '1716300000000'
+    const cfg                                   = await obterArmazenamento(['rotaExecucaoAtual'])
+    const atual                                 = String(cfg?.rotaExecucaoAtual || '')
 
-    if (execucao !== atual) return  // janela de execução antiga, ignora
-    
-    const match = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)
-    dadosTriagemInicial.idPrecaucao = match?.[1]  // '2992885'
     let tarefa = rota_buscarParametros('pjerota_tarefa')
 
     if (!tarefa) {
@@ -62,13 +62,30 @@ async function triagem_inicial_janelaDetalhes(){
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
     let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
     let salaJuizes = []
-    let sala = salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) || {}
-    console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala, null, 2), LOG.teste, 'color:inherit')
-    let horariosVagos = []
-    if (sala.id) {
-        horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
+    for(let juiz of juizSimetriaPeloGig){
+        let sala = salas.find(sala => sala?.nome == juiz)
+        if(sala) salaJuizes.push(sala)
     }
+    let horariosVagosPorSala = {}
+    for (let sala of salaJuizes){
+        let horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
+        horariosVagosPorSala[sala.id] = horariosVagos
+    }
+<<<<<<< Updated upstream
+    let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true') || []
     
+    dadosTriagemInicial.partes               = partes
+    dadosTriagemInicial.processo             = processo
+    dadosTriagemInicial.gig                  = gig
+    dadosTriagemInicial.salas                = salas
+    dadosTriagemInicial.salaJuizes           = salaJuizes
+    dadosTriagemInicial.horariosVagosPorSala = horariosVagosPorSala
+    dadosTriagemInicial.juizSimetriaPeloGig  = juizSimetriaPeloGig
+    dadosTriagemInicial.peticaoInicialId     = peticaoInicialId
+=======
+    let cfg                 = await obterArmazenamento(['rotaExecucaoAtual'])
+    let rotaExecucaoAtual   = String(cfg?.rotaExecucaoAtual || '')
+
     if (!processo.id) processo.id = rota_dadosTriagemInicial.idPrecaucao
     let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true') || []
     
@@ -81,6 +98,8 @@ async function triagem_inicial_janelaDetalhes(){
     dadosTriagemInicial.horariosVagos           = horariosVagos
     dadosTriagemInicial.juizSimetriaPeloGig     = juizSimetriaPeloGig
     dadosTriagemInicial.peticaoInicialId        = peticaoInicialId
+    dadosTriagemInicial.rotaExecucaoAtual       = rotaExecucaoAtual
+>>>>>>> Stashed changes
     
     await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
     await armazenar({ rota_dadosTriagemInicialNumero: processo.numero })
@@ -107,7 +126,22 @@ async function triagem_inicial_janelaDetalhes(){
     await removerArmazenamento('pjerota_tarefa')
 }
 
-aoAbrirDetalhesDoProcesso()
+async function triagem_inicial_aoAbrirRetificar(){
+    let janela = confereJanela(JANELA.retificar)
+    if (!janela) return
+    console.log('%c[Rota PJE]%c testando antes retificar', LOG.teste, 'color:inherit')
+    const meuNome   = window.name                          // 'rota-0-1716300000000'
+    const execucao  = meuNome.split('-').pop()             // '1716300000000'
+    const cfg       = await obterArmazenamento(['rotaExecucaoAtual'])
+    const atual     = String(cfg?.rotaExecucaoAtual || '')
+}
+
+async function triagem_inicial_janelaRetificar(params) {
+    
+}
+
+triagem_inicial_aoAbrirDetalhesDoProcesso()
+triagem_inicial_aoAbrirRetificar()
 
 
 // em desenvolvimento

@@ -853,6 +853,7 @@ async function _rota_buscarIdProcesso(numero){
 	if(Array.isArray(dados) && dados.length) id = dados[0].id || dados[0].idProcesso || null
 	else if(dados?.id)         id = dados.id
 	else if(dados?.idProcesso) id = dados.idProcesso
+	console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(dados), LOG.teste, 'color:inherit')
 
 	if(!id) return null
 
