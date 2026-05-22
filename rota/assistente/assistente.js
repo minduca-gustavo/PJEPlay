@@ -131,6 +131,14 @@ browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
         }
     }
 })
+
+browser.storage.onChanged.addListener(function ouvirFechar(mudancas) {
+    if (mudancas['rotaAssistenteFechar']?.newValue === true) {
+        browser.storage.onChanged.removeListener(ouvirFechar)
+        armazenar({ rotaAssistenteFechar: false })
+        window.close()
+    }
+})
 // ── Limpar área rolável ───────────────────────────────────────
 //
 // Chamado pelo roteiro antes de remontar a interface.

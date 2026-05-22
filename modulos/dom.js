@@ -9,6 +9,7 @@ function selecionar(seletor = '', ancestral = '', todos = false){
 }
 
 function confereJanela(...janelas) {
+	console.log('dentro do confereJanela, procurando agora: ' + location.href)
     return janelas.some(regex => regex.test(location.href))
 }
 
@@ -45,3 +46,53 @@ function estilizar({ css = '', id = '' } = {}){
 	document.head.appendChild(s)
 	return s
 }
+
+async function conferenciaCompletaJanela(tarefaEsperada, tipoJanela = JANELA.detalhes) {
+    const janela = confereJanela(tipoJanela)
+	console.log('%c[Rota PJE]%c URL CONFERE: ' + tipoJanela, LOG.teste, 'color:inherit')
+    if (!janela) return null
+
+    const execucao = window.name.split('-').pop()
+    const cfg      = await obterArmazenamento(['rotaExecucaoAtual'])
+    const atual    = String(cfg?.rotaExecucaoAtual || '')
+	console.log('%c[Rota PJE]%c execucao: ' + execucao, LOG.teste, 'color:inherit')
+	console.log('%c[Rota PJE]%c atual: ' + atual, LOG.teste, 'color:inherit')
+    if (execucao !== atual) return null  // execução antiga, ignora
+	console.log('%c[Rota PJE]%c EXECUCAO CONFERE', LOG.teste, 'color:inherit')
+    let tarefa = rota_buscarParametros('pjerota_tarefa')
+    if (!tarefa) {
+        const salvo = await obterArmazenamento('pjerota_tarefa')
+        tarefa = salvo?.pjerota_tarefa
+    } else {
+        await armazenar({ pjerota_tarefa: tarefa })
+    }
+
+    if (tarefa !== tarefaEsperada) return null
+
+    return atual  // ✅ execucaoAtual confirmada
+}
+
+// roteiro-assistente.js
+function comandar(acoes, parametros) {
+	console.log('%c[Rota PJE]%c comando: ' + acoes + JSON.stringify(parametros), LOG.info, 'color:inherit')
+    armazenar({ rota_comando: { acoes, parametros } })
+}
+
+// roteiro.js
+async function obedecer(mudancas) {
+    const comando = mudancas['rota_comando']?.newValue
+    if (!comando) return
+    armazenar({ rota_comando: null })
+
+    const { acoes, parametros } = comando
+    for (let i = 0; i < acoes.length; i++) {
+        const fn = rota_acoes[acoes[i]]
+        if (fn) await fn(parametros?.[i])
+        else console.log('%c[Rota PJE]%c Ação desconhecida: ' + acoes[i], LOG.teste, 'color:inherit')
+    }
+}
+
+function id(...partes) {
+    return ['triagem-inicial', ...partes].filter(Boolean).join('-')
+}
+

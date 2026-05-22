@@ -413,8 +413,11 @@ function rota_geometriaModoAssistido() {
     const sw   = window.screen.availWidth
     const sh   = window.screen.availHeight
     const topo = Math.round(sh * 0.15 * 1.1)  // mesmo cálculo do original
-	let shAssistente = sh
-	if(MODO_DEV === true) shAssistente = window.screen.availHeight - 50
+	let espacoDev = 0
+	if(MODO_DEV){ 
+		espacoDev = 200
+		
+	}
 
     const largAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
     const GAP = 20
@@ -423,13 +426,13 @@ function rota_geometriaModoAssistido() {
     return {
         pje: {
             width:  largPJE,
-            height: sh,
+            height: sh - espacoDev,
             left:   0,
-            top:    0,
+            top:    0 + espacoDev,  // deixa espaço para o modo dev, se ativo
         },
         assistente: {
             width:  largAssistente,
-            height: shAssistente,          // assistente ocupa altura total
+            height: sh - espacoDev,          // assistente ocupa altura total
             left:   largPJE + GAP,     // cola exatamente onde o PJE termina
             top:    0,
         },
@@ -466,8 +469,10 @@ function rota_nomeJanela(tipo, execucao) {
     return 'rota-' + tipo + '-' + execucao
 }
 
-function abrirUrl(url, posicao = 'esquerdaAssistida', nomeJanela = '_blank') {
-    const geo = rota_calcularGeometria(posicao)
+function abrirUrl(url, posicao = 'esquerdaAssistida', nomeJanela) {
+    
+	const geo = rota_calcularGeometria(posicao)
+	console.log('%c[Rota PJE]%c geo: ' + JSON.stringify(geo), LOG.teste, 'color:inherit')
     const w = window.open(
         url,
         nomeJanela,
@@ -500,8 +505,7 @@ function rota_aguardarSinal(sessao, timeout = 28800000){
     return new Promise(resolver => {
         let inicio = Date.now()
         let tick = setInterval(async () => {
-
-            // Sinal vindo das janelas do PJe (localStorage — não muda)
+            // Sinal das janelas PJe via localStorage
             let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
             if(sinal && sinal !== 'pausado'){
                 clearInterval(tick)
@@ -510,7 +514,7 @@ function rota_aguardarSinal(sessao, timeout = 28800000){
                 return
             }
 
-            // Sinal vindo do assistente (browser.storage — origem diferente)
+            // Sinal do assistente via browser.storage
             let cfg = await obterArmazenamento(['rotaSinalAssistente'])
             let sinalAssistente = cfg?.rotaSinalAssistente
             if(sinalAssistente && sinalAssistente !== 'pausado'){
@@ -574,9 +578,10 @@ async function rota_iniciarPipeline({ fila }){
         await suspender(500)
     }
 
-    let cfg          = await obterArmazenamento(['tarefaAtiva', 'tarefas', 'tarefaAtivaIsSistema'])
-    let nomeAtivo    = cfg?.tarefaAtiva || ''
-    let isSistema    = cfg?.tarefaAtivaIsSistema === true
+    let cfg          = await obterArmazenamento(['tarefaAtiva', 'tarefas'])
+	let nomeAtivo    = cfg?.tarefaAtiva || ''
+	let itemCatalogo = typeof catalogo_obter === 'function' ? catalogo_obter(nomeAtivo) : null
+	let isSistema    = itemCatalogo !== null
     let tarefa       = null
 
     if(isSistema){
@@ -686,8 +691,10 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	})
 
 	// Reabre assistente se for tarefa do sistema
-	let cfgTarefa = await obterArmazenamento(['tarefaAtiva', 'tarefaAtivaIsSistema'])
-	if(cfgTarefa?.tarefaAtivaIsSistema === true){
+	let cfgTarefa = await obterArmazenamento(['tarefaAtiva'])
+	let _isSistema = typeof catalogo_obter === 'function'
+		&& catalogo_obter(cfgTarefa?.tarefaAtiva) !== null
+	if(_isSistema){
 		await rota_abrirAssistente(cfgTarefa.tarefaAtiva, execucao)
 		await suspender(500)
 	}
@@ -1499,6 +1506,7 @@ function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
 // ── Relatório final ───────────────────────────────────────────
 
 function rota_exibirRelatorio(){
+	armazenar({ rotaAssistenteFechar: true })
     if(!_rota_relatorio.length){
         rota_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
         return

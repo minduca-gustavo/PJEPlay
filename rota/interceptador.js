@@ -12,6 +12,7 @@ const INTERCEPTADOR_URL = {
     processo:           /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
     processoPartes:     /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
     tarefas:            /\/pje-comum-api\/api\/agrupamentotarefas$/i,
+    tarefasProcesso:    /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas*/i,
     tarefasAtivas:      /\/pje-comum-api\/api\/tarefas\/ativas/i,
     perfis:             /\/api\/token\/perfis\/trocar/i,
     recursos:           /\/api\/token\/permissoes\/recursos/i,
@@ -39,6 +40,7 @@ const INTERCEPTADOR_ROTULO = {
     dadosBasicos:       'dados-basicos',
     timeline:           'timeline',
     orgaosJulgadores:   'orgaosJulgadores',
+    tarefasProcesso:    'tarefas-processo',
 }
 
 
@@ -144,6 +146,7 @@ function interceptador_ler(rotulo = ''){
 function interceptador_lerProcesso()            { return interceptador_ler('processo')        }
 function interceptador_lerPartes()              { return interceptador_ler('processo-partes') }
 function interceptador_lerTarefas()             { return interceptador_ler('tarefas')         }
+function interceptador_lerTarefasProcesso()     { return interceptador_ler('tarefas-processo')}
 function interceptador_lerPerfis()              { return interceptador_ler('perfis')          }
 function interceptador_lerAudiencias()          { return interceptador_ler('audiencias')      }
 function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')    }

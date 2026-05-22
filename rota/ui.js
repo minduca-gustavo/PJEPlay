@@ -869,7 +869,7 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     btnEncerrar.addEventListener('click', async () => {
         const cfg = await obterArmazenamento(['rotaExecucaoAtual'])
         const sessao = cfg?.rotaExecucaoAtual
-        if (sessao) await armazenar({ rotaSinalAssistente: 'encerrar' })
+        if (sessao) await armazenar({ rotaSinalAssistente: 'encerrar', rotaAssistenteFechar: true })
     })
 
     linha.appendChild(btnEncerrar)
@@ -1059,5 +1059,98 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
     // Método para atualizar tooltip externamente
     wrapper.atualizarTooltip = (novoTexto) => { tip.textContent = novoTexto }
 
+    return wrapper
+}
+
+// ── criaSecaoMostraRecolhe ────────────────────────────────────
+//
+// Seção expansível com cabeçalho fixo e corpo recolhível.
+// A setinha (▲/▼) no canto direito do cabeçalho alterna
+// o estado. Começa expandida por padrão.
+//
+// O roteiro popula idSempreAMostra e idRecolhe com qualquer
+// componente de ui.js após a chamada, usando-os como ancestral.
+//
+// criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral })
+
+function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral }) {
+    const wrapper = _ui_el('div', {
+        border:       '1px solid ' + UI_CORES.borda,
+        borderRadius: '6px',
+        overflow:     'hidden',
+        marginBottom: '8px',
+        background:   UI_CORES.branco,
+    })
+    wrapper.id = id
+
+    const cabecalho = _ui_el('div', {
+        display:    'flex',
+        alignItems: 'center',
+        padding:    '6px 8px 6px 0',
+        cursor:     'pointer',
+        userSelect: 'none',
+        background: UI_CORES.branco,
+        transition: 'background 0.15s',
+    })
+    cabecalho.addEventListener('mouseenter', () => cabecalho.style.background = UI_CORES.fundo)
+    cabecalho.addEventListener('mouseleave', () => cabecalho.style.background = UI_CORES.branco)
+
+    const areaFixa = _ui_el('div', { flex: '1' })
+    areaFixa.id = idSempreAMostra
+
+    const seta = _ui_el('div', {
+        flexShrink:   '0',
+        width:        '24px',
+        textAlign:    'center',
+        fontSize:     '10px',
+        color:        UI_CORES.suave,
+        fontFamily:   "'Segoe UI', system-ui, sans-serif",
+        paddingRight: '4px',
+        transition:   'transform 0.2s',
+    })
+    seta.textContent = '▲'
+
+    cabecalho.appendChild(areaFixa)
+    cabecalho.appendChild(seta)
+
+    const corpo = _ui_el('div', {
+        borderTop:  '1px solid ' + UI_CORES.borda,
+        padding:    '6px 0 4px 0',
+        overflow:   'hidden',
+        transition: 'max-height 0.25s ease, opacity 0.2s ease',
+        maxHeight:  '1000px',
+        opacity:    '1',
+    })
+    corpo.id = idRecolhe
+
+    // ── Estado e métodos expostos ─────────────────────────────
+    wrapper.expandido  = true
+    wrapper.aoAlternar = null   // roteiro pode atribuir: (expandido) => { ... }
+
+    function _aplicar(expandido) {
+        wrapper.expandido = expandido
+        if (expandido) {
+            corpo.style.maxHeight = '1000px'
+            corpo.style.opacity   = '1'
+            seta.textContent      = '▲'
+        } else {
+            corpo.style.maxHeight = '0'
+            corpo.style.opacity   = '0'
+            seta.textContent      = '▼'
+        }
+    }
+
+    wrapper.expandir  = () => _aplicar(true)
+    wrapper.recolher  = () => _aplicar(false)
+
+    cabecalho.addEventListener('click', () => {
+        _aplicar(!wrapper.expandido)
+        if (typeof wrapper.aoAlternar === 'function') wrapper.aoAlternar(wrapper.expandido)
+    })
+    // ─────────────────────────────────────────────────────────
+
+    wrapper.appendChild(cabecalho)
+    wrapper.appendChild(corpo)
+    _ui_inserir(wrapper, ancestral)
     return wrapper
 }

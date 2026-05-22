@@ -15,7 +15,7 @@ function relatar(rotulo = '', conteudo = '', tipo = ''){
 		teste: 		'#ff10d7'
 	}[tipo] || '#333'
 
-	let msg = '%c PJEPlay %c ' + rotulo
+	let msg = '%c Rota PJE %c ' + rotulo
 	let s2  = base + 'background:' + cor + ';margin-left:3px;'
 	if(!conteudo) console.log(msg, pfx, s2)
 	else          console.log(msg, pfx, s2, conteudo)

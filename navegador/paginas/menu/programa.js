@@ -145,19 +145,16 @@ async function iniciar(){
 	// ── Carrega storage ──────────────────────────────────────
 	let store = await NAV.storage.local.get(['tarefas','tarefaAtiva'])
 	tarefas   = store.tarefas  || {}
-	nomeAtivo = store.tarefaAtiva || ''
+	nomeAtivo = Object.keys(store.tarefas || {})[0] || ''
 
 	if(!Object.keys(tarefas).length){
 		tarefas['Padrão'] = _tarefaPadrao()
 		nomeAtivo = 'Padrão'
-		await NAV.storage.local.set({ tarefas, tarefaAtiva: nomeAtivo })
+		await NAV.storage.local.set({ tarefas})
 	}
 
 	// Garante que nomeAtivo aponta para uma tarefa existente
-	if(!nomeAtivo || !tarefas[nomeAtivo]){
-		nomeAtivo = Object.keys(tarefas)[0] || ''
-		await NAV.storage.local.set({ tarefaAtiva: nomeAtivo })
-	}
+
 
 	_popularSelectTarefas()
 	_carregarTarefaAtiva()

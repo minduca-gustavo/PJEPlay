@@ -28,6 +28,10 @@ const SELETORES_BASE = {
 const SELETORES = {
   '2.18': {
     ...SELETORES_BASE,
+    retificacaoAutuacaoPrimeirosBotoes:{
+        seletor:  '.mat-step-text-label',
+
+      }
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar-antigo',
@@ -37,6 +41,7 @@ const SELETORES = {
   },
   '2.19': {
     ...SELETORES_BASE,
+    
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar',
@@ -84,8 +89,10 @@ function limparErros() {
 
 // Retorna a entrada {seletor, propriedade?, valor?} para uma chave na versão
 // atual, com fallback para VERSAO_FALLBACK. Retorna null se não encontrada.
-function resolverEntrada(chave) {
-  const versao  = obterArmazenamento('rota-versao') ?? VERSAO_FALLBACK
+async function resolverEntrada(chave) {
+  const resultado = await obterArmazenamento('rota_versao')
+  const versao = resultado?.rota_versao ?? VERSAO_FALLBACK
+  console.log('%c[Rota PJE]%c procurando agora versao: ' + versao, LOG.teste, 'color:inherit')
   const mapa    = SELETORES[versao] ?? SELETORES[VERSAO_FALLBACK]
   const entrada = mapa?.[chave] ?? null
 
@@ -116,8 +123,10 @@ function selecionar(seletor = '', ancestral = '', todos = false) {
 
 // Função principal — resolve chave no mapa da versão e busca o elemento.
 // Usar em todos os scripts no lugar de selecionar() direto.
-function sel(chave, ancestral = '', todos = false) {
-  const entrada = resolverEntrada(chave)
+async function sel(chave, ancestral = '', todos = false) {
+  console.log('%c[Rota PJE]%c procurando agora sel: ' + chave, LOG.teste, 'color:inherit')
+  const entrada = await resolverEntrada(chave)
+  console.log('%c[Rota PJE]%c procurando agora entrada: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
   if (!entrada) return ''
   return selecionar(entrada.seletor, ancestral, todos)
 }
@@ -147,9 +156,9 @@ function pronto(el, entrada) {
 // timeout  {number} — ms até desistir (0 = sem limite)
 // Retorna Promise<Element|null>
 async function aguardarElementoNovo(chave, timeout = 0) {
-  const entrada = resolverEntrada(chave)
+  const entrada = await resolverEntrada(chave)
   if (!entrada) return null
-
+  console.log('%c[Rota PJE]%c procurando agora entrada do aguardarElementoNovo: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
   return new Promise(resolver => {
     const checar = () => {
       const el = selecionar(entrada.seletor)
@@ -177,8 +186,19 @@ async function aguardarElementoNovo(chave, timeout = 0) {
     if (timeout > 0)
       timer = setTimeout(() => {
         obs.disconnect()
-        registrarErro(`${chave} [timeout]`, obterArmazenamento('rota-versao') ?? VERSAO_FALLBACK)
+        registrarErro(`${chave} [timeout]`, obterArmazenamento('rota_versao') ?? VERSAO_FALLBACK)
         resolver(null)
       }, timeout)
   })
 }
+
+async function detectarVersao() {
+  const el = document.querySelector('#modulo-versao')
+  const texto = el?.textContent?.trim() ?? ''
+  const versao = texto.match(/\d+\.\d+/)?.[0] ?? VERSAO_FALLBACK
+  const versaoFinal = versao || VERSAO_FALLBACK
+  armazenar({rota_versao: versaoFinal})
+  console.log('%c[Rota PJE]%c procurando agora versão detectada: ' + versaoFinal, LOG.info, 'color:inherit')
+}
+
+detectarVersao()

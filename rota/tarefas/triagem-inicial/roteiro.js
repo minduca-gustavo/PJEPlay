@@ -1,7 +1,10 @@
 // dá problema quando o interceptador dá errado, ou seja, quando não tem gigs concluídos, por exemplo.
 // o domicilio eletronico é outra api.
 //     ?pjerota_tarefa=triagem-inicial
-//console.log ('aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
+//console.log ('triagem_inicial_aoAbrirDetalhesDoProcesso: verificando janela e parâmetros...')
+
+
+let tarefaEmExecucao = 'triagem-inicial'
 const dadosTriagemInicial = {
     partes: null,
     processo: null,
@@ -12,32 +15,20 @@ const dadosTriagemInicial = {
     juizSimetriaPeloGig: null,
     peticaoInicialId: null,
     idPrecaucao: null,
+    execucaoAtual: null,
+    origin: location.origin,
+    
 }
 
-async function aoAbrirDetalhesDoProcesso(){
-    let janela = confereJanela(JANELA.detalhes)
-    //let versao = aguardarElemento('#modulo-versao')
-    if (!janela) return
-    const meuNome   = window.name                          // 'rota-0-1716300000000'
-    const execucao  = meuNome.split('-').pop()             // '1716300000000'
-    const cfg       = await obterArmazenamento(['rotaExecucaoAtual'])
-    const atual     = String(cfg?.rotaExecucaoAtual || '')
+async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
+    const execucaoAtual = await conferenciaCompletaJanela('triagem-inicial')
+    if (!execucaoAtual) return
 
-    if (execucao !== atual) return  // janela de execução antiga, ignora
-    
+    dadosTriagemInicial.execucaoAtual = execucaoAtual
+
     const match = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)
-    dadosTriagemInicial.idPrecaucao = match?.[1]  // '2992885'
-    let tarefa = rota_buscarParametros('pjerota_tarefa')
-
-    if (!tarefa) {
-        const salvo = await obterArmazenamento('pjerota_tarefa')
-        tarefa = salvo?.pjerota_tarefa
-    } else {
-        await armazenar({ pjerota_tarefa: tarefa })
-    }
-
-    if (tarefa !== 'triagem-inicial') return
-    
+    dadosTriagemInicial.idPrecaucao = match?.[1]
+    browser.storage.onChanged.addListener(obedecer)
     triagem_inicial_janelaDetalhes()
 }
 
@@ -52,18 +43,19 @@ async function triagem_inicial_janelaDetalhes(){
         interceptador_aguardar('gigs-concluidos').then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
     ])
+    gigs.push(...gigs_concluidos)
     console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs, null, 2), LOG.teste, 'color:inherit')
     let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
-    console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig, null, 2), LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig, null, 2), LOG.teste, 'color:inherit')
     let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
-    console.log('%c[Rota PJE]%c ' + gigNormalizado, LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c ' + gigNormalizado, LOG.teste, 'color:inherit')
     let juizSimetriaPeloGig = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim() || ''
-    console.log('%c[Rota PJE]%c ' + juizSimetriaPeloGig, LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c ' + juizSimetriaPeloGig, LOG.teste, 'color:inherit')
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
     let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
     let salaJuizes = []
     let sala = salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) || {}
-    console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala, null, 2), LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala, null, 2), LOG.teste, 'color:inherit')
     let horariosVagos = []
     if (sala.id) {
         horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
@@ -91,7 +83,7 @@ async function triagem_inicial_janelaDetalhes(){
     let peticoes = [...document.getElementsByClassName('tl-documento')]
     let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
     let botaoAnexos    = document.querySelectorAll('[name="mostrarOuOcultarAnexos"]')
-    console.log('chamou? triagem-inicial')
+    //console.log('chamou? triagem-inicial')
     await clicar(peticaoInicial)
 
     for (let i = 0; i < 100; i++) {
@@ -107,7 +99,68 @@ async function triagem_inicial_janelaDetalhes(){
     await removerArmazenamento('pjerota_tarefa')
 }
 
-aoAbrirDetalhesDoProcesso()
+triagem_inicial_aoAbrirDetalhesDoProcesso()
+
+async function triagem_inicial_aoAbrirRetificar(){
+    //console.log('%c[Rota PJE]%c window.name' + window.name, LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c RETIFICAR - ANTES', LOG.teste, 'color:inherit')
+    //const execucaoAtual = await conferenciaJanelaAbertaPeloAssistente('triagem-inicial', JANELA.retificar)
+    //if (!execucaoAtual) return
+    //console.log('%c[Rota PJE]%c RETIFICAR - DEPOIS', LOG.teste, 'color:inherit')
+    //dadosTriagemInicial.execucaoAtual = execucaoAtual
+    console.log('cacando aqui: ' + JANELA.retificar)
+    let execucao = conferenciaCompletaJanela('triagem-inicial', JANELA.retificar)
+    console.log('%c[Rota PJE]%c execucao: ' + JSON.stringify(execucao), LOG.teste, 'color:inherit')
+    if (execucao == null) {
+        console.log('retornou')
+        return
+    }
+    //triagem_inicial_janelaRetificar()
+}
+
+async function triagem_inicial_janelaRetificar(){
+    let tipos = await obterArmazenamento(['rota_dadosTriagemInicialRetificar'])
+    if (!tipos) return
+    let tipo = tipos?.rota_dadosTriagemInicialRetificar
+    let i = 0
+    let elemento = null
+    while (!elemento) {
+        i++
+        if (i > 10) break
+        let elementos = [...await sel('retificacaoAutuacaoPrimeirosBotoes', '', true)]
+        elemento = elementos.find(e => e.textContent.includes(tipo))
+        if (!elemento) await suspender(1000)
+    }
+
+    await clicar(elemento)
+}
+
+triagem_inicial_aoAbrirRetificar()
+
+const rota_acoes = {
+    'designa-audiencia': async (p) => await verificarOQueChegou(p),
+    'despachar': async (p) => await verificarOQueChegou(p),
+    'gig': async (p) => await verificarOQueChegou(p),
+    'certidao': async (p) => await verificarOQueChegou(p),
+    'retificar': async (p) => await triagem_retificarAutuacao(p),
+}
+
+
+async function verificarOQueChegou(p) {
+    rota_avisoTemporario(JSON.stringify(p), tipo = 'info', ms = 2000)
+}
+
+async function triagem_retificarAutuacao(tipo) {
+    let dados = await obterArmazenamento(['rota_dadosTriagemInicial'])
+    await armazenar({ rota_dadosTriagemInicialRetificar: tipo })
+    let id = dadosTriagemInicial?.processo?.id
+    let execucao = dados?.rota_dadosTriagemInicial?.execucaoAtual
+    //console.log('%c[Rota PJE]%c ' + execucao, LOG.teste, 'color:inherit')
+    let url = location.origin + '/pjekz/processo/' + id + '/retificar?pjerota_tarefa=triagem-inicial'
+    await abrirUrl(url, 'esquerdaAssistida', 'triagem-inicial-retificar-' + execucao)
+    //await alert(tipo + ' em desenvolvimento. ' + id)
+}
+
 
 
 // em desenvolvimento
@@ -375,7 +428,7 @@ async function triagem_despacho() {
 async function triagem_conclusao() {
     const responsaveis = await acao_api_obterResponsaveis()
     if (!responsaveis?.length) {
-        console.warn('[Rota PJE] triagem_conclusao: nenhum responsável encontrado.')
+        //console.warn('[Rota PJE] triagem_conclusao: nenhum responsável encontrado.')
         return
     }
     // Por ora abre detalhes — seletor de juiz será implementado no componente específico

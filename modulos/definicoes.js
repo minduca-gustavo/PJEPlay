@@ -1,4 +1,5 @@
 // ── Variáveis e definições globais ───────────────────────────
+// No topo do content script (ex: index.js ou onde MODO_DEV é usado)
 
 const
 	LOCAL		= (typeof window !== 'undefined') ? window.location.href : '',
@@ -6,7 +7,19 @@ const
 	EXTENSAO	= _definirExtensao()
 
 var CONFIGURACAO = {}
-var MODO_DEV     = false   // ativado via popup página 4 — controla o relatar()
+var MODO_DEV = false
+
+// Lê o valor salvo no storage ao iniciar
+obterArmazenamento(['modoDev']).then(cfg => {
+    MODO_DEV = cfg?.modoDev === true
+})
+
+// Reage a mudanças em tempo real (popup alterando o valor)
+NAVEGADOR.storage.onChanged.addListener((changes) => {
+    if ('modoDev' in changes) {
+        MODO_DEV = changes.modoDev.newValue === true
+    }
+})   // ativado via popup página 4 — controla o relatar()
 var JANELA = {
     meuPainel:          /\/pjekz\/gigs\/meu-painel/,
     painelGlobal:      	/\/pjekz\/painel\/global/,
@@ -15,6 +28,8 @@ var JANELA = {
 	escaninho: 			/\/pjekz\/escaninho/,
 	retificar:			/\/pjekz\/processo\/\d*\/retificar/,
 }
+
+
 
 function _definirNavegador(){
 	if(typeof browser === 'undefined' && typeof chrome !== 'undefined') return chrome
