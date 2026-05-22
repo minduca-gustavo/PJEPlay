@@ -34,21 +34,26 @@ async function busca_FilaPainelGlobal(){
     let desde = botoes.find(el => el.textContent.includes('Desde'))
     console.log('%c[Rota PJE]%c desde: ' + JSON.stringify(desde.innerText), LOG.teste, 'color:inherit')
     if (!desde) return
+    await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
     let tabela = await sel('tabelaDeProcessosNoPainelGlobal')
+    let conteudoAntes = tabela.textContent
+    console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela.innerText), LOG.teste, 'color:inherit')
     let tabelaMudou = []
     if (!desde.textContent.includes('Desde')) return { desde: 'Não encontrado.' }
     await clicar(desde)
-    for (let i = 0; i < 60; i++){
+    let i = 0
+    for (i; i < 100; i++){
         tabelaMudou = await sel('tabelaDeProcessosNoPainelGlobal')
-        if (tabela.texContent != tabelaMudou.texContent){
-            tabela = tabelaMudou
+        console.log('%c[Rota PJE]%c tabelaMudou: ' + JSON.stringify(tabelaMudou.textContent), LOG.teste, 'color:inherit')
+        if (conteudoAntes !== tabelaMudou.textContent){
+            //tabela = tabelaMudou
             break
         }
         await suspender(300)
     }
     let dataGeral = await aguardarElementoNovo('dataDoProcessoNaTarefa').innerText
     
-    await alert(dataGeral)
+    await alert(i)
     return
 
     
