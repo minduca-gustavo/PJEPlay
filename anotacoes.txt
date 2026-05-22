@@ -17,6 +17,7 @@ SENTENÇA ANULADA
 IMPROCEDÊNCIA MANTIDA
 
 
+
 função aguarda todos:
     let [timeline, gigs] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
@@ -25,3 +26,6 @@ função aguarda todos:
 
 função tira duplicações:
     let juizSimetriaPeloGig = [...new Set(gig.map(juiz => juiz.nomeUsuarioDestinatario))];
+
+direto pra data BR:
+let dataEntradaTarefa = new Date(tarefas[tarefas.length - 1]?.inicio).toLocaleDateString('pt-BR')

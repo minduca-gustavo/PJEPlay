@@ -31,7 +31,25 @@ const SELETORES = {
     retificacaoAutuacaoPrimeirosBotoes:{
         seletor:  '.mat-step-text-label',
 
-      }
+      },
+    numeroProcessoJanelaDetalhesComTipo:{
+      seletor: '.texto-numero-processo',
+    },
+    dataDoProcessoNaTarefa:{
+      seletor: 'span[processo\\.caixa]',
+
+    },
+    botoesDeOrdenarNoPainelGlobal:{
+      seletor: '.th-elemento-class',
+
+    },
+    tabelaDeProcessosNoPainelGlobal:{
+      seletor: '[name*="Tabela de Processos"]',
+
+    },
+    abrirTarefaDoProcessoNoPainelGlobal:{
+      seletor: 'pje-descricao-processo'
+    }
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar-antigo',
@@ -192,13 +210,34 @@ async function aguardarElementoNovo(chave, timeout = 0) {
   })
 }
 
+
+// Inicializado por detectarVersao() — disponível sincronamente depois disso.
+let _rotaVersaoAtual = null
+
 async function detectarVersao() {
   const el = document.querySelector('#modulo-versao')
   const texto = el?.textContent?.trim() ?? ''
   const versao = texto.match(/\d+\.\d+/)?.[0] ?? VERSAO_FALLBACK
   const versaoFinal = versao || VERSAO_FALLBACK
-  armazenar({rota_versao: versaoFinal})
-  console.log('%c[Rota PJE]%c procurando agora versão detectada: ' + versaoFinal, LOG.info, 'color:inherit')
+  _rotaVersaoAtual = versaoFinal          // ← linha nova
+  armazenar({ rota_versao: versaoFinal })
+  console.log('%c[Rota PJE]%c versão detectada: ' + versaoFinal, LOG.info, 'color:inherit')
 }
 
 detectarVersao()
+
+// Retorna o seletor CSS de uma chave para a versão atual (síncrono).
+// Usa a versão já armazenada em memória — não faz await.
+// Retorna '' se a chave não existir no mapa.
+function seletorPorVersao(chave) {
+  const versao = _rotaVersaoAtual ?? VERSAO_FALLBACK
+  const mapa   = SELETORES[versao] ?? SELETORES[VERSAO_FALLBACK]
+  const entrada = mapa?.[chave] ?? null
+
+  if (!entrada) {
+    registrarErro(chave, versao)
+    return ''
+  }
+
+  return entrada.seletor
+}

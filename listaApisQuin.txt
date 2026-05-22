@@ -1,0 +1,119 @@
+Claro! Deixa eu varrer os dois arquivos sistematicamente.Tenho tudo que preciso. Vou montar o mapa organizado por sistema:Agora tenho tudo. Deixa eu montar o mapa completo:
+
+---
+
+## Mapa de APIs — Quinzinho v2.16.0
+
+Organizado por sistema/serviço:
+
+---
+
+### 🔵 pje-comum-api (`https://pje.trt15.jus.br/pje-comum-api/api/`)
+
+**Processos**
+| Endpoint | Uso |
+|---|---|
+| `GET processos/id/{id}` | Dados primários do processo |
+| `GET processos/id/{id}/historicodeslocamentos` | Último deslocamento (PA) |
+| `GET processos/id/{id}/partes` | Partes do processo |
+| `GET processos/id/{id}/associados` | Processos associados |
+| `GET processos/id/{id}/prioridades` | Prioridades do processo |
+| `GET processos/id/{id}/timeline?...` | Timeline de documentos |
+| `GET processos/id/{id}/sobrestamentos` | Sobrestamentos |
+| `GET processos/id/{id}/tarefas/553/transicoes` | Transição de tarefa (análise) |
+| `POST processos/id/{id}/deslocamentos/postoavancado` | Encaminhar para PA |
+| `GET processos/id/{id}/documentos/minuta/A/metadados` | Metadados para novo documento |
+| `PUT processos/id/{id}/documentos/minuta/{idDoc}` | Gravar minuta de documento |
+| `GET processos?numero={numero}` | Buscar processo por número |
+| `GET processos/prazos/oj/*/diasuteis/*` | Prazo em dias úteis |
+| `GET processos/usuariosresponsaveis` | Usuários responsáveis |
+| `GET processos/usuariosresponsaveis/regras?idsTarefa=...&idOrgaoJulgador=...` | Regras de responsáveis (magistrado) |
+
+**Órgãos Julgadores**
+| Endpoint | Uso |
+|---|---|
+| `GET orgaosjulgadores/{id}` | Dados de um OJ |
+| `GET orgaosjulgadores/{id}/postosavancados` | Postos avançados do OJ |
+| `GET orgaosjulgadores/orgaosjulgadoresativos` | Lista de OJs ativos |
+| `GET orgaosjulgadores/orgaosjulgadores` | Lista geral de OJs (com codigoOrigem) |
+| `GET orgaosjulgadores/{idAssessoria}/orgaosjulgadoresatendidos` | OJs atendidos por assessoria |
+
+**Agrupamentos / Domínio / Outros**
+| Endpoint | Uso |
+|---|---|
+| `GET agrupamentotarefas/orgaojulgadores/todos` | Todos os agrupamentos de tarefas |
+| `GET agrupamentotarefas/processos?numero=...` | Agrupamento por número |
+| `GET agrupamentotarefas/{id}/processos` | Processos de um agrupamento |
+| `GET dominio/jurisdicoes/orgaojugador/{id}` | Jurisdição do OJ |
+| `GET calculos/processo?...&idProcesso=...` | Cálculos do processo |
+| `GET pessoas/{idPessoa}` | Dados de uma pessoa |
+
+---
+
+### 🟣 pje-gigs-api (`https://pje.trt15.jus.br/pje-gigs-api/api/`)
+
+| Endpoint | Uso |
+|---|---|
+| `GET processo/{id}` | Dados do processo no GIGS |
+| `GET atividade/processo/{id}` | Atividades do processo |
+| `POST atividade` | Criar atividade |
+| `PUT/PATCH atividade/{id}` | Atualizar atividade |
+| `GET atividade/processo/*/concluida*` | Atividades concluídas |
+| `GET atividade/retorna-dias/{id}` | Dias da atividade |
+| `GET tiposatividades/poridsprocessos?idsProcessos={id}` | Tipos de atividade |
+
+---
+
+### 🟢 pje-seguranca (`https://pje.trt15.jus.br/pje-seguranca/api/`)
+
+| Endpoint | Uso |
+|---|---|
+| `GET token/perfis` | Perfis do usuário logado |
+
+---
+
+### 🟡 pje-etiquetas-api (`https://pje.trt15.jus.br/pje-etiquetas-api/api/`)
+
+| Endpoint | Uso |
+|---|---|
+| `GET processos/{id}/etiquetas` | Chips/etiquetas do processo |
+
+---
+
+### 🟠 exe-backend-api (`https://pje.trt15.jus.br/exe-backend-api/api/`)
+
+Usada pelo módulo de diligências da execução (exe-pje).
+
+---
+
+### 🔴 Simetria (`https://satelites.trt15.jus.br/simetria-api/api/`)
+
+| Endpoint | Uso |
+|---|---|
+| `GET consultas/magistrado/{idProcesso}` | Magistrado sorteado na distribuição |
+
+Autenticação via **Keycloak** (Client Credentials flow):
+`POST {keycloakBaseUrl}/realms/{realm}/protocol/openid-connect/token`
+
+---
+
+### ⚪ Google Sheets API
+
+| Endpoint | Uso |
+|---|---|
+| `GET sheets.googleapis.com/v4/spreadsheets/{id}/values/Regras!A2:C?key={apiKey}` | Planilha de regras de responsáveis (magistrado por OJ+dígito) |
+
+---
+
+**Resumo de sistemas externos acessados:**
+- `ecarta.trt15.jus.br` — e-Carta
+- `consultaprocessual.tst.jus.br` — Consulta TST
+- `consulta.trt15.jus.br` — Consulta TRT15
+- `siscondj.trt15.jus.br` — SISCONDJ
+- `sisbajud.cnj.jus.br` — SISBAJUD
+- `aj.sigeo.jt.jus.br` — SIGEO
+- `depositojudicial.caixa.gov.br` — Depósitos CEF
+- `www63.bb.com.br` — Depósitos BB
+- `apps3.correios.com.br` — AR Eletrônico
+
+Quer aprofundar em algum grupo específico ou ver como alguma dessas APIs é chamada em detalhe?

@@ -1,10 +1,10 @@
-console.log('Me chamou? OJ')
+//console.log('Me chamou? BUSCA FILA')
 function buscaPosicaoFila(){
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
     busca_posicao_filaCriaCampoConsulta()
 }
-console.log('Me chamou? OJ')
+//console.log('Me chamou? OJ')
 
 window.addEventListener('pjerota:url-mudou', () => {
     document.getElementById('pjerota-busca_posicao_fila-widget')?.remove()
@@ -12,6 +12,48 @@ window.addEventListener('pjerota:url-mudou', () => {
 })
 
 buscaPosicaoFila()
+
+function buscaPosicaoFilaPainelGlobal(){
+    let janela = confereJanela(JANELA.painelGlobalTarefas)
+    if (!janela) return
+    busca_FilaPainelGlobal()
+}
+
+buscaPosicaoFilaPainelGlobal()
+
+async function busca_FilaPainelGlobal(){
+    let parametros = await rota_buscarParametros('pjerota_busca_posicao_fila')
+    if (!parametros) return
+    let armazenamento = await obterArmazenamento('pjerota_busca_posicao_fila')
+    if (!armazenamento) return
+    console.log('%c[Rota PJE]%c 29', LOG.teste, 'color:inherit')
+    await removerArmazenamento('pjerota_busca_posicao_fila')
+    await aguardarElementoNovo('botoesDeOrdenarNoPainelGlobal')
+    let botoes = [...document.querySelectorAll(seletorPorVersao('botoesDeOrdenarNoPainelGlobal'))]
+    console.log('%c[Rota PJE]%c botoes: ' + botoes, LOG.teste, 'color:inherit')
+    let desde = botoes.find(el => el.textContent.includes('Desde'))
+    console.log('%c[Rota PJE]%c desde: ' + JSON.stringify(desde.innerText), LOG.teste, 'color:inherit')
+    if (!desde) return
+    let tabela = await sel('tabelaDeProcessosNoPainelGlobal')
+    let tabelaMudou = []
+    if (!desde.textContent.includes('Desde')) return { desde: 'Não encontrado.' }
+    await clicar(desde)
+    for (let i = 0; i < 60; i++){
+        tabelaMudou = await sel('tabelaDeProcessosNoPainelGlobal')
+        if (tabela.texContent != tabelaMudou.texContent){
+            tabela = tabelaMudou
+            break
+        }
+        await suspender(300)
+    }
+    let dataGeral = await aguardarElementoNovo('dataDoProcessoNaTarefa').innerText
+    
+    await alert(dataGeral)
+    return
+
+    
+    
+}
 
 async function busca_posicao_filaCriaCampoConsulta() {
 
@@ -216,6 +258,7 @@ async function busca_posicao_filaCriaCampoConsulta() {
         color:      C.textoSuave,
         lineHeight: '1.4',
     })
+    rodape.id = 'pjerota-busca-posicao-fila-rodape'
 
     let aviso = document.createElement('span')
     aviso.innerHTML = '<strong style="text-decoration:underline">ATENÇÃO</strong>: em teletrabalho, só funciona com a VPN ligada.'
@@ -312,11 +355,24 @@ async function busca_posicao_filaCriaCampoConsulta() {
 //https://pje.trt15.jus.br/pje-comum-api/api/tarefas/historico/4725975
 
 async function busca_posicao_filaConsultar() {
-    let match = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)
-    let id = match?.[1]
-    let tarefa = await interceptador_lerTarefasProcesso()
-    let processos = await busca_posicao_filaBuscaProcessos(tarefa[0]?.idTarefa)
-    await alert(JSON.stringify(processos))
+    const rodape = await selecionar('#pjerota-busca-posicao-fila-rodape')
+    const id = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)?.[1]
+    const processo = ((await sel('numeroProcessoJanelaDetalhesComTipo'))?.textContent.split(' ')[2])
+      ?? (await interceptador_lerProcesso()?.numero ?? await rota_fetch(`${location.origin}/pje-comum-api/api/processos/id/${id}`))?.numero
+    if(!processo){
+        rodape.textContent = 'Processo não encontrado. Atualize a página e tente novamente.'
+        return
+    } 
+    let idTarefa = await rota_fetch(location.origin + '/pje-comum-api/api/agrupamentotarefas/processos?numero=' + processo)
+
+    let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/historico/' + id)
+    let dataEntradaTarefa = new Date(tarefas[tarefas.length - 1]?.inicio).toLocaleDateString('pt-BR')
+    rodape.textContent = 'O processo entrou na tarefa em ' + dataEntradaTarefa + '.'
+    await armazenar({pjerota_busca_posicao_fila: dataEntradaTarefa})
+    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?pjerota_busca_posicao_fila=' + encodeURI(dataEntradaTarefa)
+    //alert(url)
+    window.open(url)
+    return
     
     /*let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
     let ROTA_REGEX_CNJ_SEM_DIVISOR = /\d{20}/
@@ -365,72 +421,6 @@ async function busca_posicao_filaConsultar() {
     url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + dadosBasicos?.numero
     await busca_posicao_filaNavegar(url)
     */
-}
-
-async function busca_posicao_filaBuscaProcessos(idTarefa) {
-    
-    let loop = await _idPorPaginaTarefa(1, idTarefa)
-    let nloop = 4
-    let ids = loop.ids
-    let t   = loop.t
-
-    if (nloop > 1) {
-        let paginas = []
-        for (let i = 2; i <= nloop; i++) paginas.push(i)
-
-        let resultados = await sf_pool(paginas, async (pagina) => {
-            return await _idPorPaginaTarefa(pagina, idTarefa)
-        }, {
-            concorrencia: 1,
-            tentativas:   2,
-            pausaMs:      100,
-        })
-
-        resultados.forEach(r => {
-            if (!r) return
-            r.ids.forEach(n => ids.push(n))
-            r.t.forEach(n => t.push(n))
-        })
-    }
-    return { ids, t }
-}
-
-async function busca_posicao_filaAbreDetalhes(){
-    let cfg = await obterArmazenamento('pjerota_busca_posicao_fila')
-    let id = cfg?.pjerota_busca_posicao_fila
-    if (!id) return
-    await removerArmazenamento('pjerota_busca_posicao_fila')
-    let confirmacao = await obterArmazenamento('pjerota_busca_posicao_fila')
-    if (confirmacao?.pjerota_busca_posicao_fila) return
-    await acao_navegacao_detalhes(id)
-}
-
-busca_posicao_filaAbreDetalhes()
-
-async function busca_posicao_filaErroNumero(erro = '') {
-    let mensagem = ''
-    if (erro === 'fora do padrao'){
-        mensagem = 'Número não está no padrão CNJ.'
-    }
-    if (erro === 'nao encontrado'){
-        mensagem = 'Verifique o dígito.'
-    }
-    if (erro === 'nao conectado'){
-        mensagem = 'Verifique sua conexão ao PJE.'
-    }
-    if (erro === 'erro perfil'){
-        mensagem = 'Você não possui o perfil da OJ.'
-    }
-
-    let campo = document.getElementById('pjerota-busca-posicao-fila-input')
-    campo.placeholder = mensagem
-    campo.value = ''
-    let lupa = document.getElementById('pjerota-busca-posicao-fila-lupa')
-    lupa.style.background = '#c0392b'
-    await suspender(5000)
-    lupa.style.background = '#0078aa'
-    campo.placeholder = 'Nº do processo…'
-    return
 }
 
 function busca_posicao_filaNavegar(url) {

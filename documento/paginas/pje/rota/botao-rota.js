@@ -786,8 +786,13 @@ function _rota_aoClicarLista(btnRef){
 // ── Coleta processos visíveis na tela ─────────────────────────
 
 function _rota_coletarFilaDaTela(){
-	let texto   = document.body.innerText || ''
-	let matches = [...texto.matchAll(ROTA_REGEX_CNJ)]
+	let elementos   = [...document.querySelectorAll(seletorPorVersao('abrirTarefaDoProcessoNoPainelGlobal'))]
+	let matches = []
+	for (let el of elementos){
+		let numero = el.innerText.match(ROTA_REGEX_CNJ)
+		if(!numero) continue
+		matches.push(numero)
+	}
 	let vistos  = new Set()
 	let fila    = []
 	for(let m of matches){
