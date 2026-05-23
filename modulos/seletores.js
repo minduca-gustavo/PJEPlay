@@ -47,6 +47,14 @@ const SELETORES = {
       seletor: '[name*="Tabela de Processos"]',
 
     },
+    botaoFiltroDePrioridadesNoPainelGlobal:{
+      seletor: '[aria-label="Processos com Prioridade Processual"]',
+
+    },
+    botaoDesconsiderarFiltrosSelecionadosNoPainelGlobal:{
+      seletor: '[aria-label="Desconsiderar Filtros Selecionados"]',
+
+    },
     abrirTarefaDoProcessoNoPainelGlobal:{
       seletor: 'pje-descricao-processo'
     }

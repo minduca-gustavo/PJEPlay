@@ -24,41 +24,93 @@ buscaPosicaoFilaPainelGlobal()
 async function busca_FilaPainelGlobal(){
     let parametros = await rota_buscarParametros('pjerota_busca_posicao_fila')
     if (!parametros) return
+    let processo = await rota_buscarParametros('pjerota_busca_posicao_fila_numero')
     let armazenamento = await obterArmazenamento('pjerota_busca_posicao_fila')
     if (!armazenamento) return
     console.log('%c[Rota PJE]%c 29', LOG.teste, 'color:inherit')
     await removerArmazenamento('pjerota_busca_posicao_fila')
-    await aguardarElementoNovo('botoesDeOrdenarNoPainelGlobal')
+    await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
+    let bodyAtual = document.body.innerText
     let botoes = [...document.querySelectorAll(seletorPorVersao('botoesDeOrdenarNoPainelGlobal'))]
-    console.log('%c[Rota PJE]%c botoes: ' + botoes, LOG.teste, 'color:inherit')
     let desde = botoes.find(el => el.textContent.includes('Desde'))
-    console.log('%c[Rota PJE]%c desde: ' + JSON.stringify(desde.innerText), LOG.teste, 'color:inherit')
-    if (!desde) return
-    await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
-    let tabela = await sel('tabelaDeProcessosNoPainelGlobal')
-    let conteudoAntes = tabela.textContent
-    console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela.innerText), LOG.teste, 'color:inherit')
-    let tabelaMudou = []
-    if (!desde.textContent.includes('Desde')) return { desde: 'Não encontrado.' }
-    await clicar(desde)
-    let i = 0
-    for (i; i < 100; i++){
-        tabelaMudou = await sel('tabelaDeProcessosNoPainelGlobal')
-        console.log('%c[Rota PJE]%c tabelaMudou: ' + JSON.stringify(tabelaMudou.textContent), LOG.teste, 'color:inherit')
-        if (conteudoAntes !== tabelaMudou.textContent){
-            //tabela = tabelaMudou
-            break
+    let prioridade = await sel('botaoFiltroDePrioridadesNoPainelGlobal')
+    let desconsiderar = await sel('botaoDesconsiderarFiltrosSelecionadosNoPainelGlobal')
+    let dataPrioridade = ''
+    let dataDesconsiderar = ''
+    let cliques = [desde, prioridade, desconsiderar]
+    for(let clique of cliques){
+        await clicar(clique)
+        await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(bodyAtual)
+        if(clique == desde) {
+            let datas = document.querySelectorAll(seletorPorVersao('dataDoProcessoNaTarefa'))
+            dataPrioridade = datas[0].textContent.trim().split(' ')[0]
         }
-        await suspender(300)
+        if(clique == desconsiderar) {
+            let datas = document.querySelectorAll(seletorPorVersao('dataDoProcessoNaTarefa'))
+            dataDesconsiderar = datas[0].textContent.trim().split(' ')[0]
+        }
+        bodyAtual = document.body.innerText
     }
-    let dataGeral = await aguardarElementoNovo('dataDoProcessoNaTarefa').innerText
+    busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(bodyAtual)
+    relatar(dataPrioridade + ' - ' + dataDesconsiderar, '', 'teste')
+    await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
+    let top = window.innerHeight/2 + 150
+    let aviso = criaDiv({id: 'rota-pje-busca-posicao-fila-div', ancestral: '#ffff'})
+    aviso.style.width = '300px'
+    aviso.style.position = 'fixed'
+    aviso.style.top = '50%'
+    aviso.style.left = '50%'
+    aviso.style.transform = 'translate(-50%, -50%)'
+    aviso.style.zIndex = '9999999'
+    let botao = criaBotaoAzul({
+        id: 'rota-pje-busca-posicao-fila-botao', 
+        ancestral: 'rota-pje-busca-posicao-fila-div', 
+        texto: 'O processo ' + processo + ' entrou na tarefa em ' + decodeURI(parametros) + '. O processo prioritário mais antigo entrou na tarefa em ' + dataPrioridade + '. O processo mais antigo, desconsiderando os prioritários, entrou na tarefa em ' + dataDesconsiderar + '. Clique para fechar.',
+        acao: () => aviso.remove()
+    })
+    botao.style.zIndex = '9999999'
+    //botao.style.width = '300px'
+    document.body.appendChild(aviso)
     
-    await alert(i)
     return
 
     
     
 }
+
+
+
+async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(bodyAtual){
+    let match
+    let body
+    if(!bodyAtual){
+        await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
+        let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
+        for(let i = 0; i < 100; i++){
+            
+            body = document.body.innerText
+            
+            console.log('%c[Rota PJE]%c body: ' + body, LOG.teste, 'color:inherit')
+            match = body.match(ROTA_REGEX_CNJ) || body.match('Não há processos neste tema.')
+            console.log('%c[Rota PJE]%c match: ' + match, LOG.teste, 'color:inherit')
+            if (match) return
+            await suspender(300)
+        }
+        if (!ROTA_REGEX_CNJ.test(body)) return null
+    }else{
+        body = bodyAtual
+    }
+    
+    for(let i = 0; i < 100; i++){
+        let bodyMudou = document.body.innerText
+        if (body !== bodyMudou && ROTA_REGEX_CNJ.test(bodyMudou)) return
+        await suspender(300)
+    }
+    return null
+    
+}
+
+    
 
 async function busca_posicao_filaCriaCampoConsulta() {
 
@@ -371,10 +423,10 @@ async function busca_posicao_filaConsultar() {
     let idTarefa = await rota_fetch(location.origin + '/pje-comum-api/api/agrupamentotarefas/processos?numero=' + processo)
 
     let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/historico/' + id)
-    let dataEntradaTarefa = new Date(tarefas[tarefas.length - 1]?.inicio).toLocaleDateString('pt-BR')
+    let dataEntradaTarefa = new Date(tarefas[tarefas.length - 2]?.inicio).toLocaleDateString('pt-BR')
     rodape.textContent = 'O processo entrou na tarefa em ' + dataEntradaTarefa + '.'
     await armazenar({pjerota_busca_posicao_fila: dataEntradaTarefa})
-    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?pjerota_busca_posicao_fila=' + encodeURI(dataEntradaTarefa)
+    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?pjerota_busca_posicao_fila=' + encodeURI(dataEntradaTarefa) + '&pjerota_busca_posicao_fila_numero='+ processo
     //alert(url)
     window.open(url)
     return
