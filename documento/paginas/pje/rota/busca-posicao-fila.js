@@ -1,3 +1,4 @@
+// o body está mudando COM PROCESSO. Tem que ver o innertext da tabelaDeProcessosNoPainelGlobal
 //console.log('Me chamou? BUSCA FILA')
 function buscaPosicaoFila(){
     let janela = confereJanela(JANELA.detalhes)
@@ -30,7 +31,8 @@ async function busca_FilaPainelGlobal(){
     console.log('%c[Rota PJE]%c 29', LOG.teste, 'color:inherit')
     await removerArmazenamento('pjerota_busca_posicao_fila')
     await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
-    let bodyAtual = document.body.innerText
+    let contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
+    let conteudoAtual = contAtual.innerText
     let botoes = [...document.querySelectorAll(seletorPorVersao('botoesDeOrdenarNoPainelGlobal'))]
     let desde = botoes.find(el => el.textContent.includes('Desde'))
     let prioridade = await sel('botaoFiltroDePrioridadesNoPainelGlobal')
@@ -40,8 +42,8 @@ async function busca_FilaPainelGlobal(){
     let cliques = [desde, prioridade, desconsiderar]
     for(let clique of cliques){
         await clicar(clique)
-        await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(bodyAtual)
-        if(clique == desde) {
+        await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual)
+        if(clique == prioridade) {
             let datas = document.querySelectorAll(seletorPorVersao('dataDoProcessoNaTarefa'))
             dataPrioridade = datas[0].textContent.trim().split(' ')[0]
         }
@@ -49,9 +51,11 @@ async function busca_FilaPainelGlobal(){
             let datas = document.querySelectorAll(seletorPorVersao('dataDoProcessoNaTarefa'))
             dataDesconsiderar = datas[0].textContent.trim().split(' ')[0]
         }
-        bodyAtual = document.body.innerText
+        contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
+        conteudoAtual = contAtual.innerText
+        //await suspender(1000)
     }
-    busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(bodyAtual)
+    busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual)
     relatar(dataPrioridade + ' - ' + dataDesconsiderar, '', 'teste')
     await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
     let top = window.innerHeight/2 + 150
@@ -80,30 +84,36 @@ async function busca_FilaPainelGlobal(){
 
 
 
-async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(bodyAtual){
+async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual){
     let match
-    let body
-    if(!bodyAtual){
+    let contAtual
+    let conteudo
+    await suspender (1000)
+    if(!conteudoAtual){
+        
         await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
         let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
         for(let i = 0; i < 100; i++){
             
-            body = document.body.innerText
+            contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
+            conteudo = contAtual.innerText
             
-            console.log('%c[Rota PJE]%c body: ' + body, LOG.teste, 'color:inherit')
-            match = body.match(ROTA_REGEX_CNJ) || body.match('Não há processos neste tema.')
+            console.log('%c[Rota PJE]%c body: ' + conteudo, LOG.teste, 'color:inherit')
+            match = conteudo.match(ROTA_REGEX_CNJ) || conteudo.match('Não há processos neste tema.')
             console.log('%c[Rota PJE]%c match: ' + match, LOG.teste, 'color:inherit')
             if (match) return
             await suspender(300)
         }
-        if (!ROTA_REGEX_CNJ.test(body)) return null
+        if (!ROTA_REGEX_CNJ.test(conteudo)) return null
     }else{
-        body = bodyAtual
+        conteudo = conteudoAtual
     }
-    
+    console.log('%c[Rota PJE]%c conteudo: ' + conteudo, LOG.teste, 'color:inherit')
     for(let i = 0; i < 100; i++){
-        let bodyMudou = document.body.innerText
-        if (body !== bodyMudou && ROTA_REGEX_CNJ.test(bodyMudou)) return
+        let contMudou = await sel('tabelaDeProcessosNoPainelGlobal')
+        let conteudoMudou = contMudou.innerText
+        console.log('%c[Rota PJE]%c conteudoMudou: ' + conteudoMudou, LOG.teste, 'color:inherit')
+        if (conteudo !== conteudoMudou && ROTA_REGEX_CNJ.test(conteudoMudou)) return
         await suspender(300)
     }
     return null
