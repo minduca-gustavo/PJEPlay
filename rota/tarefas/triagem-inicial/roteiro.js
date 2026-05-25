@@ -157,14 +157,25 @@ async function triagem_inicial_janelaRetificar(){
 triagem_inicial_aoAbrirRetificar()
 
 const rota_acoes = {
-    'designa-audiencia': async (p) => await verificarOQueChegou(p),
-    'despachar': async (p) => await verificarOQueChegou(p),
-    'gig': async (p) => await verificarOQueChegou(p),
-    'certidao': async (p) => await verificarOQueChegou(p),
-    'retificar': async (p) => await triagem_retificarAutuacao(p),
+    'triagem-inicial-designa-audiencia': async (p) => await verificarOQueChegou(p),
+    'triagem-inicial-despachar': async (p) => await verificarOQueChegou(p),
+    'triagem-inicial-gig': async (p) => await verificarOQueChegou(p),
+    'triagem-inicial-certidao': async (p) => await verificarOQueChegou(p),
+    'triagem-inicial-retificar': async (p) => await triagem_retificarAutuacao(p),
 }
 
 
 async function verificarOQueChegou(p) {
     rota_avisoTemporario(JSON.stringify(p), tipo = 'info', ms = 2000)
+}
+
+async function triagem_retificarAutuacao(tipo) {
+    let dados = await obterArmazenamento(['rota_dadosTriagemInicial'])
+    await armazenar({ rota_dadosTriagemInicialRetificar: tipo })
+    let id = dadosTriagemInicial?.processo?.id
+    let execucao = await obterArmazenamento(['rotaExecucaoAtual'])
+    //console.log('%c[Rota PJE]%c ' + execucao, LOG.teste, 'color:inherit')
+    let url = location.origin + '/pjekz/processo/' + id + '/retificar?pjerota_tarefa=triagem-inicial-retificar&'
+    await abrirUrl(url, 'esquerdaAssistida', 'triagem-inicial-retificar-' + execucao)
+    //await alert(tipo + ' em desenvolvimento. ' + id)
 }

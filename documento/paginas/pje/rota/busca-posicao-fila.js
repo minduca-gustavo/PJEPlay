@@ -121,6 +121,8 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
 }
 
 async function busca_posicao_filaCriaCampoConsulta() {
+    let retira = await selecionar('#pjerota-busca-posicao-fila-div-barra')
+    if (retira) retira.remove()
     let barra = await aguardarElementoNovo('barraSuperiorDetalhesDoProcesso')
     let corToolbar = barra
         ? getComputedStyle(barra).backgroundColor

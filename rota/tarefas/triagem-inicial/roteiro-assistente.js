@@ -97,10 +97,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         - Pedidos (líquidos/ilíquidos);`,
         ancestral: id(bloco)
     })
-    criaBotaoAzul({ id: id(bloco, 'retificar-partes'),   texto: 'Retificar autuação: partes',   ancestral: id(bloco), acao: () => comandar(['retificar'], [{tipo: 'Partes'}])})
-    criaBotaoAzul({ id: id(bloco, 'retificar-rito'),     texto: 'Retificar autuação: rito',     ancestral: id(bloco), acao: () => comandar(['retificar'], [{tipo: 'Dados Iniciais'}])})
-    criaBotaoAzul({ id: id(bloco, 'retificar-assuntos'), texto: 'Retificar autuação: assuntos', ancestral: id(bloco), acao: () => comandar(['retificar'], [{tipo: 'Assuntos'}])})
-    criaBotaoLaranja({ id: id(bloco, 'despacho-emenda-retificacao'), texto: 'Despacho: retificar autuação/emendar a inicial', ancestral: id(bloco), acao: () => comandar(['despachar'], [{tipo: 'triagem-inicial-emendar'}])})
+    criaBotaoAzul({ id: id(bloco, 'retificar-partes'),   texto: 'Retificar autuação: partes',   ancestral: id(bloco), acao: () => comandar(['triagem-inicial-retificar'], [{tipo: 'Partes'}])})
+    criaBotaoAzul({ id: id(bloco, 'retificar-rito'),     texto: 'Retificar autuação: rito',     ancestral: id(bloco), acao: () => comandar(['triagem-inicial-retificar'], [{tipo: 'Dados Iniciais'}])})
+    criaBotaoAzul({ id: id(bloco, 'retificar-assuntos'), texto: 'Retificar autuação: assuntos', ancestral: id(bloco), acao: () => comandar(['triagem-inicial-retificar'], [{tipo: 'Assuntos'}])})
+    criaBotaoLaranja({ id: id(bloco, 'despacho-emenda-retificacao'), texto: 'Despacho: retificar autuação/emendar a inicial', ancestral: id(bloco), acao: () => comandar(['triagem-inicial-despachar'], [{tipo: 'triagem-inicial-emendar'}])})
 
     // ── Bloco: designa-audiencia ──────────────────────────────
     bloco = 'designa-audiencia'
@@ -132,7 +132,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             id: id(bloco, 'btn-manual'),
             texto: 'Designar manualmente a audiência',
             ancestral: id(bloco),
-            acao: () => comandar(['designa-audiencia'], [{dados: 'manual'}])
+            acao: () => comandar(['triagem-inicial-designa-audiencia'], [{dados: 'manual'}])
         })
 
     }
@@ -174,7 +174,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 idCheckbox: id(bloco, 'acoes-conjuntas', 'horario' + i, 'checkbox'),
                 texto: horarioInicialBotao,
                 ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
-                acao: () => comandar(['designa-audiencia'], [{horario}]),
+                acao: () => comandar(['triagem-inicial-designa-audiencia'], [{horario}]),
                 grupo: id(bloco, 'acoes-conjuntas', 'grupo-designacao')
             })
             linha.dataset.horario = JSON.stringify(horario)
@@ -189,7 +189,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             idCheckbox: id(bloco, 'acoes-conjuntas', 'horario' + i, 'checkbox'),
             texto: 'Designar audiência manualmente em outra sala/horário',
             ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
-            acao: () => comandar(['designa-audiencia'], [{dados: 'manual'}]),
+            acao: () => comandar(['triagem-inicial-designa-audiencia'], [{dados: 'manual'}]),
             grupo: id(bloco, 'acoes-conjuntas', 'grupo-designacao')
         })
     }
@@ -198,7 +198,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         idCheckbox: id(bloco, 'acoes-conjuntas', 'despacho', 'checkbox'),
         texto: 'Despachar designando.',
         ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
-        acao: () => comandar(['despachar'], [{tipo: 'triagem-inicial-despachar-designacao'}]),
+        acao: () => comandar(['triagem-inicial-despachar'], [{tipo: 'triagem-inicial-despachar-designacao'}]),
         grupo: id(bloco, 'acoes-conjuntas', 'grupo-despacho-ou-certidao')
     })
     criaBotaoLaranjaComCheckBox({
@@ -206,7 +206,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         idCheckbox: id(bloco, 'acoes-conjuntas', 'certidao', 'checkbox'),
         texto: 'Certificar a designação e intimar.',
         ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
-        acao: () => comandar(['certidao'], [{tipo: 'triagem-inicial-certificar-designacao'}]),
+        acao: () => comandar(['triagem-inicial-certidao'], [{tipo: 'triagem-inicial-certificar-designacao'}]),
         grupo: id(bloco, 'acoes-conjuntas', 'grupo-despacho-ou-certidao')
     })
     document.getElementById(id(bloco, 'acoes-conjuntas', 'despacho', 'checkbox')).click()
@@ -216,7 +216,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         idCheckbox: id(bloco, 'acoes-conjuntas', 'gig', 'checkbox'),
         texto: 'Colocar GIG de acompanhamento.',
         ancestral: id(bloco, 'acoes-conjuntas', 'coluna'),
-        acao: () => comandar(['gig'], [{tipo: 'triagem-inicial-gig-acompanhamento'}]),
+        acao: () => comandar(['triagem-inicial-gig'], [{tipo: 'triagem-inicial-gig-acompanhamento'}]),
     })
     document.getElementById(id(bloco, 'acoes-conjuntas', 'gig', 'checkbox')).click()
 
@@ -234,12 +234,12 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         console.log('%c[Rota PJE]%c chkDesignacao: ' + JSON.stringify(chkDesignacao), LOG.teste, 'color:inherit')
         if (chkDesignacao) {
             const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario)
-            acoes.push('designa-audiencia')
+            acoes.push('triagem-inicial-designa-audiencia')
             parametros.push(horario)
         }
 
         if (chkEstaMarcado(id(bloco, 'acoes-conjuntas', 'despacho', 'checkbox'))) {
-            acoes.push('despachar')
+            acoes.push('triagem-inicial-despachar')
             parametros.push('triagem-inicial-despachar-designacao')
         }
 
@@ -249,7 +249,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         }
 
         if (chkEstaMarcado(id(bloco, 'acoes-conjuntas', 'gig', 'checkbox'))) {
-            acoes.push('gig')
+            acoes.push('triagem-inicial-gig')
             parametros.push('triagem-inicial-gig-acompanhamento')
         }
         console.log('%c[Rota PJE]%c quantas acoes: ' + acoes.length, LOG.teste, 'color:inherit')
