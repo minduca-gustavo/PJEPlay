@@ -57,6 +57,9 @@ const SELETORES = {
     },
     abrirTarefaDoProcessoNoPainelGlobal:{
       seletor: 'pje-descricao-processo'
+    },
+    barraSuperiorDetalhesDoProcesso:{
+      seletor: 'mat-toolbar'
     }
     // Exemplo:
     // botaoFinalizar: {
@@ -118,7 +121,7 @@ function limparErros() {
 async function resolverEntrada(chave) {
   const resultado = await obterArmazenamento('rota_versao')
   const versao = resultado?.rota_versao ?? VERSAO_FALLBACK
-  console.log('%c[Rota PJE]%c procurando agora versao: ' + versao, LOG.teste, 'color:inherit')
+  //console.log('%c[Rota PJE]%c procurando agora versao: ' + versao, LOG.teste, 'color:inherit')
   const mapa    = SELETORES[versao] ?? SELETORES[VERSAO_FALLBACK]
   const entrada = mapa?.[chave] ?? null
 
@@ -150,9 +153,9 @@ function selecionar(seletor = '', ancestral = '', todos = false) {
 // Função principal — resolve chave no mapa da versão e busca o elemento.
 // Usar em todos os scripts no lugar de selecionar() direto.
 async function sel(chave, ancestral = '', todos = false) {
-  console.log('%c[Rota PJE]%c procurando agora sel: ' + chave, LOG.teste, 'color:inherit')
+  //console.log('%c[Rota PJE]%c procurando agora sel: ' + chave, LOG.teste, 'color:inherit')
   const entrada = await resolverEntrada(chave)
-  console.log('%c[Rota PJE]%c procurando agora entrada: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
+  //console.log('%c[Rota PJE]%c procurando agora entrada: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
   if (!entrada) return ''
   return selecionar(entrada.seletor, ancestral, todos)
 }

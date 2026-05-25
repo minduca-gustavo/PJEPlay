@@ -120,9 +120,42 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
     
 }
 
-    
-
 async function busca_posicao_filaCriaCampoConsulta() {
+    let barra = await aguardarElementoNovo('barraSuperiorDetalhesDoProcesso')
+    let corToolbar = barra
+        ? getComputedStyle(barra).backgroundColor
+        : '#1565C0'
+    let div = await criaDiv({
+        id: 'pjerota-busca-posicao-fila-div-barra',
+        ancestral: 'ffff'
+
+    })
+    div.style.backgroundColor = corToolbar
+    div.style.color = corToolbar
+    div.style.gap = '0px'
+    div.style.padding = '0px'
+    div.style.marginBottom = '0px'
+    div.style.heigth = '14px'
+
+    let botao = await criaBotaoAzul({
+        id: 'pjerota-busca-posicao-fila-botao-busca',
+        ancestral: 'pjerota-busca-posicao-fila-div-barra',
+        acao: () => busca_posicao_filaConsultar(),
+        texto: 'Busca posição do processo na fila.'
+    })
+    botao.style.width = 'fit-content'
+    botao.style.fontSize = '9px'
+    botao.style.height     = '14px'
+    botao.style.lineHeight = '14px'
+    botao.style.padding    = '0 8px'
+    botao.style.fontSize   = '9px'
+    barra
+        ? barra.parentElement.insertBefore(div, barra)
+        : document.body.prepend(div)
+
+}    
+
+async function busca_posicao_filaCriaCampoConsulta1() {
 
     let WIDGET_ID   = 'pjerota-busca-posicao-fila-widget'
     let STORAGE_POS = 'busca_posicao_fila_widget_pos'

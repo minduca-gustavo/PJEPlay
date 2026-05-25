@@ -680,6 +680,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	await suspender(300)
 
 	const novoExecucao = String(Date.now())
+	console.log('%c[Rota PJE]%c 683:' + novoExecucao, LOG.info, 'color:inherit')
 	let execucao = novoExecucao   // ← adiciona isso
 	let sessao   = novoExecucao   // ← adiciona isso
 	await armazenar({

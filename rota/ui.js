@@ -616,7 +616,7 @@ function criaTabela({ id, idDasColunas = [], colunas, ancestral }) {
             borderRight: i < idDasColunas.length - 1 ? '1px solid rgba(255,255,255,0.2)' : 'none',
         })
         th.id          = colId
-        th.textContent = rotulosColunas[i] || colId
+        //th.textContent = rotulosColunas[i] || colId
         trH.appendChild(th)
     })
     thead.appendChild(trH)
