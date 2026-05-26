@@ -7,7 +7,7 @@
 //   2. Validar execucao contra o storage — fecha se não bater
 //   3. Preencher cabeçalho fixo (tarefa, processo, posição)
 //   4. Criar rodapé fixo com criaBotaoProximoEEncerrar
-//   5. Expor 'rota-corpo' limpo para o roteiro da tarefa
+//   5. Expor 'rota_corpo' limpo para o roteiro da tarefa
 //
 // O que NÃO faz:
 //   - Não monta conteúdo da área rolável (responsabilidade do roteiro)
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ?.addEventListener('click', () => window.close())
 
     // Mostra carregando enquanto aguarda dados prontos
-    criarCarregando('rota-corpo')
+    criarCarregando('rota_corpo')
 
     // Aguarda sinal de dados prontos ANTES de preencher o cabeçalho
     await new Promise(resolver => {
@@ -142,9 +142,9 @@ browser.storage.onChanged.addListener(function ouvirFechar(mudancas) {
 // ── Limpar área rolável ───────────────────────────────────────
 //
 // Chamado pelo roteiro antes de remontar a interface.
-// Remove tudo dentro de #rota-corpo, incluindo o carregando.
+// Remove tudo dentro de #rota_corpo, incluindo o carregando.
 
 function ass_limparCorpo() {
-    const corpo = document.getElementById('rota-corpo')
+    const corpo = document.getElementById('rota_corpo')
     if (corpo) corpo.innerHTML = ''
 }

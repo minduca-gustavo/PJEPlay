@@ -7,40 +7,47 @@
 //    /pje-gigs-api/api/processo/4642553
 
 const INTERCEPTADOR_URL = {
-    gigs:               /\/pje-gigs-api\/api\/atividade\/processo\/\d+$/i,
-    gigsConcluidos:     /\/pje-gigs-api\/api\/atividade\/processo\/\d+\/concluida/i,
-    processo:           /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
-    processoPartes:     /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
-    tarefas:            /\/pje-comum-api\/api\/agrupamentotarefas$/i,
-    tarefasProcesso:    /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas*/i,
-    tarefasAtivas:      /\/pje-comum-api\/api\/tarefas\/ativas/i,
-    perfis:             /\/api\/token\/perfis\/trocar/i,
-    recursos:           /\/api\/token\/permissoes\/recursos/i,
-    pauta:              /\/pje-comum-api\/api\/pautasaudiencias/i,
-    audiencias:         /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
-    responsaveis:       /\/pje-comum-api\/api\/usuarios\/internos\/pororgaojulgador/i,
-    dadosBasicos:       /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
-    documentos:         /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
-    orgaosJulgadores:   /\/pje-comum-api\/api\/orgaosjulgadores/i,
-    timeline:           /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
+    gigs:                       /\/pje-gigs-api\/api\/atividade\/processo\/\d+$/i,
+    gigsConcluidos:             /\/pje-gigs-api\/api\/atividade\/processo\/\d+\/concluida/i,
+    processo:                   /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
+    processoPartes:             /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
+    processoTarefaMaisRecente:  /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas\?maisRecente=true/i,
+    tarefas:                    /\/pje-comum-api\/api\/agrupamentotarefas$/i,
+    tarefasProcesso:            /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas*/i,
+    tarefasAtivas:              /\/pje-comum-api\/api\/tarefas\/ativas/i,
+    perfis:                     /\/api\/token\/perfis\/trocar/i,
+    recursos:                   /\/api\/token\/permissoes\/recursos/i,
+    recursosPage:               /\/api\/token\/permissoes\/recursos\/*/i,
+    pauta:                      /\/pje-comum-api\/api\/pautasaudiencias/i,
+    audiencias:                 /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
+    responsaveis:               /\/pje-comum-api\/api\/usuarios\/internos\/pororgaojulgador/i,
+    dadosBasicos:               /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
+    documentos:                 /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
+    modelosDocumentos:          /\/pje-comum-api\/api\/modelosdocumentos\/pastas\/raiz/i,
+    orgaosJulgadores:           /\/pje-comum-api\/api\/orgaosjulgadores/i,
+    timeline:                   /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
 }
+//https://pje.trt15.jus.br/pje-comum-api/api/modelosdocumentos/pastas/raiz
 
 const INTERCEPTADOR_ROTULO = {
-    gigs:               'gigs',
-    gigsConcluidos:     'gigs-concluidos',
-    processo:           'processo',
-    processoPartes:     'processo-partes',
-    tarefas:            'tarefas',
-    tarefasAtivas:      'tarefas-ativas',
-    perfis:             'perfis',
-    recursos:           'recursos',
-    pauta:              'pauta',
-    audiencias:         'audiencias',
-    responsaveis:       'responsaveis',
-    dadosBasicos:       'dados-basicos',
-    timeline:           'timeline',
-    orgaosJulgadores:   'orgaosJulgadores',
-    tarefasProcesso:    'tarefas-processo',
+    gigs:                       'gigs',
+    gigsConcluidos:             'gigs_concluidos',
+    processo:                   'processo',
+    processoPartes:             'processo_partes',
+    processoTarefaMaisRecente:  'processo_tarefa_mais_recente',
+    tarefas:                    'tarefas',
+    tarefasAtivas:              'tarefas_ativas',
+    perfis:                     'perfis',
+    recursos:                   'recursos',
+    recursosPage:               'recursos_page',
+    pauta:                      'pauta',
+    audiencias:                 'audiencias',
+    responsaveis:               'responsaveis',
+    dadosBasicos:               'dados_basicos',
+    timeline:                   'timeline',
+    orgaosJulgadores:           'orgaosJulgadores',
+    tarefasProcesso:            'tarefas_processo',
+    modelosDocumentos:          'modelos_documentos',
 }
 
 
@@ -113,7 +120,7 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
         // Espelha dados importantes no storage para o assistente ler
         const rotulosParaStorage = [
             'processo',
-            'processo-partes',
+            'processo_partes',
             'audiencias',
             'responsaveis',
             'documentos'
@@ -143,18 +150,22 @@ function interceptador_ler(rotulo = ''){
     try{ return JSON.parse(content) } catch{ return content }
 }
 
-function interceptador_lerProcesso()            { return interceptador_ler('processo')        }
-function interceptador_lerPartes()              { return interceptador_ler('processo-partes') }
-function interceptador_lerTarefas()             { return interceptador_ler('tarefas')         }
-function interceptador_lerTarefasProcesso()     { return interceptador_ler('tarefas-processo')}
-function interceptador_lerPerfis()              { return interceptador_ler('perfis')          }
-function interceptador_lerAudiencias()          { return interceptador_ler('audiencias')      }
-function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')    }
-function interceptador_lerDocumentos()          { return interceptador_ler('documentos')      }
-function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')}
-function interceptador_lerTimeline()            { return interceptador_ler('timeline')        }
-function interceptador_lerGigs()                { return interceptador_ler('gigs')            }
-function interceptador_lerGigsConcluidos()      { return interceptador_ler('gigs-concluidos') }
+function interceptador_lerProcesso()            { return interceptador_ler('processo')                      }
+function interceptador_modelosDocumentos()      { return interceptador_ler('modelos_documentos')            }
+function interceptador_lerRecursos()            { return interceptador_ler('recursos')                      }
+function interceptador_lerRecursosPage()        { return interceptador_ler('recursos_page')                 }
+function interceptador_lerPartes()              { return interceptador_ler('processo_partes')               }
+function interceptador_lerTarefas()             { return interceptador_ler('tarefas')                       }
+function interceptador_lerTarefasProcesso()     { return interceptador_ler('tarefas_processo')              }
+function interceptador_lerTarefaMaisRecente()   { return interceptador_ler('processo_tarefa_mais_recente')  }
+function interceptador_lerPerfis()              { return interceptador_ler('perfis')                        }
+function interceptador_lerAudiencias()          { return interceptador_ler('audiencias')                    }
+function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')                  }
+function interceptador_lerDocumentos()          { return interceptador_ler('documentos')                    }
+function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')              }
+function interceptador_lerTimeline()            { return interceptador_ler('timeline')                      }
+function interceptador_lerGigs()                { return interceptador_ler('gigs')                          }
+function interceptador_lerGigsConcluidos()      { return interceptador_ler('gigs_concluidos')               }
 
 // ── Aguardar dado ─────────────────────────────────────────────
 

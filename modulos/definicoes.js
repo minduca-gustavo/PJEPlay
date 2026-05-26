@@ -28,6 +28,7 @@ var JANELA = {
     detalhes:          	/\/pjekz\/processo\/\d*\/detalhe/,
 	escaninho: 			/\/pjekz\/escaninho/,
 	retificar:			/\/pjekz\/processo\/\d*\/retificar/,
+	processoTarefa: 	/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 }
 
 

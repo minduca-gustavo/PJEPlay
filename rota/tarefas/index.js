@@ -41,7 +41,7 @@ const ROTA_CATALOGO = [
     */
  
     {
-        id:        'triagem-inicial',
+        id:        'triagem_inicial',
         label:     'Triagem Inicial',
         descricao: 'Análise da petição inicial, autuação e encaminhamento.',
         tipo:      ROTA_TIPO.SISTEMA,

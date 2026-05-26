@@ -1,3 +1,25 @@
+/* FUNÇÃO DE BUSCA NO CONSOLE.
+function rota_lerBotoesDisponiveis() {
+  const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
+  const textos = [...document.querySelectorAll('.texto-botao-skinny')]
+    .map(t => t.closest('button'))
+    .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
+
+  const todos = [...botoes, ...textos]
+  const nomes = todos
+    .map(b =>
+      b.querySelector('.texto-botao-app')?.textContent?.trim()
+      ?? b.querySelector('.texto-botao-skinny')?.textContent?.trim()
+    )
+    .filter(Boolean)
+
+  const resultado = { alcanca: nomes }
+  console.log(JSON.stringify(resultado, null, 2))
+  return resultado
+}
+rota_lerBotoesDisponiveis()
+
+*/
 // ============================================================
 // movimentar.js
 // ============================================================
@@ -8,20 +30,111 @@
 // ------------------------------------------------------------
 const MAPA_ROTAS = {
   'Análise': {
-    alcanca: ['Aguardando prazo', 'Cumprimento de Providências', 'Conclusão ao magistrado', 'Arquivo']
+    alcanca: [
+      "Aguardando audiência",
+      "Aguardando prazo",
+      "Arquivar o processo",
+      "Comunicações e expedientes",
+      "Conclusão ao magistrado",
+      "Controle de acordo",
+      "Cumprimento de providências",
+      "Devolver processo para vara de origem",
+      "Encaminhar ao CEJUSC",
+      "Encaminhar ao posto avançado",
+      "Finalizar plantão",
+      "Iniciar execução",
+      "Iniciar liquidação",
+      "Redistribuir",
+      "Remeter ao 2o Grau",
+      "Sobrestamento",
+      "Trânsito em Julgado",
+      "Controle de Parcelamento",
+      "Carta precatória",
+    ]
+  },
+  'Aguardando audiência': {
+    alcanca: [
+      "Análise",
+    ]
+  },
+  'Aguardando cumprimento de acordo':{
+    alcanca: [
+      "Acordo QUITADO",
+      "Análise",
+      "Acordo NÃO quitado",
+    ]
+  },
+  'Aguardando final do sobrestamento':{
+    alcanca: [
+      { nome: 'Análise', ariaLabel: 'Encerrar sobrestamento' },
+    ]
   },
   'Aguardando prazo': {
-    alcanca: ['Análise']
+    alcanca: [
+      "Análise",
+    ]
   },
   'Cumprimento de Providências': {
-    alcanca: ['Análise']
+    alcanca: [
+      "Análise",
+    ]
+  },
+  'Escolher tipo de arquivamento':{
+    alcanca: [
+      "Arquivar carta",
+      "Arquivo definitivo",
+      "Análise",
+    ]
+  },
+  'Escolher tipo de sobrestamento':{
+    alcanca: [
+      "Análise",
+      "Gravar os movimentos a serem lançados"
+    ]
+  },
+  'Prazos vencidos':{
+    alcanca: [
+      "Análise",
+    ]
   },
   'Conclusão ao magistrado': {
-    alcanca: ['Análise']
+    alcanca: [
+      { nome: 'Análise', ariaLabel: 'Cancelar Conclusão' },
+      "Despacho", 
+      "Sentença",
+      "Sentença Parcial", 
+      "Extinção da Execução", 
+      "Sentença Geral",
+      "Embargos de Declaração",
+      "Embargos à Execução / Impugnação à Sentença de Liquidação",
+      "Homologação de Acordo",
+      "Homologação de Cálculos",
+      "Homologação de Arrematação / Adjudicação",
+      "Pedido de Tutela",
+      "Admissibilidade de Recursos", 
+      "Sobrestamento / Suspensão", 
+      "BACEN / BNDT / Sigilo Fiscal / Indisponibilidade de Bens",
+      "IDPJ",
+      "Exceção de Incompetência",
+      "Prevenção",
+      "Decisão Geral",
+      "Exceção de Pré-executividade"
+    ]
   },
   'Arquivo': {
-    alcanca: ['Análise']
+    alcanca: ['Desarquivar']
   },
+  'Triagem Inicial':{
+    alcanca: [
+      "Análise",
+    ]
+  },
+  'Preparar expedientes e comunicações':{
+    alcanca: [
+      { nome: 'Análise', ariaLabel: 'Cancelar expedientes e comunicações' },
+      "Carta precatória"
+    ]
+  }
 }
 
 const HUB = 'Análise'
@@ -147,52 +260,55 @@ async function rota_selecionarOpcao(seletor, valor) {
   opcao.click()
 }
 
+// ------------------------------------------------------------
+// rota_encontrarBotao
+// Busca o botão pelo aria-label. Se não encontrar, tenta
+// pelo texto visível em .texto-botao-app como fallback.
+// ------------------------------------------------------------
+function rota_encontrarBotao(label) {
+  const porAriaLabel = document.querySelector(`[aria-label="${label}"]`)
+    ?? document.querySelector(`[aria-label*="${label}"]`)
+  if (porAriaLabel) return porAriaLabel
+
+  const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
+  const textos = [...document.querySelectorAll('.texto-botao-skinny')]
+    .map(t => t.closest('button'))
+    .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
+
+  return [...botoes, ...textos].find(b =>
+    b.querySelector('.texto-botao-app')?.textContent?.trim() === label
+    || b.querySelector('.texto-botao-skinny')?.textContent?.trim() === label
+  ) ?? null
+}
 
 // ------------------------------------------------------------
 // rota_executarTransicaoSimples
 // ------------------------------------------------------------
 async function rota_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
-  const ariaLabel = rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
-
-  const botao = document.querySelector(`[aria-label="${ariaLabel}"]`)
-    ?? document.querySelector(`[aria-label*="${ariaLabel}"]`)
-
-  if (!botao) throw new Error(`Botão não encontrado para: "${ariaLabel}"`)
+  const label = rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
+  const botao = rota_encontrarBotao(label)
+  if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
 
   botao.click()
   await rota_aguardarMudancaTarefa(tarefaAtual)
 }
 
-
 // ------------------------------------------------------------
 // rota_executarConclusaoMagistrado
 // ------------------------------------------------------------
 async function rota_executarConclusaoMagistrado(tarefaAtual, nomeTarefaDestino, params = {}) {
-  const ariaLabel = rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
+  // fase 1 — entra na tarefa Conclusão ao magistrado
+  const botaoEntrada = rota_encontrarBotao('Conclusão ao magistrado')
+  if (!botaoEntrada) throw new Error('Botão "Conclusão ao magistrado" não encontrado.')
+  botaoEntrada.click()
+  await rota_aguardarElemento('.cancelar-conclusao')
 
-  const botao = document.querySelector(`[aria-label="${ariaLabel}"]`)
-    ?? document.querySelector(`[aria-label*="${ariaLabel}"]`)
+  // fase 2 — preenche e segue para o destino (ex: Despacho, Sentença...)
+  if (params.juiz) await rota_selecionarOpcao('.magistrado', params.juiz)
 
-  if (!botao) throw new Error(`Botão não encontrado para: "${ariaLabel}"`)
-
-  botao.click()
-
-  await rota_aguardarElemento('[aria-label="Magistrado"]')
-
-  if (params.juiz) {
-    await rota_selecionarOpcao('[aria-label="Magistrado"]', params.juiz)
-  }
-
-  if (params.tipo) {
-    await rota_selecionarOpcao('[aria-label="Tipo de conclusão"]', params.tipo)
-  }
-
-  const botaoConfirmar = document.querySelector('[aria-label="Salvar"]')
-    ?? document.querySelector('[aria-label="Confirmar"]')
-
-  if (!botaoConfirmar) throw new Error('Botão de confirmação não encontrado.')
-
-  botaoConfirmar.click()
+  const botaoDestino = rota_encontrarBotao(nomeTarefaDestino)
+  if (!botaoDestino) throw new Error(`Botão não encontrado para: "${nomeTarefaDestino}"`)
+  botaoDestino.click()
   await rota_aguardarMudancaTarefa(tarefaAtual)
 }
 

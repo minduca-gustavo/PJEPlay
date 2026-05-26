@@ -359,6 +359,8 @@ function _ui_botaoComInput({ id, idInput, texto, textoEmCima, ancestral, acao, c
         flexDirection: 'column',
         gap:           '0',
         marginBottom:  '6px',
+        marginLeft:     '4px',
+        marginRight:    '6px',
     })
     container.id = id + '-container'
 
@@ -369,6 +371,8 @@ function _ui_botaoComInput({ id, idInput, texto, textoEmCima, ancestral, acao, c
             color:        UI_CORES.suave,
             marginBottom: '3px',
             fontFamily:   "'Segoe UI', system-ui, sans-serif",
+            marginLeft:     '4px',
+            marginRight:    '6px',
         })
         label.textContent = textoEmCima
         container.appendChild(label)
@@ -387,6 +391,8 @@ function _ui_botaoComInput({ id, idInput, texto, textoEmCima, ancestral, acao, c
         background:   UI_CORES.branco,
         outline:      'none',
         boxSizing:    'border-box',
+        marginLeft:     '4px',
+        marginRight:    '6px',
     })
     input.id   = idInput
     input.type = 'text'
@@ -882,11 +888,11 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
 // ── criarCarregando / removerCarregando ───────────────────────
 //
 // Exibe/remove um indicador de carregamento na área rolável.
-// O elemento pai é 'rota-corpo' (área rolável do assistente).
+// O elemento pai é 'rota_corpo' (área rolável do assistente).
 
 const _UI_ID_CARREGANDO = 'rota-carregando'
 
-function criarCarregando(ancestral = 'rota-corpo') {
+function criarCarregando(ancestral = 'rota_corpo') {
     removerCarregando()
 
     const el = _ui_el('div', {
