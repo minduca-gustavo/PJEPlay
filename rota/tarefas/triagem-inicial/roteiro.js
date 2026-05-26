@@ -36,6 +36,7 @@ async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     if (!nomeJanela.includes('rota')) return
     if (tarefa !== 'triagem-inicial') return
     if(sessao !== armazenamento?.rotaExecucaoAtual || sessao !== nomeJanela.split('-').pop()) return
+    browser.storage.onChanged.addListener(obedecer)
     await triagem_inicial_janelaDetalhes()
     return
 }
