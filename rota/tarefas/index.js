@@ -38,7 +38,7 @@ const ROTA_CATALOGO = [
             { janela: 'assistente', posicao: 'direitaAssistente' },
         ],
     },
-    */
+    
  
     {
         id:        'triagem_inicial',
@@ -47,7 +47,7 @@ const ROTA_CATALOGO = [
         tipo:      ROTA_TIPO.SISTEMA,
     },
     
-    /*
+    
     {
         id:        'pos-triagem',
         label:     'Pós-Triagem',

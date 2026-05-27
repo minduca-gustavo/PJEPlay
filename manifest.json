@@ -1,5 +1,5 @@
 {
-  "version": "2.0.8",
+  "version": "2.0.9",
   "short_name": "Rota PJE",
   "name": "Rota PJE",
   "description": "Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -86,7 +86,7 @@
     },
     {
       "matches": [
-        "*://*.jus.br/pjekz/*"
+        "*://*.jus.br/*"
       ],
       "js": [
         "modulos/console.js",
@@ -114,6 +114,7 @@
         "documento/paginas/pje/rota/teste.js",
         "documento/paginas/pje/rota/consulta-qualquer-oj.js",
         "documento/paginas/pje/rota/busca-posicao-fila.js",
+        "documento/paginas/pje/rota/sigeo-filtra-vt-final.js",
         "documento/paginas/pje/rota/gigs.js",
         "rota/acoes.js",
         "rota/formatadores.js",

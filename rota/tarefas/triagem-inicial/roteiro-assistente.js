@@ -35,7 +35,8 @@ async function triagem_assistente_iniciar() {
     // ── Remove o carregando ───────────────────────────────────
     removerCarregando()
     let dados = await obterArmazenamento(['rota_dadosTriagemInicial'])
-    console.log('%c[Rota PJE]%c Dados: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.processo?.id, null, 2), LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c 38: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.processo?.numero, null, 2), LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c 39: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.sala?.nome, null, 2), LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c atual: ' + dados?.rota_dadosTriagemInicial?.execucaoAtual, LOG.info, 'color:inherit')
     // ── Bloco: inicial ────────────────────────────────────────
     let bloco = 'inicial'
@@ -189,6 +190,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             let horario = dados?.rota_dadosTriagemInicial?.horariosVagos?.[i]
             let horarioInicial = new Date(horario.horarioInicial)
             let horarioInicialBotao = `${horario.descricaoTipoAudiencia} - ${horarioInicial.toLocaleDateString('pt-BR')} às ${horarioInicial.getHours()}h${String(horarioInicial.getMinutes()).padStart(2, '0')}`
+            let processo = dados?.rota_dadosTriagemInicial?.processo?.numero
+            let sala = dados?.rota_dadosTriagemInicial?.sala?.nome
+            horario.processo = processo
+            horario.nomeDaSala = sala
             let linha = criaBotaoAzulComCheckBox({
                 id: id(bloco, 'acoes_conjuntas', 'horario' + i),
                 idCheckbox: id(bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
@@ -209,7 +214,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             idCheckbox: id(bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
             texto: 'Designar audiência manualmente em outra sala/horário',
             ancestral: id(bloco, 'acoes_conjuntas', 'coluna'),
-            acao: () => comandar(['triagem_inicial_designa_audiencia'], [{dados: 'manual'}]),
+            acao: () => comandar(['triagem_inicial_designa_audiencia'], [{dados: {tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}]),
             grupo: id(bloco, 'acoes_conjuntas', 'grupo_designacao')
         })
     }

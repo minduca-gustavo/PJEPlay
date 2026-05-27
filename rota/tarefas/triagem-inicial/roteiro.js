@@ -240,12 +240,62 @@ async function triagem_inicial_acoesDespachar(){
 triagem_inicial_aoAbrirDespachar()
 
 //__________________________________________________
+//                      DESIGNAR AUDIÊNCIA
+//__________________________________________________
+
+// DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
+
+async function triagem_inicial_designarAudiencia(parametros) {
+    alert (JSON.stringify(parametros))
+    return
+    let envio = tipo.tipo
+    console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
+    await armazenar({
+        'rota_pje_triagem_inicial_designa_audiencia': parametros
+    })
+    let parametros1 =    '?rota_pje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
+    let nomeJanela =    'rota_pje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
+    let id =            dadosTriagemInicial?.processo?.id
+    let tarefa =        dadosTriagemInicial?.tarefaMaisRecente[0]?.idTarefa
+    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === dadosTriagemInicial?.tarefaMaisRecente[0]?.nomeRecurso)
+    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + tarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
+    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
+}
+
+// DESIGNAR AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
+async function triagem_inicial_aoAbrirDesignarAudiencia(){
+    let janela = confereJanela(JANELA.processoTarefa)
+    if (!janela) return
+    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia')
+    let execucao = String(armazenamento?.rota_pje_triagem_inicial_designa_audiencia || '')
+    if (!armazenamento) return
+    let nomeJanela = window.name
+    if (!nomeJanela.includes('rota_pje_triagem_inicial_designa_audiencia')) return
+    if(execucao !== nomeJanela.split('_').pop()) return
+    await triagem_inicial_acoesDesignarAudiencia()
+}
+
+// DESIGNAR AUDIÊNCIA PASSO 3 - executa as ações
+
+async function triagem_inicial_acoesDesignarAudiencia(){
+    let [tipo, juiz] = await Promise.all([
+        obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
+    ])
+    if(!juiz) juiz = await triagem_inicial_buscarJuizNoModelo() || ''
+    alert('tipo: ' + tipo + ' / juiz: ' + juiz)
+}
+
+
+//triagem_inicial_aoAbrirDesignarAudiencia()
+
+//__________________________________________________
 //                      COMANDAR
 //__________________________________________________
 
 
 const rota_acoes = {
-    'triagem_inicial_designa_audiencia': async (p) => await verificarOQueChegou(p),
+    'triagem_inicial_designa_audiencia': async (p) => await triagem_inicial_designarAudiencia(p),
     'triagem_inicial_despachar': async (p) => await triagem_inicial_despachar(p),
     'triagem_inicial_gig': async (p) => await verificarOQueChegou(p),
     'triagem_inicial_certidao': async (p) => await verificarOQueChegou(p),
