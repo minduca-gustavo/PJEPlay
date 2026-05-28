@@ -649,7 +649,8 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	_rota_temporizador_ativo = temporizador
 
 	if(_rota_cursor >= _rota_fila.length){
-		_rota_ativo = false
+		_rota_ativo       = false
+		_rota_processando = false   // ← ADICIONAR esta linha
 		rota_exibirRelatorio()
 		return
 	}

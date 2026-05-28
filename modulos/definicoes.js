@@ -21,14 +21,15 @@ NAVEGADOR.storage.onChanged.addListener((changes) => {
     }
 })   // ativado via popup página 4 — controla o relatar()
 var JANELA = {
-    meuPainel:          /\/pjekz\/gigs\/meu-painel/,
-    painelGlobal:      	/\/pjekz\/painel\/global/,
-	painelGlobalTarefas:		/\/pjekz\/painel\/global\/\d*\/lista-processos/,
-    painelGlobalTodos: 	/\/pjekz\/painel\/global\/todos\/lista-processos/,
-    detalhes:          	/\/pjekz\/processo\/\d*\/detalhe/,
-	escaninho: 			/\/pjekz\/escaninho/,
-	retificar:			/\/pjekz\/processo\/\d*\/retificar/,
-	processoTarefa: 	/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
+    meuPainel:          	/\/pjekz\/gigs\/meu-painel/,
+    painelGlobal:      		/\/pjekz\/painel\/global/,
+	painelGlobalTarefas:	/\/pjekz\/painel\/global\/\d*\/lista-processos/,
+    painelGlobalTodos: 		/\/pjekz\/painel\/global\/todos\/lista-processos/,
+    detalhes:          		/\/pjekz\/processo\/\d*\/detalhe/,
+	escaninho: 				/\/pjekz\/escaninho/,
+	retificar:				/\/pjekz\/processo\/\d*\/retificar/,
+	processoTarefa: 		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
+	pautaAudiencias: 		/\/pjekz\/pauta-audiencias/,
 }
 
 

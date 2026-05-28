@@ -19,7 +19,7 @@
 // ── Humanização do nome da tarefa ─────────────────────────────
 
 const _ASS_NOMES_TAREFA = {
-    'triagem-inicial':   'Triagem Inicial',
+    'triagem_inicial':   'Triagem Inicial',
     'pos-triagem':       'Pós-Triagem',
     'balcao-virtual':    'Balcão Virtual',
     'audiencia':         'Audiência',

@@ -165,6 +165,7 @@ async function triagem_inicial_aoAbrirRetificar(){
     let nomeJanela = window.name
     if (!nomeJanela.includes('rota_pje_triagem_inicial_retificar')) return
     if(execucao !== parametros || execucao !== nomeJanela.split('_').pop()) return
+    registrarListenerFechar(execucao)
     await triagem_inicial_acoesRetificar()
 }
 
@@ -222,6 +223,7 @@ async function triagem_inicial_aoAbrirDespachar(){
     let nomeJanela = window.name
     if (!nomeJanela.includes('rota_pje_triagem_inicial_despachar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
+    registrarListenerFechar(execucao)
     await triagem_inicial_acoesDespachar()
 }
 
@@ -245,26 +247,36 @@ triagem_inicial_aoAbrirDespachar()
 
 // DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function triagem_inicial_designarAudiencia(parametros) {
-    alert (JSON.stringify(parametros))
-    return
-    let envio = tipo.tipo
-    console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
+async function triagem_inicial_designarAudiencia(tipo) {
+    //alert (JSON.stringify(tipo))
+    //return
     await armazenar({
-        'rota_pje_triagem_inicial_designa_audiencia': parametros
+        'rota_pje_triagem_inicial_designa_audiencia_tipo': tipo,
+        'rota_pje_triagem_inicial_designa_audiencia': dadosTriagemInicial.execucaoAtual
     })
-    let parametros1 =    '?rota_pje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rota_pje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
     let nomeJanela =    'rota_pje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
-    let id =            dadosTriagemInicial?.processo?.id
-    let tarefa =        dadosTriagemInicial?.tarefaMaisRecente[0]?.idTarefa
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === dadosTriagemInicial?.tarefaMaisRecente[0]?.nomeRecurso)
-    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + tarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
+    let url = location.origin + '/pjekz/pauta-audiencias' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
 
+/*
+{"horario":{
+    "idTipoAudiencia":21,
+    "descricaoTipoAudiencia":"Inicial por videoconferência",
+    "codigoTipoAudiencia":"7699",
+    "horarioInicial":"2026-08-11T09:30:00",
+    "horarioFinal":"2026-08-11T09:45:00",
+    "qtdDias":47,"diaUtil":"2026-08-11",
+    "processo":"0010861-27.2026.5.15.0055",
+    "nomeDaSala":"ERIKA RODRIGUES PEDREUS MORETE"
+    }
+}
+*/
+
 // DESIGNAR AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
 async function triagem_inicial_aoAbrirDesignarAudiencia(){
-    let janela = confereJanela(JANELA.processoTarefa)
+    let janela = confereJanela(JANELA.pautaAudiencias)
     if (!janela) return
     let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia')
     let execucao = String(armazenamento?.rota_pje_triagem_inicial_designa_audiencia || '')

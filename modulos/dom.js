@@ -93,6 +93,24 @@ async function obedecer(mudancas) {
 }
 
 function id(...partes) {
-    return ['triagem-inicial', ...partes].filter(Boolean).join('-')
+    return ['rota_pje', ...partes].filter(Boolean).join('_')
 }
 
+// em dom.js ou utils.js
+function registrarListenerFechar(sessao) {
+    browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
+        if (mudancas['rotaExecucaoAtual']?.newValue) {
+            if (String(mudancas['rotaExecucaoAtual'].newValue) !== sessao) {
+                browser.storage.onChanged.removeListener(ouvirExecucao)
+                window.close()
+            }
+        }
+    })
+    browser.storage.onChanged.addListener(function ouvirFechar(mudancas) {
+        if (mudancas['rotaAssistenteFechar']?.newValue === true) {
+            browser.storage.onChanged.removeListener(ouvirFechar)
+            armazenar({ rotaAssistenteFechar: false })
+            window.close()
+        }
+    })
+}
