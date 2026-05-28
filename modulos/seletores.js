@@ -60,6 +60,12 @@ const SELETORES = {
     },
     barraSuperiorDetalhesDoProcesso:{
       seletor: 'mat-toolbar'
+    },
+    celulaDaTabelaDaPautaDeAudiencias:{
+      seletor: 'span.cal-day-cell',
+    },
+    seletorDeJuizDaPautaDeAudiencias:{
+      seletor: '#mat-select-0'
     }
     // Exemplo:
     // botaoFinalizar: {
@@ -170,9 +176,9 @@ async function sel(chave, ancestral = '', todos = false) {
 function pronto(el, entrada) {
   if (!entrada.propriedade) return true
   const valorAtual = el[entrada.propriedade]
-  if (typeof valorAtual === 'string')
-    return valorAtual.trim() === entrada.valor
-  return valorAtual === entrada.valor
+  const v = typeof valorAtual === 'string' ? valorAtual.trim() : valorAtual
+  if (entrada.valor instanceof RegExp) return entrada.valor.test(v)
+  return v === entrada.valor
 }
 
 

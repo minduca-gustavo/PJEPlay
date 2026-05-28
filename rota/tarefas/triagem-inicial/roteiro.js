@@ -290,16 +290,49 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
 // DESIGNAR AUDIÊNCIA PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesDesignarAudiencia(){
-    let [tipo, juiz] = await Promise.all([
-        obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
-    ])
-    if(!juiz) juiz = await triagem_inicial_buscarJuizNoModelo() || ''
-    alert('tipo: ' + tipo + ' / juiz: ' + juiz)
+    let dados = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo')
+    console.log('%c[Rota PJE]%c linha 294 dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit')
+    //if (!dados) return
+    if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.dados){
+        await triagem_inicial_acoesDesignarAudienciaManual()
+        return
+    }
+    let juiz = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.nomeDaSala || ''
+    if (!juiz) {
+        await triagem_inicial_acoesDesignarAudienciaManual()
+        return
+    }
+    await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
+    await aguardarElementoNovo('seletorDeJuizDaPautaDeAudiencias')
+    
+    let seletorJuiz = await sel('seletorDeJuizDaPautaDeAudiencias')
+    if (seletorJuiz.textContent != juiz) await triagem_inicial_acoesSelecionarJuiz(seletorJuiz, juiz)
+    let celulas = [...(await sel('celulaDaTabelaDaPautaDeAudiencias', '', true))]
+    let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
+    
+
+    //await alert ('Espere um pouquinho' + JSON.stringify(celula.textContent))
+    //await alert ('Espere um pouquinho' + JSON.stringify(seletorJuiz?.textContent))
+    //
+    //let [tipo, juiz] = await Promise.all([
+    //    obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
+    //    obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
+    //])
+    //if(!juiz) juiz = await triagem_inicial_buscarJuizNoModelo() || ''
+    //alert('tipo: ' + tipo + ' / juiz: ' + juiz)
 }
 
+// DESIGNAR AUDIÊNCIA - AÇÕES AUXILIARES
 
-//triagem_inicial_aoAbrirDesignarAudiencia()
+async function triagem_inicial_acoesDesignarAudienciaManual(){
+    await alert('Me chamou. Manual.')
+}
+
+async function triagem_inicial_acoesSelecionarJuiz(seletorJuiz, juiz) {
+    await clicar(seletorJuiz)
+}
+
+triagem_inicial_aoAbrirDesignarAudiencia()
 
 //__________________________________________________
 //                      COMANDAR
