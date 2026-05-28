@@ -283,17 +283,16 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         console.log('%c[Rota PJE]%c quantos comandos: ' + comandos.length, LOG.teste, 'color:inherit')
         if (comandos.length) comandar(comandos, parametros)
     }
-    
-}
-
-async function triagem_inicial_salvar_link_da_audiencia() {
-    let inputLinkAudiencia = document.getElementById(id('designa_audiencia', 'input_link_da_audiencia'))
-    let link = inputLinkAudiencia.value
-    if (link){
-        await armazenar({ rota_triagem_inicial_linkDaAudiencia: link })
-    } else {
-        await removerArmazenamento('rota_triagem_inicial_linkDaAudiencia')
+    async function triagem_inicial_salvar_link_da_audiencia() {
+        let inputLinkAudiencia = document.getElementById(id(tarefaNome, 'designa_audiencia', 'input_link_da_audiencia'))
+        let linkSalvar = inputLinkAudiencia.value
+        if (linkSalvar){
+            await armazenar({ rota_triagem_inicial_linkDaAudiencia: linkSalvar })
+        } else {
+            await removerArmazenamento('rota_triagem_inicial_linkDaAudiencia')
+        }
     }
+    
 }
 
 

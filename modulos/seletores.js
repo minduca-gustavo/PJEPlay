@@ -66,7 +66,30 @@ const SELETORES = {
     },
     seletorDeJuizDaPautaDeAudiencias:{
       seletor: '#mat-select-0'
+    },
+    seletorDeJuizDaPautaDeAudienciasAberto:{
+      seletor: '#mat-select-0-panel'
+    },
+    seletorDeJuizDaPautaDeAudienciasOpcoes:{
+      seletor: 'mat-option',
+      ancestral: '#mat-select-0-panel'
+    },
+    botaoDesignarAudiencia:{
+      seletor: '[aria-label*="Designar Audiência"]'
+    },
+    inputNumeroProcessoDesignarAudiencia:{
+      seletor: '#inputNumeroProcesso',
+      ancestral: 'mat-dialog-container'
+    },
+    inputLinkDesignarAudiencia:{
+    seletor: '[name="url"]',
+      ancestral: 'mat-dialog-container'
+    },
+    inputDataDesignarAudiencia:{
+    seletor: '[name="dataAudiencia"]',
+      ancestral: 'mat-dialog-container'
     }
+    
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar-antigo',
@@ -158,11 +181,15 @@ function selecionar(seletor = '', ancestral = '', todos = false) {
 
 // Função principal — resolve chave no mapa da versão e busca o elemento.
 // Usar em todos os scripts no lugar de selecionar() direto.
-async function sel(chave, ancestral = '', todos = false) {
-  //console.log('%c[Rota PJE]%c procurando agora sel: ' + chave, LOG.teste, 'color:inherit')
+async function sel(chave, ancestralExterno = '', todos = false) {
   const entrada = await resolverEntrada(chave)
-  //console.log('%c[Rota PJE]%c procurando agora entrada: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
   if (!entrada) return ''
+
+  let ancestral = ancestralExterno
+  if (!ancestral && entrada.ancestral) {
+    ancestral = document.querySelector(entrada.ancestral) || document
+  }
+
   return selecionar(entrada.seletor, ancestral, todos)
 }
 
@@ -193,15 +220,19 @@ function pronto(el, entrada) {
 async function aguardarElementoNovo(chave, timeout = 0) {
   const entrada = await resolverEntrada(chave)
   if (!entrada) return null
+
+  let ancestral = document
+  if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
+
   console.log('%c[Rota PJE]%c procurando agora entrada do aguardarElementoNovo: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
+
   return new Promise(resolver => {
     const checar = () => {
-      const el = selecionar(entrada.seletor)
+      const el = selecionar(entrada.seletor, ancestral)
       if (el && pronto(el, entrada)) return el
       return null
     }
 
-    // Verifica presença imediata antes de observar
     const elImediato = checar()
     if (elImediato) { resolver(elImediato); return }
 

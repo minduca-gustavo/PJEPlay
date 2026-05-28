@@ -292,23 +292,26 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
 async function triagem_inicial_acoesDesignarAudiencia(){
     let dados = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo')
     console.log('%c[Rota PJE]%c linha 294 dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit')
+    let buscaLink = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
+    let link = buscaLink?.rota_triagem_inicial_linkDaAudiencia || ''
+    
     //if (!dados) return
     if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.dados){
         await triagem_inicial_acoesDesignarAudienciaManual()
         return
     }
-    let juiz = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.nomeDaSala || ''
-    if (!juiz) {
+    let horario = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario || ''
+    if (!horario) {
         await triagem_inicial_acoesDesignarAudienciaManual()
         return
     }
+    if (link) horario.link = link
     await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
     await aguardarElementoNovo('seletorDeJuizDaPautaDeAudiencias')
     
     let seletorJuiz = await sel('seletorDeJuizDaPautaDeAudiencias')
-    if (seletorJuiz.textContent != juiz) await triagem_inicial_acoesSelecionarJuiz(seletorJuiz, juiz)
-    let celulas = [...(await sel('celulaDaTabelaDaPautaDeAudiencias', '', true))]
-    let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
+    if (seletorJuiz.textContent != horario.nomeDaSala) await triagem_inicial_acoesSelecionarJuiz(seletorJuiz, horario)
+    
     
 
     //await alert ('Espere um pouquinho' + JSON.stringify(celula.textContent))
@@ -325,11 +328,34 @@ async function triagem_inicial_acoesDesignarAudiencia(){
 // DESIGNAR AUDIÊNCIA - AÇÕES AUXILIARES
 
 async function triagem_inicial_acoesDesignarAudienciaManual(){
+    
     await alert('Me chamou. Manual.')
 }
 
-async function triagem_inicial_acoesSelecionarJuiz(seletorJuiz, juiz) {
+async function triagem_inicial_acoesSelecionarJuiz(seletorJuiz, horario) {
     await clicar(seletorJuiz)
+    await aguardarElementoNovo('seletorDeJuizDaPautaDeAudienciasAberto')
+    let juizes = [...(await sel ('seletorDeJuizDaPautaDeAudienciasOpcoes', '', true))]
+    console.log('%c[Rota PJE]%c 336: ' + JSON.stringify(juizes[0]?.textContent), LOG.teste, 'color:inherit')
+    let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
+    await clicar(juizSelecionado)
+    await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
+    let celulas = [...(await sel('celulaDaTabelaDaPautaDeAudiencias', '', true))]
+    let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
+    await clicar(celula)
+    let botaoDesignar = await aguardarElementoNovo('botaoDesignarAudiencia')
+    await clicar(botaoDesignar)
+    let inputNumeroProcesso = await aguardarElementoNovo('inputNumeroProcessoDesignarAudiencia')
+    console.log('%c[Rota PJE]%c 345: ' + JSON.stringify(horario.processo), LOG.teste, 'color:inherit')
+    await preencher(inputNumeroProcesso, horario.processo)
+    let inputLinkAudiencia = await aguardarElementoNovo('inputLinkDesignarAudiencia')
+    await preencher(inputLinkAudiencia, horario.link)
+    let horarioInicial = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
+    let inputDataDesignarAudiencia = await aguardarElementoNovo('inputDataDesignarAudiencia')
+
+    await preencher(inputDataDesignarAudiencia, horarioInicial)
+    
+    return
 }
 
 triagem_inicial_aoAbrirDesignarAudiencia()

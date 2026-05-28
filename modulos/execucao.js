@@ -24,3 +24,40 @@ function preencher(campo = '', texto = '', eventos = ['input','change']){
 	else campo.value = texto
 	if(eventos) eventos.forEach(t => campo.dispatchEvent(new Event(t, { bubbles:true })))
 }
+
+function preencherComAutoComplete(campo, texto) {
+  if (typeof campo === 'string') campo = selecionar(campo)
+  if (!campo) return
+
+  focar(campo)
+
+  // Usa o descriptor do prototype nativo correto
+  let desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+  desc.set.call(campo, texto)
+
+  // Angular Material com autocomplete precisa desses eventos nessa ordem
+  campo.dispatchEvent(new Event('focus', { bubbles: true }))
+  campo.dispatchEvent(new Event('input', { bubbles: true }))
+  campo.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true }))
+  campo.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }))
+}
+
+async function digitarNoInput(campo, texto) {
+  if (typeof campo === 'string') campo = selecionar(campo)
+  if (!campo) return
+
+  focar(campo)
+  campo.value = ''
+
+  for (let char of texto) {
+    campo.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }))
+    
+    let desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+    desc.set.call(campo, campo.value + char)
+    
+    campo.dispatchEvent(new Event('input', { bubbles: true }))
+    campo.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }))
+    
+    await suspender(30)
+  }
+}
