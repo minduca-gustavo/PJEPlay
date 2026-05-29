@@ -235,7 +235,10 @@ async function triagem_inicial_acoesDespachar(){
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
     ])
     if(!juiz) juiz = await triagem_inicial_buscarJuizNoModelo() || ''
-    alert('tipo: ' + tipo + ' / juiz: ' + juiz)
+    console.log('%c[Rota PJE]%c ' + 'tipo: ' + tipo + ' / juiz: ' + juiz, LOG.teste, 'color:inherit')
+    let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+    console.log('%c[Rota PJE]%c linha 240: ' + JSON.stringify(tarefa?.innerText), LOG.teste, 'color:inherit')
+    await movimentar('Conclusão ao magistrado', juiz)
 }
 
 
@@ -297,12 +300,12 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     
     //if (!dados) return
     if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.dados){
-        await triagem_inicial_acoesDesignarAudienciaManual()
+        await triagem_inicial_acoesDesignarAudienciaManual('manual')
         return
     }
     let horario = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario || ''
     if (!horario) {
-        await triagem_inicial_acoesDesignarAudienciaManual()
+        await triagem_inicial_acoesDesignarAudienciaManual('erro')
         return
     }
     if (link) horario.link = link
@@ -310,7 +313,7 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     await aguardarElementoNovo('seletorDeJuizDaPautaDeAudiencias')
     
     let seletorJuiz = await sel('seletorDeJuizDaPautaDeAudiencias')
-    if (seletorJuiz.textContent != horario.nomeDaSala) await triagem_inicial_acoesSelecionarJuiz(seletorJuiz, horario)
+    if (seletorJuiz.textContent != horario.nomeDaSala) await triagem_inicial_acoesDesignarAudienciaAutomaticamente(seletorJuiz, horario)
     
     
 
@@ -327,34 +330,68 @@ async function triagem_inicial_acoesDesignarAudiencia(){
 
 // DESIGNAR AUDIÊNCIA - AÇÕES AUXILIARES
 
-async function triagem_inicial_acoesDesignarAudienciaManual(){
-    
-    await alert('Me chamou. Manual.')
+async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
+    let [tipo, aviso] = [null, null]
+    if (manualOuErro == 'erro') {
+        tipo  = 'erro'
+        aviso = 'Ocorreu um erro. Designe manualmente a audiência, e clique em "Próximo".'
+    } else {
+        tipo  = 'info'
+        aviso = 'Designe manualmente a audiência, e clique em "Próximo".'
+    }
+    await rota_avisoTemporario(aviso, tipo, 10000)
+    return
 }
 
-async function triagem_inicial_acoesSelecionarJuiz(seletorJuiz, horario) {
+async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(seletorJuiz, horario) {
+    
+    // selecionar juiz
+    
     await clicar(seletorJuiz)
     await aguardarElementoNovo('seletorDeJuizDaPautaDeAudienciasAberto')
     let juizes = [...(await sel ('seletorDeJuizDaPautaDeAudienciasOpcoes', '', true))]
     console.log('%c[Rota PJE]%c 336: ' + JSON.stringify(juizes[0]?.textContent), LOG.teste, 'color:inherit')
     let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
     await clicar(juizSelecionado)
+
+    // clicar no botao do primeiro dia
+
     await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
     let celulas = [...(await sel('celulaDaTabelaDaPautaDeAudiencias', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
     await clicar(celula)
+
+    // clicar no botao de designar
+
     let botaoDesignar = await aguardarElementoNovo('botaoDesignarAudiencia')
     await clicar(botaoDesignar)
+
+    //preencher dados do processo e da audiencia
+
     let inputNumeroProcesso = await aguardarElementoNovo('inputNumeroProcessoDesignarAudiencia')
-    console.log('%c[Rota PJE]%c 345: ' + JSON.stringify(horario.processo), LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c 345: ' + JSON.stringify(horario), LOG.teste, 'color:inherit')
     await preencher(inputNumeroProcesso, horario.processo)
     let inputLinkAudiencia = await aguardarElementoNovo('inputLinkDesignarAudiencia')
     await preencher(inputLinkAudiencia, horario.link)
-    let horarioInicial = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
+    let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let inputDataDesignarAudiencia = await aguardarElementoNovo('inputDataDesignarAudiencia')
-
-    await preencher(inputDataDesignarAudiencia, horarioInicial)
+    let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
+    console.log('%c[Rota PJE]%c 355: ' + horarioInicial, LOG.teste, 'color:inherit')
+    await preencher(inputDataDesignarAudiencia, dataAudiencia)
+    let inputHorarioDesignarAudiencia = await aguardarElementoNovo('inputHorarioDesignarAudiencia')
+    await preencher(inputHorarioDesignarAudiencia, horarioInicial)
+    let inputTipoDesignarAudiencia = await aguardarElementoNovo('inputTipoDesignarAudiencia')
+    await clicar(inputTipoDesignarAudiencia)
+    await aguardarElementoNovo('opcoesTipoAudienciaDesignarAudienciaAberto')
+    await clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
     
+    // clicar no botao de confirmar - alterar depois para CONFIRMAR
+
+    let botoesDesignar = [...(await sel('botoesConfirmarCancelarDesignarAudiencia', '', true))]
+    let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Cancelar'))
+    await suspender(1000)
+    //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
+    await clicar(botaoConfirmar)
     return
 }
 
@@ -383,5 +420,5 @@ async function verificarOQueChegou(p) {
 //__________________________________________________
 
 async function triagem_inicial_buscarJuizNoModelo(){
-    await alert('buscando juiz no modelo de documentos...')
+    console.log('%c[Rota PJE]%c buscando juiz no modelo de documentos...', LOG.teste, 'color:inherit')
 }

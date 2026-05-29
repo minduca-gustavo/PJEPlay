@@ -47,6 +47,15 @@ const SELETORES = {
       seletor: '[name*="Tabela de Processos"]',
 
     },
+    containerDosGigsNoPainelGlobal:{
+      seletor: '.tipo-atividade-container',
+    },
+    observacaoDosGigsNaTelaDosGigs:{
+      seletor: '.texto-descricao',
+    },
+    descricaoDaPeticaoNoEscaninho:{
+      seletor: '[mattooltip="Visualizar documento"]',
+    },
     botaoFiltroDePrioridadesNoPainelGlobal:{
       seletor: '[aria-label="Processos com Prioridade Processual"]',
 
@@ -82,12 +91,35 @@ const SELETORES = {
       ancestral: 'mat-dialog-container'
     },
     inputLinkDesignarAudiencia:{
-    seletor: '[name="url"]',
+      seletor: '[name="url"]',
       ancestral: 'mat-dialog-container'
     },
     inputDataDesignarAudiencia:{
-    seletor: '[name="dataAudiencia"]',
+      seletor: '[name="dataAudiencia"]',
       ancestral: 'mat-dialog-container'
+    },
+    inputHorarioDesignarAudiencia:{
+      seletor: '#horario',
+      ancestral: 'mat-dialog-container'
+    },
+    inputTipoDesignarAudiencia:{
+      seletor: '[name="Filtro Tipo da audiência"]',
+      ancestral: 'mat-dialog-container'
+    },
+    opcoesTipoAudienciaDesignarAudienciaAberto:{
+      seletor: 'mat-option',
+      ancestral: '.mat-select-panel-wrap'
+    },
+    botoesConfirmarCancelarDesignarAudiencia:{
+      seletor: 'button',
+      ancestral: 'mat-dialog-container'
+    },
+    tituloDaTarefaNaJanelaDeTarefa:{
+      seletor: '.texto-tarefa-processo',
+    },
+    botoesDeTarefaNaJanelaDeTarefa:{
+      seletor: 'button',
+      ancestral: 'pje-transicao-tarefa'
     }
     
     // Exemplo:

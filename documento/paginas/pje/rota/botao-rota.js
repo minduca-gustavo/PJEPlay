@@ -343,7 +343,7 @@ function _rota_criarBotaoDOM(){
 
 async function _rota_atualizarNomeTarefa(btn){
 	let cfg       = await obterArmazenamento('tarefaAtiva')
-	let nomeAtivo = cfg?.tarefaAtiva || '—'
+	let nomeAtivo = _ass_nomeTarefa(cfg?.tarefaAtiva) || cfg?.tarefaAtiva || '—'
 	// Abrevia se necessário (máx ~14 chars no espaço disponível)
 	let abrev = nomeAtivo.length > 14 ? nomeAtivo.slice(0, 13) + '…' : nomeAtivo
 	let el = btn?.querySelector('#rota-txt-tarefa')
@@ -785,26 +785,38 @@ function _rota_aoClicarLista(btnRef){
 
 // ── Coleta processos visíveis na tela ─────────────────────────
 
-function _rota_coletarFilaDaTela(){
-	let elementos   = [...document.querySelectorAll(seletorPorVersao('abrirTarefaDoProcessoNoPainelGlobal'))]
-	let matches = []
-	for (let el of elementos){
-		let numero = el.innerText.match(ROTA_REGEX_CNJ)
-		if(!numero) continue
-		matches.push(numero)
-	}
-	let vistos  = new Set()
-	let fila    = []
-	for(let m of matches){
-		let numProc = m[0]
-		if(vistos.has(numProc)) continue
-		vistos.add(numProc)
-		let dadosLinha = _rota_capturarDadosDoProcesso(numProc)
-		fila.push({ numProc, id: null, dadosLinha, params: [] })
-	}
-	return fila
-}
+const SELETORES_A_EXCLUIR = [
+    'containerDosGigsNoPainelGlobal',
+    'observacaoDosGigsNaTelaDosGigs',
+	'descricaoDaPeticaoNoEscaninho'
+    // ...
+]
 
+function _rota_coletarFilaDaTela(){
+    let texto   = document.body.innerText || ''
+    let matches = [...texto.matchAll(ROTA_REGEX_CNJ)]
+
+    let elementosAExcluir = new Set()
+    for (let chave of SELETORES_A_EXCLUIR){
+        for (let el of document.querySelectorAll(seletorPorVersao(chave))){
+            let numero = el.innerText.match(ROTA_REGEX_CNJ)
+            if(!numero) continue
+            elementosAExcluir.add(numero[0])
+        }
+    }
+
+    let vistos = new Set()
+    let fila   = []
+    for(let m of matches){
+        let numProc = m[0]
+        if(elementosAExcluir.has(numProc)) continue
+        if(vistos.has(numProc)) continue
+        vistos.add(numProc)
+        let dadosLinha = _rota_capturarDadosDoProcesso(numProc)
+        fila.push({ numProc, id: null, dadosLinha, params: [] })
+    }
+    return fila
+}
 
 // ── Localiza o card/linha do processo no DOM ──────────────────
 

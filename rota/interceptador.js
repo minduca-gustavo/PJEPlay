@@ -73,7 +73,7 @@ function interceptador_processar(evento){
 
     let estilo = 'border-radius:3px;color:hsla(0,100%,100%,1);display:inline-block;font-weight:600;padding:0 3px;'
 	console.log(
-		'%cRota PJE%c✅ interceptador()' + url,
+		'%cRota PJE%c✅ interceptador(): ' + location.origin + url,
 		estilo + 'background:hsla(204,100%,40%,1);',
 		estilo + 'background:rgb(65, 90, 119);margin:0 0 0 3px;'
 	)

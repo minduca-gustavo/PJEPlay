@@ -122,7 +122,9 @@ const MAPA_ROTAS = {
     ]
   },
   'Arquivo': {
-    alcanca: ['Desarquivar']
+    alcanca: [
+      {nome: 'Análise', ariaLabel: 'Desarquivar'}
+    ]
   },
   'Triagem Inicial':{
     alcanca: [
@@ -139,6 +141,10 @@ const MAPA_ROTAS = {
 
 const HUB = 'Análise'
 
+async function movimentar(tarefaDestino) {
+  
+}
+/*
 
 // ------------------------------------------------------------
 // EXECUTORES
@@ -265,7 +271,8 @@ async function rota_selecionarOpcao(seletor, valor) {
 // Busca o botão pelo aria-label. Se não encontrar, tenta
 // pelo texto visível em .texto-botao-app como fallback.
 // ------------------------------------------------------------
-function rota_encontrarBotao(label) {
+async function rota_encontrarBotao(label) {
+  await aguardarElementoNovo('botoesDeTarefaNaJanelaDeTarefa')
   const porAriaLabel = document.querySelector(`[aria-label="${label}"]`)
     ?? document.querySelector(`[aria-label*="${label}"]`)
   if (porAriaLabel) return porAriaLabel
@@ -286,7 +293,7 @@ function rota_encontrarBotao(label) {
 // ------------------------------------------------------------
 async function rota_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
   const label = rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
-  const botao = rota_encontrarBotao(label)
+  const botao = await rota_encontrarBotao(label)
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
 
   botao.click()
@@ -296,17 +303,27 @@ async function rota_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _pa
 // ------------------------------------------------------------
 // rota_executarConclusaoMagistrado
 // ------------------------------------------------------------
-async function rota_executarConclusaoMagistrado(tarefaAtual, nomeTarefaDestino, params = {}) {
+async function rota_executarConclusaoMagistrado(tarefaAtual, nomeTarefaDestino, juiz) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-  const botaoEntrada = rota_encontrarBotao('Conclusão ao magistrado')
+  console.log('%c[Rota PJE]%c 304 movimentar juiz: ' + JSON.stringify(tarefaAtual), LOG.teste, 'color:inherit')
+  console.log('%c[Rota PJE]%c 304 movimentar juiz: ' + JSON.stringify(nomeTarefaDestino), LOG.teste, 'color:inherit')
+  console.log('%c[Rota PJE]%c 304 movimentar juiz: ' + JSON.stringify(juiz), LOG.teste, 'color:inherit')
+  return
+  await armazenar({rota_executarConclusaoMagistrado: juiz})
+  const botaoEntrada = await rota_encontrarBotao('Conclusão ao magistrado')
   if (!botaoEntrada) throw new Error('Botão "Conclusão ao magistrado" não encontrado.')
-  botaoEntrada.click()
+  await clicar(botaoEntrada)
   await rota_aguardarElemento('.cancelar-conclusao')
-
+  let juizArmazenado = await obterArmazenamento('rota_executarConclusaoMagistrado')
+  let juizEscolher = juizArmazenado?.rota_executarConclusaoMagistrado
+  await removerArmazenamento('rota_executarConclusaoMagistrado')
+  console.log('%c[Rota PJE]%c será que ele passa daqui com o juiz? ' + JSON.stringify(juizEscolher), LOG.teste, 'color:inherit')
+  
+  return
   // fase 2 — preenche e segue para o destino (ex: Despacho, Sentença...)
   if (params.juiz) await rota_selecionarOpcao('.magistrado', params.juiz)
 
-  const botaoDestino = rota_encontrarBotao(nomeTarefaDestino)
+  const botaoDestino = await rota_encontrarBotao(nomeTarefaDestino)
   if (!botaoDestino) throw new Error(`Botão não encontrado para: "${nomeTarefaDestino}"`)
   botaoDestino.click()
   await rota_aguardarMudancaTarefa(tarefaAtual)
@@ -318,8 +335,8 @@ async function rota_executarConclusaoMagistrado(tarefaAtual, nomeTarefaDestino, 
 // Remove do armazenamento tudo que foi salvo pela movimentar.
 // ------------------------------------------------------------
 function rota_limparEstado() {
-  armazenar('rota_destinoPendente', null)
-  armazenar('rota_params', null)
+  armazenar({rota_destinoPendente: null})
+  armazenar({rota_params: null})
 }
 
 
@@ -342,8 +359,9 @@ async function rota_retomar() {
 // movimentar
 // ------------------------------------------------------------
 async function movimentar(destino, params = {}) {
-  armazenar('rota_destinoPendente', destino)
-  armazenar('rota_params', params)
+  console.log('%c[Rota PJE]%c movimentar ON', LOG.teste, 'color:inherit')
+  armazenar({rota_destinoPendente: destino})
+  armazenar({rota_params: params})
 
   let tarefaAtual = rota_lerTarefaAtual()
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
@@ -356,10 +374,11 @@ async function movimentar(destino, params = {}) {
   }
 
   for (const proximaTarefa of caminho) {
-    const executor = EXECUTORES[proximaTarefa] ?? rota_executarTransicaoSimples
-    await executor(tarefaAtual, proximaTarefa, params[proximaTarefa] ?? {})
+    const executor = EXECUTORES[tarefaAtual] ?? rota_executarTransicaoSimples
+    await executor(tarefaAtual, proximaTarefa, params[tarefaAtual] ?? {})
     tarefaAtual = rota_lerTarefaAtual()
   }
 
   rota_limparEstado()
 }
+  */

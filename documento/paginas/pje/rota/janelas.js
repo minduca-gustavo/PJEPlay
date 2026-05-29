@@ -789,8 +789,9 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 async function rota_injetarWidget(ctxSalvo = null){
 	let sessao, tarefaUnica, numProc, slotIndex, nomeTarefa,
 	    totalJanelas, widgetParams, temporizador, posSalva
-
+	
 	if(ctxSalvo){
+	    if(window.name.split('-').pop() !== ctxSalvo.sessao) return	
 		// ── Contexto recuperado do storage após recarregamento ────
 		;({ sessao, tarefaUnica, numProc, slotIndex, nomeTarefa,
 		    totalJanelas, widgetParams, temporizador, posSalva } = ctxSalvo)

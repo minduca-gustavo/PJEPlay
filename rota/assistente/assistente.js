@@ -16,26 +16,7 @@
 // ============================================================
 
 
-// ── Humanização do nome da tarefa ─────────────────────────────
 
-const _ASS_NOMES_TAREFA = {
-    'triagem_inicial':   'Triagem Inicial',
-    'pos-triagem':       'Pós-Triagem',
-    'balcao-virtual':    'Balcão Virtual',
-    'audiencia':         'Audiência',
-    'cumprimento':       'Cumprimento de Sentença',
-    'execucao':          'Execução',
-    'sentenca':          'Sentença',
-    'instrucao':         'Instrução',
-    'julgamento':        'Julgamento',
-}
-
-function _ass_nomeTarefa(id) {
-    if (!id) return '—'
-    if (_ASS_NOMES_TAREFA[id]) return _ASS_NOMES_TAREFA[id]
-    // Fallback: kebab-case → Title Case
-    return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
 
 
 // ── Parâmetros da URL ─────────────────────────────────────────
