@@ -40,3 +40,39 @@ function interceptador_xhr(){
 		estilo + 'background:hsla(24,100%,40%,1);margin:0 0 0 3px;'
 	)
 }
+
+interceptador_xhr_documento()
+
+function interceptador_xhr_documento(){
+    if(window._rota_interceptando_documento) return
+    window._rota_interceptando_documento = true
+
+    const REGEX_DOCUMENTO = /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos\/id\/\d+\/conteudo/i
+
+    let abrir  = XMLHttpRequest.prototype.open
+    let enviar = XMLHttpRequest.prototype.send
+
+    XMLHttpRequest.prototype.open = function(metodo, url){
+        this._u      = url
+        this._method = metodo
+        return abrir.apply(this, arguments)
+    }
+
+    XMLHttpRequest.prototype.send = function(dados){
+        let requisicao = this
+        let url        = requisicao._u
+
+        requisicao.addEventListener('load', () => {
+            if(!url || requisicao.readyState !== 4) return
+            if(!REGEX_DOCUMENTO.test(url)) return
+
+            document.dispatchEvent(
+                new CustomEvent('RotaDocumentoInterceptado', {
+                    detail: { url, status: requisicao.status }
+                })
+            )
+        })
+
+        return enviar.call(this, dados)
+    }
+}

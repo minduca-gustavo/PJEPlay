@@ -101,6 +101,7 @@
         "rota/cache.js",
         "rota/modelo.js",
         "rota/interceptador.js",
+        "rota/interceptador_documento.js",
         "modulos/seletores.js",
         "rota/ui.js",
         "documento/paginas/pje/rota/pintura.js",
