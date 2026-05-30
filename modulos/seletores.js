@@ -35,6 +35,9 @@ const SELETORES = {
     numeroProcessoJanelaDetalhesComTipo:{
       seletor: '.texto-numero-processo',
     },
+    cabecalhoDosDocumentosDetalhes:{
+      seletor: '.cabecalho-conteudo',
+    },
     dataDoProcessoNaTarefa:{
       seletor: 'span[processo\\.caixa]',
 
@@ -82,13 +85,14 @@ const SELETORES = {
       ancestral: 'mat-dialog-container'
     },
     inputLinkDesignarAudiencia:{
-    seletor: '[name="url"]',
+      seletor: '[name="url"]',
       ancestral: 'mat-dialog-container'
     },
     inputDataDesignarAudiencia:{
-    seletor: '[name="dataAudiencia"]',
+      seletor: '[name="dataAudiencia"]',
       ancestral: 'mat-dialog-container'
     }
+    
     
     // Exemplo:
     // botaoFinalizar: {

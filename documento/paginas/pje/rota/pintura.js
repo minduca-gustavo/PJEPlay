@@ -9,15 +9,30 @@
 
 
 // ── Detecção de página ────────────────────────────────────────
-
-function pintura_ehDetalhe(){
-    return /\/pjekz\/processo\/\d+\/detalhe(\/.*)?/.test(location.pathname)
+function pinturaAoAbrir(){
+    let janela = confereJanela(JANELA.detalhes, JANELA.documentosConteudo)
+    if (!janela) return
+    pinturaInicio()
 }
 
-function pintura_ehConteudo(){
-    return /\/pjekz\/processo\/\d+\/documento\/\d+\/conteudo/.test(location.pathname)
-}
+pinturaAoAbrir()
 
+async function pinturaInicio(){
+    let metaEl = await aguardarElemento('meta[name="rota-documentos_conteudo"]', 12000)
+    if(!metaEl) return
+
+    function processar(){
+        let meta = interceptador_lerDocumentosConteudo()
+        if(meta?.conteudo) pintura_processar(meta.conteudo)
+    }
+
+    processar()
+
+    document.addEventListener('RotaMetaTagAtualizada', e => {
+        if(e.detail.rotulo !== 'documentos_conteudo') return
+        processar()
+    })
+}
 
 // ── Regras ────────────────────────────────────────────────────
 
@@ -127,156 +142,32 @@ function pintura_limpar(cabecalho){
 // ── Aguarda cabeçalho ─────────────────────────────────────────
 
 async function pintura_aguardarCabecalho(){
-    let seletor = pintura_ehDetalhe()
-        ? 'mat-card.cabecalho'
-        : '.mat-card-header, pje-cabecalho-documento, mat-toolbar, header'
+    let seletor = seletorPorVersao('cabecalhoDosDocumentosDetalhes')
     return await aguardarElemento(seletor, 12000)
 }
 
 
-// ── Extração de texto via metatag ─────────────────────────────
-
-async function pintura_obterTexto(urlAlvo = null){
-    // Aguarda a metatag ser preenchida (pelo interceptador-documento.js)
-    // Aceita tanto a chegada imediata quanto via evento
-    let payload = await pintura_aguardarMetatag(urlAlvo)
-    if(!payload) return null
-
-    let { tipo, conteudo, url } = payload
-
-    // JSON com base64 — HTML ou PDF embutido
-    if(tipo === 'json' && conteudo){
-        try{
-            let json = typeof conteudo === 'string' ? JSON.parse(conteudo) : conteudo
-            let b64  = json.conteudoBase64?.trim()
-            if(!b64) return normalizar(JSON.stringify(json))
-
-            let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-            let html  = new TextDecoder('iso-8859-1').decode(bytes)
-
-            if(html.startsWith('%PDF')){
-                let resp = await NAVEGADOR.runtime.sendMessage({
-                    tipo: 'EXTRAIR_PDF', bytes: Array.from(bytes)
-                })
-                if(!resp.ok) throw new Error(resp.erro)
-                return normalizar(resp.texto)
-            }
-
-            let doc = new DOMParser().parseFromString(html, 'text/html')
-            return normalizar(doc.body.innerText)
-
-        } catch(e){
-            relatar('pintura json/base64 erro: ' + e.message, '', 'erro')
-            return null
-        }
-    }
-
-    // HTML direto
-    if(tipo === 'html' && conteudo){
-        let doc = new DOMParser().parseFromString(conteudo, 'text/html')
-        return normalizar(doc.body.innerText)
-    }
-
-    // PDF binário — só temos a URL, buscamos nós mesmos
-    if(conteudo === null && url){
-        try{
-            let res   = await fetch(url, { credentials: 'include' })
-            if(!res.ok) throw new Error('HTTP ' + res.status)
-            let bytes = Array.from(new Uint8Array(await res.arrayBuffer()))
-            let resp  = await NAVEGADOR.runtime.sendMessage({ tipo: 'EXTRAIR_PDF', bytes })
-            if(!resp.ok) throw new Error(resp.erro)
-            return normalizar(resp.texto)
-        } catch(e){
-            relatar('pintura pdf-fetch erro: ' + e.message, '', 'erro')
-            return null
-        }
-    }
-
-    return null
-}
-
-// Aguarda a metatag rota-documentos_conteudo ser preenchida
-// e, se urlAlvo for passada, aguarda especificamente aquela URL
-function pintura_aguardarMetatag(urlAlvo = null, timeout = 12000){
-    return new Promise(resolver => {
-
-        function ler(){
-            let meta = document.head.querySelector('meta[name="rota-documentos_conteudo"]')
-            if(!meta) return null
-            try{
-                let payload = JSON.parse(meta.getAttribute('content'))
-                if(urlAlvo && payload.url !== urlAlvo) return null
-                return payload
-            } catch{ return null }
-        }
-
-        let existente = ler()
-        if(existente) return resolver(existente)
-
-        let handler = (e) => {
-            if(e.detail.rotulo !== 'documentos_conteudo') return
-            let payload = ler()
-            if(!payload) return
-            clearTimeout(timer)
-            document.removeEventListener('RotaMetaTagAtualizada', handler)
-            resolver(payload)
-        }
-        document.addEventListener('RotaMetaTagAtualizada', handler)
-
-        let timer = setTimeout(() => {
-            document.removeEventListener('RotaMetaTagAtualizada', handler)
-            resolver(null)
-        }, timeout)
-    })
-}
-
 
 // ── Processamento principal ───────────────────────────────────
 
-async function pintura_processar(urlDocumento = null){
+async function pintura_processar(texto){
+    console.log('%c[Rota PJE]%c 264 processar: ' + JSON.stringify(texto), LOG.teste, 'color:inherit')
     let regras = await pintura_carregarRegras()
     if(!regras.length) return
-
+    console.log('%c[Rota PJE]%c 265 regras: ' + JSON.stringify(regras), LOG.teste, 'color:inherit')
     let cabecalho = await pintura_aguardarCabecalho()
     if(!cabecalho){ console.log('%c[Rota PJE]%c Pintura: Cabeçalho não encontrado', LOG.erro, 'color:inherit'); return }
 
     cabecalho.style.borderLeft = '6px solid #5e84a8'
     cabecalho.style.opacity    = '0.75'
 
-    let texto = await pintura_obterTexto(urlDocumento)
-
     cabecalho.style.opacity = '1'
     pintura_limpar(cabecalho)
 
     if(!texto){ relatar('Sem texto para classificar.', '', 'execucao'); return }
 
-    let resultado = pintura_resolverTodos(texto, regras)
+    let resultado = pintura_resolverTodos(normalizar(texto), regras)
     if(resultado) pintura_aplicar(cabecalho, resultado.cor, resultado.termo, resultado.extras)
     else          relatar('Nenhum termo encontrado.', '', 'execucao')
 }
 
-
-// ── Escuta cliques na timeline ────────────────────────────────
-// Captura a URL do documento clicado para filtrar a metatag certa
-
-function pintura_registrarEscuta(){
-    document.addEventListener('click', async e => {
-        let alvo = e.target.closest('a.tl-documento[role="button"]')
-        if(!alvo) return
-        let urlDocumento = alvo.href || null
-        await suspender(300)
-        pintura_processar(urlDocumento)
-            .catch(err => relatar('Pintura reprocessar: ' + err.message, '', 'erro'))
-    }, true)
-}
-
-
-// ── Ponto de entrada ──────────────────────────────────────────
-
-async function pintura_iniciar(){
-    if(!pintura_ehDetalhe() && !pintura_ehConteudo()) return
-    console.log('%c[Rota PJE]%c pintura iniciando', LOG.teste, 'color:inherit')
-    if(pintura_ehDetalhe()) pintura_registrarEscuta()
-    pintura_processar()
-        .catch(e => relatar('Pintura erro: ' + e.message, '', 'erro'))
-}

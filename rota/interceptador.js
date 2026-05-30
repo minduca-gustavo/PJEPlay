@@ -151,7 +151,7 @@ function interceptador_ler(rotulo = ''){
 }
 
 function interceptador_lerProcesso()            { return interceptador_ler('processo')                      }
-function interceptador_modelosDocumentos()      { return interceptador_ler('modelos_documentos')            }
+function interceptador_lerModelosDocumentos()   { return interceptador_ler('modelos_documentos')            }
 function interceptador_lerRecursos()            { return interceptador_ler('recursos')                      }
 function interceptador_lerRecursosPage()        { return interceptador_ler('recursos_page')                 }
 function interceptador_lerPartes()              { return interceptador_ler('processo_partes')               }

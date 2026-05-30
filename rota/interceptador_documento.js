@@ -17,20 +17,37 @@ async function interceptador_documento_processar(evento){
     try {
         let resposta = await fetch(url, { credentials: 'include' })
         let tipo     = resposta.headers.get('Content-Type') || ''
-        let dados
 
         if(tipo.includes('application/json')){
-            dados = await resposta.json()
-            interceptador_documento_salvar(url, JSON.stringify(dados), 'json')
-        } else if(tipo.includes('text/html') || tipo.includes('text/')){
-            dados = await resposta.text()
-            interceptador_documento_salvar(url, dados, 'html')
+            let json  = await resposta.json()
+            let b64   = json.conteudoBase64.trim()
+            let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+            let html  = new TextDecoder('iso-8859-1').decode(bytes)
+
+            if(html.startsWith('%PDF')){
+                let resp = await NAVEGADOR.runtime.sendMessage({
+                    tipo: 'EXTRAIR_PDF', bytes: Array.from(bytes)
+                })
+                if(!resp.ok) throw new Error(resp.erro)
+                interceptador_documento_salvar(url, resp.texto, 'texto')  // ← texto extraído
+            } else {
+                let doc = new DOMParser().parseFromString(html, 'text/html')
+                interceptador_documento_salvar(url, doc.body.innerText, 'texto')
+            }
+
+        } else if(tipo.includes('application/pdf')){
+            let bytes = Array.from(new Uint8Array(await resposta.arrayBuffer()))
+            let resp  = await NAVEGADOR.runtime.sendMessage({
+                tipo: 'EXTRAIR_PDF', bytes
+            })
+            if(!resp.ok) throw new Error(resp.erro)
+            interceptador_documento_salvar(url, resp.texto, 'texto')  // ← texto extraído
+
         } else {
-            // PDF ou binário — salva só a URL e o tipo
-            interceptador_documento_salvar(url, null, tipo)
+            interceptador_documento_salvar(url, await resposta.text(), 'texto')
         }
 
-    } catch(erro) {
+    } catch(erro){
         console.warn('[Rota] interceptador_documento_processar erro:', erro)
     }
 }
