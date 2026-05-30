@@ -35,6 +35,9 @@ const SELETORES = {
     numeroProcessoJanelaDetalhesComTipo:{
       seletor: '.texto-numero-processo',
     },
+    cabecalhoDosDocumentosDetalhes:{
+      seletor: '.cabecalho-conteudo',
+    },
     dataDoProcessoNaTarefa:{
       seletor: 'span[processo\\.caixa]',
 
@@ -121,6 +124,7 @@ const SELETORES = {
       seletor: 'button',
       ancestral: 'pje-transicao-tarefa'
     }
+    
     
     // Exemplo:
     // botaoFinalizar: {

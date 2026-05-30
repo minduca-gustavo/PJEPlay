@@ -12,7 +12,7 @@ obterArmazenamento().then(async armazenamento => {
 
 	if(location.search.includes('pjerota_sessao=')){
 		// Janelas filhas sempre funcionam (já foram abertas pelo pipeline)
-		pintura_iniciar().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
+		pinturaInicio().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 		rota_injetarWidget().catch(e => relatar('Widget: ' + e.message, '', 'erro'))
 	} else {
 		// ── Verifica se esta aba é uma janela filha que recarregou ─
@@ -23,14 +23,14 @@ obterArmazenamento().then(async armazenamento => {
 			const ctxSalvo = ctx?.[chaveJanela]
 			if(ctxSalvo){
 				relatar('Janela filha recarregada — restaurando widget…', '', 'execucao')
-				pintura_iniciar().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
+				pinturaInicio().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 				rota_injetarWidget(ctxSalvo).catch(e => relatar('Widget (restaurado): ' + e.message, '', 'erro'))
 				return
 			}
 		}
 		// Telas de listagem normais: respeita o toggle
 		if(habilitado){
-			pintura_iniciar().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
+			pinturaInicio().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 			botaoRota_iniciar()
 		}
 	}
@@ -42,7 +42,7 @@ new MutationObserver(() => {
 	if(location.href !== _urlAnterior){
 		_urlAnterior = location.href
 		remover('#pjerota-widget')
-		pintura_iniciar().catch(()=>{})
+		pinturaInicio().catch(()=>{})
 
 		if(location.search.includes('pjerota_sessao=')){
 			// Janela filha — remonta o widget após navegação interna (URL ainda tem params)
