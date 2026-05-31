@@ -31,28 +31,27 @@ async function busca_FilaPainelGlobal(){
     console.log('%c[Rota PJE]%c 29', LOG.teste, 'color:inherit')
     await removerArmazenamento('pjerota_busca_posicao_fila')
     await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
-    let contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
-    let conteudoAtual = contAtual.innerText
+    let contAtual = await interceptador_lerProcessosPainel()
+    let conteudoAtual = contAtual.resultado
     let botoes = [...document.querySelectorAll(seletorPorVersao('botoesDeOrdenarNoPainelGlobal'))]
     let desde = botoes.find(el => el.textContent.includes('Desde'))
     let prioridade = await sel('botaoFiltroDePrioridadesNoPainelGlobal')
     let desconsiderar = await sel('botaoDesconsiderarFiltrosSelecionadosNoPainelGlobal')
     let dataPrioridade = ''
     let dataDesconsiderar = ''
-    let cliques = [desde, prioridade, desconsiderar]
+    let cliques = [desde, prioridade]
     for(let clique of cliques){
         await clicar(clique)
-        await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual)
+        let datas = await busca_posicao_filaMudancaDaMetaTag(conteudoAtual)
+        //await suspender(100)
+        conteudoAtual = datas
         if(clique == prioridade) {
-            let datas = document.querySelectorAll(seletorPorVersao('dataDoProcessoNaTarefa'))
-            dataPrioridade = datas[0].textContent.trim().split(' ')[0]
+            dataPrioridade = new Date(datas[0].dataEntradaTarefa).toLocaleDateString('pt-BR')
         }
-        if(clique == desconsiderar) {
-            let datas = document.querySelectorAll(seletorPorVersao('dataDoProcessoNaTarefa'))
-            dataDesconsiderar = datas[0].textContent.trim().split(' ')[0]
+        if(clique == desde) {
+            dataDesconsiderar = new Date(datas[0].dataEntradaTarefa).toLocaleDateString('pt-BR')
         }
-        contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
-        conteudoAtual = contAtual.innerText
+        
         //await suspender(1000)
     }
     busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual)
@@ -82,13 +81,24 @@ async function busca_FilaPainelGlobal(){
     
 }
 
-
+async function busca_posicao_filaMudancaDaMetaTag(conteudo) {
+    let jsonInicial = JSON.stringify(conteudo)
+    let conteudoAtual
+    for(let i = 0; i < 100; i++){
+        let contAtual = await interceptador_lerProcessosPainel()
+        conteudoAtual = contAtual.resultado
+        if (!conteudoAtual) { await suspender(300); continue }
+        if (JSON.stringify(conteudoAtual) !== jsonInicial) break
+        await suspender(300)
+    }
+    return conteudoAtual
+}
 
 async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual){
     let match
     let contAtual
     let conteudo
-    await suspender (1000)
+    //await suspender (1000)
     if(!conteudoAtual){
         
         await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
@@ -98,9 +108,9 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
             contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
             conteudo = contAtual.innerText
             
-            console.log('%c[Rota PJE]%c body: ' + conteudo, LOG.teste, 'color:inherit')
+            //console.log('%c[Rota PJE]%c body: ' + conteudo, LOG.teste, 'color:inherit')
             match = conteudo.match(ROTA_REGEX_CNJ) || conteudo.match('Não há processos neste tema.')
-            console.log('%c[Rota PJE]%c match: ' + match, LOG.teste, 'color:inherit')
+            //console.log('%c[Rota PJE]%c match: ' + match, LOG.teste, 'color:inherit')
             if (match) return
             await suspender(300)
         }
@@ -112,7 +122,7 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
     for(let i = 0; i < 100; i++){
         let contMudou = await sel('tabelaDeProcessosNoPainelGlobal')
         let conteudoMudou = contMudou.innerText
-        console.log('%c[Rota PJE]%c conteudoMudou: ' + conteudoMudou, LOG.teste, 'color:inherit')
+        //console.log('%c[Rota PJE]%c conteudoMudou: ' + conteudoMudou, LOG.teste, 'color:inherit')
         if (conteudo !== conteudoMudou && ROTA_REGEX_CNJ.test(conteudoMudou)) return
         await suspender(300)
     }
