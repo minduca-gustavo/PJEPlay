@@ -230,15 +230,15 @@ async function triagem_inicial_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesDespachar(){
-    let [tipo, juiz] = await Promise.all([
+    let [tipo, juizEnvio] = await Promise.all([
         obterArmazenamento('rota_pje_triagem_inicial_despachar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
     ])
-    if(!juiz) juiz = await triagem_inicial_buscarJuizNoModelo() || ''
-    console.log('%c[Rota PJE]%c ' + 'tipo: ' + tipo + ' / juiz: ' + juiz, LOG.teste, 'color:inherit')
+    if(!juizEnvio) juizEnvio = await triagem_inicial_buscarJuizNoModelo() || ''
+    console.log('%c[Rota PJE]%c ' + 'tipo: ' + tipo + ' / juiz: ' + juizEnvio, LOG.teste, 'color:inherit')
     let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
     console.log('%c[Rota PJE]%c linha 240: ' + JSON.stringify(tarefa?.innerText), LOG.teste, 'color:inherit')
-    await movimentar('Conclusão ao magistrado', juiz)
+    await movimentar('Conclusão ao magistrado', {'Conclusão ao magistrado':{'juiz': juizEnvio}})
 }
 
 

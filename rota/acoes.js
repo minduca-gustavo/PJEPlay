@@ -344,3 +344,4 @@ async function acao_favoritos_lerModelo(chave = '') {
     const cfg = await obterArmazenamento(['rotaFavoritos'])
     return cfg?.rotaFavoritos?.modelos?.[chave] || null
 }
+

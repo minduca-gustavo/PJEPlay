@@ -1,3 +1,4 @@
+
 // o body está mudando COM PROCESSO. Tem que ver o innertext da tabelaDeProcessosNoPainelGlobal
 //console.log('Me chamou? BUSCA FILA')
 function buscaPosicaoFila(){
@@ -148,6 +149,7 @@ async function busca_posicao_filaCriaCampoConsulta() {
     div.style.padding = '0px'
     div.style.marginBottom = '0px'
     div.style.heigth = '14px'
+    div.style.zIndex = '9999999'
 
     let botao = await criaBotaoAzul({
         id: 'pjerota-busca-posicao-fila-botao-busca',
@@ -161,6 +163,7 @@ async function busca_posicao_filaCriaCampoConsulta() {
     botao.style.lineHeight = '14px'
     botao.style.padding    = '0 8px'
     botao.style.fontSize   = '9px'
+    botao.style.zIndex = '9999999'
     barra
         ? barra.parentElement.insertBefore(div, barra)
         : document.body.prepend(div)
@@ -190,53 +193,6 @@ async function busca_posicao_filaConsultar() {
     window.open(url)
     return
     
-    /*let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
-    let ROTA_REGEX_CNJ_SEM_DIVISOR = /\d{20}/
-    console.log(JSON.stringify(numeroDoProcesso))
-    let numeroVerificado = ROTA_REGEX_CNJ.test(numeroDoProcesso) || ROTA_REGEX_CNJ_SEM_DIVISOR.test(numeroDoProcesso)
-    if (!numeroVerificado) {
-        await busca_posicao_filaErroNumero('fora do padrao')
-        return
-    }
-    let dadosBasicos = await buscarDadosBasicos(numeroDoProcesso)
-    if (!dadosBasicos) {
-        await busca_posicao_filaErroNumero('nao encontrado')
-        return
-    }
-    let dadosProcesso = await buscarProcesso(dadosBasicos?.id)
-    if (!dadosProcesso) {
-        await busca_posicao_filaErroNumero('nao conectado')
-        return
-    }
-    let orgaoJulgador = interceptador_lerOrgaosJulgadores() || {}
-    relatar('dadosBasicos: ', dadosBasicos, 'teste')
-    relatar('dadosProcesso: ', dadosProcesso, 'teste')
-    relatar('orgaosJulgadores: ', orgaoJulgador, 'teste')
-    if (dadosProcesso?.orgaoJulgador?.id !== orgaoJulgador.id){
-        let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
-        relatar ('perfis: ', perfis, 'teste')
-        let perfil = perfis.find(el => el.idOrgaoJulgador === dadosProcesso?.orgaoJulgador?.id)
-        if (!perfil) {
-            busca_posicao_filaErroNumero('erro perfil')
-            return
-        }
-        relatar ('perfil: ', perfil, 'teste')
-        await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json, text/plain, *//**',
-                'X-XSRF-TOKEN': rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN'),
-            },
-            body: JSON.stringify({ id_perfil: perfil.idPerfil })
-        })
-    }
-    await armazenar({pjerota_busca_posicao_fila: dadosBasicos?.id})
-    url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + dadosBasicos?.numero
-    await busca_posicao_filaNavegar(url)
-    */
 }
 
 function busca_posicao_filaNavegar(url) {

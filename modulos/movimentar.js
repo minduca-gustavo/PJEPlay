@@ -1,5 +1,6 @@
+let roteiro = 'movimentarConsole'
 /* FUNÇÃO DE BUSCA NO CONSOLE.
-function rota_lerBotoesDisponiveis() {
+function rota_movimentar_lerBotoesDisponiveis() {
   const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
   const textos = [...document.querySelectorAll('.texto-botao-skinny')]
     .map(t => t.closest('button'))
@@ -17,7 +18,7 @@ function rota_lerBotoesDisponiveis() {
   console.log(JSON.stringify(resultado, null, 2))
   return resultado
 }
-rota_lerBotoesDisponiveis()
+rota_movimentar_lerBotoesDisponiveis()
 
 */
 // ============================================================
@@ -141,46 +142,47 @@ const MAPA_ROTAS = {
 
 const HUB = 'Análise'
 
-async function movimentar(tarefaDestino) {
-  
-}
-/*
-
 // ------------------------------------------------------------
 // EXECUTORES
 // ------------------------------------------------------------
 const EXECUTORES = {
-  'Conclusão ao magistrado': rota_executarConclusaoMagistrado,
+  'Conclusão ao magistrado': rota_movimentar_executarConclusaoMagistrado,
 }
 
 
 // ------------------------------------------------------------
-// rota_lerTarefaAtual
+// rota_movimentar_lerTarefaAtual
 // ------------------------------------------------------------
-function rota_lerTarefaAtual() {
-  return document.querySelector('.texto-tarefa-processo')?.textContent?.trim() ?? null
+async function rota_movimentar_lerTarefaAtual() {
+  let elemento = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+  return elemento?.textContent?.trim() ?? null
 }
 
-
 // ------------------------------------------------------------
-// rota_encontrarCaminho
+// rota_movimentar_encontrarCaminho
 // ------------------------------------------------------------
-function rota_encontrarCaminho(atual, destino) {
+function rota_movimentar_encontrarCaminho(atual, destino) {
   if (atual === destino) return []
 
-  const noAtual = MAPA_ROTAS[atual]
-  if (!noAtual) return null
-
   const resolverNome = (item) => typeof item === 'string' ? item : item.nome
-  const alcancaveis  = noAtual.alcanca.map(resolverNome)
 
-  if (alcancaveis.includes(destino)) return [destino]
+  // BFS
+  const fila    = [[atual, []]]
+  const visitados = new Set([atual])
 
-  if (atual !== HUB && alcancaveis.includes(HUB)) {
-    const noHub = MAPA_ROTAS[HUB]
-    if (!noHub) return null
-    const alcancaveisDoHub = noHub.alcanca.map(resolverNome)
-    if (alcancaveisDoHub.includes(destino)) return [HUB, destino]
+  while (fila.length > 0) {
+    const [no, caminho] = fila.shift()
+    const noAtual = MAPA_ROTAS[no]
+    if (!noAtual) continue
+
+    for (const item of noAtual.alcanca) {
+      const nome = resolverNome(item)
+      if (nome === destino) return [...caminho, nome]
+      if (!visitados.has(nome)) {
+        visitados.add(nome)
+        fila.push([nome, [...caminho, nome]])
+      }
+    }
   }
 
   return null
@@ -188,9 +190,9 @@ function rota_encontrarCaminho(atual, destino) {
 
 
 // ------------------------------------------------------------
-// rota_resolverAriaLabel
+// rota_movimentar_resolverAriaLabel
 // ------------------------------------------------------------
-function rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino) {
+function rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino) {
   const no = MAPA_ROTAS[tarefaAtual]
   if (!no) return nomeTarefaDestino
   const entrada = no.alcanca.find(item =>
@@ -202,183 +204,187 @@ function rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino) {
 
 
 // ------------------------------------------------------------
-// rota_aguardarMudancaTarefa
+// rota_movimentar_aguardarMudancaTarefa
 // ------------------------------------------------------------
-function rota_aguardarMudancaTarefa(tarefaAnterior, timeoutMs = 10000) {
-  return new Promise((resolve, reject) => {
-    const inicio = Date.now()
-    const intervalo = setInterval(() => {
-      const atual = rota_lerTarefaAtual()
-      if (atual && atual !== tarefaAnterior) {
-        clearInterval(intervalo)
-        resolve(atual)
-      }
-      if (Date.now() - inicio > timeoutMs) {
-        clearInterval(intervalo)
-        reject(new Error(`Timeout aguardando saída de "${tarefaAnterior}"`))
-      }
-    }, 300)
-  })
+async function rota_movimentar_aguardarMudancaTarefa(tarefaAnterior, timeoutEmSegundos = 30) {
+  for (let i = 0; i < timeoutEmSegundos * 2; i++) {
+    const atual = await rota_movimentar_lerTarefaAtual()
+    if (atual !== tarefaAnterior) return
+    await suspender(500)
+  }
+
 }
 
 
 // ------------------------------------------------------------
-// rota_aguardarElemento
+// rota_movimentar_selecionarOpcao
 // ------------------------------------------------------------
-function rota_aguardarElemento(seletor, timeoutMs = 8000) {
-  return new Promise((resolve, reject) => {
-    const el = document.querySelector(seletor)
-    if (el) return resolve(el)
-
-    const observer = new MutationObserver(() => {
-      const el = document.querySelector(seletor)
-      if (el) {
-        observer.disconnect()
-        resolve(el)
-      }
-    })
-
-    observer.observe(document.body, { childList: true, subtree: true })
-
-    setTimeout(() => {
-      observer.disconnect()
-      reject(new Error(`Timeout aguardando elemento: "${seletor}"`))
-    }, timeoutMs)
-  })
-}
-
+//async function rota_movimentar_selecionarOpcao(seletor, valor) {
+//  const campo = document.querySelector(seletor)
+//  if (!campo) throw new Error(`Campo não encontrado: "${seletor}"`)
+//
+//  campo.click()
+//  await rota_movimentar_aguardarElemento('mat-option')
+//
+//  const opcoes = [...document.querySelectorAll('mat-option')]
+//  const opcao  = opcoes.find(o => o.textContent.trim() === valor)
+//
+//  if (!opcao) throw new Error(`Opção "${valor}" não encontrada em "${seletor}"`)
+//
+//  opcao.click()
+//}
 
 // ------------------------------------------------------------
-// rota_selecionarOpcao
-// ------------------------------------------------------------
-async function rota_selecionarOpcao(seletor, valor) {
-  const campo = document.querySelector(seletor)
-  if (!campo) throw new Error(`Campo não encontrado: "${seletor}"`)
-
-  campo.click()
-  await rota_aguardarElemento('mat-option')
-
-  const opcoes = [...document.querySelectorAll('mat-option')]
-  const opcao  = opcoes.find(o => o.textContent.trim() === valor)
-
-  if (!opcao) throw new Error(`Opção "${valor}" não encontrada em "${seletor}"`)
-
-  opcao.click()
-}
-
-// ------------------------------------------------------------
-// rota_encontrarBotao
+// rota_movimentar_encontrarBotao
 // Busca o botão pelo aria-label. Se não encontrar, tenta
 // pelo texto visível em .texto-botao-app como fallback.
 // ------------------------------------------------------------
-async function rota_encontrarBotao(label) {
-  await aguardarElementoNovo('botoesDeTarefaNaJanelaDeTarefa')
-  const porAriaLabel = document.querySelector(`[aria-label="${label}"]`)
-    ?? document.querySelector(`[aria-label*="${label}"]`)
-  if (porAriaLabel) return porAriaLabel
+async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
+  for (let i = 0; i < timeoutEmSegundos * 2; i++) {
+    await aguardarElementoNovo('botoesDeTarefaNaJanelaDeTarefa')
 
-  const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
-  const textos = [...document.querySelectorAll('.texto-botao-skinny')]
-    .map(t => t.closest('button'))
-    .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
+    const porAriaLabel = document.querySelector(`[aria-label="${label}"]`)
+      ?? document.querySelector(`[aria-label*="${label}"]`)
+    if (porAriaLabel) return porAriaLabel
 
-  return [...botoes, ...textos].find(b =>
-    b.querySelector('.texto-botao-app')?.textContent?.trim() === label
-    || b.querySelector('.texto-botao-skinny')?.textContent?.trim() === label
-  ) ?? null
+    const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
+    const textos = [...document.querySelectorAll('.texto-botao-skinny')]
+      .map(t => t.closest('button'))
+      .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
+
+    const encontrado = [...botoes, ...textos].find(b =>
+      b.querySelector('.texto-botao-app')?.textContent?.trim() === label
+      || b.querySelector('.texto-botao-skinny')?.textContent?.trim() === label
+    )
+    if (encontrado) return encontrado
+
+    await suspender(500)
+  }
+  return null
 }
 
 // ------------------------------------------------------------
-// rota_executarTransicaoSimples
+// rota_movimentar_executarTransicaoSimples
 // ------------------------------------------------------------
-async function rota_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
-  const label = rota_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
-  const botao = await rota_encontrarBotao(label)
+async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
+  await aguardarElementoNovo('botoesDeTarefaNaJanelaDeTarefa')
+  const label = rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
+  const botao = await rota_movimentar_encontrarBotao(label)
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
 
-  botao.click()
-  await rota_aguardarMudancaTarefa(tarefaAtual)
+  await clicar (botao)
+  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
 }
 
 // ------------------------------------------------------------
-// rota_executarConclusaoMagistrado
+// rota_movimentar_executarConclusaoMagistrado
 // ------------------------------------------------------------
-async function rota_executarConclusaoMagistrado(tarefaAtual, nomeTarefaDestino, juiz) {
+async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-  console.log('%c[Rota PJE]%c 304 movimentar juiz: ' + JSON.stringify(tarefaAtual), LOG.teste, 'color:inherit')
-  console.log('%c[Rota PJE]%c 304 movimentar juiz: ' + JSON.stringify(nomeTarefaDestino), LOG.teste, 'color:inherit')
-  console.log('%c[Rota PJE]%c 304 movimentar juiz: ' + JSON.stringify(juiz), LOG.teste, 'color:inherit')
+  console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
+  console.log('%c[Rota PJE]%c ' + roteiro + ' parametros: ' + JSON.stringify(parametros), LOG.aviso, 'color:inherit')
+  let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
+  await clicar(selecao)
+  let juiz = parametros.juiz.toUpperCase()
+  await aguardarElementoNovo('opcoesDeMagistradosNaTelaDaConclusao')
+  let juizes = [...(await sel ('opcoesDeMagistradosNaTelaDaConclusao', '', true))]
+  let juizSelecionado = juizes.find(j => j.textContent?.trim().includes(juiz))
+  await clicar(juizSelecionado)
+
   return
-  await armazenar({rota_executarConclusaoMagistrado: juiz})
-  const botaoEntrada = await rota_encontrarBotao('Conclusão ao magistrado')
+  await armazenar({rota_movimentar_executarConclusaoMagistrado: juiz})
+  const botaoEntrada = await rota_movimentar_encontrarBotao('Conclusão ao magistrado')
   if (!botaoEntrada) throw new Error('Botão "Conclusão ao magistrado" não encontrado.')
   await clicar(botaoEntrada)
-  await rota_aguardarElemento('.cancelar-conclusao')
-  let juizArmazenado = await obterArmazenamento('rota_executarConclusaoMagistrado')
-  let juizEscolher = juizArmazenado?.rota_executarConclusaoMagistrado
-  await removerArmazenamento('rota_executarConclusaoMagistrado')
-  console.log('%c[Rota PJE]%c será que ele passa daqui com o juiz? ' + JSON.stringify(juizEscolher), LOG.teste, 'color:inherit')
+  let juizArmazenado = await obterArmazenamento('rota_movimentar_executarConclusaoMagistrado')
+  let juizEscolher = juizArmazenado?.rota_movimentar_executarConclusaoMagistrado
+  await removerArmazenamento('rota_movimentar_executarConclusaoMagistrado')
   
   return
   // fase 2 — preenche e segue para o destino (ex: Despacho, Sentença...)
-  if (params.juiz) await rota_selecionarOpcao('.magistrado', params.juiz)
+  if (params.juiz) await rota_movimentar_selecionarOpcao('.magistrado', params.juiz)
 
-  const botaoDestino = await rota_encontrarBotao(nomeTarefaDestino)
+  const botaoDestino = await rota_movimentar_encontrarBotao(nomeTarefaDestino)
   if (!botaoDestino) throw new Error(`Botão não encontrado para: "${nomeTarefaDestino}"`)
-  botaoDestino.click()
-  await rota_aguardarMudancaTarefa(tarefaAtual)
+  await clicar(botaoDestino)
+  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
 }
 
 
 // ------------------------------------------------------------
-// rota_limparEstado
+// rota_movimentar_limparEstado
 // Remove do armazenamento tudo que foi salvo pela movimentar.
 // ------------------------------------------------------------
-function rota_limparEstado() {
-  armazenar({rota_destinoPendente: null})
-  armazenar({rota_params: null})
+function rota_movimentar_limparEstado() {
+  removerArmazenamento('rota_movimentar_destinoPendente')
+  removerArmazenamento('rota_movimentar_params')
 }
 
 
 // ------------------------------------------------------------
-// rota_retomar
+// rota_movimentar_retomar
 // Chamada no início de cada página. Se houver uma navegação
 // em curso (destinoPendente no armazenamento), retoma de onde
 // parou — a tarefa atual já reflete a posição real no grafo.
 // ------------------------------------------------------------
-async function rota_retomar() {
-  const destino = obterArmazenamento('rota_destinoPendente')
+async function rota_movimentar_retomar() {
+  let janela = confereJanela(JANELA.tarefa)
+  if (!janela) return
+  let armazenamento = await obterArmazenamento(['rotaExecucaoAtual'])
+  let execucao = String(armazenamento?.rotaExecucaoAtual || '')
+  if (!armazenamento) return
+  let nomeJanela = window.name
+  if (!nomeJanela.includes('rota_pje_')) return
+  if(execucao !== nomeJanela.split('_').pop()) return
+  registrarListenerFechar(execucao)
+  let armazenamentoDestino = await obterArmazenamento('rota_movimentar_destinoPendente')
+  let destino = armazenamentoDestino?.rota_movimentar_destinoPendente
   if (!destino) return
 
-  const params = obterArmazenamento('rota_params') ?? {}
-  await movimentar(destino, params)
+  let armazenamentoParams = await obterArmazenamento('rota_movimentar_params')
+  let params = armazenamentoParams?.rota_movimentar_params ?? {}
+  //if (!params) return
+  
+  await movimentar(destino.rota_movimentar_params, params.rota_movimentar_params)
 }
 
+rota_movimentar_retomar()
 
 // ------------------------------------------------------------
 // movimentar
 // ------------------------------------------------------------
 async function movimentar(destino, params = {}) {
-  console.log('%c[Rota PJE]%c movimentar ON', LOG.teste, 'color:inherit')
-  armazenar({rota_destinoPendente: destino})
-  armazenar({rota_params: params})
-
-  let tarefaAtual = rota_lerTarefaAtual()
+  console.log('%c[Rota PJE]%c ' + roteiro + ' + destino: ' + JSON.stringify(destino), LOG.aviso, 'color:inherit')
+  console.log('%c[Rota PJE]%c ' + roteiro + ' + params: ' + JSON.stringify(params), LOG.aviso, 'color:inherit')
+  await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+  await armazenar({rota_movimentar_destinoPendente: destino})
+  await armazenar({rota_movimentar_params: params})
+  let tarefaAtual = await rota_movimentar_lerTarefaAtual()
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
-
-  const caminho = rota_encontrarCaminho(tarefaAtual, destino)
+    // se houver executor para a tarefa atual, roda antes de qualquer coisa
+  let executorAtual = EXECUTORES[tarefaAtual]
+  console.log('%c[Rota PJE]%c ' + roteiro + ' executorAtual: ' + JSON.stringify(executorAtual), LOG.aviso, 'color:inherit')
+  if (executorAtual && params[tarefaAtual]) {
+    await executorAtual(tarefaAtual, params[tarefaAtual])
+  }
+  
+  const caminho = rota_movimentar_encontrarCaminho(tarefaAtual, destino)
   if (caminho === null) throw new Error(`Caminho não encontrado: "${tarefaAtual}" → "${destino}"`)
   if (caminho.length === 0) {
-    rota_limparEstado()
+    rota_movimentar_limparEstado()
     return
   }
-
   for (const proximaTarefa of caminho) {
-    const executor = EXECUTORES[tarefaAtual] ?? rota_executarTransicaoSimples
-    await executor(tarefaAtual, proximaTarefa, params[tarefaAtual] ?? {})
-    tarefaAtual = rota_lerTarefaAtual()
+    await rota_movimentar_executarTransicaoSimples(tarefaAtual, proximaTarefa)
+    tarefaAtual = await rota_movimentar_lerTarefaAtual()
+    const executorProximo = EXECUTORES[tarefaAtual]
+    console.log('%c[Rota PJE]%c ' + roteiro + ' executorProximo: ' + JSON.stringify(executorProximo), LOG.aviso, 'color:inherit')
+    console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
+    if (executorProximo && params[tarefaAtual]) {
+      await executorProximo(tarefaAtual, params[tarefaAtual])
+    }
+    
   }
-
-  rota_limparEstado()
+  
+  rota_movimentar_limparEstado()
 }
-  */

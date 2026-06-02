@@ -1160,3 +1160,62 @@ function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral }) {
     _ui_inserir(wrapper, ancestral)
     return wrapper
 }
+
+function rota_avisoObrigatorio(msg = '', segundos = 60) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    Object.assign(overlay.style, {
+      position: 'fixed', inset: '0',
+      background: 'rgba(0,0,0,0.45)',
+      zIndex: String(ROTA_Z.aviso),
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'Segoe UI', system-ui, sans-serif",
+    })
+
+    const caixa = document.createElement('div')
+    Object.assign(caixa.style, {
+      background: '#fff',
+      borderLeft: '4px solid #ffa726',
+      borderRadius: '8px', padding: '24px 28px',
+      maxWidth: '420px', width: '90%',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+      display: 'flex', flexDirection: 'column', gap: '12px',
+      cursor: 'pointer',
+    })
+
+    const texto = document.createElement('div')
+    Object.assign(texto.style, { fontSize: '14px', lineHeight: '1.5', color: '#2c3e50' })
+    texto.textContent = msg
+
+    const rodape = document.createElement('div')
+    Object.assign(rodape.style, { fontSize: '12px', color: '#888', display: 'flex', justifyContent: 'space-between' })
+
+    const instrucao = document.createElement('span')
+    instrucao.textContent = 'Clique para fechar'
+
+    const timer = document.createElement('span')
+    timer.textContent = `Fechando em ${segundos}s`
+
+    rodape.appendChild(instrucao)
+    rodape.appendChild(timer)
+    caixa.appendChild(texto)
+    caixa.appendChild(rodape)
+    overlay.appendChild(caixa)
+    document.body.appendChild(overlay)
+
+    const fechar = () => {
+      clearInterval(intervalo)
+      overlay.remove()
+      resolve()
+    }
+
+    overlay.addEventListener('click', fechar)
+
+    let restam = segundos
+    const intervalo = setInterval(() => {
+      restam--
+      timer.textContent = `Fechando em ${restam}s`
+      if (restam <= 0) fechar()
+    }, 1000)
+  })
+}

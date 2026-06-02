@@ -26,6 +26,7 @@ var JANELA = {
 	painelGlobalTarefas:	/\/pjekz\/painel\/global\/\d*\/lista-processos/,
     painelGlobalTodos: 		/\/pjekz\/painel\/global\/todos\/lista-processos/,
     detalhes:          		/\/pjekz\/processo\/\d*\/detalhe/,
+    tarefa:          		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	documentosConteudo:		/\/pjekz\/processo\/\d*\/detalhe\/documento\/\d*\/conteudo*/,
 	escaninho: 				/\/pjekz\/escaninho/,
 	retificar:				/\/pjekz\/processo\/\d*\/retificar/,

@@ -123,6 +123,14 @@ const SELETORES = {
     botoesDeTarefaNaJanelaDeTarefa:{
       seletor: 'button',
       ancestral: 'pje-transicao-tarefa'
+    },
+    selecaoDeMagistradosNaTelaDaConclusao:{
+      seletor: '.magistrado',
+      ancestral: 'pje-concluso-tarefa-magistrado'
+    },
+    opcoesDeMagistradosNaTelaDaConclusao:{
+      seletor: 'mat-option',
+      ancestral: '.mat-select-panel-wrap'
     }
     
     
