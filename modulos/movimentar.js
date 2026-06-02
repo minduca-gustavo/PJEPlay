@@ -241,20 +241,23 @@ async function rota_movimentar_aguardarMudancaTarefa(tarefaAnterior, timeoutEmSe
 // ------------------------------------------------------------
 async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
   for (let i = 0; i < timeoutEmSegundos * 2; i++) {
-    await aguardarElementoNovo('botoesDeTarefaNaJanelaDeTarefa')
+    await aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
 
     const porAriaLabel = document.querySelector(`[aria-label="${label}"]`)
       ?? document.querySelector(`[aria-label*="${label}"]`)
     if (porAriaLabel) return porAriaLabel
 
-    const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
+    const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny, button')]
     const textos = [...document.querySelectorAll('.texto-botao-skinny')]
       .map(t => t.closest('button'))
       .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
-
+    if (botoes){
+      console.log('%c[Rota PJE]%c 254: ' + JSON.stringify(botoes), LOG.teste, 'color:inherit')
+    }
     const encontrado = [...botoes, ...textos].find(b =>
       b.querySelector('.texto-botao-app')?.textContent?.trim() === label
-      || b.querySelector('.texto-botao-skinny')?.textContent?.trim() === label
+      || b.querySelector('.texto-botao-skinny')?.textContent?.trim() === label 
+      || b.textContent?.trim() === label 
     )
     if (encontrado) return encontrado
 
@@ -267,9 +270,12 @@ async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
 // rota_movimentar_executarTransicaoSimples
 // ------------------------------------------------------------
 async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
-  await aguardarElementoNovo('botoesDeTarefaNaJanelaDeTarefa')
+  aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
+  console.log('%c[Rota PJE]%c 271: passou daqui?', LOG.teste, 'color:inherit')
   const label = rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
+  console.log('%c[Rota PJE]%c 273: ' + JSON.stringify(label), LOG.aviso, 'color:inherit')
   const botao = await rota_movimentar_encontrarBotao(label)
+  
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
 
   await clicar (botao)

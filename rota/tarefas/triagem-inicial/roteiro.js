@@ -238,7 +238,7 @@ async function triagem_inicial_acoesDespachar(){
     console.log('%c[Rota PJE]%c ' + 'tipo: ' + tipo + ' / juiz: ' + juizEnvio, LOG.teste, 'color:inherit')
     let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
     console.log('%c[Rota PJE]%c linha 240: ' + JSON.stringify(tarefa?.innerText), LOG.teste, 'color:inherit')
-    await movimentar('Conclusão ao magistrado', {'Conclusão ao magistrado':{'juiz': juizEnvio}})
+    await movimentar('Despacho', {'Conclusão ao magistrado':{'juiz': juizEnvio}})
 }
 
 
@@ -287,6 +287,7 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
     let nomeJanela = window.name
     if (!nomeJanela.includes('rota_pje_triagem_inicial_designa_audiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
+    registrarListenerFechar(execucao)
     await triagem_inicial_acoesDesignarAudiencia()
 }
 
@@ -312,9 +313,8 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
     await aguardarElementoNovo('seletorDeJuizDaPautaDeAudiencias')
     
-    let seletorJuiz = await sel('seletorDeJuizDaPautaDeAudiencias')
-    if (seletorJuiz.textContent != horario.nomeDaSala) await triagem_inicial_acoesDesignarAudienciaAutomaticamente(seletorJuiz, horario)
-    
+   
+    await triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario)
     
 
     //await alert ('Espere um pouquinho' + JSON.stringify(celula.textContent))
@@ -343,17 +343,17 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     return
 }
 
-async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(seletorJuiz, horario) {
-    
+async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {    
     // selecionar juiz
-    
-    await clicar(seletorJuiz)
-    await aguardarElementoNovo('seletorDeJuizDaPautaDeAudienciasAberto')
-    let juizes = [...(await sel ('seletorDeJuizDaPautaDeAudienciasOpcoes', '', true))]
-    console.log('%c[Rota PJE]%c 336: ' + JSON.stringify(juizes[0]?.textContent), LOG.teste, 'color:inherit')
-    let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
-    await clicar(juizSelecionado)
-
+    let seletorJuiz = await sel('seletorDeJuizDaPautaDeAudiencias')
+    if (seletorJuiz.textContent != horario.nomeDaSala){
+        await clicar(seletorJuiz)
+        await aguardarElementoNovo('seletorDeJuizDaPautaDeAudienciasAberto')
+        let juizes = [...(await sel ('seletorDeJuizDaPautaDeAudienciasOpcoes', '', true))]
+        console.log('%c[Rota PJE]%c 336: ' + JSON.stringify(juizes[0]?.textContent), LOG.teste, 'color:inherit')
+        let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
+        await clicar(juizSelecionado)
+    }
     // clicar no botao do primeiro dia
 
     await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
@@ -388,10 +388,13 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(seletorJuiz
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
 
     let botoesDesignar = [...(await sel('botoesConfirmarCancelarDesignarAudiencia', '', true))]
-    let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Cancelar'))
+    let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await suspender(1000)
     //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await clicar(botaoConfirmar)
+    await aguardarElementoNovo('botaoFecharDesignacaoDeAudiencia')
+    await suspender(2000)
+    window.close()
     return
 }
 

@@ -77,7 +77,8 @@ const SELETORES = {
       seletor: 'span.cal-day-cell',
     },
     seletorDeJuizDaPautaDeAudiencias:{
-      seletor: '#mat-select-0'
+      seletor: 'mat-select',
+      ancestral: '.cabecalho-pauta-audiencias'
     },
     seletorDeJuizDaPautaDeAudienciasAberto:{
       seletor: '#mat-select-0-panel'
@@ -124,6 +125,10 @@ const SELETORES = {
       seletor: 'button',
       ancestral: 'pje-transicao-tarefa'
     },
+    botoesDeTipoDeDespachoNaJanelaDeConclusao:{
+      seletor: 'button',
+      ancestral: 'pje-concluso-tarefa'
+    },
     selecaoDeMagistradosNaTelaDaConclusao:{
       seletor: '.magistrado',
       ancestral: 'pje-concluso-tarefa-magistrado'
@@ -131,6 +136,10 @@ const SELETORES = {
     opcoesDeMagistradosNaTelaDaConclusao:{
       seletor: 'mat-option',
       ancestral: '.mat-select-panel-wrap'
+    },
+    botaoFecharDesignacaoDeAudiencia:{
+      seletor: 'button',
+      ancestral: '.container-conteudo'
     }
     
     
@@ -261,27 +270,37 @@ function pronto(el, entrada) {
 // chave    {string} — chave no mapa SELETORES
 // timeout  {number} — ms até desistir (0 = sem limite)
 // Retorna Promise<Element|null>
-async function aguardarElementoNovo(chave, timeout = 0) {
-  const entrada = await resolverEntrada(chave)
-  if (!entrada) return null
+async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0 } = {}) {
+  const chaves = Array.isArray(chave) ? chave : [chave]
+  const entradas = await Promise.all(chaves.map(c => resolverEntrada(c)))
+  if (entradas.some(e => !e)) return null
 
-  let ancestral = document
-  if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
-
-  console.log('%c[Rota PJE]%c procurando agora entrada do aguardarElementoNovo: ' + JSON.stringify(entrada), LOG.teste, 'color:inherit')
-
-  return new Promise(resolver => {
-    const checar = () => {
-      const el = selecionar(entrada.seletor, ancestral)
-      if (el && pronto(el, entrada)) return el
+  const checar = () => {
+    if (modo === 'e') {
+      // todos precisam estar prontos — retorna o último
+      const elementos = entradas.map(entrada => {
+        let ancestral = document
+        if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
+        const el = selecionar(entrada.seletor, ancestral)
+        return (el && pronto(el, entrada)) ? el : null
+      })
+      return elementos.every(Boolean) ? elementos[elementos.length - 1] : null
+    } else {
+      // qualquer um serve — retorna o primeiro encontrado
+      for (const entrada of entradas) {
+        let ancestral = document
+        if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
+        const el = selecionar(entrada.seletor, ancestral)
+        if (el && pronto(el, entrada)) return el
+      }
       return null
     }
+  }
 
+  return new Promise(resolver => {
     const elImediato = checar()
     if (elImediato) { resolver(elImediato); return }
-
     let timer = null
-
     const obs = new MutationObserver(() => {
       const el = checar()
       if (el) {
@@ -290,13 +309,11 @@ async function aguardarElementoNovo(chave, timeout = 0) {
         resolver(el)
       }
     })
-
     obs.observe(document, { childList: true, subtree: true })
-
     if (timeout > 0)
       timer = setTimeout(() => {
         obs.disconnect()
-        registrarErro(`${chave} [timeout]`, obterArmazenamento('rota_versao') ?? VERSAO_FALLBACK)
+        registrarErro(`${chaves.join(` ${modo.toUpperCase()} `)} [timeout]`, obterArmazenamento('rota_versao') ?? VERSAO_FALLBACK)
         resolver(null)
       }, timeout)
   })
