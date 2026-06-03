@@ -10,7 +10,7 @@
 //       quando o modo for Lista — verifique antes de usar)
 //
 // Funções disponíveis:
-//   buscarDadosBasicos(i)             → dados básicos do processo (pje-consulta-api)
+//   buscarIdPeloNumeroCNJ(i)             → dados básicos do processo (pje-consulta-api)
 //   buscarCalculos(i)                 → cálculos do processo
 //   buscarDocumentos(i)               → documentos da timeline (documento===true)
 //   buscarDocumentosEMovimentos(i)    → toda a timeline (documentos + movimentos)
@@ -31,15 +31,21 @@
 
 // ── BUSCA DADOS BÁSICOS ───────────────────────────────────────
 
-async function buscarDadosBasicos(i) {
-    let numLimpo = i.replace(/[.\-]/g, '')
-    let dados = await rota_fetch(
-        location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
-    ) || await rota_fetch(
-        location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=1&numero=' + i
+async function buscarIdPeloNumeroCNJ(qualquerFormatoDeNumero) {
+    let numLimpo = qualquerFormatoDeNumero.replace(/[.\-]/g, '')
+    if (numLimpo.length !== 20) return null
+    let numero = numLimpo.replace(
+        /^(\d{7})(\d{2})(\d{4})(\d{1})(\d{2})(\d{4})$/,
+        '$1-$2.$3.$4.$5.$6'
     )
-    if(Array.isArray(dados))            return dados[0] || null
-    if(Array.isArray(dados?.resultado)) return dados.resultado[0] || null
+    let dados = await rota_fetch(
+        location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=1&numero=' + numero
+    ) || await rota_fetch(
+        location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numero
+    )
+	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+    if (Array.isArray(dados?.resultado)) return dados.resultado[0] || null
+    if (Array.isArray(dados))            return dados[0] || null
     return dados || null
 }
 

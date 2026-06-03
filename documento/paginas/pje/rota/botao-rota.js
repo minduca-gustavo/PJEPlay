@@ -863,20 +863,11 @@ function _rota_encontrarConteiner(el){
 //
 async function _rota_buscarIdProcesso(numero){
 	let numLimpo = numero.replace(/[.\-]/g, '')
-	let dados = await rota_fetch(
-		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
-	) || await rota_fetch(
-		location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=1&numero=' + numero
-	)
-	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.resultado.length), LOG.rosa, 'color:inherit')
-	let id = null
-	if(Array.isArray(dados) && dados.length) id = dados[0].id || dados[0].idProcesso || null
-	else if(Array.isArray(dados?.resultado) && dados?.resultado.length) id = dados?.resultado[0]?.id || null
-	else if(dados?.id)         id = dados.id
-	else if(dados?.idProcesso) id = dados.idProcesso
-	console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(dados?.resultado[0]?.id), LOG.teste, 'color:inherit')
-	console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(id), LOG.teste, 'color:inherit')
-
+	let dados = await buscarIdPeloNumeroCNJ(numero)
+	//console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(dados?.resultado[0]?.id), LOG.teste, 'color:inherit')
+	//console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(id), LOG.teste, 'color:inherit')
+	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+	let id = dados?.id
 	if(!id) return null
 
 	// Verifica e corrige a OJ antes de qualquer navegação
@@ -910,22 +901,7 @@ async function _rota_buscarIdProcesso(numero){
 //
 async function _rota_garantirOJCorreta(numero){
     try {
-        let dadosBasicos = typeof buscarDadosBasicos === 'function'
-            ? await buscarDadosBasicos(numero)
-            : await (async () => {
-                let numLimpo = numero.replace(/[.\-]/g, '')
-                let res1 = await rota_fetch(
-					location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
-				)
-				console.log('%c[Rota PJE]%c res1:', LOG.rosa, 'color:inherit', res1)
-				let res = res1 || await rota_fetch(
-					location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=1&numero=' + numero
-				)
-				console.log('%c[Rota PJE]%c res:', LOG.rosa, 'color:inherit', res)
-                if(Array.isArray(res))            return res[0]
-                if(Array.isArray(res?.resultado)) return res.resultado[0]
-                return res
-            })()
+        let dadosBasicos = await buscarIdPeloNumeroCNJ(numero)
 		console.log('%c[Rota PJE]%c dadosBasicos: ' + JSON.stringify(dadosBasicos), LOG.rosa, 'color:inherit')
         if(!dadosBasicos) return { ok: false, motivo: 'nao_encontrado' }
         let idProcesso = dadosBasicos.id || dadosBasicos.idProcesso

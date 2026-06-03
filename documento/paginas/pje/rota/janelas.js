@@ -175,10 +175,11 @@ async function rota_buscarDocumentos(idProcesso, tipoDoc, selecao){
 		let texto = [d.titulo, d.tipo].filter(Boolean).map(normalizar).join(' ')
 		return texto.includes(normalizar(tipoDoc))
 	})
-
+	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+	console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados), LOG.rosa, 'color:inherit')
 	if(!filtrados.length) return []
 
-	filtrados.sort((a, b) => new Date(a.dataDocumento || 0) - new Date(b.dataDocumento || 0))
+	filtrados.sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0))
 	
 	if(selecao === 'recente')   return [filtrados[filtrados.length - 1]]
 	if(selecao === 'antigo')    return [filtrados[0]]
@@ -289,6 +290,7 @@ async function rota_montarUrls(idProcesso, slots, numProc = ''){
 		if(slot.tipo === 'documento'){
 			let docs = await rota_buscarDocumentos(idProcesso, slot.tipoDoc || '', slot.selecao || 'recente')
 			let resultado = def.montarUrl(idProcesso, idTarefa, slot, docs)
+			console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
 			let urlsDoc   = Array.isArray(resultado) ? resultado : (resultado ? [resultado] : [])
 			urlsDoc.filter(Boolean).forEach(u => {
 				urls.push({
@@ -720,7 +722,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	// Passa o total de janelas na URL para que o slot 0 saiba quantas coordenar
 	let totalJanelas = urlSlots.length
 
-	urlSlots.forEach(slot => {
+	urlSlots.forEach((slot, i) => {
 		let geo = rota_calcularGeometria(slot.posicao)
 		// Recupera posição salva para este slotIndex nesta tarefa
 		let posSalva = widgetPosSlot?.[nomeAtivo]?.[slot.slotIndex] || null
@@ -743,7 +745,9 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 			+ (params.length ? '&pjerota_params=' + encodeURIComponent(JSON.stringify(params)) : '')
 			+ (tmrJson ? '&pjerota_tmr=' + tmrJson : '')
 
-		let nomeW = rota_nomeJanela(slot.slotIndex, execucao)
+		let nomeW = /\/documento\/\d+\/conteudo/.test(slot.url)
+			? rota_nomeJanela(slot.slotIndex + '-' + i, execucao)
+			: rota_nomeJanela(slot.slotIndex, execucao)
 		let w = window.open(
 			urlFinal, nomeW,   // ← aqui
 			'width='  + geo.width  + ',height=' + geo.height +

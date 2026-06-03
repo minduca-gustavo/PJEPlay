@@ -1,4 +1,3 @@
-let roteiro = 'movimentarConsole'
 /* FUNÇÃO DE BUSCA NO CONSOLE.
 function rota_movimentar_lerBotoesDisponiveis() {
   const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny')]
@@ -146,10 +145,10 @@ const HUB = 'Análise'
 // EXECUTORES
 // ------------------------------------------------------------
 const EXECUTORES = {
-  'Conclusão ao magistrado': rota_movimentar_executarConclusaoMagistrado,
-  'Elaborar despacho': rota_movimentar_executarElaborarDespachoSentencaDecisao,
-  'Elaborar decisão': rota_movimentar_executarElaborarDespachoSentencaDecisao,
-  'Elaborar sentença': rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Conclusão ao magistrado':  rota_movimentar_executarConclusaoMagistrado,
+  'Elaborar despacho':        rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Elaborar decisão':         rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Elaborar sentença':        rota_movimentar_executarElaborarDespachoSentencaDecisao,
 }
 
 
@@ -274,9 +273,7 @@ async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
 // ------------------------------------------------------------
 async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
   await aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
-  console.log('%c[Rota PJE]%c 271: passou daqui?', LOG.teste, 'color:inherit')
   const label = rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
-  console.log('%c[Rota PJE]%c 273: ' + JSON.stringify(label), LOG.aviso, 'color:inherit')
   const botao = await rota_movimentar_encontrarBotao(label)
   
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
@@ -290,8 +287,6 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 // ------------------------------------------------------------
 async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-  console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
-  console.log('%c[Rota PJE]%c ' + roteiro + ' parametros: ' + JSON.stringify(parametros), LOG.aviso, 'color:inherit')
   let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
   await clicar(selecao)
   let juiz = parametros.juiz.toUpperCase()
@@ -327,13 +322,10 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   // fase 1 — entra na tarefa Conclusão ao magistrado
 
   let elementos = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e'})
-  
-  console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), 'color:inherit', LOG.rosa, 'color:inherit')
+  console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.rosa, 'color:inherit')
   
   return
 
-  console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
-  console.log('%c[Rota PJE]%c ' + roteiro + ' parametros: ' + JSON.stringify(parametros), LOG.aviso, 'color:inherit')
   let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
   await clicar(selecao)
   let juiz = parametros.juiz.toUpperCase()
@@ -405,8 +397,6 @@ rota_movimentar_retomar()
 // movimentar
 // ------------------------------------------------------------
 async function movimentar(destino, params = {}) {
-  console.log('%c[Rota PJE]%c ' + roteiro + ' + destino: ' + JSON.stringify(destino), LOG.aviso, 'color:inherit')
-  console.log('%c[Rota PJE]%c ' + roteiro + ' + params: ' + JSON.stringify(params), LOG.aviso, 'color:inherit')
   await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
   await armazenar({rota_movimentar_destinoPendente: destino})
   await armazenar({rota_movimentar_params: params})
@@ -414,7 +404,6 @@ async function movimentar(destino, params = {}) {
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
     // se houver executor para a tarefa atual, roda antes de qualquer coisa
   let executorAtual = EXECUTORES[tarefaAtual]
-  console.log('%c[Rota PJE]%c ' + roteiro + ' executorAtual: ' + JSON.stringify(executorAtual), LOG.aviso, 'color:inherit')
   if (executorAtual && params[tarefaAtual]) {
     await executorAtual(tarefaAtual, params[tarefaAtual])
   }
@@ -429,8 +418,6 @@ async function movimentar(destino, params = {}) {
     await rota_movimentar_executarTransicaoSimples(tarefaAtual, proximaTarefa)
     tarefaAtual = await rota_movimentar_lerTarefaAtual()
     const executorProximo = EXECUTORES[tarefaAtual]
-    console.log('%c[Rota PJE]%c ' + roteiro + ' executorProximo: ' + JSON.stringify(executorProximo), LOG.aviso, 'color:inherit')
-    console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
     if (executorProximo && params[tarefaAtual]) {
       await executorProximo(tarefaAtual, params[tarefaAtual])
     }

@@ -315,7 +315,7 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
         await consulta_qualquer_ojErroNumero('fora do padrao')
         return
     }
-    let dadosBasicos = await buscarDadosBasicos(numeroDoProcesso)
+    let dadosBasicos = await buscarIdPeloNumeroCNJ(numeroDoProcesso)
     if (!dadosBasicos) {
         await consulta_qualquer_ojErroNumero('nao encontrado')
         return

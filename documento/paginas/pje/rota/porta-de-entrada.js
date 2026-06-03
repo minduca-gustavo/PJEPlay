@@ -217,14 +217,9 @@ async function entradaComPlanilha(contexto, scripts) {
 }
 
 async function _rota_buscarIdProcessoEDados(numero){
-	let numLimpo = numero.replace(/[.\-]/g, '')
 	
-	let dados = await rota_fetch(
-		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
-	)
+	let dados = await buscarIdPeloNumeroCNJ(numero)
 	
-	if(Array.isArray(dados) && dados.length) return dados[0] || null
-	//if(dados?.id)         return dados.id
-	//if(dados?.idProcesso) return dados.idProcesso
-	return null
+	return dados || null
+	
 }

@@ -46,8 +46,8 @@ const ROTA_CATALOGO = [
         descricao: 'Análise da petição inicial, autuação e encaminhamento.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
-    /*
     
+    /*
     {
         id:        'pos-triagem',
         label:     'Pós-Triagem',

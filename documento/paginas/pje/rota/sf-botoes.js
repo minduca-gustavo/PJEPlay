@@ -18,7 +18,7 @@
 //   sf_pool(itens, fn, { concorrencia, tentativas, pausaMs, onProgresso })
 //     → array de resultados na mesma ordem de itens
 //   buscarProcesso(id, path) / buscarDocumentos(id) / buscarMovimentos(id)
-//   buscarDadosBasicos(id) / buscarCalculos(id) / buscarChips(id) / buscarGigs(numProc)
+//   buscarIdPeloNumeroCNJ(id) / buscarCalculos(id) / buscarChips(id) / buscarGigs(numProc)
 //
 // O retorno da funcao pode ser:
 //   string         → exibida diretamente
