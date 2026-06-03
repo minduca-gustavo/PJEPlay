@@ -238,7 +238,7 @@ async function triagem_inicial_acoesDespachar(){
     console.log('%c[Rota PJE]%c ' + 'tipo: ' + tipo + ' / juiz: ' + juizEnvio, LOG.teste, 'color:inherit')
     let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
     console.log('%c[Rota PJE]%c linha 240: ' + JSON.stringify(tarefa?.innerText), LOG.teste, 'color:inherit')
-    await movimentar('Despacho', {'Conclusão ao magistrado':{'juiz': juizEnvio}})
+    await movimentar('Despacho', {'Conclusão ao magistrado':{'juiz': juizEnvio}}, {'Elaborar despacho':{'modelo': 'Modelo'}})
 }
 
 

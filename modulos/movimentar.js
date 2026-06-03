@@ -147,6 +147,9 @@ const HUB = 'Análise'
 // ------------------------------------------------------------
 const EXECUTORES = {
   'Conclusão ao magistrado': rota_movimentar_executarConclusaoMagistrado,
+  'Elaborar despacho': rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Elaborar decisão': rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Elaborar sentença': rota_movimentar_executarElaborarDespachoSentencaDecisao,
 }
 
 
@@ -270,7 +273,7 @@ async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
 // rota_movimentar_executarTransicaoSimples
 // ------------------------------------------------------------
 async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
-  aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
+  await aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
   console.log('%c[Rota PJE]%c 271: passou daqui?', LOG.teste, 'color:inherit')
   const label = rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
   console.log('%c[Rota PJE]%c 273: ' + JSON.stringify(label), LOG.aviso, 'color:inherit')
@@ -287,6 +290,48 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 // ------------------------------------------------------------
 async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
+  console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
+  console.log('%c[Rota PJE]%c ' + roteiro + ' parametros: ' + JSON.stringify(parametros), LOG.aviso, 'color:inherit')
+  let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
+  await clicar(selecao)
+  let juiz = parametros.juiz.toUpperCase()
+  await aguardarElementoNovo('opcoesDeMagistradosNaTelaDaConclusao')
+  let juizes = [...(await sel ('opcoesDeMagistradosNaTelaDaConclusao', '', true))]
+  let juizSelecionado = juizes.find(j => j.textContent?.trim().includes(juiz))
+  await clicar(juizSelecionado)
+
+  return
+  await armazenar({rota_movimentar_executarConclusaoMagistrado: juiz})
+  const botaoEntrada = await rota_movimentar_encontrarBotao('Conclusão ao magistrado')
+  if (!botaoEntrada) throw new Error('Botão "Conclusão ao magistrado" não encontrado.')
+  await clicar(botaoEntrada)
+  let juizArmazenado = await obterArmazenamento('rota_movimentar_executarConclusaoMagistrado')
+  let juizEscolher = juizArmazenado?.rota_movimentar_executarConclusaoMagistrado
+  await removerArmazenamento('rota_movimentar_executarConclusaoMagistrado')
+  
+  return
+  // fase 2 — preenche e segue para o destino (ex: Despacho, Sentença...)
+  if (params.juiz) await rota_movimentar_selecionarOpcao('.magistrado', params.juiz)
+
+  const botaoDestino = await rota_movimentar_encontrarBotao(nomeTarefaDestino)
+  if (!botaoDestino) throw new Error(`Botão não encontrado para: "${nomeTarefaDestino}"`)
+  await clicar(botaoDestino)
+  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
+}
+
+
+// ------------------------------------------------------------
+// rota_movimentar_executarElaborarDespachoSentencaDecisao
+// ------------------------------------------------------------
+async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros) {
+  // fase 1 — entra na tarefa Conclusão ao magistrado
+
+  let elementos = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e'})
+  
+  console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), 'color:inherit', LOG.rosa, 'color:inherit')
+  
+  return
+
   console.log('%c[Rota PJE]%c ' + roteiro + ' tarefaAtual: ' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
   console.log('%c[Rota PJE]%c ' + roteiro + ' parametros: ' + JSON.stringify(parametros), LOG.aviso, 'color:inherit')
   let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')

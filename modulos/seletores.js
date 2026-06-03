@@ -140,6 +140,14 @@ const SELETORES = {
     botaoFecharDesignacaoDeAudiencia:{
       seletor: 'button',
       ancestral: '.container-conteudo'
+    },
+    corpoDoDocumentoNaTelaDeElaborarFundamentacao:{
+      seletor: '.corpo',
+      ancestral: '[aria-label*="Fundamentação"]'
+    },
+    buscarModelosNaTelaDeElaborar:{
+      seletor: '#inputFiltro',
+      ancestral: 'pje-arvore-modelo-documento'
     }
     
     

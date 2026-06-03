@@ -32,11 +32,15 @@
 // ── BUSCA DADOS BÁSICOS ───────────────────────────────────────
 
 async function buscarDadosBasicos(i) {
-	let dados = await rota_fetch(
-		location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + i
-	)
-	if (Array.isArray(dados)) return dados[0] || null
-	return dados || null
+    let numLimpo = i.replace(/[.\-]/g, '')
+    let dados = await rota_fetch(
+        location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numLimpo
+    ) || await rota_fetch(
+        location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=1&numero=' + i
+    )
+    if(Array.isArray(dados))            return dados[0] || null
+    if(Array.isArray(dados?.resultado)) return dados.resultado[0] || null
+    return dados || null
 }
 
 

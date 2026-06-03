@@ -2,11 +2,21 @@ async function suspender(ms = 1000){
 	return new Promise(r => setTimeout(r, ms))
 }
 
+//function clicar(el = ''){
+//  let descricao = el?.textContent || el?.innerText || el?.getAttribute('aria-label') || ''
+//	console.log('%c[Rota PJE]%c clicar: ' + JSON.stringify(descricao), LOG.info, 'color:inherit')
+//	if(typeof el === 'string') el = selecionar(el)
+//	if(!el) return ''
+//	el.click(); return el
+//}
+
 function clicar(el = ''){
-	console.log('clicar')
-	if(typeof el === 'string') el = selecionar(el)
-	if(!el) return ''
-	el.click(); return el
+  if(typeof el === 'string') el = selecionar(el)
+  if(!el) return ''
+  el.click()
+  let descricao = el?.textContent?.trim() || el?.getAttribute?.('aria-label') || ''
+  console.log('%c[Rota PJE]%c clicar: ' + JSON.stringify(descricao), LOG.info, 'color:inherit')
+  return el
 }
 
 function focar(el = ''){
