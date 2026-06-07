@@ -321,9 +321,13 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
 async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
 
-  let elementos = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e'})
+  let elemento = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e'})
   console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.rosa, 'color:inherit')
-  
+  await digitarNoInput(campo = elemento, valor = parametros.modelo)
+  await aguardarElementoNovo('opcaoDeModeloNaTelaDeElaborarDespacho')
+  let opcoesModelo = [...(await sel('opcaoDeModeloNaTelaDeElaborarDespacho', '', true))]
+  let opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(parametros.modelo))
+  await clicar(opcaoModelo)
   return
 
   let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')

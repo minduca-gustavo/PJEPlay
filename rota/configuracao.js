@@ -5,7 +5,7 @@
 
 
 // ── Identidade ────────────────────────────────────────────────
-
+const ROTA_LINUX = navigator.userAgent.includes('Linux') && !navigator.userAgent.includes('Android')
 const ROTA_NOME        = 'Rota PJE'
 const ROTA_NOME_COMPLETO = 'Roteiro Operacional de Tarefas para o PJE'
 const ROTA_VERSAO      = '2.0.0'

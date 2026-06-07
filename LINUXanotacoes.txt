@@ -1,0 +1,187 @@
+Abre um "editor de texto" pra configurar o atalho:
+
+sudo nano /usr/share/applications/firefox-dev.desktop
+
+# Comandos Linux — Configuração do Ubuntu
+
+## Sistema
+
+**Verificar arquitetura do processador**
+```bash
+uname -m
+```
+Retorna `x86_64` (Intel/AMD 64 bits) ou `aarch64` (ARM).
+
+**Atualizar o sistema e programas instalados**
+```bash
+sudo apt update && sudo apt upgrade
+```
+
+**Reiniciar o computador**
+```bash
+sudo reboot
+```
+
+---
+
+## Git
+
+**Verificar se o Git está instalado**
+```bash
+git --version
+```
+
+**Instalar o Git**
+```bash
+sudo apt install git
+```
+
+**Clonar um repositório**
+```bash
+git clone https://github.com/seu-usuario/seu-repositorio.git
+```
+
+**Clonar um branch específico**
+```bash
+git clone -b nome-do-branch https://github.com/seu-usuario/seu-repositorio.git
+```
+
+---
+
+## Firefox
+
+**Verificar versão instalada**
+```bash
+firefox --version
+```
+
+**Atualizar Firefox via snap**
+```bash
+sudo snap refresh firefox
+```
+
+**Remover Firefox snap**
+```bash
+sudo snap remove firefox
+```
+
+**Extrair arquivo baixado do site da Mozilla (.tar.xz)**
+```bash
+cd ~/Downloads
+tar -xJf firefox-*.tar.xz
+```
+
+**Testar o Firefox extraído antes de instalar**
+```bash
+cd firefox
+./firefox
+```
+
+**Mover Firefox para pasta definitiva**
+```bash
+sudo mv ~/Downloads/firefox /opt/firefox
+```
+
+**Criar atalho de terminal para o Firefox**
+```bash
+sudo ln -s /opt/firefox/firefox /usr/local/bin/firefox
+```
+
+---
+
+## Atalhos de aplicativos (arquivos .desktop)
+
+Os atalhos ficam em `/usr/share/applications/` e aparecem no menu de aplicativos do GNOME.
+
+**Criar ou editar um atalho**
+```bash
+sudo nano /usr/share/applications/firefox-dev.desktop
+```
+
+**Conteúdo do arquivo .desktop (um por perfil)**
+```ini
+[Desktop Entry]
+Name=Firefox Dev
+Exec=/opt/firefox/firefox -P "Dev" --no-remote
+Icon=/opt/firefox/browser/chrome/icons/default/firefox-dev-256.png
+Type=Application
+Categories=Network;WebBrowser;
+```
+> Troca `Name`, `-P "Dev"` e `Icon` para cada perfil.
+> `--no-remote` é obrigatório para abrir perfis separados ao mesmo tempo.
+
+**Salvar no nano:** `Ctrl+O` → Enter → `Ctrl+X`
+
+**Atualizar banco de atalhos após criar/editar .desktop**
+```bash
+sudo update-desktop-database
+```
+
+---
+
+## Ícones
+
+Ícones PNG ficam em:
+```
+/usr/share/icons/hicolor/128x128/apps/
+```
+Ou diretamente na pasta do Firefox:
+```
+/opt/firefox/browser/chrome/icons/default/
+```
+
+No campo `Icon=` do `.desktop`, pode usar o caminho completo do arquivo PNG.
+
+Site para baixar ícones com cor personalizada (hex): **iconsdb.com**
+
+---
+
+## Perfis do Firefox
+
+**Arquivo de configuração dos perfis**
+```
+~/snap/firefox/common/.mozilla/firefox/profiles.ini
+```
+
+**Estrutura do profiles.ini**
+```ini
+[Profile0]
+Name=NomeDoPerfil
+IsRelative=1
+Path=pastadoperfil.NomeDoPerfil
+Default=1   ← apenas UM perfil deve ter isso
+
+[General]
+StartWithLastProfile=1
+Version=2
+```
+
+**Corrigir perfil de versão diferente do Firefox**
+
+Dentro de cada pasta de perfil, edita o arquivo `compatibility.ini`:
+- Muda `LastVersion` para a versão atual do Firefox
+- Muda `LastOSABI` de `WINNT_x86_64-gcc3` para `Linux_x86_64-gcc3`
+
+---
+
+## Arquivos e pastas
+
+**Ver espaço usado nos volumes montados**
+```bash
+df -h
+```
+
+**Ver tamanho das pastas dentro de um diretório**
+```bash
+du -h --max-depth=1 /caminho/da/pasta | sort -rh | head -20
+```
+
+**Listar arquivos de uma pasta**
+```bash
+ls /caminho/da/pasta
+```
+
+**Mostrar arquivos ocultos no gerenciador de arquivos**
+```
+Ctrl+H
+```

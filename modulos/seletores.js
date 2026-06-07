@@ -148,6 +148,10 @@ const SELETORES = {
     buscarModelosNaTelaDeElaborar:{
       seletor: '#inputFiltro',
       ancestral: 'pje-arvore-modelo-documento'
+    },
+    opcaoDeModeloNaTelaDeElaborarDespacho:{
+      seletor: '.nodo-filtrado',
+      ancestral: 'arvore-container'
     }
     
     
