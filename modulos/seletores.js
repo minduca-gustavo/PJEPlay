@@ -145,6 +145,9 @@ const SELETORES = {
       seletor: '.corpo',
       ancestral: '[aria-label*="Fundamentação"]'
     },
+    corpoDoDocumentoNaTelaDeElaborarFundamentacaoFocar:{
+      seletor: '[aria-label*="Fundamentação"]'
+    },
     buscarModelosNaTelaDeElaborar:{
       seletor: '#inputFiltro',
       ancestral: 'pje-arvore-modelo-documento'
@@ -152,6 +155,9 @@ const SELETORES = {
     opcaoDeModeloNaTelaDeElaborarDespacho:{
       seletor: '.nodo-filtrado',
       ancestral: 'arvore-container'
+    },
+    botaoInserirModeloDeDespacho:{
+      seletor: '[aria-label*="Inserir modelo de documento"]',
     }
     
     

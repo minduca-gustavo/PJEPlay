@@ -320,14 +320,37 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
 // ------------------------------------------------------------
 async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-
   let elemento = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e'})
   console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.rosa, 'color:inherit')
+  let campoTexto = await sel('corpoDoDocumentoNaTelaDeElaborarFundamentacaoFocar')
+  console.log('%c[Rota PJE]%c campoTexto: ' + JSON.stringify(campoTexto.getAttribute('aria-label')), LOG.rosa, 'color:inherit')
+  await focar(campoTexto)
+  await suspender(500)
   await digitarNoInput(campo = elemento, valor = parametros.modelo)
-  await aguardarElementoNovo('opcaoDeModeloNaTelaDeElaborarDespacho')
-  let opcoesModelo = [...(await sel('opcaoDeModeloNaTelaDeElaborarDespacho', '', true))]
-  let opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(parametros.modelo))
+  let opcaoModelo = null
+  for(let i = 0; i < 30 * 2; i++){
+    await suspender(500)
+    let opcoesModelo = [...(await sel('opcaoDeModeloNaTelaDeElaborarDespacho', '', true))]
+    opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(parametros.modelo))
+    console.log('%c[Rota PJE]%c opcaoModelo' + JSON.stringify(opcaoModelo), LOG.rosa, 'color:inherit')
+    
+    if (opcaoModelo) {
+      break
+    }
+    
+  }
+
   await clicar(opcaoModelo)
+  let botaoInserir = null
+  for(let i = 0; i < 30 * 2; i++){
+    await suspender(500)
+    botaoInserir = await sel('botaoInserirModeloDeDespacho')
+    if (botaoInserir) {
+      break
+    }
+    await suspender(500)
+  }
+  await clicar(botaoInserir)
   return
 
   let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
