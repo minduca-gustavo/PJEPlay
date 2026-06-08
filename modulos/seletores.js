@@ -158,6 +158,14 @@ const SELETORES = {
     },
     botaoInserirModeloDeDespacho:{
       seletor: '[aria-label*="Inserir modelo de documento"]',
+    },
+    botaoEnviarParaAssinatura:{
+      seletor: '[aria-label*="Enviar para assinatura"]',
+      ancestral: 'botoes-acoes'
+    },
+    boaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '#nova-atividade',
+      ancestral: 'pje-gigs-ficha-processo'
     }
     
     

@@ -29,3 +29,9 @@ função tira duplicações:
 
 direto pra data BR:
 let dataEntradaTarefa = new Date(tarefas[tarefas.length - 1]?.inicio).toLocaleDateString('pt-BR')
+
+de data JS pra número:
+const ts = new Date("2026-07-20T13:30:00").getTime()  // número em ms
+
+const trintaDiasAntes = ts - 30 * 24 * 60 * 60 * 1000
+//                                        ↑ faltou esse 60 (segundos)

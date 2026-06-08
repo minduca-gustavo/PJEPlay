@@ -103,6 +103,127 @@ function criaDiv({ id, ancestral }) {
 }
 
 
+// ── criaDivFlutuante ──────────────────────────────────────────
+//
+// Container flutuante arrastável. O usuário pode mover pela
+// barra de título. A posição é salva via armazenar/obterArmazenamento.
+//
+// O roteiro insere outros componentes usando o id como ancestral.
+//
+// criaDivFlutuante({ id, titulo, largura, ancestral })
+//   largura: opcional, padrão '280px'
+//   ancestral: opcional — se omitido, insere em document.body
+
+async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral }) {
+
+    // ── posição inicial ───────────────────────────────────────
+    const CHAVE   = 'ui_flutuante_pos_' + id
+    const POS_PAD = 16
+    let posicao   = { top: POS_PAD, left: POS_PAD }
+
+    const salvo = await obterArmazenamento(CHAVE)
+    if (salvo && typeof salvo.top === 'number') {
+        const maxTop  = Math.max(0, window.innerHeight - 120)   // pelo menos a barra visível
+        const maxLeft = Math.max(0, window.innerWidth  - 120)   // pelo menos 60px visíveis
+        posicao = {
+            top:  Math.min(Math.max(0, salvo.top),  maxTop),
+            left: Math.min(Math.max(0, salvo.left), maxLeft),
+        }
+    }
+
+    // ── wrapper (position:fixed) ──────────────────────────────
+    const wrapper = _ui_el('div', {
+        position:      'fixed',
+        top:           posicao.top  + 'px',
+        left:          posicao.left + 'px',
+        width:         largura,
+        background:    UI_CORES.branco,
+        border:        '1px solid ' + UI_CORES.borda,
+        borderRadius:  '8px',
+        boxShadow:     '0 4px 16px rgba(0,0,0,0.15)',
+        zIndex:        String(ROTA_Z.flutuante ?? 9000),
+        display:       'flex',
+        flexDirection: 'column',
+        fontFamily:    "'Segoe UI', system-ui, sans-serif",
+        userSelect:    'none',
+        minWidth:      '180px',
+    })
+    wrapper.id = id
+
+    // ── barra de título (handle de arrasto) ───────────────────
+    const barra = _ui_el('div', {
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'space-between',
+        background:     UI_CORES.azul,
+        color:          UI_CORES.branco,
+        borderRadius:   '7px 7px 0 0',
+        padding:        '6px 10px',
+        cursor:         'grab',
+        fontSize:       '12px',
+        fontWeight:     '700',
+        flexShrink:     '0',
+    })
+
+    const barraTexto = _ui_el('span', {})
+    barraTexto.textContent = titulo
+
+    barra.appendChild(barraTexto)
+    wrapper.appendChild(barra)
+
+    // ── corpo (ancestral dos componentes filhos) ──────────────
+    const corpo = _ui_el('div', {
+        display:       'flex',
+        flexDirection: 'column',
+        gap:           '6px',
+        padding:       '8px 0 6px 0',
+        overflowY:     'auto',
+        maxHeight:     '80vh',
+    })
+    corpo.id = id + '-corpo'
+    wrapper.appendChild(corpo)
+
+    // ── arrasto ───────────────────────────────────────────────
+    let arrastando = false
+    let origemX, origemY, inicioTop, inicioLeft
+
+    barra.addEventListener('mousedown', (e) => {
+        arrastando = true
+        origemX    = e.clientX
+        origemY    = e.clientY
+        inicioTop  = parseInt(wrapper.style.top)  || 0
+        inicioLeft = parseInt(wrapper.style.left) || 0
+        barra.style.cursor = 'grabbing'
+        e.preventDefault()
+    })
+
+    document.addEventListener('mousemove', (e) => {
+        if (!arrastando) return
+        const novoTop  = inicioTop  + (e.clientY - origemY)
+        const novoLeft = inicioLeft + (e.clientX - origemX)
+        wrapper.style.top  = novoTop  + 'px'
+        wrapper.style.left = novoLeft + 'px'
+    })
+
+    document.addEventListener('mouseup', async () => {
+        if (!arrastando) return
+        arrastando         = false
+        barra.style.cursor = 'grab'
+        const top  = parseInt(wrapper.style.top)
+        const left = parseInt(wrapper.style.left)
+        await armazenar(CHAVE, { top, left })
+    })
+
+    // ── inserção ──────────────────────────────────────────────
+    if (ancestral) {
+        _ui_inserir(wrapper, ancestral)
+    } else {
+        document.body.appendChild(wrapper)
+    }
+
+    return wrapper
+}
+
 // ── criaTitulo ────────────────────────────────────────────────
 //
 // Texto de título (h2 visual). Linha azul à esquerda.

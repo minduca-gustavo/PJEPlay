@@ -273,6 +273,19 @@ async function buscarGigs(numProc) {
 }
 
 
+
+// ── BUSCA AUDIENCIAS ─────────────────────────────────────────
+
+async function buscarAudienciasMarcadas(id) {
+	
+	let dados = await rota_fetch(
+		location.origin + '/pje-comum-api/api/processos/id/' + id + '/audiencias?status=M'
+	)
+	if (Array.isArray(dados)) dados = dados[0] || {}
+	return dados
+}
+//pje-comum-api/api/processos/id/4696341/audiencias?status=M
+
 // ── BUSCA MOVIMENTOS ─────────────────────────────────────────
 
 async function buscarMovimentos(i) {

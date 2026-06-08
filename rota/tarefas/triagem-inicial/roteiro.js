@@ -198,10 +198,12 @@ triagem_inicial_aoAbrirRetificar()
 
 async function triagem_inicial_despachar(tipo) {
     let envio = tipo.tipo
+    let horario = tipo.horario
     console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
     await armazenar({
         'rota_pje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rota_pje_triagem_inicial_despachar_tipo': envio,
+        'rota_pje_triagem_inicial_despachar_horario': horario,
     })
     let parametros =    '?rota_pje_triagem_inicial_despachar=' + dadosTriagemInicial.execucaoAtual + 
                         '&rota_pje_triagem_inicial_despachar_tipo=' + envio
@@ -235,10 +237,32 @@ async function triagem_inicial_acoesDespachar(){
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
     ])
     if(!juizEnvio) juizEnvio = await triagem_inicial_buscarJuizNoModelo() || ''
-    console.log('%c[Rota PJE]%c ' + 'tipo: ' + tipo + ' / juiz: ' + juizEnvio, LOG.teste, 'color:inherit')
     let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
-    console.log('%c[Rota PJE]%c linha 240: ' + JSON.stringify(tarefa?.innerText), LOG.teste, 'color:inherit')
-    await movimentar('Despacho', {'Conclusão ao magistrado':{'juiz': juizEnvio}, 'Elaborar despacho':{'modelo': 'SLQGER','prazo':'15'}})
+    let dados = await obterArmazenamento('rota_dadosTriagemInicial')
+    let id = dados?.rota_dadosTriagemInicial?.processo?.id
+    let audienciasMarcadas = await buscarAudienciasMarcadas(id)
+    let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
+    let tiposAudiencia = {
+        'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
+        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
+    }
+    await movimentar('Despacho', {
+        'Conclusão ao magistrado':{'juiz': juizEnvio},
+        'Elaborar despacho':{'modelo': tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD','prazo':'5'}
+    })
+    let botaoEnviarParaAssinatura = await aguardarElementoNovo('botaoEnviarParaAssinatura')
+    await clicar(botaoEnviarParaAssinatura)
+    for(let i = 0; i < 30 * 2; i++){
+        let assinar = await sel('tituloDaTarefaNaJanelaDeTarefa')
+        if (assinar.textContent.includes('Assinar despacho')){
+            break
+        }
+        await suspender(500)
+    }
+    await suspender(2000)
+    window.close()
+    return
+
 }
 
 
@@ -334,10 +358,10 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     let [tipo, aviso] = [null, null]
     if (manualOuErro == 'erro') {
         tipo  = 'erro'
-        aviso = 'Ocorreu um erro. Designe manualmente a audiência, e clique em "Próximo".'
+        aviso = 'Ocorreu um erro. Designe manualmente a audiência.'
     } else {
         tipo  = 'info'
-        aviso = 'Designe manualmente a audiência, e clique em "Próximo".'
+        aviso = 'Designe manualmente a audiência.'
     }
     await rota_avisoTemporario(aviso, tipo, 10000)
     return
@@ -376,7 +400,6 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let inputDataDesignarAudiencia = await aguardarElementoNovo('inputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
-    console.log('%c[Rota PJE]%c 355: ' + horarioInicial, LOG.teste, 'color:inherit')
     await preencher(inputDataDesignarAudiencia, dataAudiencia)
     let inputHorarioDesignarAudiencia = await aguardarElementoNovo('inputHorarioDesignarAudiencia')
     await preencher(inputHorarioDesignarAudiencia, horarioInicial)
@@ -401,6 +424,18 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
 triagem_inicial_aoAbrirDesignarAudiencia()
 
 //__________________________________________________
+//                      COLOCAR GIG DE ACOMPANHAMENTO
+//__________________________________________________
+
+async function triagem_inicial_colocarGigDeAcompanhamento() {
+    let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
+    let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
+    console.log('%c[Rota PJE]%c audienciaMarcadaHorario: ' + JSON.stringify(audienciaMarcadaHorario), LOG.rosa, 'color:inherit')
+    rota_avisoTemporario(JSON.stringify(audienciaMarcadaHorario), tipo = 'info', ms = 2000)
+    //console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.teste, 'color:inherit')
+}
+
+//__________________________________________________
 //                      COMANDAR
 //__________________________________________________
 
@@ -408,7 +443,7 @@ triagem_inicial_aoAbrirDesignarAudiencia()
 const rota_acoes = {
     'triagem_inicial_designa_audiencia': async (p) => await triagem_inicial_designarAudiencia(p),
     'triagem_inicial_despachar': async (p) => await triagem_inicial_despachar(p),
-    'triagem_inicial_gig': async (p) => await verificarOQueChegou(p),
+    'triagem_inicial_gig': async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
     'triagem_inicial_certidao': async (p) => await verificarOQueChegou(p),
     'triagem_inicial_retificar': async (p) => await triagem_inicial_retificarAutuacao(p),
 }
