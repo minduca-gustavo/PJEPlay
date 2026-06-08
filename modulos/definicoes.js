@@ -14,6 +14,8 @@ obterArmazenamento(['modoDev']).then(cfg => {
     MODO_DEV = cfg?.modoDev === true
 })
 
+
+
 // Reage a mudanças em tempo real (popup alterando o valor)
 NAVEGADOR.storage.onChanged.addListener((changes) => {
     if ('modoDev' in changes) {

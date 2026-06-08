@@ -8,6 +8,41 @@ function selecionar(seletor = '', ancestral = '', todos = false){
 	} catch(e){ relatar('selecionar erro:', e, 'erro'); return '' }
 }
 
+// capturar nome do usuário
+
+let USUARIO = {
+    nome: null,
+    idPerfil: null,
+}
+
+let paginasConfereUSUARIO = [
+    '.jus.br/pjekz/painel',
+    '.jus.br/pjekz/pdpj',
+    '.jus.br/pjekz/comunicacoesprocessuais',
+    '.jus.br/pjekz/configuracao',
+    '.jus.br/pjekz/escaninho',
+    '.jus.br/pjekz/atas-audiencias',
+    '.jus.br/pjekz/pauta-audiencias',
+    '.jus.br/gigs/meu-painel',
+    '.jus.br/gigs/relatorios',
+    '.jus.br/exe-pje'
+]
+
+async function identificaUsuario() {
+    if (!paginasConfereUSUARIO.some(p => location.href.includes(p))) return
+
+    for (let i = 0; i < 10 * 2; i++) {
+        const el = document.querySelector('.nome-usuario')
+        if (el?.textContent?.trim()) {
+            USUARIO.nome = el.textContent.trim()
+            break
+        }
+        await suspender(500)
+    }
+
+    await armazenar({ usuario: USUARIO })
+}
+
 function confereJanela(...janelas) {
 	console.log('dentro do confereJanela, procurando agora: ' + location.href)
     return janelas.some(regex => regex.test(location.href))

@@ -430,8 +430,25 @@ triagem_inicial_aoAbrirDesignarAudiencia()
 async function triagem_inicial_colocarGigDeAcompanhamento() {
     let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
-    console.log('%c[Rota PJE]%c audienciaMarcadaHorario: ' + JSON.stringify(audienciaMarcadaHorario), LOG.rosa, 'color:inherit')
-    rota_avisoTemporario(JSON.stringify(audienciaMarcadaHorario), tipo = 'info', ms = 2000)
+    let audienciaMarcadaNumero = new Date(audienciaMarcadaHorario).getTime()
+    let hoje = new Date().getTime()
+    let trintaDiasAntes = audienciaMarcadaNumero - 30 * 24 * 60 * 60 * 1000
+    let dataGig
+    if (hoje < trintaDiasAntes) {
+        dataGig = new Date(trintaDiasAntes).toLocaleDateString('pt-BR')
+    } else if (audienciaMarcadaNumero - hoje < 10 * 24 * 60 * 60 * 1000) {
+        dataGig = new Date(audienciaMarcadaNumero).toLocaleDateString('pt-BR')
+    } else {
+        dataGig = new Date(hoje + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
+    }
+    console.log('%c[Rota PJE]%c dataGig: ' + JSON.stringify(dataGig), LOG.rosa, 'color:inherit')
+    let novaAtividade = await aguardarElementoNovo('botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso')
+    await clicar(novaAtividade)
+    let inputData = await aguardarElementoNovo('inputDataPrazoGigsNaJanelaDetalhesDoProcesso')
+    await preencher(inputData, dataGig)
+    let inputTipoAtividade = await aguardarElementoNovo('inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso')
+    await preencher(inputData, 'Audiência')
+    rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
     //console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.teste, 'color:inherit')
 }
 

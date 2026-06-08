@@ -163,9 +163,17 @@ const SELETORES = {
       seletor: '[aria-label*="Enviar para assinatura"]',
       ancestral: 'botoes-acoes'
     },
-    boaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso:{
+    botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso:{
       seletor: '#nova-atividade',
       ancestral: 'pje-gigs-ficha-processo'
+    },
+    inputDataPrazoGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '[formcontrolname="dataPrazo"]',
+      ancestral: 'pje-gigs-cadastro-atividades'
+    },
+    inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '[formcontrolname="tipoAtividade"]',
+      ancestral: 'pje-gigs-cadastro-atividades'
     }
     
     
