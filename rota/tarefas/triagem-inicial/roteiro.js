@@ -198,12 +198,10 @@ triagem_inicial_aoAbrirRetificar()
 
 async function triagem_inicial_despachar(tipo) {
     let envio = tipo.tipo
-    let horario = tipo.horario
     console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
     await armazenar({
         'rota_pje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rota_pje_triagem_inicial_despachar_tipo': envio,
-        'rota_pje_triagem_inicial_despachar_horario': horario,
     })
     let parametros =    '?rota_pje_triagem_inicial_despachar=' + dadosTriagemInicial.execucaoAtual + 
                         '&rota_pje_triagem_inicial_despachar_tipo=' + envio
@@ -240,27 +238,34 @@ async function triagem_inicial_acoesDespachar(){
     let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
     let dados = await obterArmazenamento('rota_dadosTriagemInicial')
     let id = dados?.rota_dadosTriagemInicial?.processo?.id
-    let audienciasMarcadas = await buscarAudienciasMarcadas(id)
+    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
     let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
     let tiposAudiencia = {
         'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
         'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
     }
+    console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
+    let modeloDespacho = ''
+    if (tipo !== 'triagem_inicial_emendar'){
+        modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
+    }
     await movimentar('Despacho', {
         'Conclusão ao magistrado':{'juiz': juizEnvio},
-        'Elaborar despacho':{'modelo': tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD','prazo':'5'}
+        'Elaborar despacho':{'modelo': modeloDespacho}
     })
-    let botaoEnviarParaAssinatura = await aguardarElementoNovo('botaoEnviarParaAssinatura')
-    await clicar(botaoEnviarParaAssinatura)
-    for(let i = 0; i < 30 * 2; i++){
-        let assinar = await sel('tituloDaTarefaNaJanelaDeTarefa')
-        if (assinar.textContent.includes('Assinar despacho')){
-            break
+    if (modeloDespacho !== ''){
+        let botaoEnviarParaAssinatura = await aguardarElementoNovo('botaoEnviarParaAssinatura')
+        await clicar(botaoEnviarParaAssinatura)
+        for(let i = 0; i < 30 * 2; i++){
+            let assinar = await sel('tituloDaTarefaNaJanelaDeTarefa')
+            if (assinar.textContent.includes('Assinar despacho')){
+                break
+            }
+            await suspender(500)
         }
-        await suspender(500)
+        await suspender(2000)
+        if (audienciasMarcadas) window.close()
     }
-    await suspender(2000)
-    window.close()
     return
 
 }
@@ -303,6 +308,7 @@ async function triagem_inicial_designarAudiencia(tipo) {
 
 // DESIGNAR AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
 async function triagem_inicial_aoAbrirDesignarAudiencia(){
+    
     let janela = confereJanela(JANELA.pautaAudiencias)
     if (!janela) return
     let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia')
@@ -311,6 +317,7 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
     let nomeJanela = window.name
     if (!nomeJanela.includes('rota_pje_triagem_inicial_designa_audiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
+    console.log('%c[Rota PJE]%c PAUTA: armazenamento=' + JSON.stringify(armazenamento) + ' nomeJanela=' + nomeJanela, LOG.rosa, 'color:inherit')
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesDesignarAudiencia()
 }
@@ -442,12 +449,11 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
         dataGig = new Date(hoje + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
     }
     console.log('%c[Rota PJE]%c dataGig: ' + JSON.stringify(dataGig), LOG.rosa, 'color:inherit')
-    let novaAtividade = await aguardarElementoNovo('botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso')
-    await clicar(novaAtividade)
-    let inputData = await aguardarElementoNovo('inputDataPrazoGigsNaJanelaDetalhesDoProcesso')
-    await preencher(inputData, dataGig)
-    let inputTipoAtividade = await aguardarElementoNovo('inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso')
-    await preencher(inputData, 'Audiência')
+    let usuarioObter = await obterArmazenamento('rota_usuario')
+    let usuario = usuarioObter?.rota_usuario.nome || ''
+    console.log('%c[Rota PJE]%c usuario: ' + JSON.stringify(usuario), LOG.rosa, 'color:inherit')
+    await aguardarElementoNovo('botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso')
+    await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
     rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
     //console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.teste, 'color:inherit')
 }

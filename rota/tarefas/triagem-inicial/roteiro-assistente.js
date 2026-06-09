@@ -170,11 +170,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaDivExecucao({
         id: id(tarefaNome, bloco, 'acoes_conjuntas'),
         idColuna: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-        idBotaoExecutar: id(tarefaNome, bloco, 'acoes_conjuntas', 'executar'),
-        acaoBotaoExecutar: () => triagemDesignarAudienciaAcoesConjuntas('designa_audiencia'),
+        idBotaoExecutar: id(tarefaNome, bloco, 'acoes_conjuntas', 'executar'), 
+        acaoBotaoExecutar: () => alert('Em desenvolvimento'), /*triagemDesignarAudienciaAcoesConjuntas('designa_audiencia')*/
         ancestral: id(tarefaNome, bloco)
     })
-   
+    
 
     criaTextoQueAbrePassandoOMouse({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'instrucao'),
@@ -233,10 +233,12 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao'),
         idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
         texto: 'Certificar a designação e intimar.',
-        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-        acao: () => comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}]),
+        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), /*comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}]),*/
+        acao: () => alert ('Em desenvolvimento'),
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
+    
+
     document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox')).click()
 
     criaBotaoAzulComCheckBox({

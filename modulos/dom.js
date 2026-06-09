@@ -40,8 +40,10 @@ async function identificaUsuario() {
         await suspender(500)
     }
 
-    await armazenar({ usuario: USUARIO })
+    await armazenar({ rota_usuario: USUARIO })
 }
+
+identificaUsuario()
 
 function confereJanela(...janelas) {
 	console.log('dentro do confereJanela, procurando agora: ' + location.href)
@@ -114,12 +116,14 @@ function comandar(acoes, parametros) {
 }
 
 // roteiro.js
+
 async function obedecer(mudancas) {
     const comando = mudancas['rota_comando']?.newValue
+    console.log('%c[Rota PJE]%c OBEDECER chamado: ' + JSON.stringify(comando), LOG.rosa, 'color:inherit')
     if (!comando) return
     armazenar({ rota_comando: null })
-
     const { acoes, parametros } = comando
+    console.log('%c[Rota PJE]%c OBEDECER executando: ' + acoes[0], LOG.rosa, 'color:inherit')
     for (let i = 0; i < acoes.length; i++) {
         const fn = rota_acoes[acoes[i]]
         if (fn) await fn(parametros?.[i])
@@ -127,12 +131,21 @@ async function obedecer(mudancas) {
     }
 }
 
+
 function id(...partes) {
     return ['rota_pje', ...partes].filter(Boolean).join('_')
 }
 
 // em dom.js ou utils.js
 function registrarListenerFechar(sessao) {
+    // ── Avisa o pipeline que há janela secundária ativa ───────
+    armazenar({ rota_janelaSecundariaAtiva: sessao })
+
+    // Limpa ao fechar (beforeunload cobre window.close() e navegação)
+    window.addEventListener('beforeunload', () => {
+        armazenar({ rota_janelaSecundariaAtiva: null })
+    })
+
     browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
         if (mudancas['rotaExecucaoAtual']?.newValue) {
             if (String(mudancas['rotaExecucaoAtual'].newValue) !== sessao) {

@@ -16,6 +16,45 @@
 
 // ── Utilitário interno ────────────────────────────────────────
 
+async function inserirGigsNaTelaDeDetalhesDoProcesso(tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao'){
+    let novaAtividade = await aguardarElementoNovo('botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso', {timeout: 20000})
+    if (!novaAtividade) return
+    await clicar(novaAtividade)
+    let inputTipoAtividade = await aguardarElementoNovo('inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso')
+    await focar(inputTipoAtividade)
+    await suspender (200)
+    await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
+    if (dias && !dataPrazo){
+        let inputDias = await aguardarElementoNovo('inputDiasGigsNaJanelaDetalhesDoProcesso')
+        await suspender (200)
+        await preencher(inputDias, dias)
+    }
+    if (dataPrazo){
+        let inputData = await aguardarElementoNovo('inputDataPrazoGigsNaJanelaDetalhesDoProcesso')
+        await suspender (200)
+        await preencher(inputData, dataPrazo)
+    }
+    if (responsavel){
+        let inputResponsavel = await aguardarElementoNovo('inputResponsavelGigsNaJanelaDetalhesDoProcesso')
+        await focar(inputResponsavel)
+        await suspender (200)
+        await preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
+    }
+    if (observacao){
+        let inputObservacao = await aguardarElementoNovo('inputObservacaoGigsNaJanelaDetalhesDoProcesso')
+        await suspender (200)
+        await preencher(inputObservacao, observacao)
+    }
+    if (salvar === 'sim'){
+        let botaoSalvar = await aguardarElementoNovo('botaoSalvarGigsNaJanelaDetalhesDoProcesso')
+        await suspender (200)
+        await clicar(botaoSalvar)
+        await suspender (2000)
+    }
+    return
+
+}
+
 async function _acao_fetch(url = '', metodo = 'GET', corpo = null) {
     const token    = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
     const instancia = CONFIGURACAO?.pessoa?.instancia || '1'

@@ -296,34 +296,21 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
   await clicar(juizSelecionado)
 
   return
-  await armazenar({rota_movimentar_executarConclusaoMagistrado: juiz})
-  const botaoEntrada = await rota_movimentar_encontrarBotao('Conclusão ao magistrado')
-  if (!botaoEntrada) throw new Error('Botão "Conclusão ao magistrado" não encontrado.')
-  await clicar(botaoEntrada)
-  let juizArmazenado = await obterArmazenamento('rota_movimentar_executarConclusaoMagistrado')
-  let juizEscolher = juizArmazenado?.rota_movimentar_executarConclusaoMagistrado
-  await removerArmazenamento('rota_movimentar_executarConclusaoMagistrado')
-  
-  return
-  // fase 2 — preenche e segue para o destino (ex: Despacho, Sentença...)
-  if (params.juiz) await rota_movimentar_selecionarOpcao('.magistrado', params.juiz)
-
-  const botaoDestino = await rota_movimentar_encontrarBotao(nomeTarefaDestino)
-  if (!botaoDestino) throw new Error(`Botão não encontrado para: "${nomeTarefaDestino}"`)
-  await clicar(botaoDestino)
-  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
 }
 
 
 // ------------------------------------------------------------
 // rota_movimentar_executarElaborarDespachoSentencaDecisao
 // ------------------------------------------------------------
-async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros) {
+async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros = null) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-  let elemento = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e'})
+  if (!parametros) return
+  let elemento = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e', timeout: 60000})
+  if (!elemento) return
   console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.rosa, 'color:inherit')
   let campoTexto = await sel('corpoDoDocumentoNaTelaDeElaborarFundamentacaoFocar')
   console.log('%c[Rota PJE]%c campoTexto: ' + JSON.stringify(campoTexto.getAttribute('aria-label')), LOG.rosa, 'color:inherit')
+  if (!campoTexto) return
   await focar(campoTexto)
   await suspender(500)
   await digitarNoInput(campo = elemento, valor = parametros.modelo)
@@ -339,6 +326,7 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     }
     
   }
+  if (!opcaoModelo) return
 
   await clicar(opcaoModelo)
   let botaoInserir = null
@@ -350,34 +338,9 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     }
     await suspender(500)
   }
+  if (!botaoInserir) return
   await clicar(botaoInserir)
   return
-
-  let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
-  await clicar(selecao)
-  let juiz = parametros.juiz.toUpperCase()
-  await aguardarElementoNovo('opcoesDeMagistradosNaTelaDaConclusao')
-  let juizes = [...(await sel ('opcoesDeMagistradosNaTelaDaConclusao', '', true))]
-  let juizSelecionado = juizes.find(j => j.textContent?.trim().includes(juiz))
-  await clicar(juizSelecionado)
-
-  return
-  await armazenar({rota_movimentar_executarConclusaoMagistrado: juiz})
-  const botaoEntrada = await rota_movimentar_encontrarBotao('Conclusão ao magistrado')
-  if (!botaoEntrada) throw new Error('Botão "Conclusão ao magistrado" não encontrado.')
-  await clicar(botaoEntrada)
-  let juizArmazenado = await obterArmazenamento('rota_movimentar_executarConclusaoMagistrado')
-  let juizEscolher = juizArmazenado?.rota_movimentar_executarConclusaoMagistrado
-  await removerArmazenamento('rota_movimentar_executarConclusaoMagistrado')
-  
-  return
-  // fase 2 — preenche e segue para o destino (ex: Despacho, Sentença...)
-  if (params.juiz) await rota_movimentar_selecionarOpcao('.magistrado', params.juiz)
-
-  const botaoDestino = await rota_movimentar_encontrarBotao(nomeTarefaDestino)
-  if (!botaoDestino) throw new Error(`Botão não encontrado para: "${nomeTarefaDestino}"`)
-  await clicar(botaoDestino)
-  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
 }
 
 

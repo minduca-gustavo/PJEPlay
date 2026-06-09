@@ -1,6 +1,5 @@
 
 
-console.log('Me chamou? Devolver GIG')
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 const DEVOLVER_GIG_URL_REGEX = /processo\/\d{7}\/detalhe/

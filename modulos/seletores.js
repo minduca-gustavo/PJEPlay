@@ -167,12 +167,28 @@ const SELETORES = {
       seletor: '#nova-atividade',
       ancestral: 'pje-gigs-ficha-processo'
     },
+    botaoSalvarGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '[aria-label="Salva as alterações"]',
+      ancestral: 'pje-gigs-cadastro-atividades'
+    },
     inputDataPrazoGigsNaJanelaDetalhesDoProcesso:{
       seletor: '[formcontrolname="dataPrazo"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
     inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso:{
       seletor: '[formcontrolname="tipoAtividade"]',
+      ancestral: 'pje-gigs-cadastro-atividades'
+    },
+    inputResponsavelGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '[formcontrolname="responsavel"]',
+      ancestral: 'pje-gigs-cadastro-atividades'
+    },
+    inputObservacaoGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '[formcontrolname="observacao"]',
+      ancestral: 'pje-gigs-cadastro-atividades'
+    },
+    inputDiasGigsNaJanelaDetalhesDoProcesso:{
+      seletor: '[formcontrolname="dias"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     }
     

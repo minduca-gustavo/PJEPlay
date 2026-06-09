@@ -25,49 +25,57 @@ function focar(el = ''){
 	el.focus(); return el
 }
 
+function _getValueDescriptor(el) {
+  const proto = (el instanceof HTMLTextAreaElement)
+    ? window.HTMLTextAreaElement.prototype
+    : (el instanceof HTMLSelectElement)
+      ? window.HTMLSelectElement.prototype
+      : window.HTMLInputElement.prototype
+  return Object.getOwnPropertyDescriptor(proto, 'value')
+}
+
 function preencher(campo = '', texto = '', eventos = ['input','change']){
-	if(typeof campo === 'string') campo = selecionar(campo)
-	if(!campo) return
-	focar(campo)
-	let desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
-	if(desc && desc.set) desc.set.call(campo, texto)
-	else campo.value = texto
-	if(eventos) eventos.forEach(t => campo.dispatchEvent(new Event(t, { bubbles:true })))
+  if(typeof campo === 'string') campo = selecionar(campo)
+  if(!campo) return
+  focar(campo)
+  const desc = _getValueDescriptor(campo)
+  if(desc && desc.set) desc.set.call(campo, texto)
+  else campo.value = texto
+  if(eventos) eventos.forEach(t => campo.dispatchEvent(new Event(t, { bubbles:true })))
+}
+
+async function preencherCampoComEscolhaDeOpcao(elemento, valor) {
+  const desc = _getValueDescriptor(elemento)
+  desc.set.call(elemento, valor)
+  elemento.dispatchEvent(new Event('input',  { bubbles: true }))
+  elemento.dispatchEvent(new Event('change', { bubbles: true }))
+  let opcao = await aguardarElemento('mat-option')
+  await clicar(opcao)
 }
 
 function preencherComAutoComplete(campo, texto) {
   if (typeof campo === 'string') campo = selecionar(campo)
   if (!campo) return
-
   focar(campo)
-
-  // Usa o descriptor do prototype nativo correto
-  let desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+  const desc = _getValueDescriptor(campo)
   desc.set.call(campo, texto)
-
-  // Angular Material com autocomplete precisa desses eventos nessa ordem
-  campo.dispatchEvent(new Event('focus', { bubbles: true }))
-  campo.dispatchEvent(new Event('input', { bubbles: true }))
+  campo.dispatchEvent(new Event('focus',  { bubbles: true }))
+  campo.dispatchEvent(new Event('input',  { bubbles: true }))
   campo.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true }))
-  campo.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true }))
+  campo.dispatchEvent(new KeyboardEvent('keyup',   { bubbles: true }))
 }
 
 async function digitarNoInput(campo, texto) {
   if (typeof campo === 'string') campo = selecionar(campo)
   if (!campo) return
-
   focar(campo)
   campo.value = ''
-
   for (let char of texto) {
     campo.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }))
-    
-    let desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
+    const desc = _getValueDescriptor(campo)
     desc.set.call(campo, campo.value + char)
-    
     campo.dispatchEvent(new Event('input', { bubbles: true }))
     campo.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }))
-    
     await suspender(30)
   }
 }
