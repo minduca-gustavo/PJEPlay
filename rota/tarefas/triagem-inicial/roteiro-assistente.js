@@ -233,8 +233,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao'),
         idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
         texto: 'Certificar a designação e intimar.',
-        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), /*comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}]),*/
-        acao: () => alert ('Em desenvolvimento'),
+        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), 
+        acao: () => comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}]),/* alert ('Em desenvolvimento'),*/
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
     
@@ -274,7 +274,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
-            comandos.push('certidao')
+            comandos.push('triagem_inicial_certidao')
             parametros.push('triagem_inicial_certificar_designacao')
         }
 

@@ -190,6 +190,18 @@ const SELETORES = {
     inputDiasGigsNaJanelaDetalhesDoProcesso:{
       seletor: '[formcontrolname="dias"]',
       ancestral: 'pje-gigs-cadastro-atividades'
+    },
+    inputTipoDeDocumentoNaTelaDeAnexarDocumento:{
+      seletor: '[aria-label="Tipo de Documento"]',
+      ancestral: 'pje-anexar-tipo-documento'
+    },
+    inputDescricaoDeDocumentoNaTelaDeAnexarDocumento:{
+      seletor: '[aria-label="Descrição"]',
+      ancestral: 'mat-form-field'
+    },
+    buscarModelosNaTelaDeAnexarDocumento:{
+      seletor: '#inputFiltro',
+      ancestral: 'pje-arvore-modelo-documento'
     }
     
     
@@ -346,7 +358,8 @@ async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0 } = {}) {
       return null
     }
   }
-
+  let versao = await obterArmazenamento('rota_versao')
+  versao = versao?.rota_versao ?? VERSAO_FALLBACK
   return new Promise(resolver => {
     const elImediato = checar()
     if (elImediato) { resolver(elImediato); return }
@@ -360,10 +373,11 @@ async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0 } = {}) {
       }
     })
     obs.observe(document, { childList: true, subtree: true })
+    
     if (timeout > 0)
       timer = setTimeout(() => {
         obs.disconnect()
-        registrarErro(`${chaves.join(` ${modo.toUpperCase()} `)} [timeout]`, obterArmazenamento('rota_versao') ?? VERSAO_FALLBACK)
+        registrarErro(`${chaves.join(` ${modo.toUpperCase()} `)} [timeout]`, versao)
         resolver(null)
       }, timeout)
   })

@@ -138,14 +138,6 @@ function id(...partes) {
 
 // em dom.js ou utils.js
 function registrarListenerFechar(sessao) {
-    // ── Avisa o pipeline que há janela secundária ativa ───────
-    armazenar({ rota_janelaSecundariaAtiva: sessao })
-
-    // Limpa ao fechar (beforeunload cobre window.close() e navegação)
-    window.addEventListener('beforeunload', () => {
-        armazenar({ rota_janelaSecundariaAtiva: null })
-    })
-
     browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
         if (mudancas['rotaExecucaoAtual']?.newValue) {
             if (String(mudancas['rotaExecucaoAtual'].newValue) !== sessao) {
@@ -161,4 +153,17 @@ function registrarListenerFechar(sessao) {
             window.close()
         }
     })
+}
+
+const rota_acoes = {
+    'rota_proximo': async () => {
+        let cfg = await obterArmazenamento(['rotaExecucaoAtual'])
+        let sessao = cfg?.rotaExecucaoAtual
+        if (sessao) rota_sinalizar(sessao, 'proximo')
+    },
+    'rota_encerrar': async () => {
+        let cfg = await obterArmazenamento(['rotaExecucaoAtual'])
+        let sessao = cfg?.rotaExecucaoAtual
+        if (sessao) rota_sinalizar(sessao, 'encerrar')
+    },
 }

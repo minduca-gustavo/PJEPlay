@@ -517,15 +517,14 @@ function rota_aguardarSinal(sessao, timeout = 28800000){
             }
 
             // Sinal do assistente via browser.storage
-            let cfg = await obterArmazenamento(['rotaSinalAssistente', 'rota_janelaSecundariaAtiva'])
-			let sinalAssistente = cfg?.rotaSinalAssistente
-			let janelaAtiva     = cfg?.rota_janelaSecundariaAtiva
-			if(sinalAssistente && sinalAssistente !== 'pausado' && !janelaAtiva){
-				clearInterval(tick)
-				await armazenar({ rotaSinalAssistente: null })
-				resolver(sinalAssistente)
-				return
-			}
+            let cfg = await obterArmazenamento(['rotaSinalAssistente'])
+            let sinalAssistente = cfg?.rotaSinalAssistente
+            if(sinalAssistente && sinalAssistente !== 'pausado'){
+                clearInterval(tick)
+                await armazenar({ rotaSinalAssistente: null })
+                resolver(sinalAssistente)
+                return
+            }
 
             if(Date.now() - inicio > timeout){ clearInterval(tick); resolver('timeout') }
         }, 300)
@@ -760,8 +759,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 	let sinal = await rota_aguardarSinal(sessao)
 
-	await armazenar({ rota_janelaSecundariaAtiva: null })
-
+	
 	// Fecha todas as janelas e limpa chaves de sincronização
 	_rota_fecharTodasJanelas()
 	rota_fecharJanelas(sessao)

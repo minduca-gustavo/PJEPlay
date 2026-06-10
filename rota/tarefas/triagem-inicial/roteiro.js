@@ -27,21 +27,16 @@ const dadosTriagemInicial = {
 async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
-    let tarefa = await rota_buscarParametros('pjerota_tarefa')
-    if (!tarefa) return
-    let sessao = await rota_buscarParametros('pjerota_sessao')
-    if (!sessao) return
+    let nomeJanela = window.name
+    if (!nomeJanela.includes('rota')) return
     let armazenamento = await obterArmazenamento(['rotaExecucaoAtual'])
     if (!armazenamento) return
     let execucao = String(armazenamento?.rotaExecucaoAtual || '')
-    let nomeJanela = window.name
-    if (!nomeJanela.includes('rota')) return
-    if (tarefa !== 'triagem_inicial') return
-    if(sessao !== armazenamento?.rotaExecucaoAtual || sessao !== nomeJanela.split('-').pop()) return
+    if (!execucao) return
+    if (execucao !== nomeJanela.split('-').pop()) return
     dadosTriagemInicial.execucaoAtual = execucao
     browser.storage.onChanged.addListener(obedecer)
-    await triagem_inicial_janelaDetalhes(sessao)
-    return
+    await triagem_inicial_janelaDetalhes(execucao)
 }
 
 triagem_inicial_aoAbrirDetalhesDoProcesso()
@@ -458,18 +453,114 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
     //console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.teste, 'color:inherit')
 }
 
+
+//__________________________________________________
+//                      CERTIFICAR
+//__________________________________________________
+
+// CERTIFICAR PASSO 1 - recebe os dados e abre a tela de tarefa
+
+async function triagem_inicial_certificar(tipo) {
+    let envio = tipo.tipo
+    console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
+    await armazenar({
+        'rota_pje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
+        'rota_pje_triagem_inicial_certificar_tipo': envio,
+    })
+    let parametros =    '?rota_pje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
+                        '&rota_pje_triagem_inicial_certificar_tipo=' + envio
+    let nomeJanela =    'rota_pje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
+    let id =            dadosTriagemInicial?.processo?.id
+    let tarefa =        dadosTriagemInicial?.tarefaMaisRecente[0]?.idTarefa
+    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === dadosTriagemInicial?.tarefaMaisRecente[0]?.nomeRecurso)
+    let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
+    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
+}
+
+// CERTIFICAR PASSO 2 - verifica se a janela aberta é a da extensão
+async function triagem_inicial_aoAbrirCertificar(){
+    let janela = confereJanela(JANELA.certificar)
+    if (!janela) return
+    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_certificar')
+    let execucao = String(armazenamento?.rota_pje_triagem_inicial_certificar || '')
+    if (!armazenamento) return
+    let nomeJanela = window.name
+    if (!nomeJanela.includes('rota_pje_triagem_inicial_certificar')) return
+    if(execucao !== nomeJanela.split('_').pop()) return
+    registrarListenerFechar(execucao)
+    await triagem_inicial_acoesCertificar()
+}
+
+// CERTIFICAR PASSO 3 - executa as ações
+
+async function triagem_inicial_acoesCertificar(){
+    await aguardarElementoNovo(
+        [
+            'inputTipoDeDocumentoNaTelaDeAnexarDocumento', 
+            'inputDescricaoDeDocumentoNaTelaDeAnexarDocumento', 
+            'buscarModelosNaTelaDeAnexarDocumento'
+        ],
+        {modo: 'e', timeout: 10000}
+    )
+    await alert('Passei no timeout.')
+    return
+    
+    let [tipo, juizEnvio] = await Promise.all([
+        obterArmazenamento('rota_pje_triagem_inicial_certificar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
+    ])
+    if(!juizEnvio) juizEnvio = await triagem_inicial_buscarJuizNoModelo() || ''
+    let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+    let dados = await obterArmazenamento('rota_dadosTriagemInicial')
+    let id = dados?.rota_dadosTriagemInicial?.processo?.id
+    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
+    let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
+    let tiposAudiencia = {
+        'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
+        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
+    }
+    console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
+    let modeloDespacho = ''
+    if (tipo !== 'triagem_inicial_emendar'){
+        modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
+    }
+    await movimentar('Despacho', {
+        'Conclusão ao magistrado':{'juiz': juizEnvio},
+        'Elaborar despacho':{'modelo': modeloDespacho}
+    })
+    if (modeloDespacho !== ''){
+        let botaoEnviarParaAssinatura = await aguardarElementoNovo('botaoEnviarParaAssinatura')
+        await clicar(botaoEnviarParaAssinatura)
+        for(let i = 0; i < 30 * 2; i++){
+            let assinar = await sel('tituloDaTarefaNaJanelaDeTarefa')
+            if (assinar.textContent.includes('Assinar despacho')){
+                break
+            }
+            await suspender(500)
+        }
+        await suspender(2000)
+        if (audienciasMarcadas) window.close()
+    }
+    return
+
+}
+
+
+triagem_inicial_aoAbrirCertificar()
+
+
 //__________________________________________________
 //                      COMANDAR
 //__________________________________________________
 
 
-const rota_acoes = {
+Object.assign(rota_acoes, {
     'triagem_inicial_designa_audiencia': async (p) => await triagem_inicial_designarAudiencia(p),
-    'triagem_inicial_despachar': async (p) => await triagem_inicial_despachar(p),
-    'triagem_inicial_gig': async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
-    'triagem_inicial_certidao': async (p) => await verificarOQueChegou(p),
-    'triagem_inicial_retificar': async (p) => await triagem_inicial_retificarAutuacao(p),
-}
+    'triagem_inicial_despachar':         async (p) => await triagem_inicial_despachar(p),
+    'triagem_inicial_gig':               async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
+    'triagem_inicial_certidao':          async (p) => await triagem_inicial_certificar(p),
+    'triagem_inicial_retificar':         async (p) => await triagem_inicial_retificarAutuacao(p),
+})
 
 
 async function verificarOQueChegou(p) {
