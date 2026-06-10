@@ -45,10 +45,13 @@ function preencher(campo = '', texto = '', eventos = ['input','change']){
 }
 
 async function preencherCampoComEscolhaDeOpcao(elemento, valor) {
+  await preencher(elemento, valor)
+  /*
   const desc = _getValueDescriptor(elemento)
   desc.set.call(elemento, valor)
   elemento.dispatchEvent(new Event('input',  { bubbles: true }))
   elemento.dispatchEvent(new Event('change', { bubbles: true }))
+  */
   let opcao = await aguardarElemento('mat-option')
   await clicar(opcao)
 }

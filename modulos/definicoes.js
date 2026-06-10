@@ -33,6 +33,7 @@ var JANELA = {
 	escaninho: 				/\/pjekz\/escaninho/,
 	retificar:				/\/pjekz\/processo\/\d*\/retificar/,
 	certificar:				/\/pjekz\/processo\/\d*\/documento\/anexar/,
+	pec:				    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
 	processoTarefa: 		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	pautaAudiencias: 		/\/pjekz\/pauta-audiencias/,
 }

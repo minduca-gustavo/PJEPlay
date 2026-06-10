@@ -196,12 +196,16 @@ const SELETORES = {
       ancestral: 'pje-anexar-tipo-documento'
     },
     inputDescricaoDeDocumentoNaTelaDeAnexarDocumento:{
-      seletor: '[aria-label="Descrição"]',
-      ancestral: 'mat-form-field'
+      seletor: '[aria-label="Descrição"]'
+      /*ancestral: '.mat-form-field'*/
     },
     buscarModelosNaTelaDeAnexarDocumento:{
       seletor: '#inputFiltro',
       ancestral: 'pje-arvore-modelo-documento'
+    },
+    botaoAssinarNaTelaDeAnexarDocumento:{
+      seletor: '[aria-label="Assinar documento e juntar ao processo"]',
+      ancestral: '.botoes-acoes'
     }
     
     

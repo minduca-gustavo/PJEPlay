@@ -314,11 +314,36 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   await focar(campoTexto)
   await suspender(500)
   await digitarNoInput(campo = elemento, valor = parametros.modelo)
+  let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
+  if (!opcaoModelo) return
+
+  await clicar(opcaoModelo)
+  let botaoInserir = await esperarEClicar('botaoInserirModeloDeDespacho')
+  return
+}
+
+async function esperarEClicar(elementoSeletorNovo, tempoEmSegundos = 30) {
+  let botao = null
+  for(let i = 0; i < tempoEmSegundos * 2; i++){
+    await suspender(500)
+    botao = await sel(elementoSeletorNovo)
+    if (botao) {
+      break
+    }
+    await suspender(500)
+  }
+  if (!botao) return null
+  await clicar(botao)
+  return botao
+  
+}
+
+async function selecionarOpcaoDeModelo(modelo, tempoEmSegundos = 30){
   let opcaoModelo = null
-  for(let i = 0; i < 30 * 2; i++){
+  for(let i = 0; i < tempoEmSegundos * 2; i++){
     await suspender(500)
     let opcoesModelo = [...(await sel('opcaoDeModeloNaTelaDeElaborarDespacho', '', true))]
-    opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(parametros.modelo))
+    opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(modelo))
     console.log('%c[Rota PJE]%c opcaoModelo' + JSON.stringify(opcaoModelo), LOG.rosa, 'color:inherit')
     
     if (opcaoModelo) {
@@ -326,24 +351,10 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     }
     
   }
-  if (!opcaoModelo) return
-
+  if (!opcaoModelo) return null
   await clicar(opcaoModelo)
-  let botaoInserir = null
-  for(let i = 0; i < 30 * 2; i++){
-    await suspender(500)
-    botaoInserir = await sel('botaoInserirModeloDeDespacho')
-    if (botaoInserir) {
-      break
-    }
-    await suspender(500)
-  }
-  if (!botaoInserir) return
-  await clicar(botaoInserir)
-  return
+  return opcaoModelo
 }
-
-
 // ------------------------------------------------------------
 // rota_movimentar_limparEstado
 // Remove do armazenamento tudo que foi salvo pela movimentar.

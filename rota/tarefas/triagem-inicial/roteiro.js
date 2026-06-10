@@ -343,15 +343,6 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     await triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario)
     
 
-    //await alert ('Espere um pouquinho' + JSON.stringify(celula.textContent))
-    //await alert ('Espere um pouquinho' + JSON.stringify(seletorJuiz?.textContent))
-    //
-    //let [tipo, juiz] = await Promise.all([
-    //    obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
-    //    obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
-    //])
-    //if(!juiz) juiz = await triagem_inicial_buscarJuizNoModelo() || ''
-    //alert('tipo: ' + tipo + ' / juiz: ' + juiz)
 }
 
 // DESIGNAR AUDIÊNCIA - AÇÕES AUXILIARES
@@ -471,8 +462,6 @@ async function triagem_inicial_certificar(tipo) {
                         '&rota_pje_triagem_inicial_certificar_tipo=' + envio
     let nomeJanela =    'rota_pje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
     let id =            dadosTriagemInicial?.processo?.id
-    let tarefa =        dadosTriagemInicial?.tarefaMaisRecente[0]?.idTarefa
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === dadosTriagemInicial?.tarefaMaisRecente[0]?.nomeRecurso)
     let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
@@ -494,59 +483,111 @@ async function triagem_inicial_aoAbrirCertificar(){
 // CERTIFICAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesCertificar(){
-    await aguardarElementoNovo(
+    let elementos = await aguardarElementoNovo(
         [
-            'inputTipoDeDocumentoNaTelaDeAnexarDocumento', 
-            'inputDescricaoDeDocumentoNaTelaDeAnexarDocumento', 
+            'inputTipoDeDocumentoNaTelaDeAnexarDocumento',
+            'inputDescricaoDeDocumentoNaTelaDeAnexarDocumento',
             'buscarModelosNaTelaDeAnexarDocumento'
         ],
         {modo: 'e', timeout: 10000}
     )
-    await alert('Passei no timeout.')
-    return
     
-    let [tipo, juizEnvio] = await Promise.all([
-        obterArmazenamento('rota_pje_triagem_inicial_certificar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
-    ])
-    if(!juizEnvio) juizEnvio = await triagem_inicial_buscarJuizNoModelo() || ''
-    let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
-    let dados = await obterArmazenamento('rota_dadosTriagemInicial')
-    let id = dados?.rota_dadosTriagemInicial?.processo?.id
-    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
-    let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
-    let tiposAudiencia = {
-        'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
-        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
-    }
-    console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
-    let modeloDespacho = ''
-    if (tipo !== 'triagem_inicial_emendar'){
-        modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
-    }
-    await movimentar('Despacho', {
-        'Conclusão ao magistrado':{'juiz': juizEnvio},
-        'Elaborar despacho':{'modelo': modeloDespacho}
+    if (!elementos) return
+    let tipo = await sel('inputTipoDeDocumentoNaTelaDeAnexarDocumento')
+    let descricao = await sel('inputDescricaoDeDocumentoNaTelaDeAnexarDocumento')
+    let modelo = await sel('buscarModelosNaTelaDeAnexarDocumento')
+    await suspender(200)
+    await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
+    await suspender(200)
+    await preencher(descricao, 'Designação de audiência')
+    await suspender(200)
+    await digitarNoInput(modelo, 'SCBAU_TI_CERT')
+    await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
+    await esperarEClicar('botaoInserirModeloDeDespacho')
+    let botaoAssinar = await aguardarElementoNovo('botaoAssinarNaTelaDeAnexarDocumento')
+    await clicar(botaoAssinar)
+    window.addEventListener('beforeunload', () => {
+        comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
+        // Sem await — pagehide não suporta async
     })
-    if (modeloDespacho !== ''){
-        let botaoEnviarParaAssinatura = await aguardarElementoNovo('botaoEnviarParaAssinatura')
-        await clicar(botaoEnviarParaAssinatura)
-        for(let i = 0; i < 30 * 2; i++){
-            let assinar = await sel('tituloDaTarefaNaJanelaDeTarefa')
-            if (assinar.textContent.includes('Assinar despacho')){
-                break
-            }
-            await suspender(500)
-        }
-        await suspender(2000)
-        if (audienciasMarcadas) window.close()
-    }
+    
     return
-
 }
 
 
 triagem_inicial_aoAbrirCertificar()
+//__________________________________________________
+//                      INTIMAR
+//__________________________________________________
+
+// INTIMAR PASSO 1 - recebe os dados e abre a tela de tarefa
+
+async function triagem_inicial_intimar(tipo) {
+    let envio = tipo.tipo
+    console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
+    await armazenar({
+        'rota_pje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
+        'rota_pje_triagem_inicial_intimar_tipo': envio,
+    })
+    let parametros =    '?rota_pje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
+                        '&rota_pje_triagem_inicial_intimar_tipo=' + envio
+    let nomeJanela =    'rota_pje_triagem_inicial_intimar_' + dadosTriagemInicial.execucaoAtual
+    let id =            dadosTriagemInicial?.processo?.id
+    let url =           location.origin + '/pjekz/processo/' + id + '/comunicacoesprocessuais/minutas' + parametros
+    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
+}
+
+// INTIMAR PASSO 2 - verifica se a janela aberta é a da extensão
+async function triagem_inicial_aoAbrirIntimar(){
+    let janela = confereJanela(JANELA.intimar)
+    if (!janela) return
+    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_intimar')
+    let execucao = String(armazenamento?.rota_pje_triagem_inicial_intimar || '')
+    if (!armazenamento) return
+    let nomeJanela = window.name
+    if (!nomeJanela.includes('rota_pje_triagem_inicial_intimar')) return
+    if(execucao !== nomeJanela.split('_').pop()) return
+    registrarListenerFechar(execucao)
+    await triagem_inicial_acoesIntimar()
+}
+
+// INTIMAR PASSO 3 - executa as ações
+
+async function triagem_inicial_acoesIntimar(){
+    await alert('INTIMAR')
+    /*
+    let elementos = await aguardarElementoNovo(
+        [
+            'inputTipoDeDocumentoNaTelaDeAnexarDocumento',
+            'inputDescricaoDeDocumentoNaTelaDeAnexarDocumento',
+            'buscarModelosNaTelaDeAnexarDocumento'
+        ],
+        {modo: 'e', timeout: 10000}
+    )
+    
+    if (!elementos) return
+    let tipo = await sel('inputTipoDeDocumentoNaTelaDeAnexarDocumento')
+    let descricao = await sel('inputDescricaoDeDocumentoNaTelaDeAnexarDocumento')
+    let modelo = await sel('buscarModelosNaTelaDeAnexarDocumento')
+    await suspender(200)
+    await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
+    await suspender(200)
+    await preencher(descricao, 'Designação de audiência')
+    await suspender(200)
+    await digitarNoInput(modelo, 'SCBAU_TI_CERT')
+    await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
+    await esperarEClicar('botaoInserirModeloDeDespacho')
+    let botaoAssinar = await aguardarElementoNovo('botaoAssinarNaTelaDeAnexarDocumento')
+    window.addEventListener('pagehide', () => {
+        comandar('triagem_inicial_intimar', { parametros: '' })
+    })
+    await clicar(botaoAssinar)
+    */
+    return
+}
+
+
+triagem_inicial_aoAbrirIntimar()
 
 
 //__________________________________________________
@@ -555,11 +596,12 @@ triagem_inicial_aoAbrirCertificar()
 
 
 Object.assign(rota_acoes, {
-    'triagem_inicial_designa_audiencia': async (p) => await triagem_inicial_designarAudiencia(p),
-    'triagem_inicial_despachar':         async (p) => await triagem_inicial_despachar(p),
-    'triagem_inicial_gig':               async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
-    'triagem_inicial_certidao':          async (p) => await triagem_inicial_certificar(p),
-    'triagem_inicial_retificar':         async (p) => await triagem_inicial_retificarAutuacao(p),
+    'triagem_inicial_designa_audiencia':    async (p) => await triagem_inicial_designarAudiencia(p),
+    'triagem_inicial_despachar':            async (p) => await triagem_inicial_despachar(p),
+    'triagem_inicial_gig':                  async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
+    'triagem_inicial_certidao':             async (p) => await triagem_inicial_certificar(p),
+    'triagem_inicial_retificar':            async (p) => await triagem_inicial_retificarAutuacao(p),
+    'triagem_inicial_intimar':              async (p) => await triagem_inicial_intimar(p),
 })
 
 
