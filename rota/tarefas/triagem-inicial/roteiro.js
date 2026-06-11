@@ -505,11 +505,14 @@ async function triagem_inicial_acoesCertificar(){
     await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
     await esperarEClicar('botaoInserirModeloDeDespacho')
     let botaoAssinar = await aguardarElementoNovo('botaoAssinarNaTelaDeAnexarDocumento')
-    await clicar(botaoAssinar)
+    //await clicar(botaoAssinar)
     window.addEventListener('beforeunload', () => {
         comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
         // Sem await — pagehide não suporta async
     })
+    await suspender(2000)
+    window.close()
+    
     
     return
 }
@@ -539,7 +542,7 @@ async function triagem_inicial_intimar(tipo) {
 
 // INTIMAR PASSO 2 - verifica se a janela aberta é a da extensão
 async function triagem_inicial_aoAbrirIntimar(){
-    let janela = confereJanela(JANELA.intimar)
+    let janela = confereJanela(JANELA.pec)
     if (!janela) return
     let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_intimar')
     let execucao = String(armazenamento?.rota_pje_triagem_inicial_intimar || '')
@@ -554,17 +557,46 @@ async function triagem_inicial_aoAbrirIntimar(){
 // INTIMAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesIntimar(){
-    await alert('INTIMAR')
-    /*
-    let elementos = await aguardarElementoNovo(
+    
+    await aguardarElementoNovo(
         [
-            'inputTipoDeDocumentoNaTelaDeAnexarDocumento',
-            'inputDescricaoDeDocumentoNaTelaDeAnexarDocumento',
-            'buscarModelosNaTelaDeAnexarDocumento'
+            'seletorTipoDeExpedienteNaTelaDePrepararExpedientes',
+            'botaoConfeccionarAtoAgrupadoNaTelaDePrepararExpedientes',
         ],
         {modo: 'e', timeout: 10000}
     )
-    
+    let seletor = await sel('seletorTipoDeExpedienteNaTelaDePrepararExpedientes')
+    await clicar(seletor)
+    await aguardarElementoNovo('seletorTipoDeExpedienteNaTelaDePrepararExpedientesAberto')
+    let opcao = [...await sel('seletorTipoDeExpedienteNaTelaDePrepararExpedientesAberto', '', true)].find(o => o.textContent.trim().includes('Notificação inicial'))
+    await clicar(opcao)
+    let botaoConfeccionar = await aguardarElementoNovo('botaoConfeccionarAtoAgrupadoNaTelaDePrepararExpedientes')
+    await clicar(botaoConfeccionar)
+    await aguardarElementoNovo(
+        [
+            'seletorTipoDeDocumentoNaTelaDeElaborarAto',
+            'inputDescricaoNaTelaDeElaborarAto'
+        ],
+        {modo: 'e', timeout: 10000}
+    )
+    let descricao = await sel('inputDescricaoNaTelaDeElaborarAto')
+    let inputModelo = await sel('buscarModelosNaTelaDeElaborar')
+    await preencher(descricao, 'Notificação Inicial - Designação de audiência')
+    await suspender(200)
+    await digitarNoInput(inputModelo, 'SCBAU_TI_NOT_DOM')
+    await selecionarOpcaoDeModelo('SCBAU_TI_NOT_DOM')
+    await suspender(200)
+    await esperarEClicar('botaoInserirModeloDeDespacho')
+    await suspender(200)
+    let areaAssinatura = await aguardarElementoNovo('assinaturaDaMinutaNaTelaDeElaborarAto')
+    await preencherCKEditorExecCommand(areaAssinatura, '.')
+    await suspender(200)
+    let botaoAssinar = await aguardarElementoNovo('botaoFinalizarMinutaNaTelaDeElaborarAto')
+    await clicar(botaoAssinar)
+    await suspender(200)
+    //await alert('INTIMAR')
+            
+    /*
     if (!elementos) return
     let tipo = await sel('inputTipoDeDocumentoNaTelaDeAnexarDocumento')
     let descricao = await sel('inputDescricaoDeDocumentoNaTelaDeAnexarDocumento')

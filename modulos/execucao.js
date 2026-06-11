@@ -82,3 +82,15 @@ async function digitarNoInput(campo, texto) {
     await suspender(30)
   }
 }
+
+async function preencherCKEditorExecCommand(seletor, texto) {
+  const el = typeof seletor === 'string' ? document.querySelector(seletor) : seletor
+  if (!el) return
+
+  await focar(el)
+  await suspender(200)
+
+  // Seleciona tudo e substitui
+  //document.execCommand('selectAll', false, null)
+  document.execCommand('insertText', false, texto)
+}

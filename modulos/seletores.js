@@ -206,6 +206,39 @@ const SELETORES = {
     botaoAssinarNaTelaDeAnexarDocumento:{
       seletor: '[aria-label="Assinar documento e juntar ao processo"]',
       ancestral: '.botoes-acoes'
+    },
+    seletorTipoDeExpedienteNaTelaDePrepararExpedientes:{
+      seletor: 'mat-select',
+      ancestral: 'pje-pec-ato-agrupado'
+    },
+    botaoConfeccionarAtoAgrupadoNaTelaDePrepararExpedientes:{
+      seletor: '[name="btn-confeccionar-ato-agrupado"]',
+      ancestral: '.pec-ato-agrupado'
+    },
+    seletorTipoDeExpedienteNaTelaDePrepararExpedientesAberto:{
+      seletor: 'mat-option',
+      ancestral: '.mat-select-panel-wrap'
+    },
+    elaborarAtoNaTelaDePrepararExpedientes:{
+      seletor: 'pje-anexar-documento',
+      ancestral: 'pje-pec-dialogo-ato'
+    },
+    seletorTipoDeDocumentoNaTelaDeElaborarAto:{
+      seletor: '[aria-label="Tipo de Documento"]',
+      ancestral: 'pje-anexar-tipo-documento'
+    },
+    inputDescricaoNaTelaDeElaborarAto:{
+      seletor: '[aria-label="Descrição"]',
+      //ancestral: '.mat-form-field'
+    },
+    botaoFinalizarMinutaNaTelaDeElaborarAto:{
+      seletor: '[aria-label="Finalizar minuta"]',
+      ancestral: '.botoes-acoes'
+    },
+    assinaturaDaMinutaNaTelaDeElaborarAto:{
+      seletor: /*'.corpo',
+      ancestral: */'[aria-label*="Assinatura (opcional)"]',
+      //ancestral: '.area-conteudo'
     }
     
     
