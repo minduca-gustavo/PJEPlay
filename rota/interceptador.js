@@ -5,7 +5,7 @@
 // ============================================================
 //https://pje-web-hm.trt15.jus.br/pje-gigs-api/api/atividade/processo/3997133
 //    /pje-gigs-api/api/processo/4642553
-
+let logInterceptador = true
 const INTERCEPTADOR_URL = {
     gigs:                           /\/pje-gigs-api\/api\/atividade\/processo\/\d+$/i,
     gigsConcluidos:                 /\/pje-gigs-api\/api\/atividade\/processo\/\d+\/concluida/i,
@@ -26,7 +26,9 @@ const INTERCEPTADOR_URL = {
     modelosDocumentos:              /\/pje-comum-api\/api\/modelosdocumentos\/pastas\/raiz/i,
     orgaosJulgadores:               /\/pje-comum-api\/api\/orgaosjulgadores/i,
     timeline:                       /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
+    expedientesMateria:             /\/pje-comum-api\/api\/expedientesmateria\/\d+.*/i
 }
+//https://pje.trt15.jus.br/pje-comum-api/api/expedientesmateria/13?idTarefa=0
 //https://pje.trt15.jus.br/pje-comum-api/api/modelosdocumentos/pastas/raiz
 
 const INTERCEPTADOR_ROTULO = {
@@ -48,6 +50,7 @@ const INTERCEPTADOR_ROTULO = {
     orgaosJulgadores:               'orgaosJulgadores',
     tarefasProcesso:                'tarefas_processo',
     modelosDocumentos:              'modelos_documentos',
+    expedientesMateria:             'expedientes_materia',
 }
 
 
@@ -55,7 +58,7 @@ interceptador_iniciar()
 
 function interceptador_iniciar(){
     let estilo = 'border-radius:3px;color:hsla(0,100%,100%,1);display:inline-block;font-weight:600;padding:0 3px;'
-	console.log(
+	if (logInterceptador) console.log(
 		'%cRota PJE%c✅ interceptador() executado com sucesso!',
 		estilo + 'background:hsla(204,100%,40%,1);',
 		estilo + 'background:rgb(65, 90, 119);margin:0 0 0 3px;'
@@ -72,7 +75,7 @@ function interceptador_processar(evento){
     let resposta = dados.resposta || ''
 
     let estilo = 'border-radius:3px;color:hsla(0,100%,100%,1);display:inline-block;font-weight:600;padding:0 3px;'
-	console.log(
+	if (logInterceptador) console.log(
 		'%cRota PJE%c✅ interceptador(): ' + location.origin + url,
 		estilo + 'background:hsla(204,100%,40%,1);',
 		estilo + 'background:rgb(65, 90, 119);margin:0 0 0 3px;'
@@ -97,7 +100,7 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
         let dados; try{ dados = JSON.parse(resposta) } catch{ dados = resposta }
         let content = typeof dados === 'string' ? dados : JSON.stringify(dados)
 
-        console.log(
+        if (logInterceptador) console.log(
             '%cRota PJE%c Salvando metatag: ' + name,
             estilo + 'background:hsla(204,100%,40%,1);',
             estilo + 'background:hsla(120,63%,28%,1);margin:0 0 0 3px;'
@@ -131,7 +134,7 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
         }
 
     } catch(erro){
-        console.log(
+        if (logInterceptador) console.log(
             '%cRota PJE%c interceptador_salvarMetaTag erro: ' + erro,
             estilo + 'background:hsla(204,100%,40%,1);',
             estilo + 'background:hsla(0,100%,40%,1);margin:0 0 0 3px;'

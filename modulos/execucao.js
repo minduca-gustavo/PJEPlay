@@ -84,6 +84,7 @@ async function digitarNoInput(campo, texto) {
 }
 
 async function preencherCKEditorExecCommand(seletor, texto) {
+  console.log('%c[Rota PJE]%c preencherCKEditorExecCommand, seletor: ' + JSON.stringify(seletor), LOG.rosa, 'color:inherit')
   const el = typeof seletor === 'string' ? document.querySelector(seletor) : seletor
   if (!el) return
 

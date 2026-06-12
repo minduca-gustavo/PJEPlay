@@ -223,6 +223,22 @@ const SELETORES = {
       seletor: 'pje-anexar-documento',
       ancestral: 'pje-pec-dialogo-ato'
     },
+    atoConfeccionadoNaTelaDePrepararExpedientes:{
+      seletor: '[aria-label="Ato confeccionado"]',
+      ancestral: '.pec-coluna-confeccionar-ato-individual-tabela-destinatarios'
+    },
+    botaoPoloAtivoNaTelaDePrepararExpedientes:{
+      seletor: '[name="btnIntimarSomentePoloAtivo"]',
+      ancestral: '.pec-painel-expansivel-partes-processo'
+    },
+    botaoSalvarNaTelaDePrepararExpedientes:{
+      seletor: '[aria-label="Salva os expedientes"]',
+      ancestral: '.pec-botoes-acoes-expedientes'
+    },
+    botaoAssinarNaTelaDePrepararExpedientes:{
+      seletor: '[aria-label="Assinar ato(s)"]',
+      ancestral: '.pec-botoes-acoes-expedientes'
+    },
     seletorTipoDeDocumentoNaTelaDeElaborarAto:{
       seletor: '[aria-label="Tipo de Documento"]',
       ancestral: 'pje-anexar-tipo-documento'
@@ -236,9 +252,18 @@ const SELETORES = {
       ancestral: '.botoes-acoes'
     },
     assinaturaDaMinutaNaTelaDeElaborarAto:{
-      seletor: /*'.corpo',
-      ancestral: */'[aria-label*="Assinatura (opcional)"]',
-      //ancestral: '.area-conteudo'
+      seletor: '[aria-label*="Assinatura (opcional)"]',
+    },
+    conteudoPrincipalDaMinutaNaTelaDeElaborarAto:{
+      seletor: '[aria-label*="Conteúdo principal"]',
+    },
+    mensagemModeloInseridoNaTelaDePrepararExpedientes:{
+      seletor: 'snack-bar-container',
+      //ancestral: '.cdk-overlay-pane'
+    },
+    mensagemAguardeNaTelaDePrepararExpedientes:{
+      seletor: 'mat-dialog-container',
+      ancestral: '.cdk-overlay-pane'
     }
     
     
@@ -353,11 +378,20 @@ async function sel(chave, ancestralExterno = '', todos = false) {
 // Verifica se o elemento satisfaz a condição de prontidão definida no mapa.
 // Se a entrada não tem propriedade/valor, qualquer presença no DOM é suficiente.
 function pronto(el, entrada) {
-  if (!entrada.propriedade) return true
-  const valorAtual = el[entrada.propriedade]
-  const v = typeof valorAtual === 'string' ? valorAtual.trim() : valorAtual
-  if (entrada.valor instanceof RegExp) return entrada.valor.test(v)
-  return v === entrada.valor
+  if (entrada.texto) {
+    const textoEl = el.textContent?.trim() ?? '';
+    if (entrada.texto instanceof RegExp) {
+      if (!entrada.texto.test(textoEl)) return false;
+    } else {
+      if (!textoEl.includes(entrada.texto)) return false;
+    }
+  }
+
+  if (!entrada.propriedade) return true;
+  const valorAtual = el[entrada.propriedade];
+  const v = typeof valorAtual === 'string' ? valorAtual.trim() : valorAtual;
+  if (entrada.valor instanceof RegExp) return entrada.valor.test(v);
+  return v === entrada.valor;
 }
 
 
@@ -369,11 +403,15 @@ function pronto(el, entrada) {
 // chave    {string} — chave no mapa SELETORES
 // timeout  {number} — ms até desistir (0 = sem limite)
 // Retorna Promise<Element|null>
-async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0 } = {}) {
+async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0, texto } = {}) {
   const chaves = Array.isArray(chave) ? chave : [chave]
-  const entradas = await Promise.all(chaves.map(c => resolverEntrada(c)))
+  const entradas = await Promise.all(
+    chaves.map(async c => {
+      const entrada = await resolverEntrada(c)
+      return entrada ? { ...entrada, texto } : null
+    })
+  )
   if (entradas.some(e => !e)) return null
-
   const checar = () => {
     if (modo === 'e') {
       // todos precisam estar prontos — retorna o último

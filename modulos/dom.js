@@ -28,6 +28,91 @@ let paginasConfereUSUARIO = [
     '.jus.br/exe-pje'
 ]
 
+async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}) {
+    const mudancas = [];
+    const id = Date.now() % 100000;
+
+    const { incluir, excluir } = filtro;
+
+    const passarFiltro = el => {
+        const d = {
+            tag:      el.tagName,
+            id:       el.id,
+            name:     el.getAttribute('name'),
+            ariaLabel:el.getAttribute('aria-label'),
+            classes:  typeof el.className === 'string' ? el.className : (el.className?.baseVal ?? ''),
+            texto:    el.textContent?.trim().slice(0, 80),
+        };
+
+        if (incluir) {
+            return Object.entries(incluir).some(([campo, valores]) =>
+                valores.some(v => d[campo] && d[campo].includes(v))
+            );
+        }
+
+        if (excluir) {
+            return !Object.entries(excluir).some(([campo, valores]) =>
+                valores.some(v => d[campo] && d[campo].includes(v))
+            );
+        }
+
+        return true;
+    };
+
+    const descrever = el => ({
+        tag:      el.tagName,
+        id:       el.id || undefined,
+        name:     el.getAttribute('name') || undefined,
+        ariaLabel:el.getAttribute('aria-label') || undefined,
+        classes:  el.className || undefined,
+        texto:    el.textContent?.trim().slice(0, 80) || undefined,
+    });
+
+    const capturar = () =>
+      new Map(
+        [...document.body.querySelectorAll('*')]
+            .filter(passarFiltro)
+            .map(el => {
+                const d = descrever(el);
+                const chave = `${d.tag}|${d.id}|${d.name}|${d.ariaLabel}|${d.classes}`;
+                return [chave, d];
+            })
+      );
+
+    let anterior = capturar();
+    const inicio = Date.now();
+
+    console.log(`%c[Rota PJE]%c [monitorarBody#${id}] Iniciando — ${duracaoMs}ms, intervalo ${intervaloMs}ms`, LOG.mb, 'color:inherit');
+    console.log(`%c[Rota PJE]%c [monitorarBody#${id}] Snapshot inicial: ${anterior.size} elementos`, LOG.mb, 'color:inherit');
+
+    const fim = Date.now() + duracaoMs;
+
+    while (Date.now() < fim) {
+        await suspender(intervaloMs);
+        
+        const atual = capturar();
+        const apareceram = [...atual.entries()].filter(([k]) => !anterior.has(k)).map(([, d]) => d);
+        const sumiram    = [...anterior.entries()].filter(([k]) => !atual.has(k)).map(([, d]) => d);
+        
+        if (apareceram.length || sumiram.length) {
+            const ts = `+${Date.now() - inicio}ms`;
+            if (apareceram.length) console.log(`%c[Rota PJE]%c [monitorarBody#${id}] ${ts} ➕`, LOG.mb, 'color:inherit', apareceram);
+            if (sumiram.length)    console.log(`%c[Rota PJE]%c [monitorarBody#${id}] ${ts} ➖`, LOG.mb, 'color:inherit', sumiram);
+            mudancas.push({ ts, apareceram, sumiram });
+        }
+      
+        anterior = atual;
+    }
+
+    console.log(`%c[Rota PJE]%c [monitorarBody#${id}] ✅ Fim — ${mudancas.length} evento(s) registrado(s).`, LOG.mb, 'color:inherit');
+    armazenar({rota_mudancasNoBody: mudancas});
+    return mudancas;
+}
+/*
+const resultado = await obterArmazenamento('rota_mudancasNoBody');
+console.log(resultado.rota_mudancasNoBody);
+*/
+
 async function identificaUsuario() {
     if (!paginasConfereUSUARIO.some(p => location.href.includes(p))) return
 
