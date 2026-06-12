@@ -29,6 +29,8 @@ async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     if (!janela) return
     let nomeJanela = window.name
     if (!nomeJanela.includes('rota')) return
+    //let tarefaParam = rota_buscarParametros('pjerota_tarefa')
+    //if (tarefaParam) window.name = nomeJanela + '-' + tarefaParam
     let armazenamento = await obterArmazenamento(['rotaExecucaoAtual'])
     if (!armazenamento) return
     let execucao = String(armazenamento?.rotaExecucaoAtual || '')
