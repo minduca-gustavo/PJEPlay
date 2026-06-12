@@ -25,17 +25,17 @@ const dadosTriagemInicial = {
 //                      FUNÇÃO INICIAL
 //__________________________________________________
 async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
+    let tarefa = 'triagem_inicial'
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
-    let nomeJanela = window.name
-    if (!nomeJanela.includes('rota')) return
-    //let tarefaParam = rota_buscarParametros('pjerota_tarefa')
-    //if (tarefaParam) window.name = nomeJanela + '-' + tarefaParam
     let armazenamento = await obterArmazenamento(['rotaExecucaoAtual'])
     if (!armazenamento) return
     let execucao = String(armazenamento?.rotaExecucaoAtual || '')
     if (!execucao) return
-    if (execucao !== nomeJanela.split('-').pop()) return
+    let tarefaParam = rota_buscarParametros('pjerota_tarefa')
+    if (tarefaParam && !window.name.includes(tarefa)) window.name = window.name + '-' + tarefaParam + '-' + execucao
+    if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
+    if (execucao !== window.name.split('-').pop()) return
     dadosTriagemInicial.execucaoAtual = execucao
     browser.storage.onChanged.addListener(obedecer)
     await triagem_inicial_janelaDetalhes(execucao)
@@ -48,7 +48,7 @@ triagem_inicial_aoAbrirDetalhesDoProcesso()
 //__________________________________________________
 
 async function triagem_inicial_janelaDetalhes(sessao){
-    
+    console.log('%c[Rota PJE]%c fui chamado' + JSON.stringify('fui chamado'), LOG.rosa, 'color:inherit')
     await triagem_inicial_enviarParaRoteiroAssistente()
     //console.log('dadosTriagemInicial.peticaoInicialId: ' + dadosTriagemInicial.peticaoInicialId)
     let executar = await obterArmazenamento(['rota_triagem_inicial_janelaDetalhes'])
@@ -601,7 +601,7 @@ async function triagem_inicial_acoesIntimar(){
     let botaoFinalizarMinuta = await aguardarElementoNovo('botaoFinalizarMinutaNaTelaDeElaborarAto')
     await clicar(botaoFinalizarMinuta)
     
-    monitorarBody(6000, 300, {incluir:{classes:['snack-bar']}})
+    //monitorarBody(6000, 300, {incluir:{classes:['snack-bar']}})
     await aguardarElementoNovo('mensagemModeloInseridoNaTelaDePrepararExpedientes', {texto:'Modelo de documento inserido com sucesso no editorX'})
     let i = 0
     while (await sel('mensagemModeloInseridoNaTelaDePrepararExpedientes')){
@@ -623,51 +623,27 @@ async function triagem_inicial_acoesIntimar(){
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
     console.log('%c[Rota PJE]%c metaExpedientes: ' + JSON.stringify(metaExpedientes), LOG.rosa, 'color:inherit')
     await clicar(botaoPoloAtivo)
-    monitorarBody(6000, 500)
-    await aguardarElementoNovo('mensagemAguardeNaTelaDePrepararExpedientes', {texto:'Aguarde...', timeout: 2000})
+    //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
+    let verificarCarregamentoDestinatario = await aguardarElementoNovo('verificarCarregamentoDestinatarioNaTelaDePrepararExpedientes', {texto:'Notificação inicialTipo de Expediente'})
     i = 0
-    while ((await sel('mensagemAguardeNaTelaDePrepararExpedientes')) || (await interceptador_ler('expedientes_materia') === metaExpedientes)){
-        console.log('%c[Rota PJE]%c interceptador_ler(): ' + JSON.stringify(interceptador_ler('expedientes_materia')), LOG.rosa, 'color:inherit')
+    while (verificarCarregamentoDestinatario.isConnected){
+        console.log('%c[Rota PJE]%c while: ' + JSON.stringify(i), LOG.aviso, 'color:inherit')
         await suspender(500)
-        //if (i++ > 3 * 2) break
+        if (i++ > 3 * 2) break
     }
     //await suspender(500)
     let botaoSalvar = await aguardarElementoNovo('botaoSalvarNaTelaDePrepararExpedientes')
     let botaoAssinar = (await aguardarElementoNovo('botaoAssinarNaTelaDePrepararExpedientes'))
     
     await clicar(botaoSalvar)
-    monitorarBody(6000, 500)
-    return
-    i = 0
-    while (!sel('botaoAssinarNaTelaDePrepararExpedientes').disabled){
+    let verificarCarregamentoSalvar = await aguardarElementoNovo('rodinhaGirandoNaTelaDePrepararExpedientes')
+    while (verificarCarregamentoSalvar.isConnected){
         await suspender(500)
-        if (i++ > 30 * 2) return rota_avisoTemporario('Ocorreu um erro. Prossiga manualmente.', 'erro', 15 * 1000)
     }
-    
-    await alert('CLICARIA')
-    return
-    //await clicar(botaoAssinar)
-            
-    /*
-    if (!elementos) return
-    let tipo = await sel('inputTipoDeDocumentoNaTelaDeAnexarDocumento')
-    let descricao = await sel('inputDescricaoDeDocumentoNaTelaDeAnexarDocumento')
-    let modelo = await sel('buscarModelosNaTelaDeAnexarDocumento')
-    await suspender(200)
-    await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
-    await suspender(200)
-    await preencher(descricao, 'Designação de audiência')
-    await suspender(200)
-    await digitarNoInput(modelo, 'SCBAU_TI_CERT')
-    await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
-    await esperarEClicar('botaoInserirModeloDeDespacho')
-    let botaoAssinar = await aguardarElementoNovo('botaoAssinarNaTelaDeAnexarDocumento')
-    window.addEventListener('pagehide', () => {
-        comandar('triagem_inicial_intimar', { parametros: '' })
-    })
     await clicar(botaoAssinar)
-    */
+    monitorarBody(6000, 100)
     return
+    
 }
 
 

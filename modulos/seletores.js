@@ -261,9 +261,16 @@ const SELETORES = {
       seletor: 'snack-bar-container',
       //ancestral: '.cdk-overlay-pane'
     },
+    rodinhaGirandoNaTelaDePrepararExpedientes:{
+      seletor: 'mat-progress-spinner',
+      //ancestral: '.cdk-overlay-pane'
+    },
     mensagemAguardeNaTelaDePrepararExpedientes:{
       seletor: 'mat-dialog-container',
       ancestral: '.cdk-overlay-pane'
+    },
+    verificarCarregamentoDestinatarioNaTelaDePrepararExpedientes:{
+      seletor: 'mat-form-field',
     }
     
     

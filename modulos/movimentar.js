@@ -275,7 +275,7 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
   await aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
   const label = rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
   const botao = await rota_movimentar_encontrarBotao(label)
-  
+  await suspender(500)
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
 
   await clicar (botao)
@@ -313,6 +313,7 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   if (!campoTexto) return
   await focar(campoTexto)
   await suspender(500)
+  if (!parametros.modelo) return
   await digitarNoInput(campo = elemento, valor = parametros.modelo)
   let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
   if (!opcaoModelo) return
