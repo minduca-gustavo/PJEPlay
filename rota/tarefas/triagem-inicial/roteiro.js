@@ -58,7 +58,7 @@ async function triagem_inicial_janelaDetalhes(sessao){
     await aguardarElemento('.tl-documento')
     let peticoes = [...document.getElementsByClassName('tl-documento')]
     let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
-    let botaoAnexos    = document.querySelectorAll('[name="mostrarOuOcultarAnexos"]')
+    let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))
     await clicar(peticaoInicial)
 
     for (let i = 0; i < 100; i++) {
@@ -232,7 +232,7 @@ async function triagem_inicial_acoesDespachar(){
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
     ])
     if(!juizEnvio) juizEnvio = await triagem_inicial_buscarJuizNoModelo() || ''
-    let tarefa = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+    let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
     let dados = await obterArmazenamento('rota_dadosTriagemInicial')
     let id = dados?.rota_dadosTriagemInicial?.processo?.id
     let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
@@ -251,10 +251,10 @@ async function triagem_inicial_acoesDespachar(){
         'Elaborar despacho':{'modelo': modeloDespacho}
     })
     if (modeloDespacho !== ''){
-        let botaoEnviarParaAssinatura = await aguardarElementoNovo('botaoEnviarParaAssinatura')
-        await clicar(botaoEnviarParaAssinatura)
+        let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
+        await clicar(elaborarDespachoBotaoEnviarParaAssinatura)
         for(let i = 0; i < 30 * 2; i++){
-            let assinar = await sel('tituloDaTarefaNaJanelaDeTarefa')
+            let assinar = await sel('tarefaDoProcessoTituloDaTarefa')
             if (assinar.textContent.includes('Assinar despacho')){
                 break
             }
@@ -338,8 +338,8 @@ async function triagem_inicial_acoesDesignarAudiencia(){
         return
     }
     if (link) horario.link = link
-    await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
-    await aguardarElementoNovo('seletorDeJuizDaPautaDeAudiencias')
+    await aguardarElementoNovo('pautaDeAudienciaCelulaDaTabela')
+    await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
     
    
     await triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario)
@@ -364,53 +364,53 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
 
 async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {    
     // selecionar juiz
-    let seletorJuiz = await sel('seletorDeJuizDaPautaDeAudiencias')
+    let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
     if (seletorJuiz.textContent != horario.nomeDaSala){
         await clicar(seletorJuiz)
-        await aguardarElementoNovo('seletorDeJuizDaPautaDeAudienciasAberto')
-        let juizes = [...(await sel ('seletorDeJuizDaPautaDeAudienciasOpcoes', '', true))]
+        await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
+        let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
         console.log('%c[Rota PJE]%c 336: ' + JSON.stringify(juizes[0]?.textContent), LOG.teste, 'color:inherit')
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
         await clicar(juizSelecionado)
     }
     // clicar no botao do primeiro dia
 
-    await aguardarElementoNovo('celulaDaTabelaDaPautaDeAudiencias')
-    let celulas = [...(await sel('celulaDaTabelaDaPautaDeAudiencias', '', true))]
+    await aguardarElementoNovo('pautaDeAudienciaCelulaDaTabela')
+    let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
     await clicar(celula)
 
     // clicar no botao de designar
 
-    let botaoDesignar = await aguardarElementoNovo('botaoDesignarAudiencia')
+    let botaoDesignar = await aguardarElementoNovo('pautaDeAudienciaBotaoDesignarAudiencia')
     await clicar(botaoDesignar)
 
     //preencher dados do processo e da audiencia
 
-    let inputNumeroProcesso = await aguardarElementoNovo('inputNumeroProcessoDesignarAudiencia')
+    let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
     console.log('%c[Rota PJE]%c 345: ' + JSON.stringify(horario), LOG.teste, 'color:inherit')
     await preencher(inputNumeroProcesso, horario.processo)
-    let inputLinkAudiencia = await aguardarElementoNovo('inputLinkDesignarAudiencia')
+    let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
     await preencher(inputLinkAudiencia, horario.link)
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
-    let inputDataDesignarAudiencia = await aguardarElementoNovo('inputDataDesignarAudiencia')
+    let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
-    await preencher(inputDataDesignarAudiencia, dataAudiencia)
-    let inputHorarioDesignarAudiencia = await aguardarElementoNovo('inputHorarioDesignarAudiencia')
-    await preencher(inputHorarioDesignarAudiencia, horarioInicial)
-    let inputTipoDesignarAudiencia = await aguardarElementoNovo('inputTipoDesignarAudiencia')
-    await clicar(inputTipoDesignarAudiencia)
-    await aguardarElementoNovo('opcoesTipoAudienciaDesignarAudienciaAberto')
+    await preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
+    let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
+    await preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
+    let pautaDeAudienciaInputTipoDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputTipoDesignarAudiencia')
+    await clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
+    await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
     await clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
     
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
 
-    let botoesDesignar = [...(await sel('botoesConfirmarCancelarDesignarAudiencia', '', true))]
+    let botoesDesignar = [...(await sel('pautaDeAudienciaBotoesConfirmarCancelarDesignarAudiencia', '', true))]
     let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await suspender(1000)
     //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await clicar(botaoConfirmar)
-    await aguardarElementoNovo('botaoFecharDesignacaoDeAudiencia')
+    await aguardarElementoNovo('pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia')
     await suspender(2000)
     window.close()
     return
@@ -440,7 +440,7 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
     let usuarioObter = await obterArmazenamento('rota_usuario')
     let usuario = usuarioObter?.rota_usuario.nome || ''
     console.log('%c[Rota PJE]%c usuario: ' + JSON.stringify(usuario), LOG.rosa, 'color:inherit')
-    await aguardarElementoNovo('botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso')
+    await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
     await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
     rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
     //console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.teste, 'color:inherit')
@@ -487,17 +487,17 @@ async function triagem_inicial_aoAbrirCertificar(){
 async function triagem_inicial_acoesCertificar(){
     let elementos = await aguardarElementoNovo(
         [
-            'inputTipoDeDocumentoNaTelaDeAnexarDocumento',
-            'inputDescricaoDeDocumentoNaTelaDeAnexarDocumento',
-            'buscarModelosNaTelaDeAnexarDocumento'
+            'detalhesDoProcessoInputTipoDeDocumento',
+            'detalhesDoProcessoInputDescricaoDeDocumento',
+            'anexarDocumentosBuscarModelos'
         ],
         {modo: 'e', timeout: 10000}
     )
     
     if (!elementos) return
-    let tipo = await sel('inputTipoDeDocumentoNaTelaDeAnexarDocumento')
-    let descricao = await sel('inputDescricaoDeDocumentoNaTelaDeAnexarDocumento')
-    let modelo = await sel('buscarModelosNaTelaDeAnexarDocumento')
+    let tipo = await sel('detalhesDoProcessoInputTipoDeDocumento')
+    let descricao = await sel('detalhesDoProcessoInputDescricaoDeDocumento')
+    let modelo = await sel('anexarDocumentosBuscarModelos')
     await suspender(200)
     await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
     await suspender(200)
@@ -505,8 +505,8 @@ async function triagem_inicial_acoesCertificar(){
     await suspender(200)
     await digitarNoInput(modelo, 'SCBAU_TI_CERT')
     await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
-    await esperarEClicar('botaoInserirModeloDeDespacho')
-    let botaoAssinar = await aguardarElementoNovo('botaoAssinarNaTelaDeAnexarDocumento')
+    await esperarEClicar('elaborarDespachoInserirModelo')
+    let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
     //await clicar(botaoAssinar)
     window.addEventListener('beforeunload', () => {
         comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
@@ -562,49 +562,49 @@ async function triagem_inicial_acoesIntimar(){
     
     await aguardarElementoNovo(
         [
-            'seletorTipoDeExpedienteNaTelaDePrepararExpedientes',
-            'botaoConfeccionarAtoAgrupadoNaTelaDePrepararExpedientes',
+            'prepararExpedientesSeletorTipoDeExpediente',
+            'prepararExpedientesBotaoConfeccionarAtoAgrupado',
         ],
         {modo: 'e', timeout: 10000}
     )
     logInterceptador = false
     
-    let seletor = await sel('seletorTipoDeExpedienteNaTelaDePrepararExpedientes')
+    let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
     await clicar(seletor)
-    await aguardarElementoNovo('seletorTipoDeExpedienteNaTelaDePrepararExpedientesAberto')
-    let opcao = [...await sel('seletorTipoDeExpedienteNaTelaDePrepararExpedientesAberto', '', true)].find(o => o.textContent.trim().includes('Notificação inicial'))
+    await aguardarElementoNovo('prepararExpedientesSeletorTipoDeExpedienteAberto')
+    let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes('Notificação inicial'))
     await clicar(opcao)
-    let botaoConfeccionar = await aguardarElementoNovo('botaoConfeccionarAtoAgrupadoNaTelaDePrepararExpedientes')
+    let botaoConfeccionar = await aguardarElementoNovo('prepararExpedientesBotaoConfeccionarAtoAgrupado')
     await clicar(botaoConfeccionar)
     await aguardarElementoNovo(
         [
-            'seletorTipoDeDocumentoNaTelaDeElaborarAto',
-            'inputDescricaoNaTelaDeElaborarAto'
+            'elaborarAtoSeletorTipoDeDocumento',
+            'elaborarAtoInputDescricao'
         ],
         {modo: 'e', timeout: 10000}
     )
-    let descricao = await sel('inputDescricaoNaTelaDeElaborarAto')
-    let inputModelo = await sel('buscarModelosNaTelaDeElaborar')
+    let descricao = await sel('elaborarAtoInputDescricao')
+    let inputModelo = await sel('elaborarDespachoBuscarModelos')
     await preencher(descricao, 'Notificação Inicial - Designação de audiência')
     await suspender(200)
-    let areaAssinatura = await aguardarElementoNovo('assinaturaDaMinutaNaTelaDeElaborarAto')
+    let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
     await preencherCKEditorExecCommand(areaAssinatura, '.')
     await suspender(200)
-    let conteudoPrincipal = await aguardarElementoNovo('conteudoPrincipalDaMinutaNaTelaDeElaborarAto')
+    let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
     await suspender(200)
     await digitarNoInput(inputModelo, 'SCBAU_TI_NOT_DOM')
     await selecionarOpcaoDeModelo('SCBAU_TI_NOT_DOM')
     await suspender(200)
-    await esperarEClicar('botaoInserirModeloDeDespacho')
+    await esperarEClicar('elaborarDespachoInserirModelo')
     await suspender(200)
-    let botaoFinalizarMinuta = await aguardarElementoNovo('botaoFinalizarMinutaNaTelaDeElaborarAto')
+    let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
     await clicar(botaoFinalizarMinuta)
     
     //monitorarBody(6000, 300, {incluir:{classes:['snack-bar']}})
-    await aguardarElementoNovo('mensagemModeloInseridoNaTelaDePrepararExpedientes', {texto:'Modelo de documento inserido com sucesso no editorX'})
+    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Modelo de documento inserido com sucesso no editorX'})
     let i = 0
-    while (await sel('mensagemModeloInseridoNaTelaDePrepararExpedientes')){
+    while (await sel('prepararExpedientesMensagemModeloInserido')){
         await suspender(500)
         if (i++ > 3 * 2) break
     }
@@ -616,15 +616,15 @@ async function triagem_inicial_acoesIntimar(){
     //    if (i==30) return rota_avisoTemporario('Ocorreu um erro. Prossiga manualmente.', 'erro', 15 * 1000)
     //}
     //await suspender(200)
-    //await aguardarElementoNovo('atoConfeccionadoNaTelaDePrepararExpedientes')
+    //await aguardarElementoNovo('prepararExpedientesAtoConfeccionado')
     //metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    let botaoPoloAtivo = await aguardarElementoNovo('botaoPoloAtivoNaTelaDePrepararExpedientes')
+    let botaoPoloAtivo = await aguardarElementoNovo('prepararExpedientesBotaoPoloAtivo')
     logInterceptador = true
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
     console.log('%c[Rota PJE]%c metaExpedientes: ' + JSON.stringify(metaExpedientes), LOG.rosa, 'color:inherit')
     await clicar(botaoPoloAtivo)
     //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
-    let verificarCarregamentoDestinatario = await aguardarElementoNovo('verificarCarregamentoDestinatarioNaTelaDePrepararExpedientes', {texto:'Notificação inicialTipo de Expediente'})
+    let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto:'Notificação inicialTipo de Expediente'})
     i = 0
     while (verificarCarregamentoDestinatario.isConnected){
         console.log('%c[Rota PJE]%c while: ' + JSON.stringify(i), LOG.aviso, 'color:inherit')
@@ -632,11 +632,11 @@ async function triagem_inicial_acoesIntimar(){
         if (i++ > 3 * 2) break
     }
     //await suspender(500)
-    let botaoSalvar = await aguardarElementoNovo('botaoSalvarNaTelaDePrepararExpedientes')
-    let botaoAssinar = (await aguardarElementoNovo('botaoAssinarNaTelaDePrepararExpedientes'))
+    let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')
+    let botaoAssinar = (await aguardarElementoNovo('prepararExpedientesBotaoAssinar'))
     
     await clicar(botaoSalvar)
-    let verificarCarregamentoSalvar = await aguardarElementoNovo('rodinhaGirandoNaTelaDePrepararExpedientes')
+    let verificarCarregamentoSalvar = await aguardarElementoNovo('prepararExpedientesRodinhaGirando')
     while (verificarCarregamentoSalvar.isConnected){
         await suspender(500)
     }

@@ -17,36 +17,36 @@
 // ── Utilitário interno ────────────────────────────────────────
 
 async function inserirGigsNaTelaDeDetalhesDoProcesso(tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao'){
-    let novaAtividade = await aguardarElementoNovo('botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso', {timeout: 20000})
+    let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
     if (!novaAtividade) return
     await clicar(novaAtividade)
-    let inputTipoAtividade = await aguardarElementoNovo('inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso')
+    let inputTipoAtividade = await aguardarElementoNovo('detalhesDoProcessoInputTipoAtividadeGigs')
     await focar(inputTipoAtividade)
     await suspender (200)
     await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
     if (dias && !dataPrazo){
-        let inputDias = await aguardarElementoNovo('inputDiasGigsNaJanelaDetalhesDoProcesso')
+        let inputDias = await aguardarElementoNovo('detalhesDoProcessoInputDiasGigs')
         await suspender (200)
         await preencher(inputDias, dias)
     }
     if (dataPrazo){
-        let inputData = await aguardarElementoNovo('inputDataPrazoGigsNaJanelaDetalhesDoProcesso')
+        let inputData = await aguardarElementoNovo('detalhesDoProcessoInputDataPrazoGigs')
         await suspender (200)
         await preencher(inputData, dataPrazo)
     }
     if (responsavel){
-        let inputResponsavel = await aguardarElementoNovo('inputResponsavelGigsNaJanelaDetalhesDoProcesso')
+        let inputResponsavel = await aguardarElementoNovo('detalhesDoProcessoInputResponsavelGigs')
         await focar(inputResponsavel)
         await suspender (200)
         await preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
     }
     if (observacao){
-        let inputObservacao = await aguardarElementoNovo('inputObservacaoGigsNaJanelaDetalhesDoProcesso')
+        let inputObservacao = await aguardarElementoNovo('detalhesDoProcessoInputObservacaoGigs')
         await suspender (200)
         await preencher(inputObservacao, observacao)
     }
     if (salvar === 'sim'){
-        let botaoSalvar = await aguardarElementoNovo('botaoSalvarGigsNaJanelaDetalhesDoProcesso')
+        let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
         await suspender (200)
         await clicar(botaoSalvar)
         await suspender (2000)

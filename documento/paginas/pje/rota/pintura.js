@@ -142,7 +142,7 @@ function pintura_limpar(cabecalho){
 // ── Aguarda cabeçalho ─────────────────────────────────────────
 
 async function pintura_aguardarCabecalho(){
-    let seletor = seletorPorVersao('cabecalhoDosDocumentosDetalhes')
+    let seletor = seletorPorVersao('detalhesDoProcessoCabecalhoDosDocumentos')
     return await aguardarElemento(seletor, 12000)
 }
 

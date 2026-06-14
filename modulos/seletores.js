@@ -25,197 +25,193 @@ const SELETORES_BASE = {
   // },
 }
 
-const SELETORES = {
-  '2.18': {
+const SELETORES_218 = {
     ...SELETORES_BASE,
     retificacaoAutuacaoPrimeirosBotoes:{
         seletor:  '.mat-step-text-label',
 
       },
-    numeroProcessoJanelaDetalhesComTipo:{
+    detalhesDoProcessoNumeroProcessoComTipo:{
       seletor: '.texto-numero-processo',
     },
-    cabecalhoDosDocumentosDetalhes:{
+    detalhesDoProcessoCabecalhoDosDocumentos:{
       seletor: '.cabecalho-conteudo',
     },
-    dataDoProcessoNaTarefa:{
+    painelGlobalDataDoProcessoNaTarefa:{
       seletor: 'span[processo\\.caixa]',
-
     },
-    botoesDeOrdenarNoPainelGlobal:{
+    painelGlogalBotoesDeOrdenar:{
       seletor: '.th-elemento-class',
-
     },
-    tabelaDeProcessosNoPainelGlobal:{
+    painelGlobalTabelaDeProcessos:{
       seletor: '[name*="Tabela de Processos"]',
-
     },
-    containerDosGigsNoPainelGlobal:{
+    painelGlobalContainerDosGigs:{
       seletor: '.tipo-atividade-container',
     },
-    observacaoDosGigsNaTelaDosGigs:{
+    relatoriosDoGigsObservacaoDosGigs:{
       seletor: '.texto-descricao',
     },
-    descricaoDaPeticaoNoEscaninho:{
+    escaninhoDescricaoDaPeticao:{
       seletor: '[mattooltip="Visualizar documento"]',
     },
-    botaoFiltroDePrioridadesNoPainelGlobal:{
+    painelGlobalBotaoFiltroDePrioridades:{
       seletor: '[aria-label="Processos com Prioridade Processual"]',
 
     },
-    botaoDesconsiderarFiltrosSelecionadosNoPainelGlobal:{
+    painelGlobalBotaoDesconsiderarFiltrosSelecionados:{
       seletor: '[aria-label="Desconsiderar Filtros Selecionados"]',
 
     },
-    abrirTarefaDoProcessoNoPainelGlobal:{
+    painelGlobalAbrirTarefaDoProcesso:{
       seletor: 'pje-descricao-processo'
     },
-    barraSuperiorDetalhesDoProcesso:{
+    detalhesDoProcessoBarraSuperior:{
       seletor: 'mat-toolbar'
     },
-    celulaDaTabelaDaPautaDeAudiencias:{
+    pautaDeAudienciaCelulaDaTabela:{
       seletor: 'span.cal-day-cell',
     },
-    seletorDeJuizDaPautaDeAudiencias:{
+    pautaDeAudienciaSeletorDeJuiz:{
       seletor: 'mat-select',
       ancestral: '.cabecalho-pauta-audiencias'
     },
-    seletorDeJuizDaPautaDeAudienciasAberto:{
+    pautaDeAudienciaSeletorDeJuizAberto:{
       seletor: '#mat-select-0-panel'
     },
-    seletorDeJuizDaPautaDeAudienciasOpcoes:{
+    pautaDeAudienciaSeletorDeJuizOpcoes:{
       seletor: 'mat-option',
       ancestral: '#mat-select-0-panel'
     },
-    botaoDesignarAudiencia:{
+    pautaDeAudienciaBotaoDesignarAudiencia:{
       seletor: '[aria-label*="Designar Audiência"]'
     },
-    inputNumeroProcessoDesignarAudiencia:{
+    pautaDeAudienciaInputNumeroProcessoDesignarAudiencia:{
       seletor: '#inputNumeroProcesso',
       ancestral: 'mat-dialog-container'
     },
-    inputLinkDesignarAudiencia:{
+    pautaDeAudienciaInputLinkDesignarAudiencia:{
       seletor: '[name="url"]',
       ancestral: 'mat-dialog-container'
     },
-    inputDataDesignarAudiencia:{
+    pautaDeAudienciaInputDataDesignarAudiencia:{
       seletor: '[name="dataAudiencia"]',
       ancestral: 'mat-dialog-container'
     },
-    inputHorarioDesignarAudiencia:{
+    pautaDeAudienciaInputHorarioDesignarAudiencia:{
       seletor: '#horario',
       ancestral: 'mat-dialog-container'
     },
-    inputTipoDesignarAudiencia:{
+    pautaDeAudienciaInputTipoDesignarAudiencia:{
       seletor: '[name="Filtro Tipo da audiência"]',
       ancestral: 'mat-dialog-container'
     },
-    opcoesTipoAudienciaDesignarAudienciaAberto:{
+    pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto:{
       seletor: 'mat-option',
       ancestral: '.mat-select-panel-wrap'
     },
-    botoesConfirmarCancelarDesignarAudiencia:{
+    pautaDeAudienciaBotoesConfirmarCancelarDesignarAudiencia:{
       seletor: 'button',
       ancestral: 'mat-dialog-container'
     },
-    tituloDaTarefaNaJanelaDeTarefa:{
+    tarefaDoProcessoTituloDaTarefa:{
       seletor: '.texto-tarefa-processo',
     },
-    botoesDeTarefaNaJanelaDeTarefa:{
+    tarefaDoProcessoBotoesDeTarefa:{
       seletor: 'button',
       ancestral: 'pje-transicao-tarefa'
     },
-    botoesDeTipoDeDespachoNaJanelaDeConclusao:{
+    conclusaoAoMagistradoBotoesDeTipoDeDespacho:{
       seletor: 'button',
       ancestral: 'pje-concluso-tarefa'
     },
-    selecaoDeMagistradosNaTelaDaConclusao:{
+    conclusaoAoMagistradoSelecaoDeMagistrados:{
       seletor: '.magistrado',
       ancestral: 'pje-concluso-tarefa-magistrado'
     },
-    opcoesDeMagistradosNaTelaDaConclusao:{
+    conclusaoAoMagistradoOpcoesDeMagistrados:{
       seletor: 'mat-option',
       ancestral: '.mat-select-panel-wrap'
     },
-    botaoFecharDesignacaoDeAudiencia:{
+    pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia:{
       seletor: 'button',
       ancestral: '.container-conteudo'
     },
-    corpoDoDocumentoNaTelaDeElaborarFundamentacao:{
+    elaborarDespachoCorpoDoDocumentoFundamentacao:{
       seletor: '.corpo',
       ancestral: '[aria-label*="Fundamentação"]'
     },
-    corpoDoDocumentoNaTelaDeElaborarFundamentacaoFocar:{
+    elaborarDespachoCorpoDoDocumentoFundamentacaoFocar:{
       seletor: '[aria-label*="Fundamentação"]'
     },
-    buscarModelosNaTelaDeElaborar:{
+    elaborarDespachoBuscarModelos:{
       seletor: '#inputFiltro',
       ancestral: 'pje-arvore-modelo-documento'
     },
-    opcaoDeModeloNaTelaDeElaborarDespacho:{
+    elaborarDespachoOpcaoDeModelo:{
       seletor: '.nodo-filtrado',
       ancestral: 'arvore-container'
     },
-    botaoInserirModeloDeDespacho:{
+    elaborarDespachoInserirModelo:{
       seletor: '[aria-label*="Inserir modelo de documento"]',
     },
-    botaoEnviarParaAssinatura:{
+    elaborarDespachoBotaoEnviarParaAssinatura:{
       seletor: '[aria-label*="Enviar para assinatura"]',
       ancestral: 'botoes-acoes'
     },
-    botaoNovaAtividadeGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoBotaoNovaAtividadeGigs:{
       seletor: '#nova-atividade',
       ancestral: 'pje-gigs-ficha-processo'
     },
-    botaoSalvarGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoBotaoSalvarGigs:{
       seletor: '[aria-label="Salva as alterações"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
-    inputDataPrazoGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoInputDataPrazoGigs:{
       seletor: '[formcontrolname="dataPrazo"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
-    inputTipoAtividadeGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoInputTipoAtividadeGigs:{
       seletor: '[formcontrolname="tipoAtividade"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
-    inputResponsavelGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoInputResponsavelGigs:{
       seletor: '[formcontrolname="responsavel"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
-    inputObservacaoGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoInputObservacaoGigs:{
       seletor: '[formcontrolname="observacao"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
-    inputDiasGigsNaJanelaDetalhesDoProcesso:{
+    detalhesDoProcessoInputDiasGigs:{
       seletor: '[formcontrolname="dias"]',
       ancestral: 'pje-gigs-cadastro-atividades'
     },
-    inputTipoDeDocumentoNaTelaDeAnexarDocumento:{
+    detalhesDoProcessoInputTipoDeDocumento:{
       seletor: '[aria-label="Tipo de Documento"]',
       ancestral: 'pje-anexar-tipo-documento'
     },
-    inputDescricaoDeDocumentoNaTelaDeAnexarDocumento:{
+    detalhesDoProcessoInputDescricaoDeDocumento:{
       seletor: '[aria-label="Descrição"]'
       /*ancestral: '.mat-form-field'*/
     },
-    buscarModelosNaTelaDeAnexarDocumento:{
+    anexarDocumentosBuscarModelos:{
       seletor: '#inputFiltro',
       ancestral: 'pje-arvore-modelo-documento'
     },
-    botaoAssinarNaTelaDeAnexarDocumento:{
+    anexarDocumentosBotaoAssinar:{
       seletor: '[aria-label="Assinar documento e juntar ao processo"]',
       ancestral: '.botoes-acoes'
     },
-    seletorTipoDeExpedienteNaTelaDePrepararExpedientes:{
+    prepararExpedientesSeletorTipoDeExpediente:{
       seletor: 'mat-select',
       ancestral: 'pje-pec-ato-agrupado'
     },
-    botaoConfeccionarAtoAgrupadoNaTelaDePrepararExpedientes:{
+    prepararExpedientesBotaoConfeccionarAtoAgrupado:{
       seletor: '[name="btn-confeccionar-ato-agrupado"]',
       ancestral: '.pec-ato-agrupado'
     },
-    seletorTipoDeExpedienteNaTelaDePrepararExpedientesAberto:{
+    prepararExpedientesSeletorTipoDeExpedienteAberto:{
       seletor: 'mat-option',
       ancestral: '.mat-select-panel-wrap'
     },
@@ -223,53 +219,53 @@ const SELETORES = {
       seletor: 'pje-anexar-documento',
       ancestral: 'pje-pec-dialogo-ato'
     },
-    atoConfeccionadoNaTelaDePrepararExpedientes:{
+    prepararExpedientesAtoConfeccionado:{
       seletor: '[aria-label="Ato confeccionado"]',
       ancestral: '.pec-coluna-confeccionar-ato-individual-tabela-destinatarios'
     },
-    botaoPoloAtivoNaTelaDePrepararExpedientes:{
+    prepararExpedientesBotaoPoloAtivo:{
       seletor: '[name="btnIntimarSomentePoloAtivo"]',
       ancestral: '.pec-painel-expansivel-partes-processo'
     },
-    botaoSalvarNaTelaDePrepararExpedientes:{
+    prepararExpedientesBotaoSalvar:{
       seletor: '[aria-label="Salva os expedientes"]',
       ancestral: '.pec-botoes-acoes-expedientes'
     },
-    botaoAssinarNaTelaDePrepararExpedientes:{
+    prepararExpedientesBotaoAssinar:{
       seletor: '[aria-label="Assinar ato(s)"]',
       ancestral: '.pec-botoes-acoes-expedientes'
     },
-    seletorTipoDeDocumentoNaTelaDeElaborarAto:{
+    elaborarAtoSeletorTipoDeDocumento:{
       seletor: '[aria-label="Tipo de Documento"]',
       ancestral: 'pje-anexar-tipo-documento'
     },
-    inputDescricaoNaTelaDeElaborarAto:{
+    elaborarAtoInputDescricao:{
       seletor: '[aria-label="Descrição"]',
       //ancestral: '.mat-form-field'
     },
-    botaoFinalizarMinutaNaTelaDeElaborarAto:{
+    elaborarAtoFinalizarMinuta:{
       seletor: '[aria-label="Finalizar minuta"]',
       ancestral: '.botoes-acoes'
     },
-    assinaturaDaMinutaNaTelaDeElaborarAto:{
+    elaborarAtoCampoAssinaturaOpcional:{
       seletor: '[aria-label*="Assinatura (opcional)"]',
     },
-    conteudoPrincipalDaMinutaNaTelaDeElaborarAto:{
+    elaborarAtoConteudoPrincipalDaMinuta:{
       seletor: '[aria-label*="Conteúdo principal"]',
     },
-    mensagemModeloInseridoNaTelaDePrepararExpedientes:{
+    prepararExpedientesMensagemModeloInserido:{
       seletor: 'snack-bar-container',
       //ancestral: '.cdk-overlay-pane'
     },
-    rodinhaGirandoNaTelaDePrepararExpedientes:{
+    prepararExpedientesRodinhaGirando:{
       seletor: 'mat-progress-spinner',
       //ancestral: '.cdk-overlay-pane'
     },
-    mensagemAguardeNaTelaDePrepararExpedientes:{
+    prepararExpedientesMensagemAguarde:{
       seletor: 'mat-dialog-container',
       ancestral: '.cdk-overlay-pane'
     },
-    verificarCarregamentoDestinatarioNaTelaDePrepararExpedientes:{
+    prepararExpedientesVerificarCarregamentoDestinatario:{
       seletor: 'mat-form-field',
     }
     
@@ -280,10 +276,16 @@ const SELETORES = {
     //   propriedade: 'value',
     //   valor:       'Finalizar',
     // },
-  },
+}
+
+const SELETORES = {
+  '2.18': SELETORES_218,
   '2.19': {
-    ...SELETORES_BASE,
-    
+    ...SELETORES_218,  // herda tudo — só sobrescreva o que quebrou
+    detalhesDoProcessoBotaoAbrirAnexos:{
+      seletor: '.botao-anexos',
+      ancestral: 'pje-timeline-anexos'
+    },
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar',
@@ -472,11 +474,18 @@ let _rotaVersaoAtual = null
 async function detectarVersao() {
   const el = document.querySelector('#modulo-versao')
   const texto = el?.textContent?.trim() ?? ''
-  const versao = texto.match(/\d+\.\d+/)?.[0] ?? VERSAO_FALLBACK
-  const versaoFinal = versao || VERSAO_FALLBACK
-  _rotaVersaoAtual = versaoFinal          // ← linha nova
-  armazenar({ rota_versao: versaoFinal })
-  console.log('%c[Rota PJE]%c versão detectada: ' + versaoFinal, LOG.info, 'color:inherit')
+  const versaoDetectada = texto.match(/\d+\.\d+/)?.[0]
+
+  if (versaoDetectada) {
+    _rotaVersaoAtual = versaoDetectada
+    armazenar({ rota_versao: versaoDetectada })
+    console.log('%c[Rota PJE]%c versão detectada: ' + versaoDetectada, LOG.info, 'color:inherit')
+  } else {
+    // Usa o que já está no storage, sem sobrescrever
+    const resultado = await obterArmazenamento('rota_versao')
+    _rotaVersaoAtual = resultado?.rota_versao ?? VERSAO_FALLBACK
+    console.log('%c[Rota PJE]%c versão não detectada, usando: ' + _rotaVersaoAtual, LOG.info, 'color:inherit')
+  }
 }
 
 detectarVersao()

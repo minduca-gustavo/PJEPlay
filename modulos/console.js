@@ -10,3 +10,6 @@ const LOG = {
 //console.log('%c[Rota PJE]%c mensagem', LOG.erro, 'color:inherit', e)
 console.log('%c[Rota PJE]%c vai dar certo, né?', LOG.teste, 'color:inherit')
 
+async function suspender(ms = 1000){
+	return new Promise(r => setTimeout(r, ms))
+}

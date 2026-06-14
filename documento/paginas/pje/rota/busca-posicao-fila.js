@@ -1,5 +1,5 @@
 
-// o body está mudando COM PROCESSO. Tem que ver o innertext da tabelaDeProcessosNoPainelGlobal
+// o body está mudando COM PROCESSO. Tem que ver o innertext da painelGlobalTabelaDeProcessos
 //console.log('Me chamou? BUSCA FILA')
 function buscaPosicaoFila(){
     let janela = confereJanela(JANELA.detalhes)
@@ -34,10 +34,10 @@ async function busca_FilaPainelGlobal(){
     await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
     let contAtual = await interceptador_lerProcessosPainel()
     let conteudoAtual = contAtual.resultado
-    let botoes = [...document.querySelectorAll(seletorPorVersao('botoesDeOrdenarNoPainelGlobal'))]
+    let botoes = [...document.querySelectorAll(seletorPorVersao('painelGlogalBotoesDeOrdenar'))]
     let desde = botoes.find(el => el.textContent.includes('Desde'))
-    let prioridade = await sel('botaoFiltroDePrioridadesNoPainelGlobal')
-    let desconsiderar = await sel('botaoDesconsiderarFiltrosSelecionadosNoPainelGlobal')
+    let prioridade = await sel('painelGlobalBotaoFiltroDePrioridades')
+    let desconsiderar = await sel('painelGlobalBotaoDesconsiderarFiltrosSelecionados')
     let dataPrioridade = ''
     let dataDesconsiderar = ''
     let cliques = [desde, prioridade]
@@ -57,7 +57,7 @@ async function busca_FilaPainelGlobal(){
     }
     busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual)
     relatar(dataPrioridade + ' - ' + dataDesconsiderar, '', 'teste')
-    await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
+    await aguardarElementoNovo('painelGlobalTabelaDeProcessos')
     let top = window.innerHeight/2 + 150
     let aviso = criaDiv({id: 'rota-pje-busca-posicao-fila-div', ancestral: '#ffff'})
     aviso.style.width = '300px'
@@ -102,11 +102,11 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
     //await suspender (1000)
     if(!conteudoAtual){
         
-        await aguardarElementoNovo('tabelaDeProcessosNoPainelGlobal')
+        await aguardarElementoNovo('painelGlobalTabelaDeProcessos')
         let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
         for(let i = 0; i < 100; i++){
             
-            contAtual = await sel('tabelaDeProcessosNoPainelGlobal')
+            contAtual = await sel('painelGlobalTabelaDeProcessos')
             conteudo = contAtual.innerText
             
             //console.log('%c[Rota PJE]%c body: ' + conteudo, LOG.teste, 'color:inherit')
@@ -121,7 +121,7 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
     }
     console.log('%c[Rota PJE]%c conteudo: ' + conteudo, LOG.teste, 'color:inherit')
     for(let i = 0; i < 100; i++){
-        let contMudou = await sel('tabelaDeProcessosNoPainelGlobal')
+        let contMudou = await sel('painelGlobalTabelaDeProcessos')
         let conteudoMudou = contMudou.innerText
         //console.log('%c[Rota PJE]%c conteudoMudou: ' + conteudoMudou, LOG.teste, 'color:inherit')
         if (conteudo !== conteudoMudou && ROTA_REGEX_CNJ.test(conteudoMudou)) return
@@ -134,7 +134,7 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
 async function busca_posicao_filaCriaCampoConsulta() {
     let retira = await selecionar('#pjerota-busca-posicao-fila-div-barra')
     if (retira) retira.remove()
-    let barra = await aguardarElementoNovo('barraSuperiorDetalhesDoProcesso')
+    let barra = await aguardarElementoNovo('detalhesDoProcessoBarraSuperior')
     let corToolbar = barra
         ? getComputedStyle(barra).backgroundColor
         : '#1565C0'
@@ -176,7 +176,7 @@ async function busca_posicao_filaCriaCampoConsulta() {
 async function busca_posicao_filaConsultar() {
     const rodape = await selecionar('#pjerota-busca-posicao-fila-rodape')
     const id = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)?.[1]
-    const processo = ((await sel('numeroProcessoJanelaDetalhesComTipo'))?.textContent.split(' ')[2])
+    const processo = ((await sel('detalhesDoProcessoNumeroProcessoComTipo'))?.textContent.split(' ')[2])
       ?? (await interceptador_lerProcesso()?.numero ?? await rota_fetch(`${location.origin}/pje-comum-api/api/processos/id/${id}`))?.numero
     if(!processo){
         rodape.textContent = 'Processo não encontrado. Atualize a página e tente novamente.'

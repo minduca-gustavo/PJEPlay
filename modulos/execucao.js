@@ -1,6 +1,4 @@
-async function suspender(ms = 1000){
-	return new Promise(r => setTimeout(r, ms))
-}
+
 
 //function clicar(el = ''){
 //  let descricao = el?.textContent || el?.innerText || el?.getAttribute('aria-label') || ''

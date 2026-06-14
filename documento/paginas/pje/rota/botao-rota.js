@@ -786,9 +786,9 @@ function _rota_aoClicarLista(btnRef){
 // ── Coleta processos visíveis na tela ─────────────────────────
 
 const SELETORES_A_EXCLUIR = [
-    'containerDosGigsNoPainelGlobal',
-    'observacaoDosGigsNaTelaDosGigs',
-	'descricaoDaPeticaoNoEscaninho'
+    'painelGlobalcontainerDosGigs',
+    'relatoriosDoGigsObservacaoDosGigs',
+	'escaninhoDescricaoDaPeticao'
     // ...
 ]
 
@@ -798,12 +798,14 @@ function _rota_coletarFilaDaTela(){
 
     let elementosAExcluir = new Set()
     for (let chave of SELETORES_A_EXCLUIR){
-        for (let el of document.querySelectorAll(seletorPorVersao(chave))){
-            let numero = el.innerText.match(ROTA_REGEX_CNJ)
-            if(!numero) continue
-            elementosAExcluir.add(numero[0])
-        }
-    }
+		const seletor = seletorPorVersao(chave)
+		if (!seletor) continue  // ← guarda contra '' ou null
+		for (let el of document.querySelectorAll(seletor)){
+			let numero = el.innerText.match(ROTA_REGEX_CNJ)
+			if(!numero) continue
+			elementosAExcluir.add(numero[0])
+		}
+	}
 
     let vistos = new Set()
     let fila   = []

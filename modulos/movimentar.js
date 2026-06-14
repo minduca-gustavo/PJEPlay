@@ -156,7 +156,7 @@ const EXECUTORES = {
 // rota_movimentar_lerTarefaAtual
 // ------------------------------------------------------------
 async function rota_movimentar_lerTarefaAtual() {
-  let elemento = await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+  let elemento = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
   return elemento?.textContent?.trim() ?? null
 }
 
@@ -243,7 +243,7 @@ async function rota_movimentar_aguardarMudancaTarefa(tarefaAnterior, timeoutEmSe
 // ------------------------------------------------------------
 async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
   for (let i = 0; i < timeoutEmSegundos * 2; i++) {
-    await aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
+    await aguardarElementoNovo(['tarefaDoProcessoBotoesDeTarefa', 'conclusaoAoMagistradoBotoesDeTipoDeDespacho'], {modo: 'ou'})
 
     const porAriaLabel = document.querySelector(`[aria-label="${label}"]`)
       ?? document.querySelector(`[aria-label*="${label}"]`)
@@ -272,7 +272,7 @@ async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
 // rota_movimentar_executarTransicaoSimples
 // ------------------------------------------------------------
 async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaDestino, _params) {
-  await aguardarElementoNovo(['botoesDeTarefaNaJanelaDeTarefa', 'botoesDeTipoDeDespachoNaJanelaDeConclusao'], {modo: 'ou'})
+  await aguardarElementoNovo(['tarefaDoProcessoBotoesDeTarefa', 'conclusaoAoMagistradoBotoesDeTipoDeDespacho'], {modo: 'ou'})
   const label = rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino)
   const botao = await rota_movimentar_encontrarBotao(label)
   await suspender(500)
@@ -287,11 +287,11 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 // ------------------------------------------------------------
 async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-  let selecao = await aguardarElementoNovo('selecaoDeMagistradosNaTelaDaConclusao')
+  let selecao = await aguardarElementoNovo('conclusaoAoMagistradoSelecaoDeMagistrados')
   await clicar(selecao)
   let juiz = parametros.juiz.toUpperCase()
-  await aguardarElementoNovo('opcoesDeMagistradosNaTelaDaConclusao')
-  let juizes = [...(await sel ('opcoesDeMagistradosNaTelaDaConclusao', '', true))]
+  await aguardarElementoNovo('conclusaoAoMagistradoOpcoesDeMagistrados')
+  let juizes = [...(await sel ('conclusaoAoMagistradoOpcoesDeMagistrados', '', true))]
   let juizSelecionado = juizes.find(j => j.textContent?.trim().includes(juiz))
   await clicar(juizSelecionado)
 
@@ -305,10 +305,10 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
 async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros = null) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
   if (!parametros) return
-  let elemento = await aguardarElementoNovo(['corpoDoDocumentoNaTelaDeElaborarFundamentacao', 'buscarModelosNaTelaDeElaborar'], {modo: 'e', timeout: 60000})
+  let elemento = await aguardarElementoNovo(['elaborarDespachoCorpoDoDocumentoFundamentacao', 'elaborarDespachoBuscarModelos'], {modo: 'e', timeout: 60000})
   if (!elemento) return
   console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.rosa, 'color:inherit')
-  let campoTexto = await sel('corpoDoDocumentoNaTelaDeElaborarFundamentacaoFocar')
+  let campoTexto = await sel('elaborarDespachoCorpoDoDocumentoFundamentacaoFocar')
   console.log('%c[Rota PJE]%c campoTexto: ' + JSON.stringify(campoTexto.getAttribute('aria-label')), LOG.rosa, 'color:inherit')
   if (!campoTexto) return
   await focar(campoTexto)
@@ -319,7 +319,7 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   if (!opcaoModelo) return
 
   await clicar(opcaoModelo)
-  let botaoInserir = await esperarEClicar('botaoInserirModeloDeDespacho')
+  let botaoInserir = await esperarEClicar('elaborarDespachoInserirModelo')
   return
 }
 
@@ -343,7 +343,7 @@ async function selecionarOpcaoDeModelo(modelo, tempoEmSegundos = 30){
   let opcaoModelo = null
   for(let i = 0; i < tempoEmSegundos * 2; i++){
     await suspender(500)
-    let opcoesModelo = [...(await sel('opcaoDeModeloNaTelaDeElaborarDespacho', '', true))]
+    let opcoesModelo = [...(await sel('elaborarDespachoOpcaoDeModelo', '', true))]
     opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(modelo))
     console.log('%c[Rota PJE]%c opcaoModelo' + JSON.stringify(opcaoModelo), LOG.rosa, 'color:inherit')
     
@@ -399,7 +399,7 @@ rota_movimentar_retomar()
 // movimentar
 // ------------------------------------------------------------
 async function movimentar(destino, params = {}) {
-  await aguardarElementoNovo('tituloDaTarefaNaJanelaDeTarefa')
+  await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
   await armazenar({rota_movimentar_destinoPendente: destino})
   await armazenar({rota_movimentar_params: params})
   let tarefaAtual = await rota_movimentar_lerTarefaAtual()
