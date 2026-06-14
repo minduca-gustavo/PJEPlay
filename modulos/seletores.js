@@ -286,6 +286,9 @@ const SELETORES = {
       seletor: '.botao-anexos',
       ancestral: 'pje-timeline-anexos'
     },
+    detalhesDoProcessoOJDoProcesso:{
+      seletor: '.oj-cargo'
+    },
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar',

@@ -14,7 +14,6 @@ const dadosTriagemInicial = {
     horariosVagosPorSala: null,
     juizSimetriaPeloGig: null,
     peticaoInicialId: null,
-    idPrecaucao: null,
     execucaoAtual: null,
     origin: location.origin,
     tarefaMaisRecente: null,
@@ -59,15 +58,16 @@ async function triagem_inicial_janelaDetalhes(sessao){
     let peticoes = [...document.getElementsByClassName('tl-documento')]
     let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
     let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))
+    if (!peticaoInicial) return
     await clicar(peticaoInicial)
-
     for (let i = 0; i < 100; i++) {
         let cabecalho = await aguardarElemento('.mat-card-title')
         if (cabecalho.textContent.includes(dadosTriagemInicial.peticaoInicialId)) break
         await suspender(300)
     }
-
-    await clicar(botaoAnexos[botaoAnexos.length - 1])
+    if (botaoAnexos[botaoAnexos.length - 1]){
+        await clicar(botaoAnexos[botaoAnexos.length - 1])
+    }
     await aguardarElemento('[aria-label*="Anexos"]')
     let ultimoDoc = await selecionar('.tl-documento', '', true) || []
     ultimoDoc[ultimoDoc.length - 1]?.scrollIntoView({ block: 'nearest' })
@@ -80,7 +80,8 @@ async function triagem_inicial_janelaDetalhes(sessao){
 //__________________________________________________
 
 async function triagem_inicial_enviarParaRoteiroAssistente(){
-    
+    let idURLMatch = location.href.match(/\/processo\/(\d+)\/detalhe/);
+    let idURL = idURLMatch?.[1]; // "2992885"
     let [timeline, gigs, gigs_concluidos, processo, recursos, tarefa_mais_recente] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
@@ -106,9 +107,9 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     if (sala.id) {
         horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
     }
-    
-    if (!processo.id) processo.id = rota_dadosTriagemInicial.idPrecaucao
-    let partes = await buscarProcesso(processo.id, '/partes?retornaEndereco=true') || []
+    let idBusca = processo.id || idURL
+    if (!idBusca) return
+    let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     
     dadosTriagemInicial.partes                  = partes
     dadosTriagemInicial.processo                = processo
@@ -206,7 +207,16 @@ async function triagem_inicial_despachar(tipo) {
     let id =            dadosTriagemInicial?.processo?.id
     let tarefa =        dadosTriagemInicial?.tarefaMaisRecente[0]?.idTarefa
     let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === dadosTriagemInicial?.tarefaMaisRecente[0]?.nomeRecurso)
+    if (!page?.caminhoRecurso){
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        return
+    }
     let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + tarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
+    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
+    if (!setorProcesso.textContent.includes('CON1')) {
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        return
+    }
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
 
@@ -285,6 +295,11 @@ async function triagem_inicial_designarAudiencia(tipo) {
     })
     let parametros =    '?rota_pje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
     let nomeJanela =    'rota_pje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
+    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
+    if (!setorProcesso.textContent.includes('CON1')) {
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        return
+    }
     let url = location.origin + '/pjekz/pauta-audiencias' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
@@ -371,6 +386,10 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
         console.log('%c[Rota PJE]%c 336: ' + JSON.stringify(juizes[0]?.textContent), LOG.teste, 'color:inherit')
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
+        if (!juizSelecionado){
+            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+            return
+        }
         await clicar(juizSelecionado)
     }
     // clicar no botao do primeiro dia
@@ -378,6 +397,10 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await aguardarElementoNovo('pautaDeAudienciaCelulaDaTabela')
     let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
+    if (!celula){
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+        return
+    }
     await clicar(celula)
 
     // clicar no botao de designar
@@ -407,6 +430,10 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
 
     let botoesDesignar = [...(await sel('pautaDeAudienciaBotoesConfirmarCancelarDesignarAudiencia', '', true))]
     let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
+    if (!botaoConfirmar){
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+        return
+    }
     await suspender(1000)
     //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await clicar(botaoConfirmar)
@@ -463,6 +490,11 @@ async function triagem_inicial_certificar(tipo) {
     let parametros =    '?rota_pje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
                         '&rota_pje_triagem_inicial_certificar_tipo=' + envio
     let nomeJanela =    'rota_pje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
+    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
+    if (!setorProcesso.textContent.includes('CON1')) {
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        return
+    }
     let id =            dadosTriagemInicial?.processo?.id
     let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
@@ -507,13 +539,14 @@ async function triagem_inicial_acoesCertificar(){
     await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
     await esperarEClicar('elaborarDespachoInserirModelo')
     let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
-    //await clicar(botaoAssinar)
+    await clicar(botaoAssinar)
+    monitorarBody(6000, 100)
     window.addEventListener('beforeunload', () => {
         comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
         // Sem await — pagehide não suporta async
     })
     await suspender(2000)
-    window.close()
+    //window.close()
     
     
     return
