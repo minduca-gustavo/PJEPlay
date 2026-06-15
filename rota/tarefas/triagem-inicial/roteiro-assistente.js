@@ -24,16 +24,23 @@ async function triagem_assistente_iniciar() {
     // quando termina de coletar todos os dados do processo.
     // Aqui ficamos ouvindo até esse sinal chegar.
 
-    await new Promise(resolver => {
-        browser.storage.onChanged.addListener(function ouvir(mudancas) {
-            if (mudancas['rota_dadosProntos']?.newValue === true) {
-                browser.storage.onChanged.removeListener(ouvir)
-                // Limpa o sinal para não reativar em aberturas futuras
-                armazenar({ rota_dadosProntos: false })
-                resolver()
-            }
-        })
-    })
+    try {
+        await Promise.race([
+            new Promise(resolver => {
+                browser.storage.onChanged.addListener(function ouvir(mudancas) {
+                    if (mudancas['rota_dadosProntos']?.newValue === true) {
+                        browser.storage.onChanged.removeListener(ouvir)
+                        armazenar({ rota_dadosProntos: false })
+                        resolver()
+                    }
+                })
+            }),
+            new Promise((_, rejeitar) => setTimeout(() => rejeitar(), 30000))
+        ])
+    } catch {
+        rota_avisoTemporario('Ocorreu um erro ao carregar os dados. Tente novamente.', 'erro', 10000)
+        return
+    }
 
     // ── Remove o carregando ───────────────────────────────────
     removerCarregando()
@@ -156,10 +163,12 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     let linkSalvo = await obterArmazenamento(['rota_triagem_inicial_linkDaAudiencia'])
     let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia || ''
     let inputLinkAudiencia = document.getElementById(id(tarefaNome, bloco, 'input_link_da_audiencia'))
-    inputLinkAudiencia.placeholder = 'digite aqui o link do zoom' || ''
-    if (link) {
-        inputLinkAudiencia.value = link
-        inputLinkAudiencia.placeholder = ''
+    if (inputLinkAudiencia) {
+        inputLinkAudiencia.placeholder = 'digite aqui o link do zoom'
+        if (link) {
+            inputLinkAudiencia.value = link
+            inputLinkAudiencia.placeholder = ''
+        }
     }
     criaSubTitulo({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'subtitulo'),
@@ -171,7 +180,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         id: id(tarefaNome, bloco, 'acoes_conjuntas'),
         idColuna: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         idBotaoExecutar: id(tarefaNome, bloco, 'acoes_conjuntas', 'executar'), 
-        acaoBotaoExecutar: () => alert('Em desenvolvimento'), /*triagemDesignarAudienciaAcoesConjuntas('designa_audiencia')*/
+        acaoBotaoExecutar: () => /*alert('Em desenvolvimento'), */triagemDesignarAudienciaAcoesConjuntas('designa_audiencia'),
         ancestral: id(tarefaNome, bloco)
     })
     
@@ -207,7 +216,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             })
             linha.dataset.horario = JSON.stringify(horario)
             if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia) {
-                document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox')).click()
+                let checkBox = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))
+                if (checkBox) checkBox.click()
                 checkBoxPreMarcadoTipoAudiencia = true
             }
         }
@@ -239,7 +249,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     })
     
 
-    document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox')).click()
+    let checkBoxDespacho = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
+    if (checkBoxDespacho) checkBoxDespacho.click()
 
     criaBotaoAzulComCheckBox({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'gig'),
@@ -248,7 +259,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: () => comandar(['triagem_inicial_gig'], [{tipo: 'triagem_inicial_gig_acompanhamento'}]),
     })
-    document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox')).click()
+    let checkBoxGig = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
+    if (checkBoxGig) checkBoxGig.click()
 
     console.log('%c[Rota PJE]%c blocos criados', LOG.teste, 'color:inherit')
     
@@ -258,32 +270,32 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
 
     function triagemDesignarAudienciaAcoesConjuntas(bloco) {
         const comandos = []
-        const parametros = []
+        const dados = []
 
-        const chkDesignacao = document.querySelector(`[data-grupo="${id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data_marcado="1"]`)
+        const chkDesignacao = document.querySelector(`[data-grupo="${id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data-marcado="1"]`)
         console.log('%c[Rota PJE]%c chkDesignacao: ' + JSON.stringify(chkDesignacao), LOG.teste, 'color:inherit')
         if (chkDesignacao) {
-            const horario = JSON.parse(chkDesignacao.closest('[data_horario]').dataset.horario)
+            const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario)
             comandos.push('triagem_inicial_designa_audiencia')
-            parametros.push(horario)
+            dados.push(horario)
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))) {
             comandos.push('triagem_inicial_despachar')
-            parametros.push('triagem_inicial_despachar_designacao')
+            dados.push('triagem_inicial_despachar_designacao')
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
             comandos.push('triagem_inicial_certidao')
-            parametros.push('triagem_inicial_certificar_designacao')
+            dados.push('triagem_inicial_certificar_designacao')
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))) {
             comandos.push('triagem_inicial_gig')
-            parametros.push('triagem_inicial_gig_acompanhamento')
+            dados.push('triagem_inicial_gig_acompanhamento')
         }
         console.log('%c[Rota PJE]%c quantos comandos: ' + comandos.length, LOG.teste, 'color:inherit')
-        if (comandos.length) comandar(comandos, parametros)
+        if (comandos.length) comandar(['triagem_inicial_acoes_conjuntas'], [{comandos: comandos, parametros: dados}])
     }
     async function triagem_inicial_salvar_link_da_audiencia() {
         let inputLinkAudiencia = document.getElementById(id(tarefaNome, 'designa_audiencia', 'input_link_da_audiencia'))

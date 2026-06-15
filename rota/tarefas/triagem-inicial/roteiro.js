@@ -60,11 +60,16 @@ async function triagem_inicial_janelaDetalhes(sessao){
     let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))
     if (!peticaoInicial) return
     await clicar(peticaoInicial)
+    let encontrouCabecalho = false
     for (let i = 0; i < 100; i++) {
         let cabecalho = await aguardarElemento('.mat-card-title')
-        if (cabecalho.textContent.includes(dadosTriagemInicial.peticaoInicialId)) break
+        if (cabecalho.textContent.includes(dadosTriagemInicial.peticaoInicialId)) {
+            encontrouCabecalho = true
+            break
+        }
         await suspender(300)
     }
+    if (!encontrouCabecalho) return
     if (botaoAnexos[botaoAnexos.length - 1]){
         await clicar(botaoAnexos[botaoAnexos.length - 1])
     }
@@ -182,7 +187,7 @@ async function triagem_inicial_acoesRetificar(){
         elemento = elementos.find(e => e.textContent.includes(tipo))
         if (!elemento) await suspender(1000)
     }
-
+    if (!elemento) return
     await clicar(elemento)
 }
 
@@ -271,8 +276,15 @@ async function triagem_inicial_acoesDespachar(){
             await suspender(500)
         }
         await suspender(2000)
-        if (audienciasMarcadas) window.close()
+        if (audienciasMarcadas?.dataInicio) {
+            await armazenar({rota_acoes_conjuntas_pronta: 'triagem_inicial_despachar'})
+            window.close()
+        } else{ 
+            await alert('asdasdfasdf')
+        }
+        // chamada da ação conjunta
     }
+    // Se for ação conjunta, aqui tem que ter uma chamada pra uma função que vai criar o botão próximo, ou então a própria chamada da ação conjunta
     return
 
 }
@@ -452,7 +464,7 @@ triagem_inicial_aoAbrirDesignarAudiencia()
 async function triagem_inicial_colocarGigDeAcompanhamento() {
     let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
-    let audienciaMarcadaNumero = new Date(audienciaMarcadaHorario).getTime()
+    let audienciaMarcadaNumero = audienciaMarcadaHorario ? new Date(audienciaMarcadaHorario).getTime() : NaN
     let hoje = new Date().getTime()
     let trintaDiasAntes = audienciaMarcadaNumero - 30 * 24 * 60 * 60 * 1000
     let dataGig
@@ -684,6 +696,34 @@ triagem_inicial_aoAbrirIntimar()
 
 
 //__________________________________________________
+//                      AÇÕES CONJUNTAS
+//__________________________________________________
+
+async function triagem_inicial_acoesConjuntas(p){
+    let i = 0
+    for (let c of p?.comandos){
+        const concluiu = await Promise.race([
+            new Promise(resolver => {
+                browser.storage.onChanged.addListener(function ouvir(mudancas) {
+                    if (mudancas['rota_acoes_conjuntas_pronta']?.newValue === c) {
+                        browser.storage.onChanged.removeListener(ouvir)
+                        resolver(true)
+                    }
+                })
+                comandar([c], [p?.parametros[i]])
+            }),
+            new Promise(resolver => setTimeout(() => resolver(false), 10 * 60 * 1000)) // 10 minutos
+        ])
+        if (!concluiu) {
+            rota_avisoTemporario('A ação expirou. Prossiga manualmente.', 'erro', 10000)
+            return
+        }
+        i++
+    }
+    return
+}
+
+//__________________________________________________
 //                      COMANDAR
 //__________________________________________________
 
@@ -695,6 +735,7 @@ Object.assign(rota_acoes, {
     'triagem_inicial_certidao':             async (p) => await triagem_inicial_certificar(p),
     'triagem_inicial_retificar':            async (p) => await triagem_inicial_retificarAutuacao(p),
     'triagem_inicial_intimar':              async (p) => await triagem_inicial_intimar(p),
+    'triagem_inicial_acoes_conjuntas':      async (p) => await triagem_inicial_acoesConjuntas(p),
 })
 
 
@@ -706,6 +747,4 @@ async function verificarOQueChegou(p) {
 //                      BUSCAR JUIZ NO MODELO - POSSÍVEL FUNÇÃO GLOBAL 
 //__________________________________________________
 
-async function triagem_inicial_buscarJuizNoModelo(){
-    console.log('%c[Rota PJE]%c buscando juiz no modelo de documentos...', LOG.teste, 'color:inherit')
-}
+

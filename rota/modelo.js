@@ -70,39 +70,37 @@ async function modelo_carregar(idModelo = '') {
 // Requer autenticação — usa as credenciais da sessão ativa.
 
 async function modelo_buscarAPI(idModelo = '') {
-    try {
-        const url    = `${location.origin}/pje-comum-api/api/modelosdocumentos/modelos/${idModelo}/corpo`
-        const token  = modelo_obterToken()
+    return new Promise((resolve) => {
+        window.addEventListener('rota_modeloCorpo', (e) => {
+            resolve(e.detail || null)
+        }, { once: true })
 
-        const resposta = await fetch(url, {
-            method:      'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type':   'application/json',
-                'Accept':         'application/json, text/plain, */*',
-                'X-XSRF-TOKEN':   token,
-            },
-        })
-
-        if (!resposta.ok) {
-            console.error('[Rota PJE] modelo_buscarAPI: HTTP', resposta.status)
-            return null
-        }
-
-        const json     = await resposta.json()
-        const conteudo = json?.conteudo || ''
-
-        if (!conteudo) {
-            console.error('[Rota PJE] modelo_buscarAPI: modelo sem conteúdo.')
-            return null
-        }
-
-        return conteudo
-
-    } catch (erro) {
-        console.error('[Rota PJE] modelo_buscarAPI:', erro)
-        return null
-    }
+        const script = document.createElement('script')
+        script.textContent = `
+            (async () => {
+                try {
+                    const url   = '${location.origin}/pje-comum-api/api/modelosdocumentos/modelos/${idModelo}/corpo'
+                    const token = document.cookie.match(/Xsrf-Token=([^;]+)/)?.[1] || ''
+                    const res   = await fetch(url, {
+                        method:      'POST',
+                        credentials: 'include',
+                        mode:        'cors',
+                        referrer:    '${location.origin}/pjekz/configuracao/modelos-documentos',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept':       'application/json, text/plain, */*',
+                            'X-XSRF-TOKEN': token,
+                        },
+                    })
+                    const json  = await res.json()
+                    window.dispatchEvent(new CustomEvent('rota_modeloCorpo', { detail: (json?.conteudo || '').slice(0, 100) }))
+                } catch (e) {
+                    window.dispatchEvent(new CustomEvent('rota_modeloCorpo', { detail: '' }))
+                }
+            })()
+        `
+        document.head.appendChild(script)
+    })
 }
 
 

@@ -194,11 +194,16 @@
 
 */
 
+triagem_inicial_buscarJuizNoModelo()
 
 
 
 
-
+async function triagem_inicial_buscarJuizNoModelo(){
+    let dados = await modelo_buscarAPI('4868743')
+    //https://pje.trt15.jus.br/pje-comum-api/api/modelosdocumentos/pastas/raiz?termo=SCBAU_ESPELHO_QUIN
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+}
 
 
 
