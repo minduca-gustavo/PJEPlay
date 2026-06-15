@@ -56,3 +56,22 @@ async function rota_fetch(url = ''){
 		return await r.json()
 	} catch(e){ relatar('fetch erro: ' + e.message, '', 'erro'); return null }
 }
+async function rota_fetchPost(url = ''){
+	let token    = rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN')
+	let instancia = CONFIGURACAO?.pessoa?.instancia || '1'
+	try{
+		relatar('POST ' + url, '', 'requisicao')
+		let r = await fetch(url, {
+			method: 'POST', mode: 'cors', credentials: 'include',
+			headers:{
+				'Idempotency-Key':  rota_idempotencia(),
+				'X-Grau-Instancia': instancia,
+				'X-XSRF-TOKEN':     token,
+				'Content-Type':     'application/json',
+				'Accept':           'application/json, text/plain, */*',
+			}
+		})
+		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
+		return await r.json()
+	} catch(e){ relatar('fetch erro: ' + e.message, '', 'erro'); return null }
+}

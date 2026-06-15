@@ -70,37 +70,14 @@ async function modelo_carregar(idModelo = '') {
 // Requer autenticação — usa as credenciais da sessão ativa.
 
 async function modelo_buscarAPI(idModelo = '') {
-    return new Promise((resolve) => {
-        window.addEventListener('rota_modeloCorpo', (e) => {
-            resolve(e.detail || null)
-        }, { once: true })
+    let url = location.origin + '/pje-comum-api/api/modelosdocumentos/modelos/' + idModelo + '/corpo'
+    return await rota_fetchPost(url)
+}
 
-        const script = document.createElement('script')
-        script.textContent = `
-            (async () => {
-                try {
-                    const url   = '${location.origin}/pje-comum-api/api/modelosdocumentos/modelos/${idModelo}/corpo'
-                    const token = document.cookie.match(/Xsrf-Token=([^;]+)/)?.[1] || ''
-                    const res   = await fetch(url, {
-                        method:      'POST',
-                        credentials: 'include',
-                        mode:        'cors',
-                        referrer:    '${location.origin}/pjekz/configuracao/modelos-documentos',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept':       'application/json, text/plain, */*',
-                            'X-XSRF-TOKEN': token,
-                        },
-                    })
-                    const json  = await res.json()
-                    window.dispatchEvent(new CustomEvent('rota_modeloCorpo', { detail: (json?.conteudo || '').slice(0, 100) }))
-                } catch (e) {
-                    window.dispatchEvent(new CustomEvent('rota_modeloCorpo', { detail: '' }))
-                }
-            })()
-        `
-        document.head.appendChild(script)
-    })
+async function modelo_buscarJuizesNoModelo(){
+    let dados = await modelo_buscarAPI('1213484') || []
+    if (!dados) return null
+    return modelo_parsear(dados?.conteudo)
 }
 
 
@@ -122,42 +99,32 @@ async function modelo_buscarAPI(idModelo = '') {
 
 function modelo_parsear(htmlConteudo = '') {
     if (!htmlConteudo) return null
-
     try {
-        const parser   = new DOMParser()
-        const doc      = parser.parseFromString(htmlConteudo, 'text/html')
-        const tabela   = doc.querySelector('table')
+        const parser = new DOMParser()
+        const doc    = parser.parseFromString(htmlConteudo, 'text/html')
 
-        if (!tabela) {
-            console.error('[Rota PJE] modelo_parsear: nenhuma tabela encontrada no modelo.')
-            return null
-        }
-
-        // Cabeçalhos como chaves
-        const cabecalhos = Array.from(
-            tabela.querySelectorAll('thead th, thead td')
-        ).map(th => th.textContent.trim().toLowerCase())
-
-        if (!cabecalhos.length) {
-            console.error('[Rota PJE] modelo_parsear: cabeçalhos não encontrados.')
-            return null
-        }
-
-        // Linhas de dados
-        const linhas = Array.from(tabela.querySelectorAll('tbody tr'))
-
-        const dados = linhas
-            .map(linha => {
-                const celulas = Array.from(linha.querySelectorAll('td'))
-                const obj     = {}
-                cabecalhos.forEach((chave, idx) => {
-                    obj[chave] = celulas[idx]?.textContent?.trim() || ''
+        // Tenta tabela primeiro
+        const tabela = doc.querySelector('table')
+        if (tabela) {
+            const cabecalhos = Array.from(
+                tabela.querySelectorAll('thead th, thead td')
+            ).map(th => th.textContent.trim().toLowerCase())
+            if (!cabecalhos.length) return null
+            return Array.from(tabela.querySelectorAll('tbody tr'))
+                .map(linha => {
+                    const celulas = Array.from(linha.querySelectorAll('td'))
+                    const obj = {}
+                    cabecalhos.forEach((chave, idx) => {
+                        obj[chave] = celulas[idx]?.textContent?.trim() || ''
+                    })
+                    return obj
                 })
-                return obj
-            })
-            .filter(obj => Object.values(obj).some(v => v !== ''))
+                .filter(obj => Object.values(obj).some(v => v !== ''))
+        }
 
-        return dados
+        // Fallback: JSON embutido no texto
+        const texto = doc.body.innerText.trim()
+        return JSON.parse(texto)
 
     } catch (erro) {
         console.error('[Rota PJE] modelo_parsear:', erro)

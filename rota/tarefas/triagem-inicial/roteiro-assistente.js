@@ -180,7 +180,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         id: id(tarefaNome, bloco, 'acoes_conjuntas'),
         idColuna: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         idBotaoExecutar: id(tarefaNome, bloco, 'acoes_conjuntas', 'executar'), 
-        acaoBotaoExecutar: () => /*alert('Em desenvolvimento'), */triagemDesignarAudienciaAcoesConjuntas('designa_audiencia'),
+        acaoBotaoExecutar: () => alert('Em desenvolvimento'), /*triagemDesignarAudienciaAcoesConjuntas('designa_audiencia'),*/
         ancestral: id(tarefaNome, bloco)
     })
     

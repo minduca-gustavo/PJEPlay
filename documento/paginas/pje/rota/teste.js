@@ -193,18 +193,15 @@
 
 
 */
-
-triagem_inicial_buscarJuizNoModelo()
-
-
-
-
-async function triagem_inicial_buscarJuizNoModelo(){
-    let dados = await modelo_buscarAPI('4868743')
-    //https://pje.trt15.jus.br/pje-comum-api/api/modelosdocumentos/pastas/raiz?termo=SCBAU_ESPELHO_QUIN
-    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+async function teste() {
+  let processoTeste = '0010276-65.2026.5.15.0025'
+  let idTeste = await buscarIdPeloNumeroCNJ(processoTeste)
+  let historicoTeste = await rota_fetch(location.origin + '/pje-comum-api/api/processos/id/' + idTeste.id + '/historicodeslocamentos')
+  console.log('%c[Rota PJE]%c historicoTeste: ' + JSON.stringify(historicoTeste), LOG.rosa, 'color:inherit')
+  let juizesTeste = await modelo_buscarJuizesNoModelo()  
 }
 
+teste()
 
 
 

@@ -242,11 +242,16 @@ async function triagem_inicial_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesDespachar(){
-    let [tipo, juizEnvio] = await Promise.all([
+    let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
         obterArmazenamento('rota_pje_triagem_inicial_despachar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || '')
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || ''),
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
     ])
-    if(!juizEnvio) juizEnvio = await triagem_inicial_buscarJuizNoModelo() || ''
+    if(!juizEnvio) {
+        let juizesNoModelo = await modelo_buscarJuizesNoModelo() || []
+        
+        juizEnvio = await modelo_buscarJuizesNoModelo() || ''
+    }
     let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
     let dados = await obterArmazenamento('rota_dadosTriagemInicial')
     let id = dados?.rota_dadosTriagemInicial?.processo?.id
