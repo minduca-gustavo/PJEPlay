@@ -296,6 +296,22 @@ const SELETORES = {
     //   valor:       'Finalizar',
     // },
   },
+  '2.20': {
+    ...SELETORES_218,  // herda tudo — só sobrescreva o que quebrou
+    detalhesDoProcessoBotaoAbrirAnexos:{
+      seletor: '.botao-anexos',
+      ancestral: 'pje-timeline-anexos'
+    },
+    detalhesDoProcessoOJDoProcesso:{
+      seletor: '.oj-cargo'
+    },
+    // Exemplo:
+    // botaoFinalizar: {
+    //   seletor:     '#btn-finalizar',
+    //   propriedade: 'textContent',
+    //   valor:       'Finalizar',
+    // },
+  },
 }
 
 

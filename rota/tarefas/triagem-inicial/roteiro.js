@@ -87,13 +87,12 @@ async function triagem_inicial_janelaDetalhes(sessao){
 async function triagem_inicial_enviarParaRoteiroAssistente(){
     let idURLMatch = location.href.match(/\/processo\/(\d+)\/detalhe/);
     let idURL = idURLMatch?.[1]; // "2992885"
-    let [timeline, gigs, gigs_concluidos, processo, recursos, tarefa_mais_recente] = await Promise.all([
+    let [timeline, gigs, gigs_concluidos, processo, recursos] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
         interceptador_aguardar('gigs_concluidos').then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
         interceptador_aguardar('recursos').then(() => interceptador_lerRecursos() || {}),
-        interceptador_aguardar('processo_tarefa_mais_recente').then(() => interceptador_lerTarefaMaisRecente() || {}),
     ])
     gigs.push(...gigs_concluidos)
     console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs, null, 2), LOG.teste, 'color:inherit')
@@ -125,7 +124,6 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     dadosTriagemInicial.horariosVagos           = horariosVagos
     dadosTriagemInicial.juizSimetriaPeloGig     = juizSimetriaPeloGig
     dadosTriagemInicial.peticaoInicialId        = peticaoInicialId
-    dadosTriagemInicial.tarefaMaisRecente       = tarefa_mais_recente
     dadosTriagemInicial.recursos                = recursos
     
     await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
@@ -210,13 +208,22 @@ async function triagem_inicial_despachar(tipo) {
                         '&rota_pje_triagem_inicial_despachar_tipo=' + envio
     let nomeJanela =    'rota_pje_triagem_inicial_despachar_' + dadosTriagemInicial.execucaoAtual
     let id =            dadosTriagemInicial?.processo?.id
-    let tarefa =        dadosTriagemInicial?.tarefaMaisRecente[0]?.idTarefa
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === dadosTriagemInicial?.tarefaMaisRecente[0]?.nomeRecurso)
+    let tarefa =        await buscarTarefaMaisRecente(id)
+    let idTarefa =      tarefa[0]?.idTarefa || ''
+    let recurso =       tarefa[0]?.nomeRecurso || ''
+    console.log('%c[Rota PJE]%c recurso: ' + JSON.stringify(recurso), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c tarefa: ' + JSON.stringify(tarefa), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c dadosTriagemInicial?.recursos: ' + JSON.stringify(dadosTriagemInicial?.recursos), LOG.rosa, 'color:inherit')
+    if (!recurso || !idTarefa){
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        return
+    }
+    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === recurso)
     if (!page?.caminhoRecurso){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
     }
-    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + tarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
+    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
@@ -247,10 +254,9 @@ async function triagem_inicial_acoesDespachar(){
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
     ])
+    console.log('%c[Rota PJE]%c numeroProcesso: ' + JSON.stringify(numeroProcesso), LOG.rosa, 'color:inherit')
     if(!juizEnvio) {
-        let juizesNoModelo = await modelo_buscarJuizesNoModelo() || []
-        
-        juizEnvio = await modelo_buscarJuizesNoModelo() || ''
+        juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
     }
     let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
     let dados = await obterArmazenamento('rota_dadosTriagemInicial')
@@ -560,12 +566,8 @@ async function triagem_inicial_acoesCertificar(){
     monitorarBody(6000, 100)
     window.addEventListener('beforeunload', () => {
         comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
-        // Sem await — pagehide não suporta async
     })
     await suspender(2000)
-    //window.close()
-    
-    
     return
 }
 
@@ -578,19 +580,23 @@ triagem_inicial_aoAbrirCertificar()
 // INTIMAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_intimar(tipo) {
+    let id = dadosTriagemInicial?.processo?.id
+    let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
     let envio = tipo.tipo
     console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
     await armazenar({
         'rota_pje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
         'rota_pje_triagem_inicial_intimar_tipo': envio,
+        'rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
     })
     let parametros =    '?rota_pje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
                         '&rota_pje_triagem_inicial_intimar_tipo=' + envio
     let nomeJanela =    'rota_pje_triagem_inicial_intimar_' + dadosTriagemInicial.execucaoAtual
-    let id =            dadosTriagemInicial?.processo?.id
     let url =           location.origin + '/pjekz/processo/' + id + '/comunicacoesprocessuais/minutas' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
+
+
 
 // INTIMAR PASSO 2 - verifica se a janela aberta é a da extensão
 async function triagem_inicial_aoAbrirIntimar(){
@@ -643,6 +649,15 @@ async function triagem_inicial_acoesIntimar(){
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
     await suspender(200)
+    let tipoAudiencia = await obterArmazenamento('rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
+    let tipos = [
+        {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
+        {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
+    ]
+    let modelo = tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
+    if (!modelo){
+        
+    }
     await digitarNoInput(inputModelo, 'SCBAU_TI_NOT_DOM')
     await selecionarOpcaoDeModelo('SCBAU_TI_NOT_DOM')
     await suspender(200)

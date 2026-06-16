@@ -103,21 +103,7 @@ async function acao_navegacao_detalhes(idProcesso = '') {
     window.open(url, 'rota-pje-detalhe' + id)
 }
 
-// Abre a tarefa mais recente do processo
-async function acao_navegacao_tarefa(idProcesso = '') {
-    const id = idProcesso || _acao_idProcesso()
-    if (!id) return
 
-    const url     = `${location.origin}/pje-comum-api/api/processos/id/${id}/tarefas?maisRecente=true`
-    const dados   = await _acao_fetch(url)
-    const tarefa  = Array.isArray(dados) ? dados[0] : dados
-    const idTarefa = tarefa?.idTarefa
-
-    if (!idTarefa) return relatar('acao_navegacao_tarefa: tarefa não encontrada', '', 'erro')
-
-    const urlTarefa = `${location.origin}/pjekz/processo/${id}/tarefa/${idTarefa}`
-    window.open(urlTarefa, 'rota-pje-janela')
-}
 
 // Abre a tela de audiências do processo
 async function acao_navegacao_audiencias(idProcesso = '') {

@@ -38,17 +38,32 @@ async function buscarIdPeloNumeroCNJ(qualquerFormatoDeNumero) {
         /^(\d{7})(\d{2})(\d{4})(\d{1})(\d{2})(\d{4})$/,
         '$1-$2.$3.$4.$5.$6'
     )
-    let dados = await rota_fetch(
+    let dados = (await rota_fetch(
         location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=1&numero=' + numero
-    ) || await rota_fetch(
+    ))?.resultado || await rota_fetch(
         location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numero
     )
-	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
     if (Array.isArray(dados?.resultado)) return dados.resultado[0] || null
     if (Array.isArray(dados))            return dados[0] || null
     return dados || null
 }
 
+// Abre a tarefa mais recente do processo
+async function buscarTarefaMaisRecente(idProcesso = '') {
+    const id = idProcesso || _acao_idProcesso()
+    if (!id) return
+
+    const url     = `${location.origin}/pje-comum-api/api/processos/id/${id}/tarefas?maisRecente=true`
+    const dados   = await rota_fetch(url)
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+    const tarefa  = Array.isArray(dados) ? dados[0] : dados
+    const idTarefa = tarefa?.idTarefa
+
+    if (!idTarefa) return relatar('acao_navegacao_tarefa: tarefa não encontrada', '', 'erro')
+
+    return dados
+}
 
 // ── BUSCA CÁLCULOS ────────────────────────────────────────────
 

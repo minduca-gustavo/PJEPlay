@@ -80,6 +80,27 @@ async function modelo_buscarJuizesNoModelo(){
     return modelo_parsear(dados?.conteudo)
 }
 
+async function modelo_definirJuizPeloNumeroCNJ(numeroDoProcessoPadraoCNJ) {
+  let idBusca = await buscarIdPeloNumeroCNJ(numeroDoProcessoPadraoCNJ) || null
+  if (!idBusca) return null
+  let historico = await rota_fetch(location.origin + '/pje-comum-api/api/processos/id/' + idBusca.id + '/historicodeslocamentos') || null
+  if (!historico) return null
+  let origem= historico[0]?.orgaoJulgadorOrigem?.descricao || null
+  if (!origem) return null
+  let ano = numeroDoProcessoPadraoCNJ.split('.')[1].slice(0,4)
+  let final = ''
+  if (ano < 2010){
+    final = numeroDoProcessoPadraoCNJ.slice(4,5)
+  } else {
+    final = numeroDoProcessoPadraoCNJ.slice(6,7)
+  }
+  let juizesNoModelo = await modelo_buscarJuizesNoModelo() || null
+  if (juizesNoModelo){
+    console.log('%c[Rota PJE]%c juiz: ' + JSON.stringify(juizesNoModelo.find(d=> d.vara.trim() === origem.trim())?.juiz), LOG.rosa, 'color:inherit')
+    return juizesNoModelo.find(d => d.vara.trim() === origem.trim())?.juiz ?? null
+  }
+  return null
+}
 
 // ── Parsear HTML do modelo ────────────────────────────────────
 //
