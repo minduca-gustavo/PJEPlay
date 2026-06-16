@@ -180,7 +180,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         id: id(tarefaNome, bloco, 'acoes_conjuntas'),
         idColuna: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         idBotaoExecutar: id(tarefaNome, bloco, 'acoes_conjuntas', 'executar'), 
-        acaoBotaoExecutar: () => alert('Em desenvolvimento'), /*triagemDesignarAudienciaAcoesConjuntas('designa_audiencia'),*/
+        acaoBotaoExecutar: () => /*alert('Em desenvolvimento'), */triagemDesignarAudienciaAcoesConjuntas('designa_audiencia'),
         ancestral: id(tarefaNome, bloco)
     })
     
@@ -242,7 +242,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaBotaoLaranjaComCheckBox({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao'),
         idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
-        texto: 'Certificar a designação e intimar.',
+        texto: 'Certificar a designação, intimar e encaminhar para aguardando audiência.',
         ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), 
         acao: () => comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}]),/* alert ('Em desenvolvimento'),*/
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')

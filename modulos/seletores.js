@@ -289,6 +289,9 @@ const SELETORES = {
     detalhesDoProcessoOJDoProcesso:{
       seletor: '.oj-cargo'
     },
+    pautaDeAudienciaConfirmacaoSala:{
+      seletor: '[name="sala"]',
+    },
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar',
@@ -304,6 +307,9 @@ const SELETORES = {
     },
     detalhesDoProcessoOJDoProcesso:{
       seletor: '.oj-cargo'
+    },
+    pautaDeAudienciaConfirmacaoSala:{
+      seletor: '[name="sala"]',
     },
     // Exemplo:
     // botaoFinalizar: {

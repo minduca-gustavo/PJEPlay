@@ -8,7 +8,8 @@
 //	el.click(); return el
 //}
 
-function clicar(el = ''){
+async function clicar(el = ''){
+  await suspender(300)
   if(typeof el === 'string') el = selecionar(el)
   if(!el) return ''
   let descricao = el?.textContent?.trim() || el?.getAttribute?.('aria-label') || ''

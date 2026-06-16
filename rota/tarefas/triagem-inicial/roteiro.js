@@ -200,6 +200,7 @@ triagem_inicial_aoAbrirRetificar()
 async function triagem_inicial_despachar(tipo) {
     let envio = tipo.tipo
     console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
+    return
     await armazenar({
         'rota_pje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rota_pje_triagem_inicial_despachar_tipo': envio,
@@ -288,12 +289,25 @@ async function triagem_inicial_acoesDespachar(){
         }
         await suspender(2000)
         if (audienciasMarcadas?.dataInicio) {
-            await armazenar({rota_acoes_conjuntas_pronta: 'triagem_inicial_despachar'})
+            await armazenar({rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar'})
             window.close()
         } else{ 
-            await alert('asdasdfasdf')
+            await rota_avisoObrigatorio('Não foi identificada audiência designada. Prossiga manualmente.', 30)
         }
         // chamada da ação conjunta
+    }
+    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
+    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_despachar'
+    if (chamadaPorAcaoConjunta || tipo !== 'triagem_inicial_emendar') {
+        await criaDivFlutuante({
+            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
+            titulo: 'Execute o necessário e clique em próximo.'
+        })
+        criaBotaoAzul({
+            texto: '▶️ Próximo',
+            ancestral: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
+            acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar' })
+        })
     }
     // Se for ação conjunta, aqui tem que ter uma chamada pra uma função que vai criar o botão próximo, ou então a própria chamada da ação conjunta
     return
@@ -432,7 +446,11 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await clicar(botaoDesignar)
 
     //preencher dados do processo e da audiencia
-
+    let confirmacaoSala = await aguardarElementoNovo('pautaDeAudienciaConfirmacaoSala')
+    if (!confirmacaoSala.textContent.includes(horario.nomeDaSala)){
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+        return
+    }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
     console.log('%c[Rota PJE]%c 345: ' + JSON.stringify(horario), LOG.teste, 'color:inherit')
     await preencher(inputNumeroProcesso, horario.processo)
@@ -656,10 +674,14 @@ async function triagem_inicial_acoesIntimar(){
     ]
     let modelo = tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
     if (!modelo){
-        
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
+        window.addEventListener('beforeunload', () => {
+            comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
+        })
+        return
     }
-    await digitarNoInput(inputModelo, 'SCBAU_TI_NOT_DOM')
-    await selecionarOpcaoDeModelo('SCBAU_TI_NOT_DOM')
+    await digitarNoInput(inputModelo, modelo)
+    await selecionarOpcaoDeModelo(modelo)
     await suspender(200)
     await esperarEClicar('elaborarDespachoInserirModelo')
     await suspender(200)
@@ -706,13 +728,82 @@ async function triagem_inicial_acoesIntimar(){
         await suspender(500)
     }
     await clicar(botaoAssinar)
+    window.addEventListener('beforeunload', () => {
+        comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
+    })
     monitorarBody(6000, 100)
-    return
+    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Expediente(s) assinado(s) com sucesso.X'})
+    await suspender(1500)
+    window.close()
     
 }
 
 
 triagem_inicial_aoAbrirIntimar()
+//__________________________________________________
+//                      ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA
+//__________________________________________________
+
+// ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
+
+async function triagem_inicial_aguardandoAudiencia(tipo) {
+    let id =            dadosTriagemInicial?.processo?.id
+    let tarefa =        await buscarTarefaMaisRecente(id)
+    let idTarefa =      tarefa[0]?.idTarefa || ''
+    let recurso =       tarefa[0]?.nomeRecurso || ''
+    let parametros =    '?rota_pje_triagem_inicial_aguardandoAudiencia=' + dadosTriagemInicial.execucaoAtual
+    let nomeJanela =    'rota_pje_triagem_inicial_aguardandoAudiencia_' + dadosTriagemInicial.execucaoAtual
+    await armazenar({'rota_pje_triagem_inicial_aguardandoAudiencia': dadosTriagemInicial.execucaoAtual})
+    if (!recurso || !idTarefa){
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        return
+    }
+    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === recurso)
+    if (!page?.caminhoRecurso){
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        return
+    }
+    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
+    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
+    if (!setorProcesso.textContent.includes('CON1')) {
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        return
+    }
+    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
+    
+}
+
+
+
+// ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
+async function triagem_inicial_aoAbrirAguardandoAudiencia(){
+    let janela = confereJanela(JANELA.processoTarefa)
+    if (!janela) return
+    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_aguardandoAudiencia')
+    let execucao = String(armazenamento?.rota_pje_triagem_inicial_aguardandoAudiencia || '')
+    if (!armazenamento) return
+    let nomeJanela = window.name
+    if (!nomeJanela.includes('rota_pje_triagem_inicial_aguardandoAudiencia')) return
+    console.log('%c[Rota PJE]%c 769: ' + JSON.stringify(execucao), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c nomeJanela: ' + JSON.stringify(nomeJanela), LOG.rosa, 'color:inherit')
+    if(execucao !== nomeJanela.split('_').pop()) return
+    registrarListenerFechar(execucao)
+    await triagem_inicial_acoesEncaminharAguardandoAudiencia()
+}
+
+// ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 3 - executa as ações
+
+async function triagem_inicial_acoesEncaminharAguardandoAudiencia(){
+    console.log('%c[Rota PJE]%c cheguei aqui na 782 ', LOG.rosa, 'color:inherit')
+    await movimentar('Aguardando audiência')
+    await suspender(2000)
+    window.close()
+    return
+    
+}
+
+
+triagem_inicial_aoAbrirAguardandoAudiencia()
 
 
 //__________________________________________________
@@ -722,26 +813,40 @@ triagem_inicial_aoAbrirIntimar()
 async function triagem_inicial_acoesConjuntas(p){
     let i = 0
     for (let c of p?.comandos){
+        await armazenar({ rota_acoes_conjuntas_triagem_inicial_em_andamento: c })
         const concluiu = await Promise.race([
             new Promise(resolver => {
                 browser.storage.onChanged.addListener(function ouvir(mudancas) {
-                    if (mudancas['rota_acoes_conjuntas_pronta']?.newValue === c) {
+                    if (mudancas['rota_acoes_conjuntas_triagem_inicial_pronta']?.newValue === c) {
                         browser.storage.onChanged.removeListener(ouvir)
                         resolver(true)
                     }
                 })
+                console.log('%c[Rota PJE]%c p?.parametros[i]: ' + JSON.stringify(p?.parametros[i]), LOG.rosa, 'color:inherit')
                 comandar([c], [p?.parametros[i]])
             }),
             new Promise(resolver => setTimeout(() => resolver(false), 10 * 60 * 1000)) // 10 minutos
         ])
         if (!concluiu) {
             rota_avisoTemporario('A ação expirou. Prossiga manualmente.', 'erro', 10000)
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
             return
         }
         i++
     }
+    await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
     return
 }
+
+//let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
+//let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_despachar'
+//
+//if (chamadaPorAcaoConjunta) {
+//    criaBotaoAzul({
+//        texto: 'Próximo',
+//        acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar' })
+//    })
+//}
 
 //__________________________________________________
 //                      COMANDAR
@@ -756,6 +861,7 @@ Object.assign(rota_acoes, {
     'triagem_inicial_retificar':            async (p) => await triagem_inicial_retificarAutuacao(p),
     'triagem_inicial_intimar':              async (p) => await triagem_inicial_intimar(p),
     'triagem_inicial_acoes_conjuntas':      async (p) => await triagem_inicial_acoesConjuntas(p),
+    'triagem_inicial_aguardando_audiencia': async (p) => await triagem_inicial_aguardandoAudiencia(p),
 })
 
 
