@@ -661,7 +661,7 @@ async function triagem_inicial_acoesIntimar(){
         ],
         {modo: 'e', timeout: 10000}
     )
-    logInterceptador = false
+    //logInterceptador = false
     
     let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
     await clicar(seletor)
@@ -726,7 +726,7 @@ async function triagem_inicial_acoesIntimar(){
     //await aguardarElementoNovo('prepararExpedientesAtoConfeccionado')
     //metaExpedientes = await interceptador_ler('expedientes_materia') || null
     let botaoPoloAtivo = await aguardarElementoNovo('prepararExpedientesBotaoPoloAtivo')
-    logInterceptador = true
+    //logInterceptador = true
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
     console.log('%c[Rota PJE]%c metaExpedientes: ' + JSON.stringify(metaExpedientes), LOG.rosa, 'color:inherit')
     await clicar(botaoPoloAtivo)

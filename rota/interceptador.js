@@ -26,10 +26,12 @@ const INTERCEPTADOR_URL = {
     modelosDocumentos:              /\/pje-comum-api\/api\/modelosdocumentos\/pastas\/raiz/i,
     orgaosJulgadores:               /\/pje-comum-api\/api\/orgaosjulgadores/i,
     timeline:                       /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
-    expedientesMateria:             /\/pje-comum-api\/api\/expedientesmateria\/\d+.*/i
+    expedientesMateria:             /\/pje-comum-api\/api\/expedientesmateria\/\d+.*/i,
+    horariosVagos:                  /\/pje-comum-api\/api\/pautasaudiencias\/horariosvagos\/\d+.*/i
 }
 //https://pje.trt15.jus.br/pje-comum-api/api/expedientesmateria/13?idTarefa=0
 //https://pje.trt15.jus.br/pje-comum-api/api/modelosdocumentos/pastas/raiz
+//https://pje.trt15.jus.br/pje-comum-api/api/pautasaudiencias/horariosvagos?idSalaFisica=2084
 
 const INTERCEPTADOR_ROTULO = {
     gigs:                           'gigs',
