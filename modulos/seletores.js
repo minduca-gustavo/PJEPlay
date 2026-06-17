@@ -77,11 +77,11 @@ const SELETORES_218 = {
       ancestral: '.cabecalho-pauta-audiencias'
     },
     pautaDeAudienciaSeletorDeJuizAberto:{
-      seletor: '#mat-select-0-panel'
+      seletor: '.mat-select-panel-wrap'
     },
     pautaDeAudienciaSeletorDeJuizOpcoes:{
       seletor: 'mat-option',
-      ancestral: '#mat-select-0-panel'
+      ancestral: '.mat-select-panel-wrap'
     },
     pautaDeAudienciaBotaoDesignarAudiencia:{
       seletor: '[aria-label*="Designar Audiência"]'

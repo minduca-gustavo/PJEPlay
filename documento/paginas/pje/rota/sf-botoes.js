@@ -74,6 +74,47 @@ const SF_BOTOES = [
 		}
 	},
 	{
+		nome: 'Lista número, partes, autuação, tarefa.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let { ids, t } = await filtrarPorLista(contexto)
+			console.log('%c[Rota PJE]%c ids: ' + JSON.stringify(ids), LOG.rosa, 'color:inherit')
+			console.log('%c[Rota PJE]%c t: ' + JSON.stringify(t), LOG.rosa, 'color:inherit')
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+
+			for (let idx = 0; idx < ids.length; idx++) {
+				
+
+				let numero 		= t[idx]?.numero || ''
+				let tipo		= t[idx]?.descricaoClasseJudicial || ''
+				let autor  		= t[idx]?.autor  || ''
+				let reu			= t[idx]?.reu || ''
+				let autuacao	= (new Date(t[idx]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				d.push({
+					Processo:         	numero,
+					Tipo:				tipo,
+					Reclamada:        	reu,
+					Reclamante:       	autor,
+					Autuado_em: 		autuacao,
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
     nome: 'Simetria sem GIG Gabinete',
 	modo: ['Tarefa', 'Lista'],
 		funcao: async (contexto) => {

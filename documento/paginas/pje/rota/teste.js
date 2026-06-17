@@ -193,9 +193,11 @@
 
 
 */
-
-
-
+async function teste(){
+  let dados = await rota_fetch('https://pje.trt15.jus.br/pje-consulta-api/api/processos/dadosbasicos/1000655-35.2017.5.02.0015/')
+  console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+}
+teste()
 //(async ()=> {
 //    let testando = 0
 //    if (testando !== 1) return
