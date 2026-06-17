@@ -199,8 +199,8 @@ triagem_inicial_aoAbrirRetificar()
 
 async function triagem_inicial_despachar(tipo) {
     let envio = tipo.tipo
-    console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
-    return
+    //console.log('%c[Rota PJE]%c 134: ' + envio, LOG.teste, 'color:inherit')
+    //return
     await armazenar({
         'rota_pje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rota_pje_triagem_inicial_despachar_tipo': envio,
@@ -410,7 +410,16 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
         tipo  = 'info'
         aviso = 'Designe manualmente a audiência.'
     }
-    await rota_avisoTemporario(aviso, tipo, 10000)
+    await rota_avisoObrigatorio(aviso, 15)
+    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_em_andamento'])
+    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_em_andamento === 'triagem_inicial_designa_audiencia'
+
+    if (chamadaPorAcaoConjunta) {
+        criaBotaoAzul({
+            texto: 'Próximo',
+            acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
+        })
+    }
     return
 }
 
@@ -427,10 +436,54 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
             await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
             return
         }
+        monitorarBody(6000, 100)
         await clicar(juizSelecionado)
-    }
-    // clicar no botao do primeiro dia
+        console.log('%c[Rota PJE]%c juizSelecionado.textContent: ' + JSON.stringify(juizSelecionado.textContent.trim()), LOG.rosa, 'color:inherit')
+        let confirmacaoJuizSelecionado = await aguardarElementoNovo('pautaDeAudienciaConfirmacaoJuizSelecionado', {texto: juizSelecionado.textContent.trim(), timeout: 10000})
+        if (!confirmacaoJuizSelecionado) {
+            let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
+            let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_designa_audiencia'
+            //if (chamadaPorAcaoConjunta) {
+            //    criaBotaoAzul({
+            //        texto: 'Próximo',
+            //        acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
+            //    })
+            //}
+            console.log('%c[Rota PJE]%c erro aqui: ' + JSON.stringify('erro aqui'), LOG.rosa, 'color:inherit')
+            rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+            return
+        }
+        console.log('%c[Rota PJE]%c confirmacaoJuizSelecionado: ' + confirmacaoJuizSelecionado, LOG.rosa, 'color:inherit')
+        let i = 0
+        while(confirmacaoJuizSelecionado.isConnected){
+            await suspender(500)
+            console.log('%c[Rota PJE]%c confirmacaoJuizSelecionado.textContent: ' + JSON.stringify(document.querySelector('mat-focused').textContent), LOG.rosa, 'color:inherit')
+            if (i++ > 30 * 2){
+                break
 
+                //let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
+                //let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_designa_audiencia'
+                //if (chamadaPorAcaoConjunta) {
+                    //criaBotaoAzul({
+                    //    ancestral: 'ffff',
+                    //    texto: 'Próximo',
+                    //    acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
+                    //})
+                    
+                //}
+                //rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+                //return
+            }
+        }
+        if (i > 30 * 2) console.log('%c[Rota PJE]%c erro: ' + JSON.stringify('erro'), LOG.rosa, 'color:inherit')
+        return
+    }
+    
+    
+    // clicar no botao do primeiro dia
+    console.log('%c[Rota PJE]%c juizSelecionado: ' + JSON.stringify(12), LOG.rosa, 'color:inherit')
+    
+    return
     await aguardarElementoNovo('pautaDeAudienciaCelulaDaTabela')
     let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
@@ -438,6 +491,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
         return
     }
+    await suspender(500)
     await clicar(celula)
 
     // clicar no botao de designar
@@ -480,6 +534,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await clicar(botaoConfirmar)
     await aguardarElementoNovo('pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia')
     await suspender(2000)
+    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
     window.close()
     return
 }
@@ -814,6 +869,7 @@ async function triagem_inicial_acoesConjuntas(p){
     let i = 0
     for (let c of p?.comandos){
         await armazenar({ rota_acoes_conjuntas_triagem_inicial_em_andamento: c })
+        console.log('%c[Rota PJE]%c c: ' + JSON.stringify(c), LOG.rosa, 'color:inherit')
         const concluiu = await Promise.race([
             new Promise(resolver => {
                 browser.storage.onChanged.addListener(function ouvir(mudancas) {

@@ -277,22 +277,22 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         if (chkDesignacao) {
             const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario)
             comandos.push('triagem_inicial_designa_audiencia')
-            dados.push(horario)
+            dados.push({horario: horario})
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))) {
             comandos.push('triagem_inicial_despachar')
-            dados.push('triagem_inicial_despachar_designacao')
+            dados.push({tipo: 'triagem_inicial_despachar_designacao'})
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
             comandos.push('triagem_inicial_certidao')
-            dados.push('triagem_inicial_certificar_designacao')
+            dados.push({tipo: 'triagem_inicial_certificar_designacao'})
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))) {
             comandos.push('triagem_inicial_gig')
-            dados.push('triagem_inicial_gig_acompanhamento')
+            dados.push({tipo: 'triagem_inicial_gig_acompanhamento'})
         }
         console.log('%c[Rota PJE]%c quantos comandos: ' + comandos.length, LOG.teste, 'color:inherit')
         if (comandos.length) comandar(['triagem_inicial_acoes_conjuntas'], [{comandos: comandos, parametros: dados}])

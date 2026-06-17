@@ -292,6 +292,9 @@ const SELETORES = {
     pautaDeAudienciaConfirmacaoSala:{
       seletor: '[name="sala"]',
     },
+    pautaDeAudienciaConfirmacaoJuizSelecionado:{
+      seletor: '.mat-focused',
+    },
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar',
@@ -310,6 +313,9 @@ const SELETORES = {
     },
     pautaDeAudienciaConfirmacaoSala:{
       seletor: '[name="sala"]',
+    },
+    pautaDeAudienciaConfirmacaoJuizSelecionado:{
+      seletor: '.mat-focused',
     },
     // Exemplo:
     // botaoFinalizar: {
@@ -437,6 +443,30 @@ function pronto(el, entrada) {
 // chave    {string} — chave no mapa SELETORES
 // timeout  {number} — ms até desistir (0 = sem limite)
 // Retorna Promise<Element|null>
+function localizarElemento(entrada, contexto = '') {
+  let ancestral = document
+  if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
+
+  const candidatos = selecionar(entrada.seletor, ancestral, true)
+  if (!candidatos || candidatos.length === 0) {
+    console.log(`[aguardarElementoNovo]${contexto} seletor "${entrada.seletor}" não encontrou nenhum elemento`)
+    return null
+  }
+
+  console.log(`[aguardarElementoNovo]${contexto} seletor "${entrada.seletor}" encontrou ${candidatos.length} candidato(s)`)
+
+  for (const el of candidatos) {
+    const ok = pronto(el, entrada)
+    if (entrada.texto) {
+      const textoEl = el.textContent?.trim() ?? ''
+      console.log(`[aguardarElementoNovo]${contexto}   candidato texto="${textoEl.slice(0, 80)}" → ${ok ? 'OK' : 'não bate'}`)
+    }
+    if (ok) return el
+  }
+  console.log(`[aguardarElementoNovo]${contexto} nenhum candidato passou em pronto()`)
+  return null
+}
+
 async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0, texto } = {}) {
   const chaves = Array.isArray(chave) ? chave : [chave]
   const entradas = await Promise.all(
@@ -445,47 +475,51 @@ async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0, texto } =
       return entrada ? { ...entrada, texto } : null
     })
   )
-  if (entradas.some(e => !e)) return null
-  const checar = () => {
+  console.log('[aguardarElementoNovo] entradas resolvidas:', entradas)
+  if (entradas.some(e => !e)) {
+    console.log('[aguardarElementoNovo] alguma chave não resolveu — abortando')
+    return null
+  }
+
+  const checar = (contexto) => {
     if (modo === 'e') {
-      // todos precisam estar prontos — retorna o último
-      const elementos = entradas.map(entrada => {
-        let ancestral = document
-        if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
-        const el = selecionar(entrada.seletor, ancestral)
-        return (el && pronto(el, entrada)) ? el : null
-      })
+      const elementos = entradas.map(e => localizarElemento(e, contexto))
       return elementos.every(Boolean) ? elementos[elementos.length - 1] : null
     } else {
-      // qualquer um serve — retorna o primeiro encontrado
       for (const entrada of entradas) {
-        let ancestral = document
-        if (entrada.ancestral) ancestral = document.querySelector(entrada.ancestral) || document
-        const el = selecionar(entrada.seletor, ancestral)
-        if (el && pronto(el, entrada)) return el
+        const el = localizarElemento(entrada, contexto)
+        if (el) return el
       }
       return null
     }
   }
+
   let versao = await obterArmazenamento('rota_versao')
   versao = versao?.rota_versao ?? VERSAO_FALLBACK
+
   return new Promise(resolver => {
-    const elImediato = checar()
-    if (elImediato) { resolver(elImediato); return }
+    const elImediato = checar(' [check imediato]')
+    if (elImediato) { console.log('[aguardarElementoNovo] resolvido imediatamente'); resolver(elImediato); return }
+
     let timer = null
-    const obs = new MutationObserver(() => {
-      const el = checar()
+    let contador = 0
+    const obs = new MutationObserver((mutations) => {
+      contador++
+      console.log(`[aguardarElementoNovo] MutationObserver disparou (#${contador}), ${mutations.length} mutação(ões)`, mutations)
+      const el = checar(` [check #${contador}]`)
       if (el) {
         if (timer) clearTimeout(timer)
         obs.disconnect()
+        console.log('[aguardarElementoNovo] resolvido via MutationObserver')
         resolver(el)
       }
     })
-    obs.observe(document, { childList: true, subtree: true })
-    
+    obs.observe(document, { childList: true, subtree: true, characterData: true, attributes: true })
+
     if (timeout > 0)
       timer = setTimeout(() => {
         obs.disconnect()
+        console.log('[aguardarElementoNovo] TIMEOUT atingido sem resolver')
         registrarErro(`${chaves.join(` ${modo.toUpperCase()} `)} [timeout]`, versao)
         resolver(null)
       }, timeout)
