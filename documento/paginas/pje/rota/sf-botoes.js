@@ -74,14 +74,36 @@ const SF_BOTOES = [
 		}
 	},
 	{
-		nome: 'Lista número, partes, autuação, tarefa.',
-		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		nome: 'Lista número, partes, autuação, tarefa. "TODAS" para buscar em todas as tarefas.',
+		modo: ['Lista', 'Tarefa'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
-			let { ids, t } = await filtrarPorLista(contexto)
-			console.log('%c[Rota PJE]%c ids: ' + JSON.stringify(ids), LOG.rosa, 'color:inherit')
-			console.log('%c[Rota PJE]%c t: ' + JSON.stringify(t), LOG.rosa, 'color:inherit')
-			if (!ids.length) return 'Nenhum processo encontrado.'
-
+			let {idsx, tx} = { idsx: [], tx: [] }
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}	
+				//console.log('%c[Rota PJE]%c tarefas' + JSON.stringify(tarefas), LOG.teste, 'color:inherit')
+				for (let tarefa of tarefas) {
+					//console.log('%c[Rota PJE]%c tarefa' + JSON.stringify(tarefa), LOG.teste, 'color:inherit')
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						//console.log('%c[Rota PJE]%c tarefa?.nome' + JSON.stringify(tarefa?.nome), LOG.teste, 'color:inherit')
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
+						console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
+						console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
+						idsx.push(...ids)
+						tx.push(...t)
+						//console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
+						//console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
+						//await suspender(5*60*1000)  // pausa para ler os relatos
+					}
+				}
+			} else if (contexto.modo === 'Lista') {
+				;({ idsx, tx } = await filtrarPorLista(contexto))
+			}
+			console.log('%c[Rota PJE]%c ids: ' + JSON.stringify(idsx), LOG.rosa, 'color:inherit')
+			console.log('%c[Rota PJE]%c t: ' + JSON.stringify(tx), LOG.rosa, 'color:inherit')
+			if (!idsx.length) return 'Nenhum processo encontrado.'
 			let d = []
 
 			//let resultados = await sf_pool(ids, async (id, idx) => {
@@ -93,15 +115,82 @@ const SF_BOTOES = [
 			//	onProgresso:  contexto.progresso,
 			//})
 
-			for (let idx = 0; idx < ids.length; idx++) {
+			for (let i = 0; i < idsx.length; i++) {
 				
 
-				let numero 		= t[idx]?.numero || ''
-				let tipo		= t[idx]?.descricaoClasseJudicial || ''
-				let autor  		= t[idx]?.autor  || ''
-				let reu			= t[idx]?.reu || ''
-				let autuacao	= (new Date(t[idx]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				let numero 		= tx[i]?.numero || ''
+				let tipo		= tx[i]?.descricaoClasseJudicial || ''
+				let autor  		= tx[i]?.autor  || ''
+				let reu			= tx[i]?.reu || ''
+				let id 			= idsx[i] || ''
+				let autuacao	= (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
 				d.push({
+					Id:					id,
+					Processo:         	numero,
+					Tipo:				tipo,
+					Reclamada:        	reu,
+					Reclamante:       	autor,
+					Autuado_em: 		autuacao,
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
+		nome: 'Lista audiências a partir do ID do processo.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {idsx, tx} = { idsx: [], tx: [] }
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}	
+				//console.log('%c[Rota PJE]%c tarefas' + JSON.stringify(tarefas), LOG.teste, 'color:inherit')
+				for (let tarefa of tarefas) {
+					//console.log('%c[Rota PJE]%c tarefa' + JSON.stringify(tarefa), LOG.teste, 'color:inherit')
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						//console.log('%c[Rota PJE]%c tarefa?.nome' + JSON.stringify(tarefa?.nome), LOG.teste, 'color:inherit')
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
+						console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
+						console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
+						idsx.push(...ids)
+						tx.push(...t)
+						//console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
+						//console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
+						//await suspender(5*60*1000)  // pausa para ler os relatos
+					}
+				}
+			} else if (contexto.modo === 'Lista') {
+				;({ idsx, tx } = await filtrarPorLista(contexto))
+			}
+			console.log('%c[Rota PJE]%c ids: ' + JSON.stringify(idsx), LOG.rosa, 'color:inherit')
+			console.log('%c[Rota PJE]%c t: ' + JSON.stringify(tx), LOG.rosa, 'color:inherit')
+			if (!idsx.length) return 'Nenhum processo encontrado.'
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+
+			for (let i = 0; i < idsx.length; i++) {
+				
+
+				let numero 		= tx[i]?.numero || ''
+				let tipo		= tx[i]?.descricaoClasseJudicial || ''
+				let autor  		= tx[i]?.autor  || ''
+				let reu			= tx[i]?.reu || ''
+				let id 			= idsx[i] || ''
+				let autuacao	= (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				d.push({
+					Id:					id,
 					Processo:         	numero,
 					Tipo:				tipo,
 					Reclamada:        	reu,
