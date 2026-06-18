@@ -82,7 +82,7 @@ async function buscarCalculos(i) {
 
 async function buscarDocumentos(i) {
 	let dados = await rota_fetch(
-		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline'
+		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline?somenteDocumentosAssinados=true&buscarMovimentos=false&buscarDocumentos=true'
 	)
 	if (!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
 	return dados.filter(entry => entry.documento === true)

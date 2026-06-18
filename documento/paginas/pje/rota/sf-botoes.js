@@ -142,65 +142,69 @@ const SF_BOTOES = [
 		nome: 'Lista audiências a partir do ID do processo.',
 		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
-			let {idsx, tx} = { idsx: [], tx: [] }
-			if (contexto.modo === 'Tarefa') {
-				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
-				if (contexto.valor !== 'TODAS') {
-					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
-				}	
-				//console.log('%c[Rota PJE]%c tarefas' + JSON.stringify(tarefas), LOG.teste, 'color:inherit')
-				for (let tarefa of tarefas) {
-					//console.log('%c[Rota PJE]%c tarefa' + JSON.stringify(tarefa), LOG.teste, 'color:inherit')
-					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
-						//console.log('%c[Rota PJE]%c tarefa?.nome' + JSON.stringify(tarefa?.nome), LOG.teste, 'color:inherit')
-						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
-						console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
-						console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
-						idsx.push(...ids)
-						tx.push(...t)
-						//console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
-						//console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
-						//await suspender(5*60*1000)  // pausa para ler os relatos
-					}
-				}
-			} else if (contexto.modo === 'Lista') {
-				;({ idsx, tx } = await filtrarPorLista(contexto))
-			}
-			console.log('%c[Rota PJE]%c ids: ' + JSON.stringify(idsx), LOG.rosa, 'color:inherit')
-			console.log('%c[Rota PJE]%c t: ' + JSON.stringify(tx), LOG.rosa, 'color:inherit')
-			if (!idsx.length) return 'Nenhum processo encontrado.'
+			console.log('%c[Rota PJE]%c contexto.valorBruto: ' + JSON.stringify(contexto.valorBruto), LOG.rosa, 'color:inherit')
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			console.log('%c[Rota PJE]%c ids: ')
 			let d = []
+			await sf_pool(ids, async (ids, i) => {
+				let audienciasMarcadas = await buscarAudienciasMarcadas(ids)
+				console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.rosa, 'color:inherit')
+				let dataInicio 	= '-'
+				let sala		= '-'
+				let processo	= '-'
+				if (audienciasMarcadas?.dataInicio){
+					dataInicio	= new Date(audienciasMarcadas?.dataInicio).toLocaleDateString('pt-BR')
+					sala		= audienciasMarcadas?.salaFisica?.nome
+					processo	= audienciasMarcadas?.processo?.numero
+				}
 
-			//let resultados = await sf_pool(ids, async (id, idx) => {
-			//	return await buscarProcesso(id, '/partes')
-			//}, {
-			//	concorrencia: contexto.concorrencia,
-			//	tentativas:   contexto.tentativas,
-			//	pausaMs:      contexto.pausaMs,
-			//	onProgresso:  contexto.progresso,
-			//})
-
-			for (let i = 0; i < idsx.length; i++) {
-				
-
-				let numero 		= tx[i]?.numero || ''
-				let tipo		= tx[i]?.descricaoClasseJudicial || ''
-				let autor  		= tx[i]?.autor  || ''
-				let reu			= tx[i]?.reu || ''
-				let id 			= idsx[i] || ''
-				let autuacao	= (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
 				d.push({
-					Id:					id,
-					Processo:         	numero,
-					Tipo:				tipo,
-					Reclamada:        	reu,
-					Reclamante:       	autor,
-					Autuado_em: 		autuacao,
+					id			: ids,
+					processo	: processo,
+					sala		: sala,
+					dataInicio	: dataInicio,
 				})
 				
-			}
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
 
-			return d
+			return d.length ? d : 'Nenhuma audiência encontrada.'
+			
+		}
+	},
+	{
+		nome: 'Lista data da sentença a partir do ID do processo.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			console.log('%c[Rota PJE]%c contexto.valorBruto: ' + JSON.stringify(contexto.valorBruto), LOG.rosa, 'color:inherit')
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			console.log('%c[Rota PJE]%c ids: ')
+			let d = []
+			await sf_pool(ids, async (ids, i) => {
+				let documentos = await buscarDocumentos(ids)
+				console.log('%c[Rota PJE]%c documentos: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
+				let sentenca = documentos?.find(d => d?.tipo?.toLowerCase().includes('sentença'));
+				let dataSentenca = sentenca ? new Date(sentenca.data).toLocaleDateString('pt-BR') : '-';
+				
+
+				d.push({
+					id				: ids,
+					Sentenca_data	: dataSentenca,
+				})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhuma sentença encontrada.'
+			
 		}
 	},
 	{

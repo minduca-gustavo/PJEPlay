@@ -18,6 +18,7 @@ const INTERCEPTADOR_URL = {
     perfis:                         /\/api\/token\/perfis\/trocar/i,
     recursos:                       /\/api\/token\/permissoes\/recursos/i,
     recursosPage:                   /\/api\/token\/permissoes\/recursos\/*/i,
+    horariosVagos:                  /\/pje-comum-api\/api\/pautasaudiencias\/horariosvagos.*/i,
     pauta:                          /\/pje-comum-api\/api\/pautasaudiencias/i,
     audiencias:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
     responsaveis:                   /\/pje-comum-api\/api\/usuarios\/internos\/pororgaojulgador/i,
@@ -27,7 +28,7 @@ const INTERCEPTADOR_URL = {
     orgaosJulgadores:               /\/pje-comum-api\/api\/orgaosjulgadores/i,
     timeline:                       /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
     expedientesMateria:             /\/pje-comum-api\/api\/expedientesmateria\/\d+.*/i,
-    horariosVagos:                  /\/pje-comum-api\/api\/pautasaudiencias\/horariosvagos\/\d+.*/i
+    
 }
 //https://pje.trt15.jus.br/pje-comum-api/api/expedientesmateria/13?idTarefa=0
 //https://pje.trt15.jus.br/pje-comum-api/api/modelosdocumentos/pastas/raiz
@@ -53,6 +54,7 @@ const INTERCEPTADOR_ROTULO = {
     tarefasProcesso:                'tarefas_processo',
     modelosDocumentos:              'modelos_documentos',
     expedientesMateria:             'expedientes_materia',
+    horariosVagos:                  'horarios_vagos',
 }
 
 

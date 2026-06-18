@@ -325,6 +325,8 @@ triagem_inicial_aoAbrirDespachar()
 // DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_designarAudiencia(tipo) {
+    console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
+    return
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
@@ -433,6 +435,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
 async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {    
     // selecionar juiz
     let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
+    let metaQuadroDeHorarios
     if (seletorJuiz.textContent != horario.nomeDaSala){
         await clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
@@ -443,13 +446,22 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
             await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
             return
         }
+        
         monitorarBody(6000, 100)
+        metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
         await clicar(juizSelecionado)
     }
-    return
-    
-    // clicar no botao do primeiro dia
-    await aguardarElementoNovo('pautaDeAudienciaCelulaDaTabela')
+    if (metaQuadroDeHorarios){
+        await aguardarElementoMudar(metaQuadroDeHorarios,'content')
+    } else {
+        await aguardarElementoNovo('pautaDeAudienciaMetaQuadroHorariosVagos')
+    }
+    console.log('%c[Rota PJE]%c 457: ' + JSON.stringify(457), LOG.rosa, 'color:inherit')
+    //return
+    //// clicar no botao do primeiro dia
+    //await aguardarElementoNovo(['pautaDeAudienciaCelulaDaTabela', 'pautaDeAudienciaMetaQuadroHorariosVagos'], {modo: 'e'})
+    //console.log('%c[Rota PJE]%c 451: ' + JSON.stringify(451), LOG.rosa, 'color:inherit')
+    //return
     let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
     if (!celula){
@@ -817,6 +829,7 @@ async function triagem_inicial_acoesEncaminharAguardandoAudiencia(){
     console.log('%c[Rota PJE]%c cheguei aqui na 782 ', LOG.rosa, 'color:inherit')
     await movimentar('Aguardando audiência')
     await suspender(2000)
+    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
     window.close()
     return
     

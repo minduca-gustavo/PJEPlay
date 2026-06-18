@@ -222,7 +222,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             }
         }
 
-        criaBotaoAzulComCheckBox({
+        let linhaManual = criaBotaoAzulComCheckBox({
             id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
             idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
             texto: 'Designar audiência manualmente em outra sala/horário',
@@ -230,6 +230,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             acao: () => comandar(['triagem_inicial_designa_audiencia'], [{dados: {tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}]),
             grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
         })
+        linhaManual.dataset.manual = JSON.stringify(dados)
     }
     criaBotaoLaranjaComCheckBox({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
@@ -275,7 +276,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         const chkDesignacao = document.querySelector(`[data-grupo="${id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data-marcado="1"]`)
         console.log('%c[Rota PJE]%c chkDesignacao: ' + JSON.stringify(chkDesignacao), LOG.teste, 'color:inherit')
         if (chkDesignacao) {
-            const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario)
+            const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario) || JSON.parse(chkDesignacao.closest('[data-manual]').dataset.dados)
             comandos.push('triagem_inicial_designa_audiencia')
             dados.push({horario: horario})
         }

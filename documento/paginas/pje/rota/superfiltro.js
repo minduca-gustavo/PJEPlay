@@ -573,6 +573,7 @@
 				? rota_parsearListaProcessos
 				: (txt) => { let m = [...txt.matchAll(/\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/g)]; return [...new Set(m.map(x=>x[0]))] }
 			listaProcessos = parseFn(valorBruto)
+			
 		}
 
 		function _lerParam(id, fallback){
@@ -582,13 +583,14 @@
 		}
 
 		let contexto = {
-			modo:         _modoAtivo,
-			valor:        valorBruto,
-			lista:        listaProcessos,
-			concorrencia: _lerParam('concorrencia', 5),
-			tentativas:   _lerParam('tentativas',   2),
-			pausaMs:      _lerParam('pausaMs',      500),
-			progresso: (feitos, total) => {
+			valorBruto: 	valorBruto,
+			modo:         	_modoAtivo,
+			valor:        	valorBruto,
+			lista:        	listaProcessos,
+			concorrencia: 	_lerParam('concorrencia', 5),
+			tentativas:   	_lerParam('tentativas',   2),
+			pausaMs:      	_lerParam('pausaMs',      500),
+			progresso: 		(feitos, total) => {
 				tabelaEl.textContent = '⏳ ' + feitos + ' / ' + total + ' processos…'
 				tabelaEl.style.color = C.textoSuave
 			},
