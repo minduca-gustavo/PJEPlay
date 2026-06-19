@@ -111,7 +111,15 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_partes'),   texto: 'Retificar autuação: partes',   ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Partes'}])})
     criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_rito'),     texto: 'Retificar autuação: rito',     ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Dados Iniciais'}])})
     criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_assuntos'), texto: 'Retificar autuação: assuntos', ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Assuntos'}])})
-    criaBotaoLaranja({ id: id(tarefaNome, bloco, 'despacho_emenda_retificacao'), texto: 'Despacho: retificar autuação/emendar a inicial', ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_emendar'}])})
+    criaBotaoLaranja({
+        id: id(tarefaNome, bloco, 'despacho_emenda_retificacao'), 
+        texto: 'Despacho: retificar autuação/emendar a inicial', 
+        ancestral: id(tarefaNome, bloco), 
+        acao: async () => {
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_emendar'}])
+        }
+    })
 
     // ── Bloco: designa-audiencia ──────────────────────────────
     bloco = 'designa_audiencia'
@@ -143,7 +151,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             id: id(tarefaNome, bloco, 'btn_manual'),
             texto: 'Designar manualmente a audiência',
             ancestral: id(tarefaNome, bloco),
-            acao: () => comandar(['triagem_inicial_designa_audiencia'], [{dados: 'manual'}])
+            acao: async () => {
+                await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+                comandar(['triagem_inicial_designa_audiencia'], [{dados: 'manual'}])
+            }
         })
 
     }
@@ -211,7 +222,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
                 texto: horarioInicialBotao,
                 ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-                acao: () => comandar(['triagem_inicial_designa_audiencia'], [{horario}]),
+                acao: async () => {
+                    await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+                    comandar(['triagem_inicial_designa_audiencia'], [{horario}])
+                },
                 grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
             })
             linha.dataset.horario = JSON.stringify(horario)
@@ -227,17 +241,23 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
             texto: 'Designar audiência manualmente em outra sala/horário',
             ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-            acao: () => comandar(['triagem_inicial_designa_audiencia'], [{dados: {tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}]),
+            acao: async () => {
+                await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+                comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}])
+            },
             grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
         })
-        linhaManual.dataset.manual = JSON.stringify(dados)
+        linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
     }
     criaBotaoLaranjaComCheckBox({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
         idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
         texto: 'Despachar designando.',
         ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-        acao: () => comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao'}]),
+        acao: async () => {
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao'}])
+        },
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
     criaBotaoLaranjaComCheckBox({
@@ -245,7 +265,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
         texto: 'Certificar a designação, intimar e encaminhar para aguardando audiência.',
         ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), 
-        acao: () => comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}]),/* alert ('Em desenvolvimento'),*/
+        acao: async () => {
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}])
+        },
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
     
@@ -258,7 +281,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'),
         texto: 'Colocar GIG de acompanhamento.',
         ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-        acao: () => comandar(['triagem_inicial_gig'], [{tipo: 'triagem_inicial_gig_acompanhamento'}]),
+        acao: async () => {
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_gig'], [{tipo: 'triagem_inicial_gig_acompanhamento'}])
+        },
     })
     let checkBoxGig = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
     if (checkBoxGig) checkBoxGig.click()
@@ -276,7 +302,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         const chkDesignacao = document.querySelector(`[data-grupo="${id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data-marcado="1"]`)
         console.log('%c[Rota PJE]%c chkDesignacao: ' + JSON.stringify(chkDesignacao), LOG.teste, 'color:inherit')
         if (chkDesignacao) {
-            const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario) || JSON.parse(chkDesignacao.closest('[data-manual]').dataset.dados)
+            const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario)
             comandos.push('triagem_inicial_designa_audiencia')
             dados.push({horario: horario})
         }

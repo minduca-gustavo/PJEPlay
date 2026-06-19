@@ -325,8 +325,6 @@ triagem_inicial_aoAbrirDespachar()
 // DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_designarAudiencia(tipo) {
-    console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
-    return
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
@@ -383,7 +381,7 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     let link = buscaLink?.rota_triagem_inicial_linkDaAudiencia || ''
     
     //if (!dados) return
-    if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.dados){
+    if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.tipo == 'manual'){
         await triagem_inicial_acoesDesignarAudienciaManual('manual')
         return
     }
@@ -416,6 +414,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     
     let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
     let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_designa_audiencia'
+    console.log('%c[Rota PJE]%c chamadaPorAcaoConjunta: ' + JSON.stringify(chamadaPorAcaoConjunta), LOG.rosa, 'color:inherit')
     if (chamadaPorAcaoConjunta) {
         await criaDivFlutuante({
             id: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
@@ -542,7 +541,7 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
     console.log('%c[Rota PJE]%c usuario: ' + JSON.stringify(usuario), LOG.rosa, 'color:inherit')
     await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
     await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
-    rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
+    //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
     //console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.teste, 'color:inherit')
 }
 
@@ -829,7 +828,7 @@ async function triagem_inicial_acoesEncaminharAguardandoAudiencia(){
     console.log('%c[Rota PJE]%c cheguei aqui na 782 ', LOG.rosa, 'color:inherit')
     await movimentar('Aguardando audiência')
     await suspender(2000)
-    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
+    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_certidao' })
     window.close()
     return
     

@@ -277,9 +277,16 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
   const botao = await rota_movimentar_encontrarBotao(label)
   await suspender(500)
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
-
+  monitorarBody(6000, 1)
   await clicar (botao)
-  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
+  await Promise.race([
+    aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {
+      texto: 'Erro de Permissão',
+      timeout: 3000
+    }).then(() => clicar(botao)).catch(() => {}),
+
+    rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
+  ])
 }
 
 // ------------------------------------------------------------

@@ -135,11 +135,80 @@ function _rota_sincronizar(reg){
 		return
 	}
 
+	// _rota_sincronizar — bloco de criação (linhas 138–160)
 	if(!reg.btn || !document.body.contains(reg.btn)){
-		// Remove qualquer botão órfão antes de criar novo
 		document.getElementById('pjerota-btn-rota')?.remove()
 		reg.btn = _rota_criarBotaoDOM()
 		document.body.appendChild(reg.btn)
+
+		// Flex no próprio btn para alinhar o SVG + botão tutorial lado a lado
+		Object.assign(reg.btn.style, {
+			display:        'flex',
+			flexDirection:  'row',
+			alignItems:     'center',
+			gap:            '6px',
+			width:          'fit-content',   // deixa o btn encolher/crescer conforme o conteúdo
+		})
+
+		// divTutorial como FILHO do btn (não irmão)
+		let divTutorial = criaDiv({
+			id:        'rota_rota_tutorial_div',
+			ancestral: 'pjerota-btn-rota'    // se criaDiv já appenda no ancestral, ok
+		})
+		divTutorial.style.width = 'fit-content'
+		// NÃO chame insertAdjacentElement — criaDiv já inseriu dentro do btn
+
+		let botaoTutorial = document.createElement('button')
+		botaoTutorial.id          = 'rota_rota_tutorial_botao'
+		botaoTutorial.textContent = '❓'
+		Object.assign(botaoTutorial.style, {
+			background:   	`linear-gradient(to bottom, ${ROTA_C.laranjaClr}, #e8920a)`,
+			color:        	'#2a3a00',
+			border:       	'1.5px solid #7a5000',
+			borderRadius: 	'50%',          // redondo
+			width:        	'22px',
+			height:       	'22px',
+			lineHeight:   	'22px',
+			padding:      	'0',
+			fontSize:     	'11px',
+			textAlign:    	'center',
+			cursor:       	'pointer',
+			zIndex:       	'9999999',
+			fontFamily:   	"system-ui, 'Arial Black', Arial, sans-serif",
+			fontWeight:   	'900',
+			boxShadow:    	'0 1px 4px rgba(0,0,0,0.22)',
+			display:      	'flex',
+			alignItems:   	'center',
+			justifyContent:	'center',
+		})
+		let tooltip = document.createElement('span')
+		tooltip.textContent = 'Clique para ter acesso aos tutoriais do ROTA.'
+		Object.assign(tooltip.style, {
+			position:       'absolute',
+			top:          	'calc(100% + 6px)',  // aparece acima do botão
+			left:           '50%',
+			transform:      'translateX(-50%)',
+			background:     ROTA_C.texto,
+			color:          ROTA_C.branco,
+			fontSize:       '11px',
+			fontFamily:     'system-ui, Arial, sans-serif',
+			padding:        '3px 8px',
+			borderRadius:   '4px',
+			whiteSpace:     'nowrap',
+			pointerEvents:  'none',
+			opacity:        '0',
+			transition:     'opacity 0.15s',
+			zIndex:         '9999999',
+		})
+
+		// O botão precisa de position:relative para o tooltip se ancorar nele
+		botaoTutorial.style.position = 'relative'
+		botaoTutorial.appendChild(tooltip)
+
+		botaoTutorial.addEventListener('mouseenter', () => tooltip.style.opacity = '1')
+		botaoTutorial.addEventListener('mouseleave', () => tooltip.style.opacity = '0')
+		divTutorial.appendChild(botaoTutorial)
+		
 	}
 
 	_rota_posicionar(reg, ancoraEl, x, y)
@@ -166,7 +235,7 @@ function _rota_posicionar(reg, ancoraEl, x, y){
 		btn.style.bottom = 'auto'
 		reg.posAnterior  = chave
 	}
-	btn.style.display = 'block'
+	btn.style.display = 'flex'
 }
 
 
@@ -963,3 +1032,8 @@ const _ROTA_OJ_ERROS = {
 	sem_perfil_oj:  'Você não possui perfil nesta OJ.',
 	excecao:        'Erro ao verificar OJ do processo.',
 }
+
+// _____________________________________________________________
+//                 TUTORIAIS
+// _____________________________________________________________
+
