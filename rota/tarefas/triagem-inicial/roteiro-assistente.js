@@ -248,6 +248,32 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
         })
         linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
+        i++
+        let inputPulando = criaInput({
+            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
+            textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
+            ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+            placeholder: 'DD/MM/AAAA'
+        })
+        await armazenar({triagem_inicial_pula_data: '22/06/2026'})
+        let dataPula = await obterArmazenamento('triagem_inicial_pula_data')
+        console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
+        //let inputPulando = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i + 'input'))
+        if (dataPula?.triagem_inicial_pula_data){
+            inputPulando.value = dataPula?.triagem_inicial_pula_data
+        }
+        let linhaPulando = criaBotaoAzulComCheckBox({
+            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
+            idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
+            texto: 'Designar audiência pulando horário',
+            ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+            acao: async () => {
+                await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+                comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'pulando', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}])
+            },
+            grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+        })
+        linhaPulando.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
     }
     criaBotaoLaranjaComCheckBox({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
@@ -295,29 +321,73 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         return document.getElementById(idCheckbox)?.dataset.marcado === '1'
     }
     bloco = 'extras'
-    criaSecaoMostraRecolhe({
+    let secaoExtras = criaSecaoMostraRecolhe({
         id: id(tarefaNome, bloco),
         idSempreAMostra: id(tarefaNome, bloco, 'extras-mostra'), 
         idRecolhe: id(tarefaNome, bloco, 'extras-recolhe'),  
         ancestral: 'rota_corpo'
     })
+    const estadoSalvo = await obterArmazenamento('triagem_inicial_extras_expandido')
+    if (estadoSalvo?.triagem_inicial_extras_expandido === false) {
+        secaoExtras.recolher()
+    }
+
+    // Salvar quando o usuário alternar
+    secaoExtras.aoAlternar = async (expandido) => {
+        await armazenar({ triagem_inicial_extras_expandido: expandido })
+    }
     criaTitulo({
         id: id(tarefaNome, bloco, 'extras-titulo'), 
         texto: 'Extras (Bloqueio de pauta, etc.)', 
         ancestral: id(tarefaNome, bloco, 'extras-mostra')
     })
     criaSubTitulo({
-        id: id(tarefaNome, bloco, 'extras-subTitulo'), 
-        texto: '(Bloqueio de pauta, etc.)', 
-        ancestral: id(tarefaNome, bloco, 'extras-mostra')
+        id: id(tarefaNome, bloco, 'extras-bloqueioDePauta'), 
+        texto: 'Bloqueio de pauta', 
+        ancestral: id(tarefaNome, bloco, 'extras-recolhe')
+    })
+    criaTexto({
+        id: id(tarefaNome, bloco, 'extras-bloqueio-texto'), 
+        texto: 'Esta ferramenta foi pensada para "tapar os furos" da pauta, dos processos que são retirados de pauta, e os horários ficam muito "em cima" para designação.', 
+        ancestral: id(tarefaNome, bloco, 'extras-recolhe')
     })
     criaInput({
-        id: id(tarefaNome, bloco, 'extras-inputBloqueio'), 
+        id: id(tarefaNome, bloco, 'extras-bloqueio-inputData'), 
         textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
         ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
         placeholder: 'DD/MM/AAAA'
     })
-    
+    await armazenar({triagem_inicial_pula_data: '22/06/2026'})
+    let dataPula = await obterArmazenamento('triagem_inicial_pula_data')
+    console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
+    let input = document.getElementById(id(tarefaNome, bloco, 'extras-pula-inputData'))
+    if (dataPula?.triagem_inicial_pula_data){
+        input.value = dataPula?.triagem_inicial_pula_data
+    }
+    console.log('%c[Rota PJE]%c dados?.rota_dadosTriagemInicial?.horariosVagos?.length: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.horariosVagos?.length), LOG.rosa, 'color:inherit')
+    for (let i = 0; i < dados?.rota_dadosTriagemInicial?.horariosVagos?.length; i++){
+        let horario = dados?.rota_dadosTriagemInicial?.horariosVagos?.[i]
+        console.log('%c[Rota PJE]%c horario: ' + JSON.stringify(horario), LOG.rosa, 'color:inherit')
+        if (horario?.descricaoTipoAudiencia){
+            let funcao = i % 2 === 0 ? criaBotaoAzul : criaBotaoLaranja
+            funcao({
+                id: id(tarefaNome, bloco, 'extras-bloqueio-botao' + i),
+                texto: 'Bloquear todas as audiências do tipo ' + horario?.descricaoTipoAudiencia + ' até a data preenchida acima.',
+                ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+                acao: async ()=> {
+                    if (!/\d\d\/\d\d\/\d\d\d\d/.test(input.value)) {
+                        rota_avisoTemporario('Data no formato incorreto. Formato esperado: DD/MM/AAAA', 'erro')
+                        input.value = ''
+                        input.placeholder = 'Data no formato incorreto. Formato esperado: DD/MM/AAAA'
+                        await suspender (5 * 1000)
+                        input.placeholder = 'DD/MM/AAAA'
+                        return
+                    }
+                    comandar(['triagem_inicial_bloquear_horarios'],[{tipo: horario?.descricaoTipoAudiencia, data: input.value}] )
+                }
+            })
+        }
+    }
 
     function triagemDesignarAudienciaAcoesConjuntas(bloco) {
         const comandos = []

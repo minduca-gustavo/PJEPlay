@@ -895,6 +895,7 @@ Object.assign(rota_acoes, {
     'triagem_inicial_intimar':              async (p) => await triagem_inicial_intimar(p),
     'triagem_inicial_acoes_conjuntas':      async (p) => await triagem_inicial_acoesConjuntas(p),
     'triagem_inicial_aguardando_audiencia': async (p) => await triagem_inicial_aguardandoAudiencia(p),
+    'triagem_inicial_bloquear_horarios':    async (p) => await triagem_inicial_bloquearHorarios(p),
 })
 
 

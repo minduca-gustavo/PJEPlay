@@ -131,13 +131,14 @@ function _rota_sincronizar(reg){
 
 	let ancoraEl = document.querySelector(ancora)
 	if(!ancoraEl){
-		if(reg.btn) reg.btn.style.display = 'opacity: 1'
+		if(reg.btn) reg.btn.style.display = 'none'//'opacity: 1'
 		return
 	}
 
 	// _rota_sincronizar — bloco de criação (linhas 138–160)
 	if(!reg.btn || !document.body.contains(reg.btn)){
 		document.getElementById('pjerota-btn-rota')?.remove()
+		reg.posAnterior = null          // ← ADICIONAR AQUI
 		reg.btn = _rota_criarBotaoDOM()
 		document.body.appendChild(reg.btn)
 
