@@ -98,6 +98,11 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs, null, 2), LOG.teste, 'color:inherit')
     let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
     //console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig, null, 2), LOG.teste, 'color:inherit')
+    if (!gig?.tipoAtividade) {
+        let gigsAPI = await buscarGigs(processo?.numero) || []
+        console.log('%c[Rota PJE]%c gigsAPI' + JSON.stringify(gigsAPI), LOG.rosa, 'color:inherit')
+        gig = gigsAPI.find(g => /GAB.*JU.*/i.test(g?.tipoAtividade?.descricao || '')) ?? {}
+    }
     let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
     //console.log('%c[Rota PJE]%c ' + gigNormalizado, LOG.teste, 'color:inherit')
     let juizSimetriaPeloGig = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim() || ''

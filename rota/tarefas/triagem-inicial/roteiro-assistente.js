@@ -132,7 +132,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
 
     criaTexto({
         id: id(tarefaNome, bloco, 'texto'),
-        texto: dados?.rota_dadosTriagemInicial?.sala?.nome
+        texto: dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig
             ? `A extensão identificou a seguinte sala: ${dados.rota_dadosTriagemInicial.sala.nome}.`
             : 'Não foi identificada sala.',
         ancestral: id(tarefaNome, bloco)
@@ -248,32 +248,32 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
         })
         linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
-        i++
-        let inputPulando = criaInput({
-            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
-            textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
-            ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
-            placeholder: 'DD/MM/AAAA'
-        })
-        await armazenar({triagem_inicial_pula_data: '22/06/2026'})
-        let dataPula = await obterArmazenamento('triagem_inicial_pula_data')
-        console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
-        //let inputPulando = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i + 'input'))
-        if (dataPula?.triagem_inicial_pula_data){
-            inputPulando.value = dataPula?.triagem_inicial_pula_data
-        }
-        let linhaPulando = criaBotaoAzulComCheckBox({
-            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
-            idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
-            texto: 'Designar audiência pulando horário',
-            ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-            acao: async () => {
-                await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-                comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'pulando', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}])
-            },
-            grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
-        })
-        linhaPulando.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
+        //i++
+        //let inputPulando = criaInput({
+        //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
+        //    textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
+        //    ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+        //    placeholder: 'DD/MM/AAAA'
+        //})
+        //await armazenar({triagem_inicial_pula_data: '22/06/2026'})
+        //let dataPula = await obterArmazenamento('triagem_inicial_pula_data')
+        //console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
+        ////let inputPulando = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i + 'input'))
+        //if (dataPula?.triagem_inicial_pula_data){
+        //    inputPulando.value = dataPula?.triagem_inicial_pula_data
+        //}
+        //let linhaPulando = criaBotaoAzulComCheckBox({
+        //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
+        //    idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
+        //    texto: 'Designar audiência pulando horário',
+        //    ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        //    acao: async () => {
+        //        await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+        //        comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'pulando', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}])
+        //    },
+        //    grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+        //})
+        //linhaPulando.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
     }
     criaBotaoLaranjaComCheckBox({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
@@ -320,6 +320,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     function chkEstaMarcado(idCheckbox) {
         return document.getElementById(idCheckbox)?.dataset.marcado === '1'
     }
+    /*
     bloco = 'extras'
     let secaoExtras = criaSecaoMostraRecolhe({
         id: id(tarefaNome, bloco),
@@ -388,7 +389,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             })
         }
     }
-
+    */
     function triagemDesignarAudienciaAcoesConjuntas(bloco) {
         const comandos = []
         const dados = []
