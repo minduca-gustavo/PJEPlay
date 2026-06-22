@@ -294,6 +294,30 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     function chkEstaMarcado(idCheckbox) {
         return document.getElementById(idCheckbox)?.dataset.marcado === '1'
     }
+    bloco = 'extras'
+    criaSecaoMostraRecolhe({
+        id: id(tarefaNome, bloco),
+        idSempreAMostra: id(tarefaNome, bloco, 'extras-mostra'), 
+        idRecolhe: id(tarefaNome, bloco, 'extras-recolhe'),  
+        ancestral: 'rota_corpo'
+    })
+    criaTitulo({
+        id: id(tarefaNome, bloco, 'extras-titulo'), 
+        texto: 'Extras (Bloqueio de pauta, etc.)', 
+        ancestral: id(tarefaNome, bloco, 'extras-mostra')
+    })
+    criaSubTitulo({
+        id: id(tarefaNome, bloco, 'extras-subTitulo'), 
+        texto: '(Bloqueio de pauta, etc.)', 
+        ancestral: id(tarefaNome, bloco, 'extras-mostra')
+    })
+    criaInput({
+        id: id(tarefaNome, bloco, 'extras-inputBloqueio'), 
+        textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
+        ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+        placeholder: 'DD/MM/AAAA'
+    })
+    
 
     function triagemDesignarAudienciaAcoesConjuntas(bloco) {
         const comandos = []

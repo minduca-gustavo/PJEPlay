@@ -74,6 +74,49 @@ const SF_BOTOES = [
 		}
 	},
 	{
+		nome: 'Lista processos Tema 1389',
+		//Aguardando final do sobrestamento
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			if (contexto.modo !== 'Tarefa') return 'Este botão só funciona no modo Tarefa.'
+			let { ids, t } = await filtrarPorTarefa(contexto)
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			
+			for (let idx = 0; idx < ids.length; idx++) {
+				let sobrestamentos = await rota_fetch(location.origin + '/pje-comum-api/api/processos/id/' + ids[idx] + '/sobrestamentos') || []
+				console.log('%c[Rota PJE]%c sobrestamentos: ' + JSON.stringify(sobrestamentos), LOG.rosa, 'color:inherit')
+				let sobrestamento = sobrestamentos.find(s => !s.dataRevogacao) // undefined se não achar
+				let textoSobrestamento = sobrestamento?.textoFinalExternoSobrestamento || ''
+				let numero = 	t[idx]?.numero || ''
+				let autor = 	t[idx]?.autor  || ''
+				let reu = 		t[idx]?.reu  || ''
+				let autuacao = 	(new Date(t[idx]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				let gigs = []
+				if (new Date(t[idx]?.autuadoEm) >= new Date('2025-10-20') && (textoSobrestamento?.includes('1389') || textoSobrestamento?.includes('1.389'))){
+					gigs = await buscarGigs(numero)
+				}
+				let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
+				let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
+				let juizSimetria = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim().toUpperCase() || ''
+				d.push({
+					id: 				ids[idx] || '',
+					processo: 			numero || '',
+					autor:				autor || '',
+					reu:				reu || '',
+					sobrestamento:		textoSobrestamento || '',
+					autuacao:			autuacao || '',
+					juiz_simetria:		juizSimetria || '',
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
 		nome: 'Lista número, partes, autuação, tarefa. "TODAS" para buscar em todas as tarefas.',
 		modo: ['Lista', 'Tarefa'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
