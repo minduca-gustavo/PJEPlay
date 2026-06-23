@@ -120,14 +120,15 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral 
     const CHAVE   = 'ui_flutuante_pos_' + id
     const POS_PAD = 16
     let posicao   = { top: POS_PAD, left: POS_PAD }
+    
 
-    const salvo = await obterArmazenamento(CHAVE)
-    if (salvo && typeof salvo.top === 'number') {
-        const maxTop  = Math.max(0, window.innerHeight - 120)   // pelo menos a barra visível
-        const maxLeft = Math.max(0, window.innerWidth  - 120)   // pelo menos 60px visíveis
+    const salvo = await obterArmazenamento([CHAVE])
+    if (salvo && salvo[CHAVE] && typeof salvo[CHAVE].top === 'number') {
+        const maxTop  = Math.max(0, window.innerHeight - 120)
+        const maxLeft = Math.max(0, window.innerWidth  - 120)
         posicao = {
-            top:  Math.min(Math.max(0, salvo.top),  maxTop),
-            left: Math.min(Math.max(0, salvo.left), maxLeft),
+            top:  Math.min(Math.max(0, salvo[CHAVE].top),  maxTop),
+            left: Math.min(Math.max(0, salvo[CHAVE].left), maxLeft),
         }
     }
 
@@ -211,7 +212,7 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral 
         barra.style.cursor = 'grab'
         const top  = parseInt(wrapper.style.top)
         const left = parseInt(wrapper.style.left)
-        await armazenar(CHAVE, { top, left })
+        await armazenar({[CHAVE]:{top: top, left: left}})
     })
 
     // ── inserção ──────────────────────────────────────────────

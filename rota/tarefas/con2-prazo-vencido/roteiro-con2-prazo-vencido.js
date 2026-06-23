@@ -4,7 +4,7 @@
 
 
 
-const dadosTriagemInicial = {
+const dadosCon2PrazoVencido = {
     partes: null,
     processo: null,
     gig: null,
@@ -22,8 +22,8 @@ const dadosTriagemInicial = {
 //__________________________________________________
 //                      FUNÇÃO INICIAL
 //__________________________________________________
-async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
-    let tarefa = 'triagem_inicial'
+async function con2_prazo_vencido_aoAbrirDetalhesDoProcesso(){
+    let tarefa = 'con2_prazo_vencido'
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
     let armazenamento = await obterArmazenamento(['rotaExecucaoAtual'])
@@ -34,46 +34,28 @@ async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     if (tarefaParam && !window.name.includes(tarefa)) window.name = window.name + '-' + tarefaParam + '-' + execucao
     if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
     if (execucao !== window.name.split('-').pop()) return
-    dadosTriagemInicial.execucaoAtual = execucao
+    dadosCon2PrazoVencido.execucaoAtual = execucao
     browser.storage.onChanged.addListener(obedecer)
-    await triagem_inicial_janelaDetalhes(execucao)
+    await con2_prazo_vencido_janelaDetalhes(execucao)
 }
 
-triagem_inicial_aoAbrirDetalhesDoProcesso()
+con2_prazo_vencido_aoAbrirDetalhesDoProcesso()
 
 //__________________________________________________
 //                      DETALHES DO PROCESSO 
 //__________________________________________________
 
-async function triagem_inicial_janelaDetalhes(sessao){
-    await triagem_inicial_enviarParaRoteiroAssistente()
-    let executar = await obterArmazenamento(['rota_triagem_inicial_janelaDetalhes'])
-    if (executar.rota_triagem_inicial_janelaDetalhes === sessao) return
-
-    
+async function con2_prazo_vencido_janelaDetalhes(sessao){
+    await con2_prazo_vencido_enviarParaRoteiroAssistente()
+    let executar = await obterArmazenamento(['rota_con2_prazo_vencido_janelaDetalhes'])
+    if (executar.rota_con2_prazo_vencido_janelaDetalhes === sessao) return
     await aguardarElemento('.tl-documento')
-    let peticoes = [...document.getElementsByClassName('tl-documento')]
-    let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
-    let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))
-    if (!peticaoInicial) return
-    await clicar(peticaoInicial)
-    let encontrouCabecalho = false
-    for (let i = 0; i < 100; i++) {
-        let cabecalho = await aguardarElemento('.mat-card-title')
-        if (cabecalho.textContent.includes(dadosTriagemInicial.peticaoInicialId)) {
-            encontrouCabecalho = true
-            break
-        }
-        await suspender(300)
-    }
-    if (!encontrouCabecalho) return
-    if (botaoAnexos[botaoAnexos.length - 1]){
-        await clicar(botaoAnexos[botaoAnexos.length - 1])
-    }
-    await aguardarElemento('[aria-label*="Anexos"]')
-    let ultimoDoc = await selecionar('.tl-documento', '', true) || []
-    ultimoDoc[ultimoDoc.length - 1]?.scrollIntoView({ block: 'nearest' })
-    await armazenar({rota_triagem_inicial_janelaDetalhes: sessao})
+    let documentos = [...document.getElementsByClassName('tl-documento')]
+    let sentenca = documentos.find(p => p.textContent.includes('Sentença('))
+    if (!sentenca) return
+    await clicar(sentenca)
+    sentenca.scrollIntoView({ block: 'nearest' })
+    await armazenar({rota_con2_prazo_vencido_janelaDetalhes: sessao})
     await removerArmazenamento('pjerota_tarefa')
 }
 
@@ -81,9 +63,22 @@ async function triagem_inicial_janelaDetalhes(sessao){
 //        OBTER DADOS E ENVIAR PARA ROTEIRO ASSISTENTE
 //__________________________________________________
 
-async function triagem_inicial_enviarParaRoteiroAssistente(){
+async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     let idURLMatch = location.href.match(/\/processo\/(\d+)\/detalhe/);
     let idURL = idURLMatch?.[1]; // "2992885"
+    let movimentos = await buscarMovimentos(idURL) || null
+    let solucaoMovimento = null
+    let solucao = ''
+    if (movimentos) {
+        solucaoMovimento = movimentos.find(m=> m?.titulo.includes('Julgado(s)')) || null
+    }
+    console.log('%c[Rota PJE]%c solucaoMovimento: ' + JSON.stringify(solucaoMovimento), LOG.rosa, 'color:inherit')
+    if (solucaoMovimento) {
+        solucao = (solucaoMovimento?.titulo.split('Julgado(s) ')[1]).split('o(s) pedido')[0].trim()
+    }
+    console.log('%c[Rota PJE]%c solucao: ' + JSON.stringify(solucao), LOG.rosa, 'color:inherit')
+    
+    console.log('%c[Rota PJE]%c movimentos: ' + JSON.stringify(movimentos), LOG.rosa, 'color:inherit')
     let [timeline, gigs, gigs_concluidos, processo, recursos] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
         interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
@@ -111,19 +106,19 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     if (!idBusca) return
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     
-    dadosTriagemInicial.partes                  = partes
-    dadosTriagemInicial.processo                = processo
-    dadosTriagemInicial.gig                     = gig
-    dadosTriagemInicial.salas                   = salas
-    dadosTriagemInicial.sala                    = sala
-    dadosTriagemInicial.salaJuizes              = salaJuizes
-    dadosTriagemInicial.horariosVagos           = horariosVagos
-    dadosTriagemInicial.juizSimetriaPeloGig     = juizSimetriaPeloGig
-    dadosTriagemInicial.peticaoInicialId        = peticaoInicialId
-    dadosTriagemInicial.recursos                = recursos
+    dadosCon2PrazoVencido.partes                  = partes
+    dadosCon2PrazoVencido.processo                = processo
+    dadosCon2PrazoVencido.gig                     = gig
+    dadosCon2PrazoVencido.salas                   = salas
+    dadosCon2PrazoVencido.sala                    = sala
+    dadosCon2PrazoVencido.salaJuizes              = salaJuizes
+    dadosCon2PrazoVencido.horariosVagos           = horariosVagos
+    dadosCon2PrazoVencido.juizSimetriaPeloGig     = juizSimetriaPeloGig
+    dadosCon2PrazoVencido.peticaoInicialId        = peticaoInicialId
+    dadosCon2PrazoVencido.recursos                = recursos
     
-    await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
-    await armazenar({ rota_dadosTriagemInicialNumero: processo.numero })
+    await armazenar({ rota_dadosCon2PrazoVencido: dadosCon2PrazoVencido })
+    await armazenar({ rota_dadosCon2PrazoVencidoNumero: processo.numero })
     await armazenar({ rota_dadosProntos: true })
 }
 
@@ -133,16 +128,16 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
 
 // RETIFICAR PASSO 1 - recebe os dados e abre a tela de retificação
 
-async function triagem_inicial_retificarAutuacao(tipo) {
+async function con2_prazo_vencido_retificarAutuacao(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_retificar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_retificar_tipo': envio,
+        'rota_pje_con2_prazo_vencido_retificar': dadosCon2PrazoVencido.execucaoAtual,
+        'rota_pje_con2_prazo_vencido_retificar_tipo': envio,
     })
-    let parametros = '?rota_pje_triagem_inicial_retificar=' + dadosTriagemInicial.execucaoAtual + 
-                    '&rota_pje_triagem_inicial_retificar_tipo=' + envio
-    let nomeJanela = 'rota_pje_triagem_inicial_retificar_' + dadosTriagemInicial.execucaoAtual
-    let id = dadosTriagemInicial?.processo?.id
+    let parametros = '?rota_pje_con2_prazo_vencido_retificar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                    '&rota_pje_con2_prazo_vencido_retificar_tipo=' + envio
+    let nomeJanela = 'rota_pje_con2_prazo_vencido_retificar_' + dadosCon2PrazoVencido.execucaoAtual
+    let id = dadosCon2PrazoVencido?.processo?.id
     let url = location.origin + '/pjekz/processo/' + id + '/retificar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
     //await alert(tipo + ' em desenvolvimento. ' + id)
@@ -150,27 +145,27 @@ async function triagem_inicial_retificarAutuacao(tipo) {
 
 // RETIFICAR PASSO 2 - verifica se a janela aberta é a da extensão
 
-async function triagem_inicial_aoAbrirRetificar(){
+async function con2_prazo_vencido_aoAbrirRetificar(){
     let janela = confereJanela(JANELA.retificar)
     if (!janela) return
-    let parametros = await rota_buscarParametros('rota_pje_triagem_inicial_retificar')
+    let parametros = await rota_buscarParametros('rota_pje_con2_prazo_vencido_retificar')
     if (!parametros) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_retificar')
+    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_retificar')
     if (!armazenamento) return
-    let execucao = armazenamento?.rota_pje_triagem_inicial_retificar
+    let execucao = armazenamento?.rota_pje_con2_prazo_vencido_retificar
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_retificar')) return
+    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_retificar')) return
     if(execucao !== parametros || execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await triagem_inicial_acoesRetificar()
+    await con2_prazo_vencido_acoesRetificar()
 }
 
 // RETIFICAR PASSO 3 - executa as ações
 
-async function triagem_inicial_acoesRetificar(){
-    let tipos = await obterArmazenamento(['rota_pje_triagem_inicial_retificar_tipo']) || await rota_buscarParametros('rota_pje_triagem_inicial_retificar_tipo')
+async function con2_prazo_vencido_acoesRetificar(){
+    let tipos = await obterArmazenamento(['rota_pje_con2_prazo_vencido_retificar_tipo']) || await rota_buscarParametros('rota_pje_con2_prazo_vencido_retificar_tipo')
     if (!tipos) return
-    let tipo = tipos?.rota_pje_triagem_inicial_retificar_tipo ?? tipos
+    let tipo = tipos?.rota_pje_con2_prazo_vencido_retificar_tipo ?? tipos
     let i = 0
     let elemento = null
     while (!elemento) {
@@ -184,7 +179,7 @@ async function triagem_inicial_acoesRetificar(){
     await clicar(elemento)
 }
 
-triagem_inicial_aoAbrirRetificar()
+con2_prazo_vencido_aoAbrirRetificar()
 
 //__________________________________________________
 //                      DESPACHAR
@@ -192,16 +187,16 @@ triagem_inicial_aoAbrirRetificar()
 
 // DESPACHAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function triagem_inicial_despachar(tipo) {
+async function con2_prazo_vencido_despachar(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_despachar_tipo': envio,
+        'rota_pje_con2_prazo_vencido_despachar': dadosCon2PrazoVencido.execucaoAtual,
+        'rota_pje_con2_prazo_vencido_despachar_tipo': envio,
     })
-    let parametros =    '?rota_pje_triagem_inicial_despachar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rota_pje_triagem_inicial_despachar_tipo=' + envio
-    let nomeJanela =    'rota_pje_triagem_inicial_despachar_' + dadosTriagemInicial.execucaoAtual
-    let id =            dadosTriagemInicial?.processo?.id
+    let parametros =    '?rota_pje_con2_prazo_vencido_despachar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                        '&rota_pje_con2_prazo_vencido_despachar_tipo=' + envio
+    let nomeJanela =    'rota_pje_con2_prazo_vencido_despachar_' + dadosCon2PrazoVencido.execucaoAtual
+    let id =            dadosCon2PrazoVencido?.processo?.id
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
     let recurso =       tarefa[0]?.nomeRecurso || ''
@@ -209,7 +204,7 @@ async function triagem_inicial_despachar(tipo) {
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
     }
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === recurso)
+    let page =          dadosCon2PrazoVencido?.recursos?.find(r => r?.nome === recurso)
     if (!page?.caminhoRecurso){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
@@ -224,33 +219,33 @@ async function triagem_inicial_despachar(tipo) {
 }
 
 // DESPACHAR PASSO 2 - verifica se a janela aberta é a da extensão
-async function triagem_inicial_aoAbrirDespachar(){
+async function con2_prazo_vencido_aoAbrirDespachar(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_despachar')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_despachar || '')
+    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_despachar')
+    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_despachar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_despachar')) return
+    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_despachar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await triagem_inicial_acoesDespachar()
+    await con2_prazo_vencido_acoesDespachar()
 }
 
 // DESPACHAR PASSO 3 - executa as ações
 
-async function triagem_inicial_acoesDespachar(){
+async function con2_prazo_vencido_acoesDespachar(){
     let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
-        obterArmazenamento('rota_pje_triagem_inicial_despachar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
+        obterArmazenamento('rota_pje_con2_prazo_vencido_despachar_tipo').then(dados => dados?.rota_pje_con2_prazo_vencido_despachar_tipo || ''),
+        obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig || ''),
+        obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.processo?.numero || '')
     ])
     if(!juizEnvio) {
         juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
     }
     let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
-    let dados = await obterArmazenamento('rota_dadosTriagemInicial')
-    let id = dados?.rota_dadosTriagemInicial?.processo?.id
+    let dados = await obterArmazenamento('rota_dadosCon2PrazoVencido')
+    let id = dados?.rota_dadosCon2PrazoVencido?.processo?.id
     let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
     let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
     let tiposAudiencia = {
@@ -258,7 +253,7 @@ async function triagem_inicial_acoesDespachar(){
         'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
     }
     let modeloDespacho = ''
-    if (tipo !== 'triagem_inicial_emendar'){
+    if (tipo !== 'con2_prazo_vencido_emendar'){
         modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
     }
     await movimentar('Despacho', {
@@ -277,25 +272,25 @@ async function triagem_inicial_acoesDespachar(){
         }
         await suspender(2000)
         if (audienciasMarcadas?.dataInicio) {
-            await armazenar({rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar'})
+            await armazenar({rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_despachar'})
             window.close()
         } else{ 
             await rota_avisoObrigatorio('Não foi identificada audiência designada. Prossiga manualmente.', 30)
         }
         // chamada da ação conjunta
     }
-    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
-    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_despachar'
-    if (chamadaPorAcaoConjunta || tipo !== 'triagem_inicial_emendar') {
+    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_con2_prazo_vencido_em_andamento'])
+    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_con2_prazo_vencido_em_andamento === 'con2_prazo_vencido_despachar'
+    if (chamadaPorAcaoConjunta || tipo !== 'con2_prazo_vencido_emendar') {
         await criaDivFlutuante({
-            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
+            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
             titulo: 'Execute o necessário e clique em próximo.'
         })
         await criaBotaoLaranja({
             texto: '▶️ Próximo',
-            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante_botao',
-            ancestral: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
-            acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar' })
+            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante_botao',
+            ancestral: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
+            acao: () => armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_despachar' })
         })
     }
     // Se for ação conjunta, aqui tem que ter uma chamada pra uma função que vai criar o botão próximo, ou então a própria chamada da ação conjunta
@@ -304,7 +299,7 @@ async function triagem_inicial_acoesDespachar(){
 }
 
 
-triagem_inicial_aoAbrirDespachar()
+con2_prazo_vencido_aoAbrirDespachar()
 
 //__________________________________________________
 //                      DESIGNAR AUDIÊNCIA
@@ -312,15 +307,15 @@ triagem_inicial_aoAbrirDespachar()
 
 // DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function triagem_inicial_designarAudiencia(tipo) {
+async function con2_prazo_vencido_designarAudiencia(tipo) {
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
-        'rota_pje_triagem_inicial_designa_audiencia_tipo': tipo,
-        'rota_pje_triagem_inicial_designa_audiencia': dadosTriagemInicial.execucaoAtual
+        'rota_pje_con2_prazo_vencido_designa_audiencia_tipo': tipo,
+        'rota_pje_con2_prazo_vencido_designa_audiencia': dadosCon2PrazoVencido.execucaoAtual
     })
-    let parametros =    '?rota_pje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
-    let nomeJanela =    'rota_pje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rota_pje_con2_prazo_vencido_designa_audiencia=' + dadosCon2PrazoVencido.execucaoAtual
+    let nomeJanela =    'rota_pje_con2_prazo_vencido_designa_audiencia_' + dadosCon2PrazoVencido.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
@@ -345,35 +340,35 @@ async function triagem_inicial_designarAudiencia(tipo) {
 */
 
 // DESIGNAR AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
-async function triagem_inicial_aoAbrirDesignarAudiencia(){
+async function con2_prazo_vencido_aoAbrirDesignarAudiencia(){
     
     let janela = confereJanela(JANELA.pautaAudiencias)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_designa_audiencia || '')
+    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_designa_audiencia')
+    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_designa_audiencia || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_designa_audiencia')) return
+    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_designa_audiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await triagem_inicial_acoesDesignarAudiencia()
+    await con2_prazo_vencido_acoesDesignarAudiencia()
 }
 
 // DESIGNAR AUDIÊNCIA PASSO 3 - executa as ações
 
-async function triagem_inicial_acoesDesignarAudiencia(){
-    let dados = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo')
-    let buscaLink = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
-    let link = buscaLink?.rota_triagem_inicial_linkDaAudiencia || ''
+async function con2_prazo_vencido_acoesDesignarAudiencia(){
+    let dados = await obterArmazenamento('rota_pje_con2_prazo_vencido_designa_audiencia_tipo')
+    let buscaLink = await obterArmazenamento('rota_con2_prazo_vencido_linkDaAudiencia')
+    let link = buscaLink?.rota_con2_prazo_vencido_linkDaAudiencia || ''
     
     //if (!dados) return
-    if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.tipo == 'manual'){
-        await triagem_inicial_acoesDesignarAudienciaManual('manual')
+    if (dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.tipo == 'manual'){
+        await con2_prazo_vencido_acoesDesignarAudienciaManual('manual')
         return
     }
-    let horario = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario || ''
+    let horario = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario || ''
     if (!horario) {
-        await triagem_inicial_acoesDesignarAudienciaManual('erro')
+        await con2_prazo_vencido_acoesDesignarAudienciaManual('erro')
         return
     }
     if (link) horario.link = link
@@ -381,14 +376,14 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
     
    
-    await triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario)
+    await con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
     
 
 }
 
 // DESIGNAR AUDIÊNCIA - AÇÕES AUXILIARES
 
-async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
+async function con2_prazo_vencido_acoesDesignarAudienciaManual(manualOuErro) {
     let [tipo, aviso] = [null, null]
     if (manualOuErro == 'erro') {
         tipo  = 'erro'
@@ -397,23 +392,23 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
         tipo  = 'info'
         aviso = 'Designe manualmente a audiência.'
     }
-    let dados = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo')
-    let processo = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.processo
-    let sala = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.sala
-    let link = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.link
-    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
-    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_designa_audiencia'
+    let dados = await obterArmazenamento('rota_pje_con2_prazo_vencido_designa_audiencia_tipo')
+    let processo = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.processo
+    let sala = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.sala
+    let link = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.link
+    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_con2_prazo_vencido_em_andamento'])
+    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_con2_prazo_vencido_em_andamento === 'con2_prazo_vencido_designa_audiencia'
     if (chamadaPorAcaoConjunta) {
         await criaDivFlutuante({
-            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
+            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
             titulo: 'Execute o necessário e clique em próximo.'
         })
         await criaBotaoLaranja({
             texto: '▶️ Próximo',
-            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante_botao',
-            ancestral: 'rota_triagem_inicial_acoes_conjuntas_flutuante',
+            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante_botao',
+            ancestral: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
             acao: async () => {
-                await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
+                await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_designa_audiencia' })
                 window.close()
             }
         })
@@ -441,7 +436,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     return
 }
 
-async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {    
+async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario) {    
     // selecionar juiz
     let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
@@ -516,19 +511,19 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await clicar(botaoConfirmar)
     await aguardarElementoNovo('pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia')
     await suspender(2000)
-    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
+    await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_designa_audiencia' })
     window.close()
     return
 }
 
-triagem_inicial_aoAbrirDesignarAudiencia()
+con2_prazo_vencido_aoAbrirDesignarAudiencia()
 
 //__________________________________________________
 //                      COLOCAR GIG DE ACOMPANHAMENTO
 //__________________________________________________
 
-async function triagem_inicial_colocarGigDeAcompanhamento() {
-    let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
+async function con2_prazo_vencido_colocarGigDeAcompanhamento() {
+    let id = await obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
     let audienciaMarcadaNumero = audienciaMarcadaHorario ? new Date(audienciaMarcadaHorario).getTime() : NaN
     let hoje = new Date().getTime()
@@ -557,42 +552,42 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
 
 // CERTIFICAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function triagem_inicial_certificar(tipo) {
+async function con2_prazo_vencido_certificar(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_certificar_tipo': envio,
+        'rota_pje_con2_prazo_vencido_certificar': dadosCon2PrazoVencido.execucaoAtual,
+        'rota_pje_con2_prazo_vencido_certificar_tipo': envio,
     })
-    let parametros =    '?rota_pje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rota_pje_triagem_inicial_certificar_tipo=' + envio
-    let nomeJanela =    'rota_pje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rota_pje_con2_prazo_vencido_certificar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                        '&rota_pje_con2_prazo_vencido_certificar_tipo=' + envio
+    let nomeJanela =    'rota_pje_con2_prazo_vencido_certificar_' + dadosCon2PrazoVencido.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
         return
     }
-    let id =            dadosTriagemInicial?.processo?.id
+    let id =            dadosCon2PrazoVencido?.processo?.id
     let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
 
 // CERTIFICAR PASSO 2 - verifica se a janela aberta é a da extensão
-async function triagem_inicial_aoAbrirCertificar(){
+async function con2_prazo_vencido_aoAbrirCertificar(){
     let janela = confereJanela(JANELA.certificar)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_certificar')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_certificar || '')
+    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_certificar')
+    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_certificar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_certificar')) return
+    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_certificar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await triagem_inicial_acoesCertificar()
+    await con2_prazo_vencido_acoesCertificar()
 }
 
 // CERTIFICAR PASSO 3 - executa as ações
 
-async function triagem_inicial_acoesCertificar(){
+async function con2_prazo_vencido_acoesCertificar(){
     let elementos = await aguardarElementoNovo(
         [
             'detalhesDoProcessoInputTipoDeDocumento',
@@ -618,32 +613,32 @@ async function triagem_inicial_acoesCertificar(){
     await clicar(botaoAssinar)
     monitorarBody(6000, 100)
     window.addEventListener('beforeunload', () => {
-        comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
+        comandar(['con2_prazo_vencido_intimar'], [{tipo: 'con2_prazo_vencido_intimar_designacao'}])
     })
     await suspender(2000)
     return
 }
 
 
-triagem_inicial_aoAbrirCertificar()
+con2_prazo_vencido_aoAbrirCertificar()
 //__________________________________________________
 //                      INTIMAR
 //__________________________________________________
 
 // INTIMAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function triagem_inicial_intimar(tipo) {
-    let id = dadosTriagemInicial?.processo?.id
+async function con2_prazo_vencido_intimar(tipo) {
+    let id = dadosCon2PrazoVencido?.processo?.id
     let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_intimar_tipo': envio,
-        'rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
+        'rota_pje_con2_prazo_vencido_intimar': dadosCon2PrazoVencido.execucaoAtual,
+        'rota_pje_con2_prazo_vencido_intimar_tipo': envio,
+        'rota_pje_con2_prazo_vencido_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
     })
-    let parametros =    '?rota_pje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rota_pje_triagem_inicial_intimar_tipo=' + envio
-    let nomeJanela =    'rota_pje_triagem_inicial_intimar_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rota_pje_con2_prazo_vencido_intimar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                        '&rota_pje_con2_prazo_vencido_intimar_tipo=' + envio
+    let nomeJanela =    'rota_pje_con2_prazo_vencido_intimar_' + dadosCon2PrazoVencido.execucaoAtual
     let url =           location.origin + '/pjekz/processo/' + id + '/comunicacoesprocessuais/minutas' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
@@ -651,22 +646,22 @@ async function triagem_inicial_intimar(tipo) {
 
 
 // INTIMAR PASSO 2 - verifica se a janela aberta é a da extensão
-async function triagem_inicial_aoAbrirIntimar(){
+async function con2_prazo_vencido_aoAbrirIntimar(){
     let janela = confereJanela(JANELA.pec)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_intimar')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_intimar || '')
+    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_intimar')
+    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_intimar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_intimar')) return
+    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_intimar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await triagem_inicial_acoesIntimar()
+    await con2_prazo_vencido_acoesIntimar()
 }
 
 // INTIMAR PASSO 3 - executa as ações
 
-async function triagem_inicial_acoesIntimar(){
+async function con2_prazo_vencido_acoesIntimar(){
     
     await aguardarElementoNovo(
         [
@@ -701,7 +696,7 @@ async function triagem_inicial_acoesIntimar(){
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
     await suspender(200)
-    let tipoAudiencia = await obterArmazenamento('rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
+    let tipoAudiencia = await obterArmazenamento('rota_pje_con2_prazo_vencido_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_con2_prazo_vencido_intimar_audienciaMarcadaTipo || '')
     let tipos = [
         {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
         {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
@@ -710,7 +705,7 @@ async function triagem_inicial_acoesIntimar(){
     if (!modelo){
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
         window.addEventListener('beforeunload', () => {
-            comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
+            comandar(['con2_prazo_vencido_aguardando_audiencia'], [{tipo: 'con2_prazo_vencido_aguardando_audiencia'}])
         })
         return
     }
@@ -760,7 +755,7 @@ async function triagem_inicial_acoesIntimar(){
     }
     await clicar(botaoAssinar)
     window.addEventListener('beforeunload', () => {
-        comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
+        comandar(['con2_prazo_vencido_aguardando_audiencia'], [{tipo: 'con2_prazo_vencido_aguardando_audiencia'}])
     })
     monitorarBody(6000, 100)
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Expediente(s) assinado(s) com sucesso.X'})
@@ -770,26 +765,26 @@ async function triagem_inicial_acoesIntimar(){
 }
 
 
-triagem_inicial_aoAbrirIntimar()
+con2_prazo_vencido_aoAbrirIntimar()
 //__________________________________________________
 //                      ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA
 //__________________________________________________
 
 // ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function triagem_inicial_aguardandoAudiencia(tipo) {
-    let id =            dadosTriagemInicial?.processo?.id
+async function con2_prazo_vencido_aguardandoAudiencia(tipo) {
+    let id =            dadosCon2PrazoVencido?.processo?.id
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
     let recurso =       tarefa[0]?.nomeRecurso || ''
-    let parametros =    '?rota_pje_triagem_inicial_aguardandoAudiencia=' + dadosTriagemInicial.execucaoAtual
-    let nomeJanela =    'rota_pje_triagem_inicial_aguardandoAudiencia_' + dadosTriagemInicial.execucaoAtual
-    await armazenar({'rota_pje_triagem_inicial_aguardandoAudiencia': dadosTriagemInicial.execucaoAtual})
+    let parametros =    '?rota_pje_con2_prazo_vencido_aguardandoAudiencia=' + dadosCon2PrazoVencido.execucaoAtual
+    let nomeJanela =    'rota_pje_con2_prazo_vencido_aguardandoAudiencia_' + dadosCon2PrazoVencido.execucaoAtual
+    await armazenar({'rota_pje_con2_prazo_vencido_aguardandoAudiencia': dadosCon2PrazoVencido.execucaoAtual})
     if (!recurso || !idTarefa){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
     }
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === recurso)
+    let page =          dadosCon2PrazoVencido?.recursos?.find(r => r?.nome === recurso)
     if (!page?.caminhoRecurso){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
@@ -807,46 +802,46 @@ async function triagem_inicial_aguardandoAudiencia(tipo) {
 
 
 // ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
-async function triagem_inicial_aoAbrirAguardandoAudiencia(){
+async function con2_prazo_vencido_aoAbrirAguardandoAudiencia(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_aguardandoAudiencia')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_aguardandoAudiencia || '')
+    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_aguardandoAudiencia')
+    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_aguardandoAudiencia || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_aguardandoAudiencia')) return
+    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_aguardandoAudiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await triagem_inicial_acoesEncaminharAguardandoAudiencia()
+    await con2_prazo_vencido_acoesEncaminharAguardandoAudiencia()
 }
 
 // ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 3 - executa as ações
 
-async function triagem_inicial_acoesEncaminharAguardandoAudiencia(){
+async function con2_prazo_vencido_acoesEncaminharAguardandoAudiencia(){
     await movimentar('Aguardando audiência')
     await suspender(2000)
-    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_certidao' })
+    await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_certidao' })
     window.close()
     return
     
 }
 
 
-triagem_inicial_aoAbrirAguardandoAudiencia()
+con2_prazo_vencido_aoAbrirAguardandoAudiencia()
 
 
 //__________________________________________________
 //                      AÇÕES CONJUNTAS
 //__________________________________________________
 
-async function triagem_inicial_acoesConjuntas(p){
+async function con2_prazo_vencido_acoesConjuntas(p){
     let i = 0
     for (let c of p?.comandos){
-        await armazenar({ rota_acoes_conjuntas_triagem_inicial_em_andamento: c })
+        await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_em_andamento: c })
         const concluiu = await Promise.race([
             new Promise(resolver => {
                 browser.storage.onChanged.addListener(function ouvir(mudancas) {
-                    if (mudancas['rota_acoes_conjuntas_triagem_inicial_pronta']?.newValue === c) {
+                    if (mudancas['rota_acoes_conjuntas_con2_prazo_vencido_pronta']?.newValue === c) {
                         browser.storage.onChanged.removeListener(ouvir)
                         resolver(true)
                     }
@@ -857,22 +852,22 @@ async function triagem_inicial_acoesConjuntas(p){
         ])
         if (!concluiu) {
             rota_avisoTemporario('A ação expirou. Prossiga manualmente.', 'erro', 10000)
-            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
             return
         }
         i++
     }
-    await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+    await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
     return
 }
 
-//let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
-//let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_despachar'
+//let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_con2_prazo_vencido_em_andamento'])
+//let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_con2_prazo_vencido_em_andamento === 'con2_prazo_vencido_despachar'
 //
 //if (chamadaPorAcaoConjunta) {
 //    criaBotaoAzul({
 //        texto: 'Próximo',
-//        acao: () => armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar' })
+//        acao: () => armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_despachar' })
 //    })
 //}
 
@@ -882,15 +877,15 @@ async function triagem_inicial_acoesConjuntas(p){
 
 
 Object.assign(rota_acoes, {
-    'triagem_inicial_designa_audiencia':    async (p) => await triagem_inicial_designarAudiencia(p),
-    'triagem_inicial_despachar':            async (p) => await triagem_inicial_despachar(p),
-    'triagem_inicial_gig':                  async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
-    'triagem_inicial_certidao':             async (p) => await triagem_inicial_certificar(p),
-    'triagem_inicial_retificar':            async (p) => await triagem_inicial_retificarAutuacao(p),
-    'triagem_inicial_intimar':              async (p) => await triagem_inicial_intimar(p),
-    'triagem_inicial_acoes_conjuntas':      async (p) => await triagem_inicial_acoesConjuntas(p),
-    'triagem_inicial_aguardando_audiencia': async (p) => await triagem_inicial_aguardandoAudiencia(p),
-    'triagem_inicial_bloquear_horarios':    async (p) => await triagem_inicial_bloquearHorarios(p),
+    'con2_prazo_vencido_designa_audiencia':    async (p) => await con2_prazo_vencido_designarAudiencia(p),
+    'con2_prazo_vencido_despachar':            async (p) => await con2_prazo_vencido_despachar(p),
+    'con2_prazo_vencido_gig':                  async (p) => await con2_prazo_vencido_colocarGigDeAcompanhamento(p),
+    'con2_prazo_vencido_certidao':             async (p) => await con2_prazo_vencido_certificar(p),
+    'con2_prazo_vencido_retificar':            async (p) => await con2_prazo_vencido_retificarAutuacao(p),
+    'con2_prazo_vencido_intimar':              async (p) => await con2_prazo_vencido_intimar(p),
+    'con2_prazo_vencido_acoes_conjuntas':      async (p) => await con2_prazo_vencido_acoesConjuntas(p),
+    'con2_prazo_vencido_aguardando_audiencia': async (p) => await con2_prazo_vencido_aguardandoAudiencia(p),
+    'con2_prazo_vencido_bloquear_horarios':    async (p) => await con2_prazo_vencido_bloquearHorarios(p),
 })
 
 

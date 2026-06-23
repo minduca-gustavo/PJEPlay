@@ -46,6 +46,12 @@ const ROTA_CATALOGO = [
         descricao: 'Análise da petição inicial, autuação e encaminhamento.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
+    {
+        id:        'con2_prazo_vencido',
+        label:     'CON2 - Prazo vencido',
+        descricao: 'Processamento de recurso e encaminhamento ao TRT.',
+        tipo:      ROTA_TIPO.SISTEMA,
+    },
     
     /*
     {
