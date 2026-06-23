@@ -279,15 +279,9 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
   monitorarBody(6000, 1)
   await clicar (botao)
-  await Promise.race([
-    aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {
-      texto: 'Erro de Permissão',
-      timeout: 3000
-    }).then(() => clicar(botao)).catch(() => {}),
-
-    rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
-  ])
+  await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
 }
+
 
 // ------------------------------------------------------------
 // rota_movimentar_executarConclusaoMagistrado
@@ -314,12 +308,10 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   if (!parametros) return
   let elemento = await aguardarElementoNovo(['elaborarDespachoCorpoDoDocumentoFundamentacao', 'elaborarDespachoBuscarModelos'], {modo: 'e', timeout: 60000})
   if (!elemento) return
-  console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.rosa, 'color:inherit')
   let campoTexto = await sel('elaborarDespachoCorpoDoDocumentoFundamentacaoFocar')
-  console.log('%c[Rota PJE]%c campoTexto: ' + JSON.stringify(campoTexto.getAttribute('aria-label')), LOG.rosa, 'color:inherit')
   if (!campoTexto) return
   await focar(campoTexto)
-  await suspender(500)
+  await suspender(3000)
   if (!parametros.modelo) return
   await digitarNoInput(campo = elemento, valor = parametros.modelo)
   let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
@@ -352,7 +344,6 @@ async function selecionarOpcaoDeModelo(modelo, tempoEmSegundos = 30){
     await suspender(500)
     let opcoesModelo = [...(await sel('elaborarDespachoOpcaoDeModelo', '', true))]
     opcaoModelo = opcoesModelo.find(o => o.textContent?.trim().includes(modelo))
-    console.log('%c[Rota PJE]%c opcaoModelo' + JSON.stringify(opcaoModelo), LOG.rosa, 'color:inherit')
     
     if (opcaoModelo) {
       break

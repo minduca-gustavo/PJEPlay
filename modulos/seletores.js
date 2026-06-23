@@ -286,6 +286,9 @@ const SELETORES = {
       seletor: '.botao-anexos',
       ancestral: 'pje-timeline-anexos'
     },
+    detalhesDoProcessoMostrarOuEsconderGigs:{
+      seletor: '[name="Mostrar ou Esconder o GIGS"]',
+    },
     detalhesDoProcessoOJDoProcesso:{
       seletor: '.oj-cargo'
     },
@@ -297,6 +300,9 @@ const SELETORES = {
     },
     pautaDeAudienciaMetaQuadroHorariosVagos:{
       seletor: 'meta[name="rota-horarios_vagos"]',
+    },
+    tarefaDoProcessoTituloDaTarefa:{
+      seletor: '.texto-tarefa-processo',
     },
     // Exemplo:
     // botaoFinalizar: {
@@ -322,6 +328,12 @@ const SELETORES = {
     },
     pautaDeAudienciaMetaQuadroHorariosVagos:{
       seletor: 'meta[name="rota-horarios_vagos"]',
+    },
+    detalhesDoProcessoMostrarOuEsconderGigs:{
+      seletor: '[name="Mostrar ou Esconder o GIGS"]',
+    },
+    tarefaDoProcessoTituloDaTarefa:{
+      seletor: '.texto-tarefa-processo',
     },
     // Exemplo:
     // botaoFinalizar: {

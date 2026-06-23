@@ -576,6 +576,7 @@ function criaInput({ id, textoEmCima = '', ancestral, placeholder = '' }) {
     input.id          = id
     input.type        = 'text'
     input.placeholder = placeholder
+    
 
     container.appendChild(input)
     _ui_inserir(container, ancestral)

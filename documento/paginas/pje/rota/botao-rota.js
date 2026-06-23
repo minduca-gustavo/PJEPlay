@@ -183,7 +183,7 @@ function _rota_sincronizar(reg){
 			justifyContent:	'center',
 		})
 		let tooltip = document.createElement('span')
-		tooltip.textContent = 'Clique para ter acesso aos tutoriais do ROTA.'
+		tooltip.textContent = '▶️ Clique para ver os vídeos tutoriais do ROTA.\nDeve estar logado na conta do TRT15 para obter acesso.'
 		Object.assign(tooltip.style, {
 			position:       'absolute',
 			top:          	'calc(100% + 6px)',  // aparece acima do botão
@@ -195,7 +195,8 @@ function _rota_sincronizar(reg){
 			fontFamily:     'system-ui, Arial, sans-serif',
 			padding:        '3px 8px',
 			borderRadius:   '4px',
-			whiteSpace:     'nowrap',
+			whiteSpace:     'pre-line',
+			width:			'350px',
 			pointerEvents:  'none',
 			opacity:        '0',
 			transition:     'opacity 0.15s',
@@ -208,6 +209,7 @@ function _rota_sincronizar(reg){
 
 		botaoTutorial.addEventListener('mouseenter', () => tooltip.style.opacity = '1')
 		botaoTutorial.addEventListener('mouseleave', () => tooltip.style.opacity = '0')
+		botaoTutorial.addEventListener('click', () => window.open('https://drive.google.com/drive/u/0/folders/1kfZ6tCIIyv6RVeCG_S6eIoE9qF_oARn4', 'blank'))
 		divTutorial.appendChild(botaoTutorial)
 		
 	}

@@ -46,7 +46,8 @@ async function sigeoAjJtInserirElementos() {
     inputEl.style.marginTop = '3px'
     inputEl.addEventListener('keydown', e => {
         if (e.key === 'Enter') botaoFiltroEl.click()
-    })  
+    })
+    inputEl.value = ''
     
     let botaoFiltro = criaBotaoAzul({ 
         id: 'rota-pje-sigeo-filtra-vt-final-botao-filtro', 
@@ -68,7 +69,8 @@ async function sigeoAjJtInserirElementos() {
     botaoFiltroEl.type = 'button'
     
     let varaSalva = await obterArmazenamento('pjerota_sigeo_filtra_vt_finalVaraSalva')
-    if (varaSalva) {
+    console.log('%c[Rota PJE]%c varaSalva: ' + JSON.stringify(varaSalva), LOG.rosa, 'color:inherit')
+    if (varaSalva?.pjerota_sigeo_filtra_vt_finalVaraSalva) {
         inputEl.value = varaSalva.pjerota_sigeo_filtra_vt_finalVaraSalva
     }
         

@@ -209,7 +209,42 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
 
         let checkBoxPreMarcadoTipoAudiencia = false
         let i = 0
-        for (i; i < dados?.rota_dadosTriagemInicial?.horariosVagos?.length; i++) {
+        let inputPulando = criaInput({
+            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
+            textoEmCima: 'Caso queira utilizar datas posteriores às datas dos botões abaixo, insira a data inicial desejada abaixo, utilize a opção de designação manual, e clique no botão "Próximo horário vago" (seta preta) correspondente.', 
+            ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+            placeholder: 'DD/MM/AAAA'
+        })
+        let dataPula = await obterArmazenamento('triagem_inicial_pula_data')
+        console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
+        if (dataPula?.triagem_inicial_pula_data){
+            inputPulando.value = dataPula?.triagem_inicial_pula_data
+        }
+        let linhaManual = criaBotaoAzulComCheckBox({
+            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
+            idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
+            texto: 'Designar audiência manualmente em outra sala/horário',
+            ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+            acao: async () => {
+                await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+                if (inputPulando.value = ''){
+                    if (!/\d\d\/\d\d\/\d\d\d\d/.test(inputPulando.value)) {
+                        rota_avisoTemporario('Data no formato incorreto. Formato esperado: DD/MM/AAAA', 'erro')
+                        inputPulando.value = ''
+                        inputPulando.placeholder = 'Data no formato incorreto. Formato esperado: DD/MM/AAAA'
+                        await suspender (5 * 1000)
+                        inputPulando.placeholder = 'DD/MM/AAAA'
+                        return
+                    } else {
+                        await armazenar({triagem_inicial_pula_data: inputPulando.value})
+                    }
+                }
+                comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}])
+            },
+            grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+        })
+        linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
+        for (i = 1; i < dados?.rota_dadosTriagemInicial?.horariosVagos?.length; i++) {
             let horario = dados?.rota_dadosTriagemInicial?.horariosVagos?.[i]
             let horarioInicial = new Date(horario.horarioInicial)
             let horarioInicialBotao = `${horario.descricaoTipoAudiencia} - ${horarioInicial.toLocaleDateString('pt-BR')} às ${horarioInicial.getHours()}h${String(horarioInicial.getMinutes()).padStart(2, '0')}`
@@ -236,18 +271,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             }
         }
 
-        let linhaManual = criaBotaoAzulComCheckBox({
-            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
-            idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
-            texto: 'Designar audiência manualmente em outra sala/horário',
-            ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-            acao: async () => {
-                await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-                comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome}}])
-            },
-            grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
-        })
-        linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosTriagemInicial?.processo?.numero, sala: dados?.rota_dadosTriagemInicial?.sala?.nome})
+        
         //i++
         //let inputPulando = criaInput({
         //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
@@ -256,12 +280,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         //    placeholder: 'DD/MM/AAAA'
         //})
         //await armazenar({triagem_inicial_pula_data: '22/06/2026'})
-        //let dataPula = await obterArmazenamento('triagem_inicial_pula_data')
-        //console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
-        ////let inputPulando = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i + 'input'))
-        //if (dataPula?.triagem_inicial_pula_data){
-        //    inputPulando.value = dataPula?.triagem_inicial_pula_data
-        //}
+        
         //let linhaPulando = criaBotaoAzulComCheckBox({
         //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
         //    idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
