@@ -175,8 +175,6 @@ async function rota_buscarDocumentos(idProcesso, tipoDoc, selecao){
 		let texto = [d.titulo, d.tipo].filter(Boolean).map(normalizar).join(' ')
 		return texto.includes(normalizar(tipoDoc))
 	})
-	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
-	console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados), LOG.rosa, 'color:inherit')
 	if(!filtrados.length) return []
 
 	filtrados.sort((a, b) => new Date(a.data || 0) - new Date(b.data || 0))
@@ -290,7 +288,6 @@ async function rota_montarUrls(idProcesso, slots, numProc = ''){
 		if(slot.tipo === 'documento'){
 			let docs = await rota_buscarDocumentos(idProcesso, slot.tipoDoc || '', slot.selecao || 'recente')
 			let resultado = def.montarUrl(idProcesso, idTarefa, slot, docs)
-			console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
 			let urlsDoc   = Array.isArray(resultado) ? resultado : (resultado ? [resultado] : [])
 			urlsDoc.filter(Boolean).forEach(u => {
 				urls.push({
@@ -474,8 +471,7 @@ function rota_nomeJanela(tipo, execucao) {
 function abrirUrl(url, posicao = 'esquerdaAssistida', nomeJanela) {
     
 	const geo = rota_calcularGeometria(posicao)
-	console.log('%c[Rota PJE]%c geo: ' + JSON.stringify(geo), LOG.teste, 'color:inherit')
-    const w = window.open(
+	const w = window.open(
         url,
         nomeJanela,
         'width='   + geo.width  +
@@ -683,7 +679,6 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	await suspender(300)
 
 	const novoExecucao = String(Date.now())
-	console.log('%c[Rota PJE]%c 683:' + novoExecucao, LOG.info, 'color:inherit')
 	let execucao = novoExecucao   // ← adiciona isso
 	let sessao   = novoExecucao   // ← adiciona isso
 	await armazenar({

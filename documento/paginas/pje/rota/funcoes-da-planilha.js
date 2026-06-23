@@ -43,7 +43,6 @@ async function buscarIdPeloNumeroCNJ(qualquerFormatoDeNumero) {
     ))?.resultado || await rota_fetch(
         location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + numero
     )
-    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
     if (Array.isArray(dados?.resultado)) return dados.resultado[0] || null
     if (Array.isArray(dados))            return dados[0] || null
     return dados || null
@@ -58,7 +57,6 @@ async function buscarTarefaMaisRecente(idProcesso = '') {
 
     const url     = `${location.origin}/pje-comum-api/api/processos/id/${id}/tarefas?maisRecente=true`
     const dados   = await rota_fetch(url)
-    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
     const tarefa  = Array.isArray(dados) ? dados[0] : dados
     const idTarefa = tarefa?.idTarefa
 
@@ -175,7 +173,6 @@ async function extrairTextoTeste(idProcesso, idDocumento) {
     } else if (contentType.includes('application/json')) {
         let json   = await res.json()
         // Loga pra ver a estrutura uma vez só
-        console.log('[extrairTexto] json keys:', Object.keys(json))
         let b64    = json.conteudo ?? json.content ?? json.data ?? json
         let binStr = atob(b64.trim())
         bytes      = Array.from({ length: binStr.length }, (_, i) => binStr.charCodeAt(i))
@@ -338,7 +335,6 @@ async function buscarSalasHorariosVagos(idSala) {
 	let dados = await rota_fetch(
 		url
 	)
-	console.log('%c[Rota PJE]%c requisicao: ' + url, LOG.aviso, 'color:inherit')
 	return dados || null
 }
 

@@ -87,7 +87,6 @@ const SF_BOTOES = [
 			
 			for (let idx = 0; idx < ids.length; idx++) {
 				let sobrestamentos = await rota_fetch(location.origin + '/pje-comum-api/api/processos/id/' + ids[idx] + '/sobrestamentos') || []
-				console.log('%c[Rota PJE]%c sobrestamentos: ' + JSON.stringify(sobrestamentos), LOG.rosa, 'color:inherit')
 				let sobrestamento = sobrestamentos.find(s => !s.dataRevogacao) // undefined se não achar
 				let textoSobrestamento = sobrestamento?.textoFinalExternoSobrestamento || ''
 				let numero = 	t[idx]?.numero || ''
@@ -126,26 +125,17 @@ const SF_BOTOES = [
 				if (contexto.valor !== 'TODAS') {
 					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
 				}	
-				//console.log('%c[Rota PJE]%c tarefas' + JSON.stringify(tarefas), LOG.teste, 'color:inherit')
 				for (let tarefa of tarefas) {
-					//console.log('%c[Rota PJE]%c tarefa' + JSON.stringify(tarefa), LOG.teste, 'color:inherit')
 					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
-						//console.log('%c[Rota PJE]%c tarefa?.nome' + JSON.stringify(tarefa?.nome), LOG.teste, 'color:inherit')
 						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
-						console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
-						console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
 						idsx.push(...ids)
 						tx.push(...t)
-						//console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.teste, 'color:inherit')
-						//console.log('%c[Rota PJE]%c t' + JSON.stringify(t), LOG.teste, 'color:inherit')
-						//await suspender(5*60*1000)  // pausa para ler os relatos
+						
 					}
 				}
 			} else if (contexto.modo === 'Lista') {
 				;({ idsx, tx } = await filtrarPorLista(contexto))
 			}
-			console.log('%c[Rota PJE]%c ids: ' + JSON.stringify(idsx), LOG.rosa, 'color:inherit')
-			console.log('%c[Rota PJE]%c t: ' + JSON.stringify(tx), LOG.rosa, 'color:inherit')
 			if (!idsx.length) return 'Nenhum processo encontrado.'
 			let d = []
 
@@ -185,13 +175,10 @@ const SF_BOTOES = [
 		nome: 'Lista audiências a partir do ID do processo.',
 		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
-			console.log('%c[Rota PJE]%c contexto.valorBruto: ' + JSON.stringify(contexto.valorBruto), LOG.rosa, 'color:inherit')
 			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
-			console.log('%c[Rota PJE]%c ids: ')
 			let d = []
 			await sf_pool(ids, async (ids, i) => {
 				let audienciasMarcadas = await buscarAudienciasMarcadas(ids)
-				console.log('%c[Rota PJE]%c audienciasMarcadas: ' + JSON.stringify(audienciasMarcadas), LOG.rosa, 'color:inherit')
 				let dataInicio 	= '-'
 				let sala		= '-'
 				let processo	= '-'

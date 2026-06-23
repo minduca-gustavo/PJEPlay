@@ -1,10 +1,8 @@
-console.log('Me chamou? OJ')
 function consultaQualquerOJ(){
     let janela = confereJanela(JANELA.meuPainel, JANELA.painelGlobal, JANELA.painelGlobalTodos)
     if (!janela) return
     consulta_qualquer_ojCriaCampoConsulta()
 }
-console.log('Me chamou? OJ')
 
 window.addEventListener('pjerota:url-mudou', () => {
     document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
@@ -309,7 +307,6 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
 async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
     let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
     let ROTA_REGEX_CNJ_SEM_DIVISOR = /\d{20}/
-    console.log(JSON.stringify(numeroDoProcesso))
     let numeroVerificado = ROTA_REGEX_CNJ.test(numeroDoProcesso) || ROTA_REGEX_CNJ_SEM_DIVISOR.test(numeroDoProcesso)
     if (!numeroVerificado) {
         await consulta_qualquer_ojErroNumero('fora do padrao')

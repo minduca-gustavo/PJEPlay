@@ -151,10 +151,8 @@ async function pintura_aguardarCabecalho(){
 // ── Processamento principal ───────────────────────────────────
 
 async function pintura_processar(texto){
-    console.log('%c[Rota PJE]%c 264 processar: ' + JSON.stringify(texto), LOG.teste, 'color:inherit')
     let regras = await pintura_carregarRegras()
     if(!regras.length) return
-    console.log('%c[Rota PJE]%c 265 regras: ' + JSON.stringify(regras), LOG.teste, 'color:inherit')
     let cabecalho = await pintura_aguardarCabecalho()
     if(!cabecalho){ console.log('%c[Rota PJE]%c Pintura: Cabeçalho não encontrado', LOG.erro, 'color:inherit'); return }
 

@@ -936,9 +936,6 @@ function _rota_encontrarConteiner(el){
 async function _rota_buscarIdProcesso(numero){
 	let numLimpo = numero.replace(/[.\-]/g, '')
 	let dados = await buscarIdPeloNumeroCNJ(numero)
-	//console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(dados?.resultado[0]?.id), LOG.teste, 'color:inherit')
-	//console.log('%c[Rota PJE]%c Possível erro relatado pelo Heber: ' + JSON.stringify(id), LOG.teste, 'color:inherit')
-	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
 	let id = dados?.id
 	if(!id) return null
 
@@ -974,8 +971,7 @@ async function _rota_buscarIdProcesso(numero){
 async function _rota_garantirOJCorreta(numero){
     try {
         let dadosBasicos = await buscarIdPeloNumeroCNJ(numero)
-		console.log('%c[Rota PJE]%c dadosBasicos: ' + JSON.stringify(dadosBasicos), LOG.rosa, 'color:inherit')
-        if(!dadosBasicos) return { ok: false, motivo: 'nao_encontrado' }
+		if(!dadosBasicos) return { ok: false, motivo: 'nao_encontrado' }
         let idProcesso = dadosBasicos.id || dadosBasicos.idProcesso
         if(!idProcesso) return { ok: false, motivo: 'sem_id' }
         let dadosProcesso = typeof buscarProcesso === 'function'

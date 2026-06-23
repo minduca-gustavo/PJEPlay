@@ -81,7 +81,6 @@ async function busca_FilaPainelGlobal(){
     let processo = await rota_buscarParametros('pjerota_busca_posicao_fila_numero')
     let armazenamento = await obterArmazenamento('pjerota_busca_posicao_fila')
     if (!armazenamento) return
-    console.log('%c[Rota PJE]%c 29', LOG.teste, 'color:inherit')
     await removerArmazenamento('pjerota_busca_posicao_fila')
     await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
     let contAtual = await interceptador_lerProcessosPainel()
@@ -155,7 +154,6 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
     }else{
         conteudo = conteudoAtual
     }
-    console.log('%c[Rota PJE]%c conteudo: ' + conteudo, LOG.teste, 'color:inherit')
     for(let i = 0; i < 100; i++){
         let contMudou = await sel('painelGlobalTabelaDeProcessos')
         let conteudoMudou = contMudou.innerText
