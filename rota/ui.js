@@ -1083,6 +1083,7 @@ function criaPlaquinha({ id, texto = '', cor = 'azul', ancestral }) {
     const CORES_PLAQUINHA = {
         azul:    { bg: '#e3f2fd', borda: '#0078aa', texto: '#0078aa' },
         laranja: { bg: '#fff3e0', borda: '#ffa726', texto: '#e65100' },
+        vermelho:{ bg: '#fff3e0', borda: '#ff2626', texto: '#9b0000' },
         amarelo: { bg: '#fffde7', borda: '#fdd835', texto: '#f57f17' },
         verde:   { bg: '#e8f5e9', borda: '#43a047', texto: '#2e7d32' },
     }

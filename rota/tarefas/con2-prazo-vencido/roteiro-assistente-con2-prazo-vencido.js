@@ -87,15 +87,29 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
     criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: id(tarefaNome, bloco) })
     let i = 0
+    criaTabela({
+        id: id(tarefaNome, bloco, 'solucao', 'tabela'),
+        idDasColunas: [
+            id(tarefaNome, bloco, 'solucao', 'tabela', 'esquerda'),
+            id(tarefaNome, bloco, 'solucao', 'tabela', 'direita')
+        ],
+        colunas: ['Soluções', 'Soluções']
+    })
     for (solucao of dados?.rota_dadosCon2PrazoVencido?.solucao || []) {
-        if (solucao.includes('IMPROCEDENTES')){
-            cor = 'vermelho'
-        } else if (solucao.includes('PROCEDENTES EM PARTE')) {
-            cor = 'amarelo'
-        } else if (solucao.includes('PROCEDENTES') && !solucao.includes('EM PARTE')) {
+        let cor = ''
+        if (solucao.includes('PROCEDENTES')){
             cor = 'verde'
         }
+        if (solucao.includes('EM PARTE')) {
+            cor = 'amarelo'
+        }
+        if (solucao.includes('IMPROCEDENTES')) {
+            cor = 'vermelho'
+        }
 
+        if (i % 2 === 0) {
+            
+        }
         let plaquinha = criaPlaquinha({
             id:     id(tarefaNome, bloco, 'solucao', i),
             texto:  solucao,
