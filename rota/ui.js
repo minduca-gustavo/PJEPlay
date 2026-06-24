@@ -711,9 +711,7 @@ function criaCheckBox({ id, textoAoLado = '', ancestral }) {
 //   idDasColunas: ['col-nome', 'col-cpf', 'col-acao']
 //   colunas:      ['Nome', 'CPF', 'Ação']  ← opcional
 
-function criaTabela({ id, idDasColunas = [], colunas, ancestral }) {
-    const rotulosColunas = colunas || idDasColunas
-
+function criaTabela({ id, idDasColunas = [], colunas, ancestral, semDivisao = false }) {
     const wrapper = _ui_el('div', {
         overflowX:    'auto',
         marginBottom: '8px',
@@ -721,7 +719,6 @@ function criaTabela({ id, idDasColunas = [], colunas, ancestral }) {
         border:       '1px solid ' + UI_CORES.borda,
     })
     wrapper.id = id + '-wrapper'
-
     const tabela = _ui_el('table', {
         width:          '100%',
         borderCollapse: 'collapse',
@@ -731,62 +728,67 @@ function criaTabela({ id, idDasColunas = [], colunas, ancestral }) {
     })
     tabela.id = id
 
-    // Cabeçalho
-    const thead = document.createElement('thead')
-    const trH   = document.createElement('tr')
-    idDasColunas.forEach((colId, i) => {
-        const th = _ui_el('th', {
-            padding:     '7px 10px',
-            textAlign:   'left',
-            background:  UI_CORES.azul,
-            color:       '#ffffff',
-            fontWeight:  '700',
-            whiteSpace:  'nowrap',
-            borderRight: i < idDasColunas.length - 1 ? '1px solid rgba(255,255,255,0.2)' : 'none',
+    if (colunas) {
+        const thead = document.createElement('thead')
+        const trH   = document.createElement('tr')
+        idDasColunas.forEach((colId, i) => {
+            const th = _ui_el('th', {
+                padding:     '7px 10px',
+                textAlign:   'left',
+                background:  UI_CORES.azul,
+                color:       '#ffffff',
+                fontWeight:  '700',
+                whiteSpace:  'nowrap',
+                width:       `${Math.floor(100 / idDasColunas.length)}%`,
+                borderRight: (!semDivisao && i < idDasColunas.length - 1)
+                    ? '1px solid rgba(255,255,255,0.2)'
+                    : 'none',
+            })
+            th.id          = colId
+            th.textContent = colunas[i] || colId
+            trH.appendChild(th)
         })
-        th.id          = colId
-        //th.textContent = rotulosColunas[i] || colId
-        trH.appendChild(th)
-    })
-    thead.appendChild(trH)
-    tabela.appendChild(thead)
+        thead.appendChild(trH)
+        tabela.appendChild(thead)
+    }
 
-    // Corpo (linhas adicionadas depois)
     const tbody = document.createElement('tbody')
     tbody.id = id + '-corpo'
+    tbody.dataset.semDivisao  = semDivisao ? '1' : '0'
+    tbody.dataset.idDasColunas = JSON.stringify(idDasColunas)  // ← guarda para uso sem cabeçalho
     tabela.appendChild(tbody)
-
     wrapper.appendChild(tabela)
     _ui_inserir(wrapper, ancestral)
     return wrapper
 }
 
-// Adiciona uma linha à tabela.
-// valores: objeto { idColuna: 'conteudo' }
-// Retorna o <tr> criado para manipulação extra se necessário.
-//
-// ui_adicionarLinhaTabela('minha-tabela', { 'col-nome': 'João', 'col-cpf': '123' })
-
 function ui_adicionarLinhaTabela(idTabela, valores = {}) {
     const tbody = document.getElementById(idTabela + '-corpo')
     if (!tbody) { console.warn('[ui.js] tabela não encontrada:', idTabela); return null }
+    const semDivisao   = tbody.dataset.semDivisao === '1'
 
-    const tabela = document.getElementById(idTabela)
-    const ths    = tabela?.querySelectorAll('thead th') || []
+    // Tenta usar thead th; se não houver cabeçalho, usa idDasColunas do dataset
+    const tabela       = document.getElementById(idTabela)
+    const ths          = tabela?.querySelectorAll('thead th') || []
+    const colunas      = ths.length > 0
+        ? Array.from(ths).map(th => ({ id: th.id }))
+        : JSON.parse(tbody.dataset.idDasColunas || '[]').map(colId => ({ id: colId }))
 
-    const tr = document.createElement('tr')
+    const tr  = document.createElement('tr')
     const idx = tbody.children.length
     tr.style.background = idx % 2 === 0 ? UI_CORES.branco : UI_CORES.fundo
 
-    ths.forEach((th, i) => {
+    colunas.forEach(({ id: colId }, i) => {
         const td = _ui_el('td', {
-            padding:     '6px 10px',
-            borderTop:   '1px solid ' + UI_CORES.borda,
-            borderRight: i < ths.length - 1 ? '1px solid ' + UI_CORES.borda : 'none',
-            verticalAlign:'middle',
+            padding:      '6px 10px',
+            borderTop:    '1px solid ' + UI_CORES.borda,
+            borderRight:  (!semDivisao && i < colunas.length - 1)
+                ? '1px solid ' + UI_CORES.borda
+                : 'none',
+            verticalAlign: 'middle',
+            width:         `${Math.floor(100 / colunas.length)}%`,
         })
-        // O conteúdo pode ser string ou elemento DOM
-        const valor = valores[th.id]
+        const valor = valores[colId]
         if (valor instanceof HTMLElement) {
             td.appendChild(valor)
         } else {
@@ -794,7 +796,6 @@ function ui_adicionarLinhaTabela(idTabela, valores = {}) {
         }
         tr.appendChild(td)
     })
-
     tbody.appendChild(tr)
     return tr
 }
@@ -1081,11 +1082,11 @@ function ui_checkboxMarcado(idCheckbox) {
 
 function criaPlaquinha({ id, texto = '', cor = 'azul', ancestral }) {
     const CORES_PLAQUINHA = {
-        azul:    { bg: '#e3f2fd', borda: '#0078aa', texto: '#0078aa' },
-        laranja: { bg: '#fff3e0', borda: '#ffa726', texto: '#e65100' },
-        vermelho:{ bg: '#fff3e0', borda: '#ff2626', texto: '#9b0000' },
-        amarelo: { bg: '#fffde7', borda: '#fdd835', texto: '#f57f17' },
-        verde:   { bg: '#e8f5e9', borda: '#43a047', texto: '#2e7d32' },
+        azul:    { bg: '#90caf9' , borda: '#1e88e5', texto: '#03071e'},
+        laranja: { bg: '#e65100' , borda: '#ffa726', texto: '#fff3e0'},
+        vermelho:{ bg: '#780000' , borda: '#c1121f', texto: '#fdf0d5'},
+        amarelo: { bg: '#ffd500' , borda: '#fdc500', texto: '#03071e'},
+        verde:   { bg: '#386641' , borda: '#6a994e', texto: '#e8f5e9'},
     }
     const c = CORES_PLAQUINHA[cor] || CORES_PLAQUINHA.azul
 
@@ -1099,14 +1100,14 @@ function criaPlaquinha({ id, texto = '', cor = 'azul', ancestral }) {
         fontWeight:    '700',
         color:         c.texto,
         fontFamily:    "'Segoe UI', system-ui, sans-serif",
-        whiteSpace:    'nowrap',
+        whiteSpace:    'normal',
         marginRight:   '4px',
         marginBottom:  '4px',
         letterSpacing: '0.02em',
     })
     el.id          = id
     el.textContent = texto
-    _ui_inserir(el, ancestral)
+    if (ancestral) _ui_inserir(el, ancestral)
     return el
 }
 
@@ -1120,10 +1121,11 @@ function criaPlaquinha({ id, texto = '', cor = 'azul', ancestral }) {
 
 function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', ancestral }) {
     const CORES_PLAQUINHA = {
-        azul:    { bg: '#e3f2fd', borda: '#0078aa', texto: '#0078aa', tooltipBg: '#0078aa' },
-        laranja: { bg: '#fff3e0', borda: '#ffa726', texto: '#e65100', tooltipBg: '#ffa726' },
-        amarelo: { bg: '#fffde7', borda: '#fdd835', texto: '#f57f17', tooltipBg: '#f9a825' },
-        verde:   { bg: '#e8f5e9', borda: '#43a047', texto: '#2e7d32', tooltipBg: '#43a047' },
+        azul:    { bg: '#90caf9', borda: '#1e88e5', texto: '#03071e' },
+        laranja: { bg: '#e65100', borda: '#ffa726', texto: '#fff3e0' },
+        vermelho:{ bg: '#780000', borda: '#c1121f', texto: '#fdf0d5' },
+        amarelo: { bg: '#ffd500', borda: '#fdc500', texto: '#03071e' },
+        verde:   { bg: '#386641', borda: '#6a994e', texto: '#e8f5e9' },
     }
     const c = CORES_PLAQUINHA[cor] || CORES_PLAQUINHA.azul
 
@@ -1135,7 +1137,6 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
     })
     wrapper.id = id + '-wrapper'
 
-    // Plaquinha
     const plaquinha = _ui_el('span', {
         display:       'inline-block',
         background:    c.bg,
@@ -1146,45 +1147,70 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
         fontWeight:    '700',
         color:         c.texto,
         fontFamily:    "'Segoe UI', system-ui, sans-serif",
-        whiteSpace:    'nowrap',
+        whiteSpace:    'normal',
         letterSpacing: '0.02em',
         cursor:        'default',
     })
     plaquinha.id          = id
     plaquinha.textContent = texto
 
-    // Tooltip
     const tip = _ui_el('div', {
-        display:      'none',
-        position:     'absolute',
-        bottom:       'calc(100% + 4px)',
-        left:         '50%',
-        transform:    'translateX(-50%)',
-        background:   c.tooltipBg,
-        color:        '#ffffff',
-        borderRadius: '4px',
-        padding:      '5px 10px',
-        fontSize:     '11px',
-        fontFamily:   "'Segoe UI', system-ui, sans-serif",
-        whiteSpace:   'pre-wrap',
-        maxWidth:     '240px',
-        boxShadow:    '0 2px 8px rgba(0,0,0,0.15)',
-        zIndex:       '9999',
-        pointerEvents:'none',
-        lineHeight:   '1.4',
+        display:       'none',
+        position:      'fixed',
+        background:    '#000000',
+        color:         '#ffffff',
+        borderRadius:  '4px',
+        padding:       '5px 10px',
+        fontSize:      '11px',
+        fontFamily:    "'Segoe UI', system-ui, sans-serif",
+        whiteSpace:    'pre-wrap',
+        maxWidth:      '240px',
+        boxShadow:     '0 2px 8px rgba(0,0,0,0.15)',
+        zIndex:        '99999999',
+        pointerEvents: 'none',
+        lineHeight:    '1.4',
     })
     tip.textContent = tooltip
+    document.body.appendChild(tip)
 
-    plaquinha.addEventListener('mouseenter', () => tip.style.display = 'block')
+    plaquinha.addEventListener('mouseenter', () => {
+        const rect = plaquinha.getBoundingClientRect()
+        tip.style.display = 'block'
+
+        // Posição inicial: centralizado acima da plaquinha
+        let left = rect.left + rect.width / 2 - tip.offsetWidth / 2
+        let top  = rect.top - tip.offsetHeight - 4
+
+        // Corrige se saiu pela direita
+        if (left + tip.offsetWidth > window.innerWidth - 8) {
+            left = window.innerWidth - tip.offsetWidth - 8
+        }
+        // Corrige se saiu pela esquerda
+        if (left < 8) {
+            left = 8
+        }
+        // Corrige se saiu pelo topo — mostra abaixo da plaquinha
+        if (top < 8) {
+            top = rect.bottom + 4
+        }
+
+        tip.style.left = left + 'px'
+        tip.style.top  = top  + 'px'
+    })
     plaquinha.addEventListener('mouseleave', () => tip.style.display = 'none')
 
+    // Limpa o tip do body se o wrapper for removido do DOM
+    const observer = new MutationObserver(() => {
+        if (!document.body.contains(wrapper)) {
+            tip.remove()
+            observer.disconnect()
+        }
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+
     wrapper.appendChild(plaquinha)
-    wrapper.appendChild(tip)
-    _ui_inserir(wrapper, ancestral)
-
-    // Método para atualizar tooltip externamente
+    if (ancestral) _ui_inserir(wrapper, ancestral)
     wrapper.atualizarTooltip = (novoTexto) => { tip.textContent = novoTexto }
-
     return wrapper
 }
 

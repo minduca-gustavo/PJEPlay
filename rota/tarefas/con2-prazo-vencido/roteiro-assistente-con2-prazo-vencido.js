@@ -87,37 +87,150 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
     criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: id(tarefaNome, bloco) })
     let i = 0
-    criaTabela({
-        id: id(tarefaNome, bloco, 'solucao', 'tabela'),
-        idDasColunas: [
-            id(tarefaNome, bloco, 'solucao', 'tabela', 'esquerda'),
-            id(tarefaNome, bloco, 'solucao', 'tabela', 'direita')
-        ],
-        colunas: ['Soluções', 'Soluções']
-    })
-    for (solucao of dados?.rota_dadosCon2PrazoVencido?.solucao || []) {
-        let cor = ''
-        if (solucao.includes('PROCEDENTES')){
-            cor = 'verde'
-        }
-        if (solucao.includes('EM PARTE')) {
-            cor = 'amarelo'
-        }
-        if (solucao.includes('IMPROCEDENTES')) {
-            cor = 'vermelho'
-        }
+    
+    let solucoes = dados?.rota_dadosCon2PrazoVencido?.solucao || []
+    console.log('%c[Rota PJE]%c solucoes.length: ' + JSON.stringify(solucoes.length), LOG.rosa, 'color:inherit')
+    if (solucoes.length) {
+        criaTabelaDeSolucoes(solucoes)
+    } else {
+        criaTexto({
+            id: id(tarefaNome, bloco, 'sem_solucao'),
+            texto: 'Não foram encontradas sentenças.',
+            ancestral: id(tarefaNome, bloco),
+        })
+    }
 
-        if (i % 2 === 0) {
-            
-        }
-        let plaquinha = criaPlaquinha({
-            id:     id(tarefaNome, bloco, 'solucao', i),
-            texto:  solucao,
-            cor:    cor,
+    function criaTabelaDeSolucoes(solucoes){
+        let idTabela = id(tarefaNome, bloco, 'tabela')
+        let idEsq    = id(tarefaNome, bloco, 'tabela', 'esquerda')
+        let idDir    = id(tarefaNome, bloco, 'tabela', 'direita')
+        let idDasColunas = solucoes?.length > 1 ? [
+            id(tarefaNome, bloco, 'tabela', 'esquerda'),
+            id(tarefaNome, bloco, 'tabela', 'direita')
+        ] : [id(tarefaNome, bloco, 'tabela', 'esquerda')]
+
+        criaTabela({
+            id: idTabela,
+            idDasColunas: [
+                id(tarefaNome, bloco, 'tabela', 'esquerda'),
+                id(tarefaNome, bloco, 'tabela', 'direita')
+            ],
+            semDivisao: true,
             ancestral: id(tarefaNome, bloco)
         })
-        i++
+        
+        function corDaSolucao(solucao) {
+            if (solucao.includes('IMPROCEDENTES') || solucao.includes('EXTINTO')) return 'vermelho'
+            if (solucao.includes('EM PARTE'))    return 'amarelo'
+            if (solucao.includes('PROCEDENTES')) return 'verde'
+            return ''
+        }
+
+        for (let i = 0; i < solucoes.length; i += 2) {
+            let esq = solucoes[i].split('-', 2)[0].trim()
+            let dir = solucoes[i + 1].split('-', 2)[0].trim()   // pode ser undefined na última linha se quantidade for ímpar
+            let toolTipEsq = solucoes[i]
+            let toolTipDir = solucoes[i + 1]
+            let valores = {
+                [idEsq]: criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i), texto: esq, tooltip: toolTipEsq, cor: corDaSolucao(esq) }),
+            }
+            if (dir !== undefined) {
+                valores[idDir] = criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i + 1), texto: dir, tooltip: toolTipDir, cor: corDaSolucao(dir) })
+            }
+
+            ui_adicionarLinhaTabela(idTabela, valores)
+        }
     }
+
+    bloco = 'documentos'
+    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Documentos do Processo', ancestral: id(tarefaNome, bloco) })
+    
+    let tiposDocumentos = [
+        { chave: 'sentenca',         label: 'Sentença' },
+        { chave: 'recurso',          label: 'Recurso' },
+        { chave: 'deposito',         label: 'Depósito' },
+        { chave: 'custas',           label: 'Custas' },
+        { chave: 'seguro',           label: 'Seguro/Fiança', opcoes: ['fianca', 'seguro'] },
+        { chave: 'procuracao',       label: 'Procuração' },
+        { chave: 'substabelecimento',label: 'Substabelecimento' },
+    ]
+    let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
+    console.log('%c[Rota PJE]%c documentosTimeline: ' + JSON.stringify(documentosTimeline), LOG.rosa, 'color:inherit')
+    if (documentosTimeline.length){
+        criaTabelaDeDocumentos(documentosTimeline)
+    }
+    function criaTabelaDeDocumentos(documentos){
+        console.log('%c[Rota PJE]%c documentos 165: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
+        let documentosCriar = {}
+        let colunas = 0
+        for(let c of tiposDocumentos){
+            documentosCriar[c.chave] = encontrarTipoNaTimeline(c, documentos)
+            if (documentosCriar[c.chave].length) colunas++
+        }
+        if (colunas > 3) colunas = 3
+        console.log('%c[Rota PJE]%c documentos 165: ' + JSON.stringify(documentosCriar), LOG.rosa, 'color:inherit')
+        let idDasColunas = []
+        for(let c = 0; i < colunas; i++){
+            idDasColunas.push(id(tarefaNome, bloco, 'tabela', i))
+        }
+        let idTabela = id(tarefaNome, bloco, 'tabela')
+        criaTabela({
+            id: idTabela,
+            idDasColunas: idDasColunas,
+            semDivisao: true,
+            ancestral: id(tarefaNome, bloco)
+        })
+        // to parado aqui
+        function encontrarTipoNaTimeline(tipo, ondeBuscar) {
+            const termos = tipo.opcoes ?? [tipo.chave]
+
+            const bate = (titulo, tipoDoc) =>
+                termos.some(termo => 
+                    normalizar(titulo).toLowerCase().includes(termo) ||
+                    normalizar(tipoDoc).toLowerCase().includes(termo)
+                )
+
+            const resultado = []
+
+            for (const documento of ondeBuscar) {
+                if (bate(documento?.titulo, documento?.tipo)) {
+                    resultado.push({ documento, anexo: null })
+                }
+                for (const anexo of documento?.anexos ?? []) {
+                    if (bate(anexo?.titulo, anexo?.tipo)) {
+                        resultado.push({ documento, anexo })
+                    }
+                }
+            }
+
+            return resultado
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
     criaTextoQueAbrePassandoOMouse({
         id: id(tarefaNome, bloco, 'dados_das_partes'),
         texto: `Passe o mouse para ver os dados das partes.

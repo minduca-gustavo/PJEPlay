@@ -53,7 +53,7 @@ async function con2_prazo_vencido_janelaDetalhes(sessao){
     await aguardarElemento('.tl-documento')
     let documentos = [...document.getElementsByClassName('tl-documento')]
     let sentenca = documentos.filter(p => p.textContent.includes('Sentença('))
-    if (!sentenca) return
+    if (!sentenca.length) return
     console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(sentenca), LOG.rosa, 'color:inherit')
     await clicar(sentenca[0])
     sentenca[0].scrollIntoView({ block: 'nearest' })
@@ -66,34 +66,39 @@ async function con2_prazo_vencido_janelaDetalhes(sessao){
 //__________________________________________________
 
 async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
+    // OBTENDO SOLUÇÕES
     let idURLMatch = location.href.match(/\/processo\/(\d+)\/detalhe/);
     let idURL = idURLMatch?.[1]; // "2992885"
     let movimentos = await buscarMovimentos(idURL) || null
     let solucaoMovimento = null
     let solucao = []
     if (movimentos) {
-        solucaoMovimento = movimentos.filter(m=> m?.titulo.includes('Julgado(s)')) || null
+        solucaoMovimento = movimentos.filter(m=> m?.titulo.includes('Julgado(s)') || m?.titulo.includes('Extinto')) || null
     }
     console.log('%c[Rota PJE]%c solucaoMovimento: ' + JSON.stringify(solucaoMovimento), LOG.rosa, 'color:inherit')
     for (let mov of solucaoMovimento) {
-        solucao.push(
-            (mov?.titulo.split('Julgado(s) ')[1])
-            .replace("o(s) pedido(s) (", "-")
-            .replaceAll(')', '')
-            .replaceAll('(', '')
-            .replaceAll('/', '')
-            .replaceAll(/\d*/g, '')
-            .replace(/\s+/g, ' ')
-            .trim().toUpperCase()
-        )
+        let movimento = ''
+        if (mov?.titulo.includes('Julgado(s) ')){
+            movimento = (mov?.titulo.split('Julgado(s) ')[1])
+                .replace("o(s) pedido(s) (", "-")
+                .replaceAll(')', '')
+                .replaceAll('(', '')
+                .replaceAll('/', '')
+                .replaceAll(/\d*/g, '')
+                .replace(/\s+/g, ' ')
+                .trim().toUpperCase()
+        } else {
+            movimento = mov?.titulo
+        }
+        solucao.push(movimento)
     }
     console.log('%c[Rota PJE]%c solucao: ' + JSON.stringify(solucao), LOG.rosa, 'color:inherit')
     
     console.log('%c[Rota PJE]%c movimentos: ' + JSON.stringify(movimentos), LOG.rosa, 'color:inherit')
     let [timeline, gigs, gigs_concluidos, processo, recursos] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
-        interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
-        interceptador_aguardar('gigs_concluidos').then(() => interceptador_lerGigsConcluidos() || []),
+        interceptador_aguardar('gigs', 3000).then(() => interceptador_lerGigs() || []),
+        interceptador_aguardar('gigs_concluidos', 3000).then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
         interceptador_aguardar('recursos').then(() => interceptador_lerRecursos() || {}),
     ])
@@ -118,6 +123,8 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     
     dadosCon2PrazoVencido.solucao                  = solucao
+    dadosCon2PrazoVencido.timeline                 = timeline
+    // até aqui
     dadosCon2PrazoVencido.partes                  = partes
     dadosCon2PrazoVencido.processo                = processo
     dadosCon2PrazoVencido.gig                     = gig
