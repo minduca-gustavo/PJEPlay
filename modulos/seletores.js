@@ -304,6 +304,9 @@ const SELETORES = {
     tarefaDoProcessoTituloDaTarefa:{
       seletor: '.texto-tarefa-processo',
     },
+    //detalhesDoProcessoBarraSuperior:{
+    //  seletor: 'mat-toolbar'
+    //},
     // Exemplo:
     // botaoFinalizar: {
     //   seletor:     '#btn-finalizar',

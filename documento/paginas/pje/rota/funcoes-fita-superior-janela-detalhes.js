@@ -13,6 +13,8 @@ async function criaFitaSuperior() {
         id: 'pjerota-busca-posicao-fila-div-barra',
         ancestral: 'ffff'
     })
+    console.log('%c[Rota PJE]%c cria a fita' + JSON.stringify(8 + ': fita'), LOG.rosa, 'color:inherit')
+    
     div.style.backgroundColor = corToolbar
     div.style.color = corToolbar
     div.style.gap = '0px'

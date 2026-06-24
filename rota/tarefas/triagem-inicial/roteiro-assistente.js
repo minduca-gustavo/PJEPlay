@@ -58,7 +58,7 @@ async function triagem_assistente_iniciar() {
         texto: `Passe o mouse para ver a instrução completa da tarefa.
 Clique para fixar/desafixar.`,
         textoBox: `Como utilizar este assistente:
-	- Anote no campo acima o que precisar. Esta anotação é local, e será perdida ao fechar a janela.
+	- Anote no campo abaixo o que precisar. Esta anotação é local, e será perdida ao fechar a janela.
 	- O assistente traz informações que podem ser confrontadas com o processo lado a lado. Passe o mouse e clique no box para fixar as informações e fazer a confrontação.
 Confronte a petição inicial com os dados da autuação no sistema:
 	- As partes estão devidamente cadastradas? Há partes mencionadas na petição inicial que não constam da autuação ou vice-versa?

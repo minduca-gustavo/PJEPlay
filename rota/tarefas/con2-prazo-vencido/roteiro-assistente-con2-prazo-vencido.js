@@ -45,10 +45,7 @@ async function con2_prazo_vencido_assistente_iniciar() {
     // ── Remove o carregando ───────────────────────────────────
     removerCarregando()
     let dados = await obterArmazenamento(['rota_dadosCon2PrazoVencido'])
-    console.log('%c[Rota PJE]%c 38: ' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido?.processo?.numero, null, 2), LOG.teste, 'color:inherit')
-    console.log('%c[Rota PJE]%c 39: ' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido?.sala?.nome, null, 2), LOG.teste, 'color:inherit')
-    console.log('%c[Rota PJE]%c atual: ' + dados?.rota_dadosCon2PrazoVencido?.execucaoAtual, LOG.info, 'color:inherit')
-    // ── Bloco: inicial ────────────────────────────────────────
+    console.log('%c[Rota PJE]%c dados?.rota_dadosCon2PrazoVencido' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido), LOG.rosa, 'color:inherit')
     let bloco = 'inicial'
 
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
@@ -85,10 +82,27 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
     criaInputAnotacao({ id: id(tarefaNome, bloco, 'anotacao'), placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: id(tarefaNome, bloco) })
 
     // ── Bloco: autuacao ───────────────────────────────────────
-    bloco = 'autuacao'
+    bloco = 'solucao'
 
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Autuação/Petição Inicial/Documentos', ancestral: id(tarefaNome, bloco) })
+    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: id(tarefaNome, bloco) })
+    let i = 0
+    for (solucao of dados?.rota_dadosCon2PrazoVencido?.solucao || []) {
+        if (solucao.includes('IMPROCEDENTES')){
+            cor = 'vermelho'
+        } else if (solucao.includes('PROCEDENTES EM PARTE')) {
+            cor = 'amarelo'
+        } else if (solucao.includes('PROCEDENTES') && !solucao.includes('EM PARTE')) {
+            cor = 'verde'
+        }
+
+        let plaquinha = criaPlaquinha({
+            id:     id(tarefaNome, bloco, 'solucao', i),
+            texto:  solucao,
+            cor:    cor
+        })
+        i++
+    }
     criaTextoQueAbrePassandoOMouse({
         id: id(tarefaNome, bloco, 'dados_das_partes'),
         texto: `Passe o mouse para ver os dados das partes.

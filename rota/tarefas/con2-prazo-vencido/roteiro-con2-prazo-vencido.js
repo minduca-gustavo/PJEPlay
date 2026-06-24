@@ -5,6 +5,7 @@
 
 
 const dadosCon2PrazoVencido = {
+    solucao: null,
     partes: null,
     processo: null,
     gig: null,
@@ -51,10 +52,11 @@ async function con2_prazo_vencido_janelaDetalhes(sessao){
     if (executar.rota_con2_prazo_vencido_janelaDetalhes === sessao) return
     await aguardarElemento('.tl-documento')
     let documentos = [...document.getElementsByClassName('tl-documento')]
-    let sentenca = documentos.find(p => p.textContent.includes('Sentença('))
+    let sentenca = documentos.filter(p => p.textContent.includes('Sentença('))
     if (!sentenca) return
-    await clicar(sentenca)
-    sentenca.scrollIntoView({ block: 'nearest' })
+    console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(sentenca), LOG.rosa, 'color:inherit')
+    await clicar(sentenca[0])
+    sentenca[0].scrollIntoView({ block: 'nearest' })
     await armazenar({rota_con2_prazo_vencido_janelaDetalhes: sessao})
     await removerArmazenamento('pjerota_tarefa')
 }
@@ -68,13 +70,22 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     let idURL = idURLMatch?.[1]; // "2992885"
     let movimentos = await buscarMovimentos(idURL) || null
     let solucaoMovimento = null
-    let solucao = ''
+    let solucao = []
     if (movimentos) {
-        solucaoMovimento = movimentos.find(m=> m?.titulo.includes('Julgado(s)')) || null
+        solucaoMovimento = movimentos.filter(m=> m?.titulo.includes('Julgado(s)')) || null
     }
     console.log('%c[Rota PJE]%c solucaoMovimento: ' + JSON.stringify(solucaoMovimento), LOG.rosa, 'color:inherit')
-    if (solucaoMovimento) {
-        solucao = (solucaoMovimento?.titulo.split('Julgado(s) ')[1]).split('o(s) pedido')[0].trim()
+    for (let mov of solucaoMovimento) {
+        solucao.push(
+            (mov?.titulo.split('Julgado(s) ')[1])
+            .replace("o(s) pedido(s) (", "-")
+            .replaceAll(')', '')
+            .replaceAll('(', '')
+            .replaceAll('/', '')
+            .replaceAll(/\d*/g, '')
+            .replace(/\s+/g, ' ')
+            .trim().toUpperCase()
+        )
     }
     console.log('%c[Rota PJE]%c solucao: ' + JSON.stringify(solucao), LOG.rosa, 'color:inherit')
     
@@ -106,6 +117,7 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     if (!idBusca) return
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     
+    dadosCon2PrazoVencido.solucao                  = solucao
     dadosCon2PrazoVencido.partes                  = partes
     dadosCon2PrazoVencido.processo                = processo
     dadosCon2PrazoVencido.gig                     = gig
