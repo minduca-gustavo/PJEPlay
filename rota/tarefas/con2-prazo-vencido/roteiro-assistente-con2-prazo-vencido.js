@@ -99,7 +99,8 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
         let plaquinha = criaPlaquinha({
             id:     id(tarefaNome, bloco, 'solucao', i),
             texto:  solucao,
-            cor:    cor
+            cor:    cor,
+            ancestral: id(tarefaNome, bloco)
         })
         i++
     }
