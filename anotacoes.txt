@@ -39,3 +39,180 @@ const trintaDiasAntes = ts - 30 * 24 * 60 * 60 * 1000
 
 new Date(trintaDiasAntes).toLocaleDateString('pt-BR')  // "20/06/2026"
 //                                        ↑ faltou esse 60 (segundos)
+
+
+
+
+
+
+/**
+ * criaWidgetDocumentos
+ * 
+ * Monta um widget de botões para navegar documentos de uma timeline,
+ * agrupados por tipo, com contador e ordem configurável.
+ * 
+ * @param {object} params
+ * @param {string}   params.ancestral   - id do elemento pai onde o widget será montado
+ * @param {Array}    params.documentos  - array da timeline já resolvida
+ * @param {Array}    params.tipos       - array de { chave, label?, opcoes? }
+ *                                        se label omitido, usa chave como label
+ * @param {string}   params.tarefaNome  - usado para compor ids internos
+ * @param {string}   params.bloco       - usado para compor ids internos
+ * @param {Function} params.onAbrir     - callback chamado com (documento) ao clicar no botão
+ */
+function criaWidgetDocumentos({ ancestral, documentos, tipos, tarefaNome, bloco, onAbrir }) {
+
+    // --- estado encapsulado ---
+    let ordem = 0
+    let contadoresDocumentos = {}
+
+    // normaliza tipos: garante que label sempre existe
+    let tiposNormalizados = tipos.map(t => ({
+        chave: t.chave,
+        label: t.label ?? t.chave,
+        opcoes: t.opcoes ?? null,
+    }))
+
+    // --- botão de ordem ---
+    function textoOrdem() {
+        return ordem === 0 ? 'Ordem: do mais antigo para o mais novo' : 'Ordem: do mais novo para o mais antigo'
+    }
+
+    criaBotaoLaranja({
+        id: id(tarefaNome, bloco, 'botao_ordem_documentos'),
+        texto: textoOrdem(),
+        ancestral: ancestral,
+        acao: () => {
+            ordem = ordem === 0 ? 1 : 0
+            let botao = document.getElementById(id(tarefaNome, bloco, 'botao_ordem_documentos'))
+            if (botao) botao.textContent = textoOrdem()
+            console.log('%c[Rota PJE]%c ordem: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
+        }
+    })
+
+    if (!documentos.length) return
+
+    // --- montagem da tabela ---
+    _criaTabelaDeDocumentos(documentos)
+
+    // --- funções internas ---
+
+    function _encontrarTipoNaTimeline(tipo, ondeBuscar) {
+        const termos = tipo.opcoes ?? [tipo.chave]
+
+        const bate = (titulo, tipoDoc) =>
+            termos.some(termo =>
+                normalizar(titulo).toLowerCase().includes(termo) ||
+                normalizar(tipoDoc).toLowerCase().includes(termo)
+            )
+
+        const resultado = []
+
+        for (const documento of ondeBuscar) {
+            if (bate(documento?.titulo, documento?.tipo)) {
+                resultado.push(documento)
+            }
+            for (const anexo of documento?.anexos ?? []) {
+                if (bate(anexo?.titulo, anexo?.tipo)) {
+                    resultado.push(anexo)
+                }
+            }
+        }
+
+        return resultado
+    }
+
+    function _criaTabelaDeDocumentos(docs) {
+        console.log('%c[Rota PJE]%c criaWidgetDocumentos docs: ' + JSON.stringify(docs), LOG.rosa, 'color:inherit')
+
+        let documentosCriar = {}
+        let elementos = 0
+
+        for (let c of tiposNormalizados) {
+            documentosCriar[c.chave] = _encontrarTipoNaTimeline(c, docs)
+            if (documentosCriar[c.chave].length) elementos++
+        }
+
+        if (!elementos) return
+
+        let colunas = elementos > 3 ? 3 : elementos
+        let idDasColunas = []
+        for (let i = 1; i <= colunas; i) {
+            idDasColunas.push(id(tarefaNome, bloco, 'tabela', 'coluna', i++))
+        }
+
+        let idTabela = id(tarefaNome, bloco, 'tabela')
+        criaTabela({
+            id:           idTabela,
+            idDasColunas: idDasColunas,
+            semDivisao:   true,
+            ancestral:    ancestral
+        })
+
+        let contadorTipo = 0
+        let linha = {}
+
+        for (let [tipo, doc] of Object.entries(documentosCriar)) {
+
+            if (!doc.length) continue
+
+            let tipoDef = tiposNormalizados.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
+            if (!tipoDef) continue
+
+            let chaveContador = id(tarefaNome, bloco, tipo)
+            contadoresDocumentos[chaveContador] = { atual: 0, total: doc.length }
+
+            let idBotao  = id(tarefaNome, bloco, 'botao', tipo)
+            let textoBotao = tipoDef.label + ' 0/' + doc.length
+            let idColuna = idDasColunas[contadorTipo]
+
+            linha[idColuna] = criaBotaoAzul({
+                id:    idBotao,
+                texto: textoBotao,
+                acao:  async () => {
+                    let resultado = _avancarContadorDocumento(tipo)
+                    if (!resultado) return
+                    let { tipoContador, contador } = resultado
+                    console.log('%c[Rota PJE]%c onAbrir documento: ' + JSON.stringify(documentosCriar[tipoContador][contador]), LOG.rosa, 'color:inherit')
+                    await onAbrir(documentosCriar[tipoContador][contador])
+                }
+            })
+
+            contadorTipo++
+
+            if (contadorTipo % colunas === 0) {
+                ui_adicionarLinhaTabela(idTabela, linha)
+                linha = {}
+                contadorTipo = 0
+            }
+        }
+
+        if (Object.keys(linha).length) {
+            ui_adicionarLinhaTabela(idTabela, linha)
+        }
+    }
+
+    function _avancarContadorDocumento(tipo) {
+        let chaveContador = id(tarefaNome, bloco, tipo)
+        let contador = contadoresDocumentos[chaveContador]
+        if (!contador) return null
+
+        if (ordem === 0) {
+            contador.atual = (contador.atual + 1) % (contador.total + 1)
+        } else {
+            contador.atual = (contador.atual - 1 + contador.total + 1) % (contador.total + 1)
+        }
+
+        let idBotao = id(tarefaNome, bloco, 'botao', tipo)
+        let botao = document.getElementById(idBotao)
+        if (!botao) return null
+
+        let tipoDef = tiposNormalizados.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
+        botao.textContent = tipoDef.label + ' ' + contador.atual + '/' + contador.total
+
+        console.log('%c[Rota PJE]%c _avancarContadorDocumento tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
+        console.log('%c[Rota PJE]%c _avancarContadorDocumento atual: ' + JSON.stringify(contador.atual), LOG.rosa, 'color:inherit')
+
+        return { tipoContador: tipo, contador: contador.atual }
+    }
+}

@@ -208,7 +208,12 @@ Clique para fixar/desafixar.`,
             linha[idColuna] = criaBotaoAzul({
                 id: idBotao,
                 texto: textoBotao,
-                acao: () => avancarContadorDocumento(tarefaNome, bloco, tipo, ordem)
+                acao: async () => {
+                    let {tipoContador, contador} = avancarContadorDocumento(tarefaNome, bloco, tipo, ordem)
+                    console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipoContador), LOG.rosa, 'color:inherit')
+                    console.log('%c[Rota PJE]%c contador: ' + JSON.stringify(contador), LOG.rosa, 'color:inherit')
+                    await comandar(['con2_prazo_vencido_abrir_documentos'],[documentosCriar[tipoContador][contador]])
+                }
             })
             contadorTipo++
             if (contadorTipo % colunas == 0) {
@@ -273,11 +278,11 @@ Clique para fixar/desafixar.`,
 
             for (const documento of ondeBuscar) {
                 if (bate(documento?.titulo, documento?.tipo)) {
-                    resultado.push({ documento, anexo: null })
+                    resultado.push(documento)
                 }
                 for (const anexo of documento?.anexos ?? []) {
                     if (bate(anexo?.titulo, anexo?.tipo)) {
-                        resultado.push({ documento, anexo })
+                        resultado.push(anexo)
                     }
                 }
             }
@@ -289,11 +294,12 @@ Clique para fixar/desafixar.`,
     function avancarContadorDocumento(tarefaNome, bloco, tipo, ordem) {
         let chaveContador = id(tarefaNome, bloco, tipo)
         let contador = contadoresDocumentos[chaveContador]
+        console.log('%c[Rota PJE]%c ordem: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
         if (!contador) return
         if (ordem == 0){ 
             contador.atual = (contador.atual + 1) % (contador.total + 1)
         } else {
-            contador.atual = (contador.atual + 1) % (contador.total + 1)
+            contador.atual = (contador.atual - 1 + contador.total + 1) % (contador.total + 1)
         }
         
         let idBotao = id(tarefaNome, bloco, 'botao', tipo)
@@ -302,6 +308,9 @@ Clique para fixar/desafixar.`,
 
         let label = tiposDocumentos.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
         botao.textContent = label.label + ' ' + contador.atual + '/' + contador.total
+        console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
+        console.log('%c[Rota PJE]%c contador.atual: ' + JSON.stringify(contador.atual), LOG.rosa, 'color:inherit')
+        return {tipoContador: tipo, contador: contador.atual}
     }
 
 
