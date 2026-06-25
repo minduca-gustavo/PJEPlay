@@ -55,28 +55,13 @@ async function con2_prazo_vencido_assistente_iniciar() {
         texto: `Passe o mouse para ver a instrução completa da tarefa.
 Clique para fixar/desafixar.`,
         textoBox: `Como utilizar este assistente:
-	- Anote no campo acima o que precisar. Esta anotação é local, e será perdida ao fechar a janela.
-	- O assistente traz informações que podem ser confrontadas com o processo lado a lado. Passe o mouse e clique no box para fixar as informações e fazer a confrontação.
-Confronte a petição inicial com os dados da autuação no sistema:
-	- As partes estão devidamente cadastradas? Há partes mencionadas na petição inicial que não constam da autuação ou vice-versa?
-	- Todas as partes estão com CPF/CNPJ corretos?
-	- Os endereços das partes na autuação conferem com os endereços da petição inicial? Todos têm CEP cadastrado?
-	- O valor da causa na autuação confere com o valor que consta da petição inicial?
-	- Verifique se o Rito está correto, principalmente em casos em que há Órgãos Públicos cadastrados. 
-	- Alguma das reclamadas está em zona rural ou área não atendida pelos Correios? Qual?
-Para fazer essa conferência de maneira mais rápida, utilize este assistente assim:
-Passe o mouse para abrir os dados da autuação, e CLIQUE no box. Isso fixará os dados. Com a petição inicial ao lado, faça a conferência.
-Na petição inicial, verifique:
-	- Há pedidos ilíquidos?
-	- Há pedidos no rol final sem a respectiva fundamentação (causa de pedir)?
-	- Há causa de pedir na fundamentação sem o respectivo pedido no rol final?
-	- Há pedidos ilíquidos (sem valor estimado)?
-    - Há pedido de perícia?
-Verificação dos documentos:
-	- O reclamante juntou seus documentos pessoais?
-	- Há procuração/substabelecimento?
-Após a conferência de todos os itens, utilize os botões para tomar as providências necessárias quanto à retificação da autuação ou minuta de despacho para determinar a retificação pelo reclamante.
-Caso esteja tudo certo, utilize o bloco de designação de audiência para designar a audiência, despachar ou certificar, intimar as partes, se o caso, e colocar o GIG de acompanhamento.`,
+    - Anote no campo abaixo o que precisar. Esta anotação é local, e será perdida ao fechar a janela.
+    - O assistente traz informações que podem ser confrontadas com o processo lado a lado. Passe o mouse e clique no box para fixar as informações e fazer a confrontação.
+    - Esta tarefa foi pensada para o prazo vencido da CON2, portanto, contempla o prazo vencido de sentença (admissibilidade de RO), e também de contrarrazões (remessa ao TRT).
+    - Esta primeira seção traz informações úteis a ambas as tarefas. No bloco de soluções, todas as soluções existentes são mostradas. Passe o mouse para maiores detalhes.
+    - No bloco de documentos, ao clicar em cada opção, o assistente buscará o próximo documento daquele tipo (sentença, recurso, procuração, etc.), se houver.
+    - As instruções e tarefas à admissibilidade de recursos e remessa ao TRT ficam abaixo, e podem ser recolhidas.
+`,
         ancestral: id(tarefaNome, bloco)
     })
     criaInputAnotacao({ id: id(tarefaNome, bloco, 'anotacao'), placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: id(tarefaNome, bloco) })
@@ -104,17 +89,15 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
         let idTabela = id(tarefaNome, bloco, 'tabela')
         let idEsq    = id(tarefaNome, bloco, 'tabela', 'esquerda')
         let idDir    = id(tarefaNome, bloco, 'tabela', 'direita')
+        console.log('%c[Rota PJE]%c solucoes.length: ' + JSON.stringify(solucoes.length), LOG.rosa, 'color:inherit')
         let idDasColunas = solucoes?.length > 1 ? [
             id(tarefaNome, bloco, 'tabela', 'esquerda'),
             id(tarefaNome, bloco, 'tabela', 'direita')
         ] : [id(tarefaNome, bloco, 'tabela', 'esquerda')]
-
+        
         criaTabela({
             id: idTabela,
-            idDasColunas: [
-                id(tarefaNome, bloco, 'tabela', 'esquerda'),
-                id(tarefaNome, bloco, 'tabela', 'direita')
-            ],
+            idDasColunas: idDasColunas,
             semDivisao: true,
             ancestral: id(tarefaNome, bloco)
         })
@@ -128,9 +111,14 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
 
         for (let i = 0; i < solucoes.length; i += 2) {
             let esq = solucoes[i].split('-', 2)[0].trim()
-            let dir = solucoes[i + 1].split('-', 2)[0].trim()   // pode ser undefined na última linha se quantidade for ímpar
             let toolTipEsq = solucoes[i]
-            let toolTipDir = solucoes[i + 1]
+            let dir = ''
+            let toolTipDir = ''
+            if (solucoes.length > 1) {
+                 dir = solucoes[i + 1].split('-', 2)[0].trim()   // pode ser undefined na última linha se quantidade for ímpar
+                toolTipDir = solucoes[i + 1]
+            }
+            
             let valores = {
                 [idEsq]: criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i), texto: esq, tooltip: toolTipEsq, cor: corDaSolucao(esq) }),
             }
@@ -157,31 +145,121 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
     ]
     let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
     console.log('%c[Rota PJE]%c documentosTimeline: ' + JSON.stringify(documentosTimeline), LOG.rosa, 'color:inherit')
+    let ordem = 0
+    let textoOrdem = ordem == 0  ? 'do mais antigo para o mais novo' : 'do mais novo para o mais antigo'
+    let botaoOrdem = criaBotaoLaranja({
+        id: id(tarefaNome, bloco, 'botao_ordem_documentos'),
+        texto: 'Ordem: ' + textoOrdem,
+        ancestral: id(tarefaNome, bloco),
+        acao: () => ordenaDocumentos()
+    })
+    
+    let contadoresDocumentos = {}
+
     if (documentosTimeline.length){
         criaTabelaDeDocumentos(documentosTimeline)
     }
+    
+    function ordenaDocumentos(){
+        
+        let botaoOrdem = document.getElementById(id(tarefaNome, bloco, 'botao_ordem_documentos'))
+        ordem = ordem == 0 ? 1 : 0
+        botaoOrdem.textContent = ordem == 0  ? 'Ordem: do mais antigo para o mais novo' : 'Ordem: do mais novo para o mais antigo'
+        console.log('%c[Rota PJE]%c ordena: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
+    }
+
     function criaTabelaDeDocumentos(documentos){
         console.log('%c[Rota PJE]%c documentos 165: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
-        let documentosCriar = {}
-        let colunas = 0
+        let documentosCriar =   {}
+        let elementos =         0
         for(let c of tiposDocumentos){
             documentosCriar[c.chave] = encontrarTipoNaTimeline(c, documentos)
-            if (documentosCriar[c.chave].length) colunas++
+            if (documentosCriar[c.chave].length) elementos++
         }
-        if (colunas > 3) colunas = 3
-        console.log('%c[Rota PJE]%c documentos 165: ' + JSON.stringify(documentosCriar), LOG.rosa, 'color:inherit')
-        let idDasColunas = []
-        for(let c = 0; i < colunas; i++){
-            idDasColunas.push(id(tarefaNome, bloco, 'tabela', i))
+        let colunas =           elementos > 3 ? 3 : elementos
+        let idDasColunas =      []
+        for(let i = 1; i <= colunas; i){
+            idDasColunas.push(id(tarefaNome, bloco, 'tabela', 'coluna', i++))
         }
         let idTabela = id(tarefaNome, bloco, 'tabela')
         criaTabela({
-            id: idTabela,
-            idDasColunas: idDasColunas,
-            semDivisao: true,
-            ancestral: id(tarefaNome, bloco)
+            id:             idTabela,
+            idDasColunas:   idDasColunas,
+            semDivisao:     true,
+            ancestral:      id(tarefaNome, bloco)
         })
         // to parado aqui
+        let contadorTipo = 0
+        let linha = {}
+        for (let [tipo, doc] of Object.entries(documentosCriar)) {
+            
+            if (!doc.length) continue
+
+            let label = tiposDocumentos.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
+            if (!label) continue
+
+            // Estado do contador para este tipo
+            let chaveContador = id(tarefaNome, bloco, tipo)
+            contadoresDocumentos[chaveContador] = { atual: 0, total: doc.length }
+
+            let idBotao = id(tarefaNome, bloco, 'botao', tipo)
+            let textoBotao = label.label + ' 0/' + doc.length
+            let idColuna = idDasColunas[contadorTipo]       // ← chave que ui_adicionarLinhaTabela entende
+            linha[idColuna] = criaBotaoAzul({
+                id: idBotao,
+                texto: textoBotao,
+                acao: () => avancarContadorDocumento(tarefaNome, bloco, tipo, ordem)
+            })
+            contadorTipo++
+            if (contadorTipo % colunas == 0) {
+                ui_adicionarLinhaTabela(idTabela, linha)
+                linha = {}
+                contadorTipo = 0                            // ← reseta pra próxima linha
+            }
+        
+            //console.log('%c[Rota PJE]%c textoBotao: ' + JSON.stringify(textoBotao), LOG.rosa, 'color:inherit')
+            //linha[tipo] = criaBotaoAzul({
+            //    id: idBotao,
+            //    texto: textoBotao,
+            //    acao: () => avancarContadorDocumento(tarefaNome, bloco, tipo, ordem)
+            //})
+            //contadorTipo++
+            //if (contadorTipo % colunas == 0){
+            //    ui_adicionarLinhaTabela(idTabela, linha)
+            //    linha = {}
+            //}
+            
+            
+            // (aqui você cria o botão com idBotao e textoBotao)
+            // ui_adicionarLinhaTabela(...) ou o que você usa pra inserir na tabela
+
+        }
+        if (Object.keys(linha).length) {
+            ui_adicionarLinhaTabela(idTabela, linha)
+        }
+        console.log('%c[Rota PJE]%c documentosCriar 187: ' + JSON.stringify(documentosCriar), LOG.rosa, 'color:inherit')
+        
+        return
+        for (let i = 0; i < elementos; i++) {
+            
+            let esq =           solucoes[i].split('-', 2)[0].trim()
+            let toolTipEsq =      solucoes[i]
+            let dir = ''
+            let toolTipDir = ''
+            if (solucoes.length > 1) {
+                 dir = solucoes[i + 1].split('-', 2)[0].trim()   // pode ser undefined na última linha se quantidade for ímpar
+                toolTipDir = solucoes[i + 1]
+            }
+            
+            let valores = {
+                [idEsq]: criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i), texto: esq, tooltip: toolTipEsq, cor: corDaSolucao(esq) }),
+            }
+            if (dir !== undefined) {
+                valores[idDir] = criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i + 1), texto: dir, tooltip: toolTipDir, cor: corDaSolucao(dir) })
+            }
+
+            ui_adicionarLinhaTabela(idTabela, valores)
+        }
         function encontrarTipoNaTimeline(tipo, ondeBuscar) {
             const termos = tipo.opcoes ?? [tipo.chave]
 
@@ -208,9 +286,27 @@ Caso esteja tudo certo, utilize o bloco de designação de audiência para desig
         }
     }
 
+    function avancarContadorDocumento(tarefaNome, bloco, tipo, ordem) {
+        let chaveContador = id(tarefaNome, bloco, tipo)
+        let contador = contadoresDocumentos[chaveContador]
+        if (!contador) return
+        if (ordem == 0){ 
+            contador.atual = (contador.atual + 1) % (contador.total + 1)
+        } else {
+            contador.atual = (contador.atual + 1) % (contador.total + 1)
+        }
+        
+        let idBotao = id(tarefaNome, bloco, 'botao', tipo)
+        let botao = document.getElementById(idBotao)
+        if (!botao) return
+
+        let label = tiposDocumentos.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
+        botao.textContent = label.label + ' ' + contador.atual + '/' + contador.total
+    }
 
 
 
+    return
 
 
 

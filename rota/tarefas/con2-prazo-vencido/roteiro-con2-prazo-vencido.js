@@ -80,7 +80,7 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
         let movimento = ''
         if (mov?.titulo.includes('Julgado(s) ')){
             movimento = (mov?.titulo.split('Julgado(s) ')[1])
-                .replace("o(s) pedido(s) (", "-")
+                .replace("o(s) pedido(s) (", "- ")
                 .replaceAll(')', '')
                 .replaceAll('(', '')
                 .replaceAll('/', '')

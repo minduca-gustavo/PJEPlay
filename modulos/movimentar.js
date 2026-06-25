@@ -317,7 +317,6 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
   if (!opcaoModelo) return
 
-  await clicar(opcaoModelo)
   let botaoInserir = await esperarEClicar('elaborarDespachoInserirModelo')
   return
 }

@@ -307,7 +307,7 @@ function criaBotaoAzul({ id, texto = 'OK', ancestral, acao }) {
     btn.textContent = texto
     _ui_hoverBotao(btn, UI_CORES.azul, UI_CORES.azulHover)
     if (typeof acao === 'function') btn.addEventListener('click', acao)
-    _ui_inserir(btn, ancestral)
+    if (ancestral) _ui_inserir(btn, ancestral)
     return btn
 }
 
@@ -787,6 +787,7 @@ function ui_adicionarLinhaTabela(idTabela, valores = {}) {
                 : 'none',
             verticalAlign: 'middle',
             width:         `${Math.floor(100 / colunas.length)}%`,
+            textAlign: 'center'
         })
         const valor = valores[colId]
         if (valor instanceof HTMLElement) {
