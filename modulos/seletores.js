@@ -278,74 +278,63 @@ const SELETORES_218 = {
     // },
 }
 
-const SELETORES = {
-  '2.18': SELETORES_218,
-  '2.19': {
-    ...SELETORES_218,  // herda tudo — só sobrescreva o que quebrou
-    detalhesDoProcessoBotaoAbrirAnexos:{
-      seletor: '.botao-anexos',
-      ancestral: 'pje-timeline-anexos'
-    },
-    detalhesDoProcessoMostrarOuEsconderGigs:{
-      seletor: '[name="Mostrar ou Esconder o GIGS"]',
-    },
-    detalhesDoProcessoOJDoProcesso:{
-      seletor: '.oj-cargo'
-    },
-    pautaDeAudienciaConfirmacaoSala:{
-      seletor: '[name="sala"]',
-    },
-    pautaDeAudienciaConfirmacaoJuizSelecionado:{
-      seletor: '.mat-focused',
-    },
-    pautaDeAudienciaMetaQuadroHorariosVagos:{
-      seletor: 'meta[name="rota-horarios_vagos"]',
-    },
-    tarefaDoProcessoTituloDaTarefa:{
-      seletor: '.texto-tarefa-processo',
-    },
-    //detalhesDoProcessoBarraSuperior:{
-    //  seletor: 'mat-toolbar'
-    //},
-    // Exemplo:
-    // botaoFinalizar: {
-    //   seletor:     '#btn-finalizar',
-    //   propriedade: 'textContent',
-    //   valor:       'Finalizar',
-    // },
+// Versões em ordem crescente. Índice 0 = mais antiga (fallback implícito).
+// Cada versão declara APENAS o que mudou em relação à anterior.
+// A busca percorre do índice mais alto até 0 — primeiro match vence.
+const VERSOES = [
+  {
+    versao: '2.18',
+    seletores: SELETORES_218,
   },
-  '2.20': {
-    ...SELETORES_218,  // herda tudo — só sobrescreva o que quebrou
-    detalhesDoProcessoBotaoAbrirAnexos:{
-      seletor: '.botao-anexos',
-      ancestral: 'pje-timeline-anexos'
+  {
+    versao: '2.19',
+    seletores: {
+      detalhesDoProcessoBotaoAbrirAnexos: {
+        seletor: '.botao-anexos',
+        ancestral: 'pje-timeline-anexos'
+      },
+      detalhesDoProcessoMostrarOuEsconderGigs: {
+        seletor: '[name="Mostrar ou Esconder o GIGS"]',
+      },
+      detalhesDoProcessoOJDoProcesso: {
+        seletor: '.oj-cargo'
+      },
+      pautaDeAudienciaConfirmacaoSala: {
+        seletor: '[name="sala"]',
+      },
+      pautaDeAudienciaConfirmacaoJuizSelecionado: {
+        seletor: '.mat-focused',
+      },
+      pautaDeAudienciaMetaQuadroHorariosVagos: {
+        seletor: 'meta[name="rota-horarios_vagos"]',
+      },
+      tarefaDoProcessoTituloDaTarefa: {
+        seletor: '.texto-tarefa-processo',
+      },
+      //detalhesDoProcessoBarraSuperior: {
+      //  seletor: 'mat-toolbar'
+      //},
+      // Exemplo:
+      // botaoFinalizar: {
+      //   seletor:     '#btn-finalizar',
+      //   propriedade: 'textContent',
+      //   valor:       'Finalizar',
+      // },
     },
-    detalhesDoProcessoOJDoProcesso:{
-      seletor: '.oj-cargo'
-    },
-    pautaDeAudienciaConfirmacaoSala:{
-      seletor: '[name="sala"]',
-    },
-    pautaDeAudienciaConfirmacaoJuizSelecionado:{
-      seletor: '.mat-focused',
-    },
-    pautaDeAudienciaMetaQuadroHorariosVagos:{
-      seletor: 'meta[name="rota-horarios_vagos"]',
-    },
-    detalhesDoProcessoMostrarOuEsconderGigs:{
-      seletor: '[name="Mostrar ou Esconder o GIGS"]',
-    },
-    tarefaDoProcessoTituloDaTarefa:{
-      seletor: '.texto-tarefa-processo',
-    },
-    // Exemplo:
-    // botaoFinalizar: {
-    //   seletor:     '#btn-finalizar',
-    //   propriedade: 'textContent',
-    //   valor:       'Finalizar',
-    // },
   },
-}
+  {
+    versao: '2.20',
+    seletores: {
+      // só o que realmente mudou da 2.19 pra 2.20
+      // Exemplo:
+      // botaoFinalizar: {
+      //   seletor:     '#btn-finalizar-novo',
+      //   propriedade: 'textContent',
+      //   valor:       'Finalizar',
+      // },
+    },
+  },
+]
 
 
 // -----------------------------------------------------------------------------
@@ -383,18 +372,22 @@ function limparErros() {
 // 3. RESOLUÇÃO DE ENTRADAS DO MAPA
 // -----------------------------------------------------------------------------
 
-// Retorna a entrada {seletor, propriedade?, valor?} para uma chave na versão
-// atual, com fallback para VERSAO_FALLBACK. Retorna null se não encontrada.
-async function resolverEntrada(chave) {
-  const resultado = await obterArmazenamento('rota_versao')
-  const versao = resultado?.rota_versao ?? VERSAO_FALLBACK
-  //console.log('%c[Rota PJE]%c procurando agora versao: ' + versao, LOG.teste, 'color:inherit')
-  const mapa    = SELETORES[versao] ?? SELETORES[VERSAO_FALLBACK]
-  const entrada = mapa?.[chave] ?? null
+// Retorna a entrada {seletor, propriedade?, valor?} para uma chave,
+// percorrendo VERSOES do índice da versão atual até 0 (primeiro match vence).
+// Síncrono — usa _rotaVersaoAtual já populado por detectarVersao().
+function resolverEntrada(chave) {
+  const versaoAtual = _rotaVersaoAtual ?? VERSAO_FALLBACK
 
-  if (!entrada) registrarErro(chave, versao)
+  let idx = VERSOES.findIndex(v => v.versao === versaoAtual)
+  if (idx === -1) idx = VERSOES.length - 1  // versão desconhecida: usa a mais recente
 
-  return entrada
+  for (let i = idx; i >= 0; i--) {
+    const entrada = VERSOES[i].seletores[chave]
+    if (entrada) return entrada
+  }
+
+  registrarErro(chave, versaoAtual)
+  return null
 }
 
 
@@ -421,7 +414,7 @@ function selecionar(seletor = '', ancestral = '', todos = false) {
 // Função principal — resolve chave no mapa da versão e busca o elemento.
 // Usar em todos os scripts no lugar de selecionar() direto.
 async function sel(chave, ancestralExterno = '', todos = false) {
-  const entrada = await resolverEntrada(chave)
+  const entrada = resolverEntrada(chave)
   if (!entrada) return ''
 
   let ancestral = ancestralExterno
@@ -467,12 +460,10 @@ function pronto(el, entrada) {
 // Retorna Promise<Element|null>
 async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0, texto } = {}) {
   const chaves = Array.isArray(chave) ? chave : [chave]
-  const entradas = await Promise.all(
-    chaves.map(async c => {
-      const entrada = await resolverEntrada(c)
-      return entrada ? { ...entrada, texto } : null
-    })
-  )
+  const entradas = chaves.map(c => {
+    const entrada = resolverEntrada(c)
+    return entrada ? { ...entrada, texto } : null
+  })
   if (entradas.some(e => !e)) return null
   const checar = () => {
     if (modo === 'e') {
@@ -495,8 +486,7 @@ async function aguardarElementoNovo(chave, { modo = 'ou', timeout = 0, texto } =
       return null
     }
   }
-  let versao = await obterArmazenamento('rota_versao')
-  versao = versao?.rota_versao ?? VERSAO_FALLBACK
+  const versao = _rotaVersaoAtual ?? VERSAO_FALLBACK
   return new Promise(resolver => {
     const elImediato = checar()
     if (elImediato) { resolver(elImediato); return }
@@ -562,14 +552,9 @@ detectarVersao()
 // Usa a versão já armazenada em memória — não faz await.
 // Retorna '' se a chave não existir no mapa.
 function seletorPorVersao(chave) {
-  const versao = _rotaVersaoAtual ?? VERSAO_FALLBACK
-  const mapa   = SELETORES[versao] ?? SELETORES[VERSAO_FALLBACK]
-  const entrada = mapa?.[chave] ?? null
+  const entrada = resolverEntrada(chave)
 
-  if (!entrada) {
-    registrarErro(chave, versao)
-    return ''
-  }
+  if (!entrada) return ''
 
   return entrada.seletor
 }

@@ -95,50 +95,54 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     console.log('%c[Rota PJE]%c solucao: ' + JSON.stringify(solucao), LOG.rosa, 'color:inherit')
     
     console.log('%c[Rota PJE]%c movimentos: ' + JSON.stringify(movimentos), LOG.rosa, 'color:inherit')
-    let [timeline, gigs, gigs_concluidos, processo, recursos] = await Promise.all([
+    let [timeline, processo, recursos] = await Promise.all([
         interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
-        interceptador_aguardar('gigs', 3000).then(() => interceptador_lerGigs() || []),
-        interceptador_aguardar('gigs_concluidos', 3000).then(() => interceptador_lerGigsConcluidos() || []),
         interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
         interceptador_aguardar('recursos').then(() => interceptador_lerRecursos() || {}),
     ])
-    gigs.push(...gigs_concluidos)
-    let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
-    if (!gig?.tipoAtividade) {
-        let gigsAPI = await buscarGigs(processo?.numero) || []
-        gig = gigsAPI.find(g => /GAB.*JU.*/i.test(g?.tipoAtividade?.descricao || '')) ?? {}
-    }
-    let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
-    let juizSimetriaPeloGig = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim() || ''
-    let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
-    let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
-    let salaJuizes = []
-    let sala = salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) || {}
-    let horariosVagos = []
-    if (sala.id) {
-        horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
-    }
     let idBusca = processo.id || idURL
     if (!idBusca) return
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     
     dadosCon2PrazoVencido.solucao                  = solucao
     dadosCon2PrazoVencido.timeline                 = timeline
-    // até aqui
     dadosCon2PrazoVencido.partes                  = partes
     dadosCon2PrazoVencido.processo                = processo
-    dadosCon2PrazoVencido.gig                     = gig
-    dadosCon2PrazoVencido.salas                   = salas
-    dadosCon2PrazoVencido.sala                    = sala
-    dadosCon2PrazoVencido.salaJuizes              = salaJuizes
-    dadosCon2PrazoVencido.horariosVagos           = horariosVagos
-    dadosCon2PrazoVencido.juizSimetriaPeloGig     = juizSimetriaPeloGig
-    dadosCon2PrazoVencido.peticaoInicialId        = peticaoInicialId
     dadosCon2PrazoVencido.recursos                = recursos
     
     await armazenar({ rota_dadosCon2PrazoVencido: dadosCon2PrazoVencido })
     await armazenar({ rota_dadosCon2PrazoVencidoNumero: processo.numero })
     await armazenar({ rota_dadosProntos: true })
+}
+
+//__________________________________________________
+//                      ABRIR DOCUMENTOS
+//__________________________________________________
+
+async function con2_prazo_vencido_abrirDocumentos(documento) {
+    let idBotaoDocumentoBusca = '#abrirdoc_' + documento.idUnicoDocumento
+    console.log('%c[Rota PJE]%c idBotaoDocumentoBusca: ' + JSON.stringify(idBotaoDocumentoBusca), LOG.rosa, 'color:inherit')
+    let idBotaoClicar = selecionar(idBotaoDocumentoBusca)
+    console.log('%c[Rota PJE]%c idBotaoClicar: ' + JSON.stringify(idBotaoClicar), LOG.rosa, 'color:inherit')
+    if (!idBotaoClicar){
+        let idPaiBusca = '#doc_' + documento.idDocumentoPai
+        let pai = await selecionar(idPaiBusca)
+        console.log('%c[Rota PJE]%c idPaiBusca: ' + JSON.stringify(idPaiBusca), LOG.rosa, 'color:inherit')
+        console.log('%c[Rota PJE]%c pai: ' + JSON.stringify(pai), LOG.rosa, 'color:inherit')
+        console.log('%c[Rota PJE]%c pai:', LOG.rosa, 'color:inherit', pai)
+        let idBotaoPaiClicar = selecionar('.botao-anexos', pai)
+        console.log('%c[Rota PJE]%c idBotaoPaiClicar: ' + JSON.stringify(idBotaoPaiClicar), LOG.rosa, 'color:inherit')
+        if (!idBotaoPaiClicar){
+            rota_avisoObrigatorio('Documento não encontrado.', 5)
+            return
+        }
+        console.log('%c[Rota PJE]%c idBotaoPaiClicar: ' + JSON.stringify(idBotaoPaiClicar), LOG.rosa, 'color:inherit')
+        await clicar(idBotaoPaiClicar)
+        idBotaoClicar = await aguardarElemento('#anexo_' + documento.id)
+    }
+    await clicar (idBotaoClicar)
+
+    rota_avisoTemporario(JSON.stringify(documento.idUnicoDocumento), '', 4000)
 }
 
 //__________________________________________________
@@ -896,15 +900,7 @@ async function con2_prazo_vencido_acoesConjuntas(p){
 
 
 Object.assign(rota_acoes, {
-    'con2_prazo_vencido_designa_audiencia':    async (p) => await con2_prazo_vencido_designarAudiencia(p),
-    'con2_prazo_vencido_despachar':            async (p) => await con2_prazo_vencido_despachar(p),
-    'con2_prazo_vencido_gig':                  async (p) => await con2_prazo_vencido_colocarGigDeAcompanhamento(p),
-    'con2_prazo_vencido_certidao':             async (p) => await con2_prazo_vencido_certificar(p),
-    'con2_prazo_vencido_retificar':            async (p) => await con2_prazo_vencido_retificarAutuacao(p),
-    'con2_prazo_vencido_intimar':              async (p) => await con2_prazo_vencido_intimar(p),
-    'con2_prazo_vencido_acoes_conjuntas':      async (p) => await con2_prazo_vencido_acoesConjuntas(p),
-    'con2_prazo_vencido_aguardando_audiencia': async (p) => await con2_prazo_vencido_aguardandoAudiencia(p),
-    'con2_prazo_vencido_bloquear_horarios':    async (p) => await con2_prazo_vencido_bloquearHorarios(p),
+    'con2_prazo_vencido_abrir_documentos':    async (p) => await con2_prazo_vencido_abrirDocumentos(p),
 })
 
 

@@ -144,6 +144,18 @@ Clique para fixar/desafixar.`,
         { chave: 'substabelecimento',label: 'Substabelecimento' },
     ]
     let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
+    
+    await criaWidgetDocumentos({
+        ancestral:  id(tarefaNome, bloco),
+        documentos: documentosTimeline,
+        tipos:      tiposDocumentos,
+        idPrefixo:  id(tarefaNome, bloco, 'widget'),
+        onAbrir:    (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
+        modo:       'tipo',
+    })
+    
+    return
+    
     console.log('%c[Rota PJE]%c documentosTimeline: ' + JSON.stringify(documentosTimeline), LOG.rosa, 'color:inherit')
     let ordem = 0
     let textoOrdem = ordem == 0  ? 'do mais antigo para o mais novo' : 'do mais novo para o mais antigo'

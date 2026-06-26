@@ -1366,3 +1366,263 @@ function rota_avisoObrigatorio(msg = '', segundos = 60) {
     }, 1000)
   })
 }
+
+/**
+ * criaWidgetDocumentos
+ *
+ * Monta um widget de botões para navegar documentos de uma timeline.
+ *
+ * @param {object}   params
+ * @param {string}   params.ancestral   - id do elemento pai onde o widget será montado
+ * @param {Array}    params.documentos  - array da timeline já resolvida
+ * @param {Array}    params.tipos       - array de { chave, label?, opcoes? }
+ *                                        se label omitido, usa chave como label
+ * @param {string}   params.idPrefixo  - prefixo para compor ids internos
+ * @param {Function} params.onAbrir    - callback chamado com (documento) ao clicar
+ * @param {boolean}  [params.laranja=false] - true = variantes laranja, false = variantes azul
+ * @param {string}   [params.modo='tipo']  - 'tipo' | 'documento' | 'tipoComCheckBox' | 'documentoComCheckBox'
+ */
+async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, onAbrir, laranja = false, modo = 'tipo' }) {
+
+    // --- estado encapsulado ---
+    let ordemSalva = await obterArmazenamento('armazenarCriaWidgetDocumentos')
+    ordem = ordemSalva?.[idPrefixo] ?? 1
+    let contadoresDocumentos = {}
+
+    // normaliza tipos: garante que label sempre existe
+    let tiposNormalizados = tipos.map(t => ({
+        chave:  t.chave,
+        label:  t.label ?? t.chave,
+        opcoes: t.opcoes ?? null,
+    }))
+
+    // --- factory de botão conforme laranja e modo ---
+    function _criaBotao(params) {
+        return laranja ? criaBotaoLaranja(params) : criaBotaoAzul(params)
+    }
+
+    function _criaBotaoComCheckBox(params) {
+        return laranja ? criaBotaoLaranjaComCheckBox(params) : criaBotaoAzulComCheckBox(params)
+    }
+
+    // --- botão de ordem (só nos modos por tipo) ---
+    function textoOrdem() {
+        return ordem === 0 ? 'Ordem: do mais novo para o mais antigo' : 'Ordem: do mais antigo para o mais novo'
+    }
+    if (modo === 'tipo' || modo === 'tipoComCheckBox') {
+        criaBotaoLaranja({
+            id:        id(idPrefixo, 'botao_ordem_documentos'),
+            texto:     textoOrdem(),
+            ancestral: ancestral,
+            acao: () => {
+                ordem = ordem === 0 ? 1 : 0
+                let botao = document.getElementById(id(idPrefixo, 'botao_ordem_documentos'))
+                if (botao) botao.textContent = textoOrdem()
+                console.log('%c[Rota PJE]%c ordem: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
+                armazenar({ armazenarCriaWidgetDocumentos: { [idPrefixo]: ordem } })
+            }
+        })
+    }
+
+    if (!documentos.length) return
+
+    // --- despacha para o modo correto ---
+    if (modo === 'tipo')                 _criaTabelaPorTipo(documentos, false)
+    else if (modo === 'tipoComCheckBox') _criaTabelaPorTipo(documentos, true)
+    else if (modo === 'documento')       _criaTabelaPorDocumento(documentos, false)
+    else if (modo === 'documentoComCheckBox') _criaTabelaPorDocumento(documentos, true)
+
+    // -------------------------------------------------------------------------
+    // MODO tipo / tipoComCheckBox
+    // -------------------------------------------------------------------------
+
+    function _encontrarTipoNaTimeline(tipo, ondeBuscar) {
+        const termos = tipo.opcoes ?? [tipo.chave]
+
+        const bate = (titulo, tipoDoc) =>
+            termos.some(termo =>
+                normalizar(titulo).toLowerCase().includes(termo) ||
+                normalizar(tipoDoc).toLowerCase().includes(termo)
+            )
+
+        const resultado = []
+
+        for (const documento of ondeBuscar) {
+            if (bate(documento?.titulo, documento?.tipo)) {
+                resultado.push(documento)
+            }
+            for (const anexo of documento?.anexos ?? []) {
+                if (bate(anexo?.titulo, anexo?.tipo)) {
+                    resultado.push(anexo)
+                }
+            }
+        }
+
+        return resultado
+    }
+
+    function _criaTabelaPorTipo(docs, comCheckBox) {
+        console.log('%c[Rota PJE]%c criaWidgetDocumentos docs: ' + JSON.stringify(docs), LOG.rosa, 'color:inherit')
+
+        let documentosCriar = {}
+        let elementos = 0
+
+        for (let c of tiposNormalizados) {
+            documentosCriar[c.chave] = _encontrarTipoNaTimeline(c, docs)
+            if (documentosCriar[c.chave].length) elementos++
+        }
+
+        if (!elementos) return
+
+        let colunas     = elementos > 3 ? 3 : elementos
+        let idDasColunas = []
+        for (let i = 1; i <= colunas; i) {
+            idDasColunas.push(id(idPrefixo, 'tabela', 'coluna', i++))
+        }
+
+        let idTabela = id(idPrefixo, 'tabela')
+        criaTabela({
+            id:           idTabela,
+            idDasColunas: idDasColunas,
+            semDivisao:   true,
+            ancestral:    ancestral
+        })
+
+        let contadorTipo = 0
+        let linha = {}
+
+        for (let [tipo, doc] of Object.entries(documentosCriar)) {
+
+            if (!doc.length) continue
+
+            let tipoDef = tiposNormalizados.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
+            if (!tipoDef) continue
+
+            let chaveContador = id(idPrefixo, tipo)
+            //contadoresDocumentos[chaveContador] = { atual: -1, total: doc.length }
+            //contadoresDocumentos[chaveContador] = { atual: total, total: doc.length }
+            contadoresDocumentos[chaveContador] = { atual: 0, total: doc.length, primeiroClique: true }
+
+            let idBotao    = id(idPrefixo, 'botao', tipo)
+            let idCheckbox = id(idPrefixo, 'checkbox', tipo)
+            let textoBotao = tipoDef.label + ' 0/' + doc.length
+            let idColuna   = idDasColunas[contadorTipo]
+
+            let acaoBotao = async () => {
+                let resultado = _avancarContadorDocumento(tipo)
+                if (!resultado) return
+                let { tipoContador, contador } = resultado
+                console.log('%c[Rota PJE]%c onAbrir documento: ' + JSON.stringify(documentosCriar[tipoContador][contador]), LOG.rosa, 'color:inherit')
+                await onAbrir(documentosCriar[tipoContador][contador])
+            }
+
+            linha[idColuna] = comCheckBox
+                ? _criaBotaoComCheckBox({ id: idBotao, idCheckbox, texto: textoBotao, acao: acaoBotao })
+                : _criaBotao({ id: idBotao, texto: textoBotao, acao: acaoBotao })
+
+            contadorTipo++
+
+            if (contadorTipo % colunas === 0) {
+                ui_adicionarLinhaTabela(idTabela, linha)
+                linha = {}
+                contadorTipo = 0
+            }
+        }
+
+        if (Object.keys(linha).length) {
+            ui_adicionarLinhaTabela(idTabela, linha)
+        }
+    }
+
+    function _avancarContadorDocumento(tipo) {
+        let chaveContador = id(idPrefixo, tipo)
+        let contador = contadoresDocumentos[chaveContador]
+        if (!contador) return null
+
+        if (contador.primeiroClique) {
+            contador.atual = ordem === 0 ? 0 : contador.total - 1
+            contador.primeiroClique = false
+        } else {
+            if (ordem === 0) {
+                contador.atual = (contador.atual + 1) % contador.total
+            } else {
+                contador.atual = (contador.atual - 1 + contador.total) % contador.total
+            }
+        }
+
+        let idBotao = id(idPrefixo, 'botao', tipo)
+        let botao = document.getElementById(idBotao)
+        if (!botao) return null
+
+        let tipoDef = tiposNormalizados.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
+        botao.textContent = tipoDef.label + ' ' + (contador.atual + 1) + '/' + contador.total
+
+        console.log('%c[Rota PJE]%c _avancarContadorDocumento tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
+        console.log('%c[Rota PJE]%c _avancarContadorDocumento atual: ' + JSON.stringify(contador.atual), LOG.rosa, 'color:inherit')
+
+        return { tipoContador: tipo, contador: contador.atual }
+    }
+
+    // -------------------------------------------------------------------------
+    // MODO documento / documentoComCheckBox
+    // -------------------------------------------------------------------------
+
+    function _criaTabelaPorDocumento(docs, comCheckBox) {
+        console.log('%c[Rota PJE]%c criaWidgetDocumentos por documento docs: ' + JSON.stringify(docs), LOG.rosa, 'color:inherit')
+
+        let elementos = docs.length
+        if (!elementos) return
+
+        let colunas      = elementos > 3 ? 3 : elementos
+        let idDasColunas = []
+        for (let i = 1; i <= colunas; i) {
+            idDasColunas.push(id(idPrefixo, 'tabela', 'coluna', i++))
+        }
+
+        let idTabela = id(idPrefixo, 'tabela')
+        criaTabela({
+            id:           idTabela,
+            idDasColunas: idDasColunas,
+            semDivisao:   true,
+            ancestral:    ancestral
+        })
+
+        let contadorDoc = 0
+        let linha = {}
+
+        for (let documento of docs) {
+            let docId     = documento.idUnicoDocumento
+            let tipoDef   = tiposNormalizados.find(t =>
+                t.chave === documento?.tipo ||
+                (t.opcoes && t.opcoes.includes(documento?.tipo))
+            )
+            let labelTipo  = tipoDef?.label ?? documento?.tipo ?? documento?.titulo ?? docId
+            let textoBotao = labelTipo + ' - ' + docId
+
+            let idBotao    = id(idPrefixo, 'botao', docId)
+            let idCheckbox = id(idPrefixo, 'checkbox', docId)
+            let idColuna   = idDasColunas[contadorDoc]
+
+            let acaoBotao = async () => {
+                console.log('%c[Rota PJE]%c onAbrir documento: ' + JSON.stringify(documento), LOG.rosa, 'color:inherit')
+                await onAbrir(documento)
+            }
+
+            linha[idColuna] = comCheckBox
+                ? _criaBotaoComCheckBox({ id: idBotao, idCheckbox, texto: textoBotao, acao: acaoBotao })
+                : _criaBotao({ id: idBotao, texto: textoBotao, acao: acaoBotao })
+
+            contadorDoc++
+
+            if (contadorDoc % colunas === 0) {
+                ui_adicionarLinhaTabela(idTabela, linha)
+                linha = {}
+                contadorDoc = 0
+            }
+        }
+
+        if (Object.keys(linha).length) {
+            ui_adicionarLinhaTabela(idTabela, linha)
+        }
+    }
+}
