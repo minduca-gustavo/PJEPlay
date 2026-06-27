@@ -117,7 +117,7 @@ const SF_BOTOES = [
 	},
 	{
 		nome: 'Lista número, partes, autuação, tarefa. "TODAS" para buscar em todas as tarefas.',
-		modo: ['Lista', 'Tarefa'],  // ← este botão só aparece no modo Tarefa
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
 			let {idsx, tx} = { idsx: [], tx: [] }
 			if (contexto.modo === 'Tarefa') {
@@ -172,6 +172,45 @@ const SF_BOTOES = [
 		}
 	},
 	{
+		nome: 'Lista informações dos processos pelo GIG.',
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {ids, t} = await buscarProcessosPorGig(contexto.valor)
+			console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.rosa, 'color:inherit')
+			console.log('%c[Rota PJE]%c t[0]' + JSON.stringify(t[0]), LOG.rosa, 'color:inherit')
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+
+			for (let i = 0; i < ids.length; i++) {
+				
+
+				let numero 		= t[i]?.processo?.numero || ''
+				let autor  		= t[i]?.processo?.nomeParteAutora || ''
+				let reu			= t[i]?.processo?.nomeParteRe || ''
+				let tarefa		= t[i]?.processo?.nomeTarefa || ''
+				let id 			= t[i]?.processo?.id || ''
+				d.push({
+					Id:			id,
+					Processo:   numero,
+					Reclamada:  reu,
+					Reclamante: autor,
+					Tarefa: 	tarefa,
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
 		nome: 'Lista audiências a partir do ID do processo.',
 		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
@@ -182,17 +221,65 @@ const SF_BOTOES = [
 				let dataInicio 	= '-'
 				let sala		= '-'
 				let processo	= '-'
+				let autuacao	= '-'
+				let tipo	= '-'
 				if (audienciasMarcadas?.dataInicio){
 					dataInicio	= new Date(audienciasMarcadas?.dataInicio).toLocaleDateString('pt-BR')
 					sala		= audienciasMarcadas?.salaFisica?.nome
 					processo	= audienciasMarcadas?.processo?.numero
+					autuacao	= new Date(audienciasMarcadas?.processo?.autuadoEm).toLocaleDateString('pt-BR')
+					tipo		= audienciasMarcadas?.tipo?.descricao
 				}
 
 				d.push({
-					id			: ids,
-					processo	: processo,
-					sala		: sala,
-					dataInicio	: dataInicio,
+					Id					: ids,
+					Processo			: processo,
+					Sala				: sala,
+					Data_da_Audiencia	: dataInicio,
+					Tipo				: tipo,
+					Data_de_Autuacao	: autuacao,
+				})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhuma audiência encontrada.'
+			
+		}
+	},
+	{
+		nome: 'Lista dados do processo a partir do ID.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			let d = []
+			await sf_pool(ids, async (ids, i) => {
+				let dados = await buscarProcesso(ids)
+				//let dataInicio 	= '-'
+				//let sala		= '-'
+				console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+				let processo	= '-'
+				let autuacao	= '-'
+				//let tipo	= '-'
+				//if (dados?.dataInicio){
+					//dataInicio	= new Date(dados?.dataInicio).toLocaleDateString('pt-BR')
+					//sala		= dados?.salaFisica?.nome
+					processo	= dados?.numero
+					autuacao	= new Date(dados?.autuadoEm).toLocaleDateString('pt-BR')
+					//tipo		= dados?.tipo?.descricao
+				//}
+
+				d.push({
+					Id					: ids,
+					Processo			: processo,
+					//Sala				: sala,
+					//Data_da_Audiencia	: dataInicio,
+					//Tipo				: tipo,
+					Data_de_Autuacao	: autuacao,
 				})
 				
 			}, {

@@ -53,6 +53,59 @@ async function buscarProcessosPorTarefa(nomeTarefa, param = '', opcoes = {}) {
 
     return { ids, t }
 }
+async function buscarProcessosPorGig(nomeGig = '', opcoes = {}) {
+    let gigsAtivos = await rota_fetch(
+        location.origin + '/pje-gigs-api/api/relatorioatividades/tiposatividades'
+    )
+    // https://pje.trt15.jus.br/pje-gigs-api/api/relatorioatividades/tiposatividades
+    let gigs = gigsAtivos.filter(g => g.descricao.includes(nomeGig))
+    if (!gigs.length) {
+        relatar('Gig não encontrada: ' + nomeGig, '', 'erro')
+        return { ids: [], t: [] }
+    }
+    let ids = []
+    let t   = []
+
+    relatar('Gig encontrada: ' + JSON.stringify(gigs[0].id), '', 'resposta')
+    for(gig of gigs) {   
+        // Página 1 para descobrir quantas páginas existem
+        let loop = await _idPorPaginaGig(1, gig.id)
+        let nloop = loop.paginas
+        ids = loop.ids
+        t   = loop.t
+
+        if (nloop > 1) {
+            let paginas = []
+            for (let i = 2; i <= nloop; i++) paginas.push(i)
+
+            let resultados = await sf_pool(paginas, async (pagina) => {
+                return await _idPorPaginaGig(pagina, gig?.id)
+            }, {
+                concorrencia: opcoes.concorrencia ?? 10,
+                tentativas:   opcoes.tentativas   ?? 2,
+                pausaMs:      opcoes.pausaMs       ?? 100,
+            })
+
+            resultados.forEach(r => {
+                if (!r) return
+                r.ids.forEach(n => ids.push(n))
+                r.t.forEach(n => t.push(n))
+            })
+        }
+    }
+    return { ids, t }
+}
+
+async function _idPorPaginaGig(pagina, idGig) {
+	let paginacao = await rota_fetch(
+		location.origin + '/pje-gigs-api/api/relatorioatividades/?tipo=' + idGig + '&pagina=' + pagina + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorDestinatario=false&filtrarPorLocalizacao=false'
+	)
+    // https://pje.trt15.jus.br/pje-gigs-api/api/relatorioatividades/?tipo=20237&pagina=1&tamanhoPagina=20&ordenacaoCrescente=true&filtrarPorDestinatario=false&filtrarPorLocalizacao=false
+	let paginas  = paginacao?.qtdPaginas || 1
+	let resultado = paginacao?.resultado || []
+	let ids = resultado.map(j => j.id)
+	return { paginas, ids, t: resultado }
+}
 
 async function _idPorPaginaTarefa(pagina, idTarefa, param = '') {
 	let paginacao = await rota_fetch(

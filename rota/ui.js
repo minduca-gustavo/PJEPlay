@@ -1555,7 +1555,7 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
         if (!botao) return null
 
         let tipoDef = tiposNormalizados.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
-        botao.textContent = tipoDef.label + ' ' + (contador.atual + 1) + '/' + contador.total
+        botao.textContent = tipoDef.label + ' ' + (contador.total - contador.atual) + '/' + contador.total
 
         console.log('%c[Rota PJE]%c _avancarContadorDocumento tipo: ' + JSON.stringify(tipo), LOG.rosa, 'color:inherit')
         console.log('%c[Rota PJE]%c _avancarContadorDocumento atual: ' + JSON.stringify(contador.atual), LOG.rosa, 'color:inherit')

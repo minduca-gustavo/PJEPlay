@@ -120,28 +120,31 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
 //__________________________________________________
 
 async function con2_prazo_vencido_abrirDocumentos(documento) {
-    let idBotaoDocumentoBusca = '#abrirdoc_' + documento.idUnicoDocumento
-    console.log('%c[Rota PJE]%c idBotaoDocumentoBusca: ' + JSON.stringify(idBotaoDocumentoBusca), LOG.rosa, 'color:inherit')
-    let idBotaoClicar = selecionar(idBotaoDocumentoBusca)
-    console.log('%c[Rota PJE]%c idBotaoClicar: ' + JSON.stringify(idBotaoClicar), LOG.rosa, 'color:inherit')
-    if (!idBotaoClicar){
-        let idPaiBusca = '#doc_' + documento.idDocumentoPai
-        let pai = await selecionar(idPaiBusca)
-        console.log('%c[Rota PJE]%c idPaiBusca: ' + JSON.stringify(idPaiBusca), LOG.rosa, 'color:inherit')
-        console.log('%c[Rota PJE]%c pai: ' + JSON.stringify(pai), LOG.rosa, 'color:inherit')
-        console.log('%c[Rota PJE]%c pai:', LOG.rosa, 'color:inherit', pai)
-        let idBotaoPaiClicar = selecionar('.botao-anexos', pai)
-        console.log('%c[Rota PJE]%c idBotaoPaiClicar: ' + JSON.stringify(idBotaoPaiClicar), LOG.rosa, 'color:inherit')
-        if (!idBotaoPaiClicar){
+    // Tenta pelo idUnicoDocumento (documento raiz)
+    let botao = selecionar('[id$="' + documento.idUnicoDocumento + '"]')
+
+    if (!botao) {
+        // Tenta pelo id simples (anexo com pai já expandido)
+        botao = selecionar('[id$="' + documento.id + '"]')
+    }
+
+    if (!botao) {
+        // Pai não expandido — abre o pai primeiro
+        let pai = selecionar('#doc_' + documento.idDocumentoPai)
+        if (!pai) {
             rota_avisoObrigatorio('Documento não encontrado.', 5)
             return
         }
-        console.log('%c[Rota PJE]%c idBotaoPaiClicar: ' + JSON.stringify(idBotaoPaiClicar), LOG.rosa, 'color:inherit')
-        await clicar(idBotaoPaiClicar)
-        idBotaoClicar = await aguardarElemento('#anexo_' + documento.id)
+        let botaoPai = selecionar('.botao-anexos', pai)
+        if (!botaoPai) {
+            rota_avisoObrigatorio('Documento não encontrado.', 5)
+            return
+        }
+        await clicar(botaoPai)
+        botao = await aguardarElemento('[id$="' + documento.id + '"]')
     }
-    await clicar (idBotaoClicar)
 
+    await clicar(botao)
     rota_avisoTemporario(JSON.stringify(documento.idUnicoDocumento), '', 4000)
 }
 
