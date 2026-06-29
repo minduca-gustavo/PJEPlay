@@ -127,6 +127,10 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     await armazenar({ rota_dadosProntos: true })
 }
 
+async function triagem_inicial_atualizaJanelaDetalhes(){
+    window.location.reload()
+}
+
 //__________________________________________________
 //                      RETIFICAR
 //__________________________________________________
@@ -195,27 +199,34 @@ async function triagem_inicial_acoesRetificar(){
     await clicar(seletorClique)
     let quadroJuizoDigital = await aguardarElementoNovo('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
     let botoesContagem = 0
-    let segundos = 10
+    let segundos = 30
     for (let i = 0; i < segundos * 2; i++){
+        console.log('%c[Rota PJE]%c i' + JSON.stringify(i), LOG.rosa, 'color:inherit')
         await suspender(500)
         let botoesConfirmaJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalBotoes', quadroJuizoDigital, true)
-        quadroJuizoDigital = await aguardarElementoNovo('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
-        if (!quadroJuizoDigital) return
+        quadroJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
+        if (!quadroJuizoDigital) await atualizaJanelaDetalhes(4000)
         for(botao of botoesConfirmaJuizoDigital){
-            if (botao.textContent ==='sim'){
+            if (botao.textContent ==='Sim'){
                 botoesContagem++
                 await clicar(botao)
                 if (botoesContagem == 2){
-                    await suspender(2000)
-                    window.close()
-                    return
+                    await atualizaJanelaDetalhes(4000)
                 }
-                if (i = segundos * 2) {
+                if (i == segundos * 2) {
                     rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
                     return
                 }
+                quadroJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
+                if (i > 7 && !quadroJuizoDigital) await atualizaJanelaDetalhes()
             }
         }
+    }
+    async function atualizaJanelaDetalhes(timeout = 0){
+        await suspender(timeout)
+        comandar(['triagem_inicial_atualiza_janela_detalhes'], {triagem_inicial_atualiza_janela_detalhes: true})
+        window.close()
+        return
     }
 }
 
@@ -917,15 +928,16 @@ async function triagem_inicial_acoesConjuntas(p){
 
 
 Object.assign(rota_acoes, {
-    'triagem_inicial_designa_audiencia':    async (p) => await triagem_inicial_designarAudiencia(p),
-    'triagem_inicial_despachar':            async (p) => await triagem_inicial_despachar(p),
-    'triagem_inicial_gig':                  async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
-    'triagem_inicial_certidao':             async (p) => await triagem_inicial_certificar(p),
-    'triagem_inicial_retificar':            async (p) => await triagem_inicial_retificarAutuacao(p),
-    'triagem_inicial_intimar':              async (p) => await triagem_inicial_intimar(p),
-    'triagem_inicial_acoes_conjuntas':      async (p) => await triagem_inicial_acoesConjuntas(p),
-    'triagem_inicial_aguardando_audiencia': async (p) => await triagem_inicial_aguardandoAudiencia(p),
-    'triagem_inicial_bloquear_horarios':    async (p) => await triagem_inicial_bloquearHorarios(p),
+    'triagem_inicial_designa_audiencia':        async (p) => await triagem_inicial_designarAudiencia(p),
+    'triagem_inicial_despachar':                async (p) => await triagem_inicial_despachar(p),
+    'triagem_inicial_atualiza_janela_detalhes': async (p) => await triagem_inicial_atualizaJanelaDetalhes(p),
+    'triagem_inicial_gig':                      async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
+    'triagem_inicial_certidao':                 async (p) => await triagem_inicial_certificar(p),
+    'triagem_inicial_retificar':                async (p) => await triagem_inicial_retificarAutuacao(p),
+    'triagem_inicial_intimar':                  async (p) => await triagem_inicial_intimar(p),
+    'triagem_inicial_acoes_conjuntas':          async (p) => await triagem_inicial_acoesConjuntas(p),
+    'triagem_inicial_aguardando_audiencia':     async (p) => await triagem_inicial_aguardandoAudiencia(p),
+    'triagem_inicial_bloquear_horarios':        async (p) => await triagem_inicial_bloquearHorarios(p),
 })
 
 
