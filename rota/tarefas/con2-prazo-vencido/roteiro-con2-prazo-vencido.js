@@ -121,29 +121,35 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
 
 async function con2_prazo_vencido_abrirDocumentos(documento) {
     // Tenta pelo idUnicoDocumento (documento raiz)
-    let botao = selecionar('[id$="' + documento.idUnicoDocumento + '"]')
-
+    let botao = selecionar('[id="anexo_' + documento.id + '"]')
+    console.log('%c[Rota PJE]%c botao 125: ' + JSON.stringify(botao.textContent), LOG.rosa, 'color:inherit')
     if (!botao) {
         // Tenta pelo id simples (anexo com pai já expandido)
-        botao = selecionar('[id$="' + documento.id + '"]')
+        botao = selecionar('[id="abrirdoc_' + documento.idUnicoDocumento + '"]')
+        console.log('%c[Rota PJE]%c botao.textContent 126: ' + JSON.stringify(botao.textContent), LOG.rosa, 'color:inherit')
     }
 
     if (!botao) {
         // Pai não expandido — abre o pai primeiro
         let pai = selecionar('#doc_' + documento.idDocumentoPai)
+        console.log('%c[Rota PJE]%c pai.textContent 125: ' + JSON.stringify(pai.textContent), LOG.rosa, 'color:inherit')
         if (!pai) {
             rota_avisoObrigatorio('Documento não encontrado.', 5)
+            console.log('%c[Rota PJE]%c 138: ' + JSON.stringify(138), LOG.rosa, 'color:inherit')
             return
         }
         let botaoPai = selecionar('.botao-anexos', pai)
+        console.log('%c[Rota PJE]%c botaoPai.textContent 125: ' + JSON.stringify(botaoPai.textContent), LOG.rosa, 'color:inherit')
         if (!botaoPai) {
             rota_avisoObrigatorio('Documento não encontrado.', 5)
+            console.log('%c[Rota PJE]%c 139: ' + JSON.stringify(139), LOG.rosa, 'color:inherit')
             return
         }
         await clicar(botaoPai)
-        botao = await aguardarElemento('[id$="' + documento.id + '"]')
+        await aguardarElemento('[id$="' + documento.id + '"]')
+        botao = selecionar('[id$="' + documento.id + '"]')
     }
-
+    console.log('%c[Rota PJE]%c botao.textContent 125: ' + JSON.stringify(botao.textContent), LOG.rosa, 'color:inherit')
     await clicar(botao)
     rota_avisoTemporario(JSON.stringify(documento.idUnicoDocumento), '', 4000)
 }
@@ -903,7 +909,8 @@ async function con2_prazo_vencido_acoesConjuntas(p){
 
 
 Object.assign(rota_acoes, {
-    'con2_prazo_vencido_abrir_documentos':    async (p) => await con2_prazo_vencido_abrirDocumentos(p),
+    'con2_prazo_vencido_abrir_documentos':  async (p) => await con2_prazo_vencido_abrirDocumentos(p),
+    'con2_prazo_vencido_retificar':         async (p) => await con2_prazo_vencido_retificarAutuacao(p),
 })
 
 

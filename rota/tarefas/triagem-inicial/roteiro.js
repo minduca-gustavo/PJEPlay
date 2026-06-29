@@ -173,6 +173,12 @@ async function triagem_inicial_acoesRetificar(){
     let tipo = tipos?.rota_pje_triagem_inicial_retificar_tipo ?? tipos
     let i = 0
     let elemento = null
+    let seletor = null
+    let seletorNome = null
+    if (tipo == '100_Digital'){
+        tipo = 'Características'
+        seletorNome = 'retificacaoAutuacaoSeletorJuizoDigitalForm'
+    }
     while (!elemento) {
         i++
         if (i > 10) break
@@ -182,6 +188,35 @@ async function triagem_inicial_acoesRetificar(){
     }
     if (!elemento) return
     await clicar(elemento)
+    if (!seletorNome) return
+    seletor = await aguardarElementoNovo(seletorNome)
+    let seletorClique = await sel('retificacaoAutuacaoSeletorJuizoDigitalSlide', seletor)
+    if (!seletorClique) return
+    await clicar(seletorClique)
+    let quadroJuizoDigital = await aguardarElementoNovo('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
+    let botoesContagem = 0
+    let segundos = 10
+    for (let i = 0; i < segundos * 2; i++){
+        await suspender(500)
+        let botoesConfirmaJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalBotoes', quadroJuizoDigital, true)
+        quadroJuizoDigital = await aguardarElementoNovo('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
+        if (!quadroJuizoDigital) return
+        for(botao of botoesConfirmaJuizoDigital){
+            if (botao.textContent ==='sim'){
+                botoesContagem++
+                await clicar(botao)
+                if (botoesContagem == 2){
+                    await suspender(2000)
+                    window.close()
+                    return
+                }
+                if (i = segundos * 2) {
+                    rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
+                    return
+                }
+            }
+        }
+    }
 }
 
 triagem_inicial_aoAbrirRetificar()

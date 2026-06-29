@@ -10,7 +10,10 @@
 
 async function clicar(el = ''){
   await suspender(300)
-  if(typeof el === 'string') el = selecionar(el)
+  if(typeof el === 'string') {
+    el = selecionar(el)
+    console.log('%c[Rota PJE]%c string 125: ' + JSON.stringify(125), LOG.rosa, 'color:inherit')
+  }
   if(!el) return ''
   let descricao = el?.textContent?.trim() || el?.getAttribute?.('aria-label') || ''
   console.log('%c[Rota PJE]%c clicar: ' + JSON.stringify(descricao), LOG.info, 'color:inherit')

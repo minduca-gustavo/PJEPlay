@@ -311,6 +311,18 @@ const VERSOES = [
       tarefaDoProcessoTituloDaTarefa: {
         seletor: '.texto-tarefa-processo',
       },
+      retificacaoAutuacaoSeletorJuizoDigitalForm:{
+        seletor:  '[formcontrolname="juizoDigital"]',
+      },
+      retificacaoAutuacaoSeletorJuizoDigitalSlide:{
+        seletor:  '.mat-slide-toggle-bar',
+      },
+      retificacaoAutuacaoSeletorJuizoDigitalQuadro:{
+        seletor:  'pje-modal-juizo-digital',
+      },
+      retificacaoAutuacaoSeletorJuizoDigitalBotoes:{
+        seletor:  'button',
+      },
       //detalhesDoProcessoBarraSuperior: {
       //  seletor: 'mat-toolbar'
       //},

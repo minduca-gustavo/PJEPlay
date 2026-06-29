@@ -1226,7 +1226,7 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
 //
 // criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral })
 
-function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral }) {
+function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral, idSeta }) {
     const wrapper = _ui_el('div', {
         border:       '1px solid ' + UI_CORES.borda,
         borderRadius: '6px',

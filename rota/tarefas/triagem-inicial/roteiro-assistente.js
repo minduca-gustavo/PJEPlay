@@ -108,9 +108,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         - Pedidos (líquidos/ilíquidos);`,
         ancestral: id(tarefaNome, bloco)
     })
-    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_partes'),   texto: 'Retificar autuação: partes',   ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Partes'}])})
-    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_rito'),     texto: 'Retificar autuação: rito',     ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Dados Iniciais'}])})
-    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_assuntos'), texto: 'Retificar autuação: assuntos', ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Assuntos'}])})
+    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_partes'),          texto: 'Retificar autuação: partes',    ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Partes'}])})
+    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_rito'),            texto: 'Retificar autuação: rito',      ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Dados Iniciais'}])})
+    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_assuntos'),        texto: 'Retificar autuação: assuntos',  ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: 'Assuntos'}])})
+    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_cem_por_cento'),   texto: 'Alternar Juízo 100% digital',   ancestral: id(tarefaNome, bloco), acao: () => comandar(['triagem_inicial_retificar'], [{tipo: '100_Digital'}])})
     criaBotaoLaranja({
         id: id(tarefaNome, bloco, 'despacho_emenda_retificacao'), 
         texto: 'Despacho: retificar autuação/emendar a inicial', 

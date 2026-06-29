@@ -60,7 +60,7 @@ Clique para fixar/desafixar.`,
     - Esta tarefa foi pensada para o prazo vencido da CON2, portanto, contempla o prazo vencido de sentença (admissibilidade de RO), e também de contrarrazões (remessa ao TRT).
     - Esta primeira seção traz informações úteis a ambas as tarefas. No bloco de soluções, todas as soluções existentes são mostradas. Passe o mouse para maiores detalhes.
     - No bloco de documentos, ao clicar em cada opção, o assistente buscará o próximo documento daquele tipo (sentença, recurso, procuração, etc.), se houver.
-    - As instruções e tarefas à admissibilidade de recursos e remessa ao TRT ficam abaixo, e podem ser recolhidas.
+    - As instruções e tarefas referentes à admissibilidade de recursos e remessa ao TRT ficam abaixo, e podem ser recolhidas.
 `,
         ancestral: id(tarefaNome, bloco)
     })
@@ -152,6 +152,83 @@ Clique para fixar/desafixar.`,
         idPrefixo:  id(tarefaNome, bloco, 'widget'),
         onAbrir:    (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
         modo:       'tipo',
+    })
+
+    bloco = 'partes'
+
+    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Partes do Processo', ancestral: id(tarefaNome, bloco) })
+    criaTextoQueAbrePassandoOMouse({
+        id: id(tarefaNome, bloco, 'dados_das_partes'),
+        texto: `Passe o mouse para ver os dados das partes.
+Clique para fixar/desafixar.`,
+        textoBox: `Dados das partes:
+${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
+        ancestral: id(tarefaNome, bloco)
+    })
+
+    criaBotaoAzul({
+         id: id(tarefaNome, bloco, 'retificar_partes'),
+         texto: 'Retificar autuação',
+         ancestral: id(tarefaNome, bloco),
+         acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Partes'}])
+    })
+    // ___________________________________________________
+    //  SECAO POS SENTENCA
+    // ___________________________________________________    
+    bloco = 'pos_sentenca'
+
+    let SecaoPosSentenca = criaSecaoMostraRecolhe({
+        id: id(tarefaNome, bloco, 'mostra_recolhe'),
+        idSempreAMostra: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra'),
+        idRecolhe: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe'),
+        ancestral: 'rota_corpo'
+    })
+    
+    let armazenarSecaoPosSentenca = (id(tarefaNome, bloco, 'mostra_recolhe'))
+    let estadoSalvoPosSentenca = await obterArmazenamento(id(tarefaNome, bloco, 'mostra_recolhe'))
+    if (estadoSalvoPosSentenca?.[armazenarSecaoPosSentenca] === false) {
+        SecaoPosSentenca.recolher()
+    }
+    
+    SecaoPosSentenca.aoAlternar = async (expandido) => {
+        await armazenar({ [armazenarSecaoPosSentenca]: expandido })
+    }
+
+    criaTitulo({
+        id: id(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
+        texto: 'Pós Sentença',
+        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
+    })
+
+    
+    // ___________________________________________________
+    //  SECAO REMESSA
+    // ___________________________________________________    
+    bloco = 'remessa'
+    
+    
+    let SecaoRemessa = criaSecaoMostraRecolhe({
+        id: id(tarefaNome, bloco, 'mostra_recolhe'),
+        idSempreAMostra: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra'),
+        idRecolhe: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe'),
+        ancestral: 'rota_corpo',
+    })
+
+    let armazenarSecaoRemessa = (id(tarefaNome, bloco, 'mostra_recolhe'))
+    let estadoSalvoRemessa = await obterArmazenamento(id(tarefaNome, bloco, 'mostra_recolhe'))
+    if (estadoSalvoRemessa?.[armazenarSecaoRemessa] === false) {
+        SecaoRemessa.recolher()
+    }
+    
+    SecaoRemessa.aoAlternar = async (expandido) => {
+        await armazenar({ [armazenarSecaoRemessa]: expandido })
+    }
+
+    criaTitulo({
+        id: id(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
+        texto: 'Remessa ao TRT.',
+        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
     })
     
     return
