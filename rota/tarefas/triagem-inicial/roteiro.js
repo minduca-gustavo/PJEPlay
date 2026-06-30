@@ -248,6 +248,11 @@ async function triagem_inicial_despachar(tipo) {
                         '&rota_pje_triagem_inicial_despachar_tipo=' + envio
     let nomeJanela =    'rota_pje_triagem_inicial_despachar_' + dadosTriagemInicial.execucaoAtual
     let id =            dadosTriagemInicial?.processo?.id
+    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || null
+    if (!audienciasMarcadas?.tipo && envio == 'triagem_inicial_despachar_designacao'){
+        rota_avisoObrigatorio('Não há audiências marcadas.', 5)
+        return
+    }
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
     let recurso =       tarefa[0]?.nomeRecurso || ''
@@ -576,6 +581,10 @@ triagem_inicial_aoAbrirDesignarAudiencia()
 async function triagem_inicial_colocarGigDeAcompanhamento() {
     let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
+    if (!audienciaMarcadaHorario){
+        rota_avisoObrigatorio('Não há audiências marcadas.', 5)
+        return
+    }
     let audienciaMarcadaNumero = audienciaMarcadaHorario ? new Date(audienciaMarcadaHorario).getTime() : NaN
     let hoje = new Date().getTime()
     let trintaDiasAntes = audienciaMarcadaNumero - 30 * 24 * 60 * 60 * 1000
@@ -604,7 +613,13 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
 // CERTIFICAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_certificar(tipo) {
+    let id =            dadosTriagemInicial?.processo?.id
+    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || null
     let envio = tipo.tipo
+    if (!audienciasMarcadas?.tipo && envio == 'triagem_inicial_certificar_designacao'){
+        rota_avisoObrigatorio('Não há audiências marcadas.', 5)
+        return
+    }
     await armazenar({
         'rota_pje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
         'rota_pje_triagem_inicial_certificar_tipo': tipo,
@@ -617,7 +632,6 @@ async function triagem_inicial_certificar(tipo) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
         return
     }
-    let id =            dadosTriagemInicial?.processo?.id
     let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
@@ -661,7 +675,7 @@ async function triagem_inicial_acoesCertificar(){
             modelo: 'SCBAU_TI_CERT', 
             tipo: 'Certidão', 
             descricao: 'Designação de audiência', 
-            intimar: 'triagem_inicial_intimar_designacao'
+            intimar: {tipo: 'triagem_inicial_intimar_designacao'}
         },
         'triagem_inicial_certificar_novo_link_e_intimar': {
             texto: 'Certifico o novo link da audiência, conforme segue:\n' + link, 
@@ -692,7 +706,7 @@ async function triagem_inicial_acoesCertificar(){
     monitorarBody(6000, 100)
     if (dados.intimar){
         window.addEventListener('beforeunload', () => {
-            comandar(['triagem_inicial_intimar'], [{tipo: dados.intimar}])
+            comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])
         })
     }
     await suspender(2000)
@@ -710,10 +724,10 @@ triagem_inicial_aoAbrirCertificar()
 async function triagem_inicial_intimar(tipo) {
     let id = dadosTriagemInicial?.processo?.id
     let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
-    let envio = tipo.tipo
+    let envio = tipo?.dados?.tipo
     await armazenar({
         'rota_pje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_intimar_tipo': tipo,
+        'rota_pje_triagem_inicial_intimar_tipo': tipo?.dados,
         'rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
     })
     let parametros =    '?rota_pje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
@@ -743,12 +757,12 @@ async function triagem_inicial_aoAbrirIntimar(){
 
 async function triagem_inicial_acoesIntimar(){
     let tiposIntimar = await obterArmazenamento('rota_pje_triagem_inicial_intimar_tipo')
-    let tipoIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.tipo.tipo
-    let linkIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.tipo.link
+    let tipoIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.tipo
+    let linkIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.link
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tiposIntimar), LOG.rosa, 'color:inherit', tiposIntimar)
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tipoIntimar), LOG.rosa, 'color:inherit', tipoIntimar)
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit', linkIntimar)
-    return
+    //return
     await aguardarElementoNovo(
         [
             'prepararExpedientesSeletorTipoDeExpediente',
@@ -757,11 +771,30 @@ async function triagem_inicial_acoesIntimar(){
         {modo: 'e', timeout: 10000}
     )
     //logInterceptador = false
-    
+    let opcoesIntimar = {
+        'triagem_inicial_intimar_link':{
+            tipoExpediente: 'Intimação',
+            descricao: 'Notificação Inicial - Designação de audiência',
+            texto: 'Ficam as partes intimadas do novo link da audiência designada:\n' + linkIntimar,
+            textoConfirmacao: 'Ato elaborado com sucesso. Tipo de documento selecionado: IntimaçãoX',
+            seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivoEPassivo'
+        },
+        'triagem_inicial_intimar_designacao':{
+            tipoExpediente: 'Notificação inicial',
+            descricao: 'Intimação - informa novo link',
+            tipos:[
+                {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
+                {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
+            ],
+            textoConfirmacao: 'Modelo de documento inserido com sucesso no editorX',
+            seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivo'
+        }
+    }
+    let dados = opcoesIntimar[tipoIntimar]
     let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
     await clicar(seletor)
     await aguardarElementoNovo('prepararExpedientesSeletorTipoDeExpedienteAberto')
-    let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes('Notificação inicial'))
+    let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes(dados.tipoExpediente))
     await clicar(opcao)
     let botaoConfeccionar = await aguardarElementoNovo('prepararExpedientesBotaoConfeccionarAtoAgrupado')
     await clicar(botaoConfeccionar)
@@ -774,7 +807,7 @@ async function triagem_inicial_acoesIntimar(){
     )
     let descricao = await sel('elaborarAtoInputDescricao')
     let inputModelo = await sel('elaborarDespachoBuscarModelos')
-    await preencher(descricao, 'Notificação Inicial - Designação de audiência')
+    await preencher(descricao, dados.descricao)
     await suspender(200)
     let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
     await preencherCKEditorExecCommand(areaAssinatura, '.')
@@ -782,53 +815,46 @@ async function triagem_inicial_acoesIntimar(){
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
     await suspender(200)
-    let tipoAudiencia = await obterArmazenamento('rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
-    let tipos = [
-        {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
-        {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
-    ]
-    let modelo = tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
-    if (!modelo){
+    if (!dados.modelo && !linkIntimar){
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
         window.addEventListener('beforeunload', () => {
             comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
         })
         return
     }
-    await digitarNoInput(inputModelo, modelo)
-    await selecionarOpcaoDeModelo(modelo)
-    await suspender(200)
-    await esperarEClicar('elaborarDespachoInserirModelo')
+    if (linkIntimar){
+        await preencherCKEditorExecCommand(conteudoPrincipal, dados.texto)
+    } else {
+        let tipoAudiencia = await obterArmazenamento('rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
+        let modelo = dados.tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
+        await digitarNoInput(inputModelo, modelo)
+        await selecionarOpcaoDeModelo(modelo)
+        await suspender(200)
+        await esperarEClicar('elaborarDespachoInserirModelo')
+    }
     await suspender(200)
     let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
     await clicar(botaoFinalizarMinuta)
-    
-    //monitorarBody(6000, 300, {incluir:{classes:['snack-bar']}})
-    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Modelo de documento inserido com sucesso no editorX'})
+    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto: dados.textoConfirmacao})
     let i = 0
     while (await sel('prepararExpedientesMensagemModeloInserido')){
         await suspender(500)
         if (i++ > 3 * 2) break
     }
-    //for(let i = 0; i < 30 * 2; i++){
-    //    let metaConfere = await interceptador_ler('expedientes_materia')
-    //    await suspender(500)
-    //    if (metaConfere !== metaExpedientes) break
-    //    if (i==30) return rota_avisoTemporario('Ocorreu um erro. Prossiga manualmente.', 'erro', 15 * 1000)
-    //}
-    //await suspender(200)
-    //await aguardarElementoNovo('prepararExpedientesAtoConfeccionado')
-    //metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    let botaoPoloAtivo = await aguardarElementoNovo('prepararExpedientesBotaoPoloAtivo')
-    //logInterceptador = true
+    let botaoPolo = await aguardarElementoNovo(dados.seletorBotaoPolo)
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    await clicar(botaoPoloAtivo)
-    //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
-    let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto:'Notificação inicialTipo de Expediente'})
-    i = 0
-    while (verificarCarregamentoDestinatario.isConnected){
-        await suspender(500)
-        if (i++ > 3 * 2) break
+    await clicar(botaoPolo)
+    if (dados.tipoExpediente == 'Notificação inicial'){ 
+        //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
+        let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto:'Notificação inicialTipo de Expediente'})
+        i = 0
+        while (verificarCarregamentoDestinatario.isConnected){
+            await suspender(500)
+            if (i++ > 3 * 2) break
+        }
+    } else {
+        await monitorarBody(6000, 500)
+        return
     }
     //await suspender(500)
     let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')

@@ -227,6 +227,10 @@ const SELETORES_218 = {
       seletor: '[name="btnIntimarSomentePoloAtivo"]',
       ancestral: '.pec-painel-expansivel-partes-processo'
     },
+    prepararExpedientesBotaoPoloAtivoEPassivo:{
+      seletor: '[name="btnIntimarPolosAtivoPassivo"]',
+      ancestral: '.pec-painel-expansivel-partes-processo'
+    },
     prepararExpedientesBotaoSalvar:{
       seletor: '[aria-label="Salva os expedientes"]',
       ancestral: '.pec-botoes-acoes-expedientes'
