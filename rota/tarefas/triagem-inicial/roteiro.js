@@ -607,7 +607,7 @@ async function triagem_inicial_certificar(tipo) {
     let envio = tipo.tipo
     await armazenar({
         'rota_pje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_certificar_tipo': envio,
+        'rota_pje_triagem_inicial_certificar_tipo': tipo,
     })
     let parametros =    '?rota_pje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
                         '&rota_pje_triagem_inicial_certificar_tipo=' + envio
@@ -639,6 +639,10 @@ async function triagem_inicial_aoAbrirCertificar(){
 // CERTIFICAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesCertificar(){
+    let tipos = await obterArmazenamento('rota_pje_triagem_inicial_certificar_tipo')
+    let tipoCertidao = tipos?.rota_pje_triagem_inicial_certificar_tipo?.tipo
+    let link = tipos?.rota_pje_triagem_inicial_certificar_tipo?.link
+    console.log('%c[Rota PJE]%c tipoCertidao: ' + JSON.stringify(tipoCertidao), LOG.rosa, 'color:inherit')
     let elementos = await aguardarElementoNovo(
         [
             'detalhesDoProcessoInputTipoDeDocumento',
@@ -651,21 +655,46 @@ async function triagem_inicial_acoesCertificar(){
     if (!elementos) return
     let tipo = await sel('detalhesDoProcessoInputTipoDeDocumento')
     let descricao = await sel('detalhesDoProcessoInputDescricaoDeDocumento')
-    let modelo = await sel('anexarDocumentosBuscarModelos')
+    let campoModelo = await sel('anexarDocumentosBuscarModelos')
+    let certidoes = {
+        'triagem_inicial_certificar_designacao': {
+            modelo: 'SCBAU_TI_CERT', 
+            tipo: 'Certidão', 
+            descricao: 'Designação de audiência', 
+            intimar: 'triagem_inicial_intimar_designacao'
+        },
+        'triagem_inicial_certificar_novo_link_e_intimar': {
+            texto: 'Certifico o novo link da audiência, conforme segue:\n' + link, 
+            tipo: 'Certidão', 
+            descricao: 'Certifica NOVO LINK',
+            intimar: {tipo: 'triagem_inicial_intimar_link', link: link}
+        }
+    }
+    let dados = certidoes[tipoCertidao]
     await suspender(200)
-    await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
+    await preencherCampoComEscolhaDeOpcao(tipo, dados.tipo)
     await suspender(200)
-    await preencher(descricao, 'Designação de audiência')
-    await suspender(200)
-    await digitarNoInput(modelo, 'SCBAU_TI_CERT')
-    await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
-    await esperarEClicar('elaborarDespachoInserirModelo')
+    await preencher(descricao, dados.descricao)
+    if (dados.modelo){
+        await suspender(200)
+        await digitarNoInput(campoModelo, dados.modelo)
+        await selecionarOpcaoDeModelo(dados.modelo)
+        await esperarEClicar('elaborarDespachoInserirModelo')
+    } else if (dados.texto){
+        let campoTexto = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
+        await preencherCKEditorExecCommand(campoTexto, dados.texto)
+    } else {
+        rota_avisoObrigatorio('Prossiga manualmente.', 5)
+        return
+    }
     let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
     await clicar(botaoAssinar)
     monitorarBody(6000, 100)
-    window.addEventListener('beforeunload', () => {
-        comandar(['triagem_inicial_intimar'], [{tipo: 'triagem_inicial_intimar_designacao'}])
-    })
+    if (dados.intimar){
+        window.addEventListener('beforeunload', () => {
+            comandar(['triagem_inicial_intimar'], [{tipo: dados.intimar}])
+        })
+    }
     await suspender(2000)
     return
 }
@@ -684,7 +713,7 @@ async function triagem_inicial_intimar(tipo) {
     let envio = tipo.tipo
     await armazenar({
         'rota_pje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_intimar_tipo': envio,
+        'rota_pje_triagem_inicial_intimar_tipo': tipo,
         'rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
     })
     let parametros =    '?rota_pje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
@@ -713,7 +742,13 @@ async function triagem_inicial_aoAbrirIntimar(){
 // INTIMAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesIntimar(){
-    
+    let tiposIntimar = await obterArmazenamento('rota_pje_triagem_inicial_intimar_tipo')
+    let tipoIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.tipo.tipo
+    let linkIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.tipo.link
+    console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tiposIntimar), LOG.rosa, 'color:inherit', tiposIntimar)
+    console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tipoIntimar), LOG.rosa, 'color:inherit', tipoIntimar)
+    console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit', linkIntimar)
+    return
     await aguardarElementoNovo(
         [
             'prepararExpedientesSeletorTipoDeExpediente',

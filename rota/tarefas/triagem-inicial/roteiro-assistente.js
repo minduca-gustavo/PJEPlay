@@ -182,6 +182,17 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             inputLinkAudiencia.placeholder = ''
         }
     }
+    criaBotaoLaranja({
+        id: id(tarefaNome, bloco, 'certificar_novo_link_e_intimar'),
+        texto: 'Certificar novo link e intimar.',
+        ancestral: id(tarefaNome, bloco),
+        acao: async () => {
+            let inputLink = document.getElementById(id(tarefaNome, bloco, 'input_link_da_audiencia'))
+            let link = inputLink?.value
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_novo_link_e_intimar', link: link}])
+        },
+    })
     criaSubTitulo({
         id: id(tarefaNome, bloco, 'acoes_conjuntas', 'subtitulo'),
         texto: 'Ações conjuntas',
