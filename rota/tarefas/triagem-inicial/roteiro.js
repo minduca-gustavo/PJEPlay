@@ -774,20 +774,24 @@ async function triagem_inicial_acoesIntimar(){
     let opcoesIntimar = {
         'triagem_inicial_intimar_link':{
             tipoExpediente: 'Intimação',
-            descricao: 'Notificação Inicial - Designação de audiência',
-            texto: 'Ficam as partes intimadas do novo link da audiência designada:\n' + linkIntimar,
-            textoConfirmacao: 'Ato elaborado com sucesso. Tipo de documento selecionado: IntimaçãoX',
-            seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivoEPassivo'
+            descricao: 'Intimação - informa novo link',
+            texto: 'Ficam as partes intimadas do novo link da audiência designada:\n' + linkIntimar + '\nSe o caso, será encaminhada por E-Carta.\nNAO APAGAR NENHUM CARACTERE DESTA LINHA. ESTE DOCUMENTO SERA ENVIADO VIA ECARTA (TIPO CARTA_SIMPLES).',
+            textoConfirmacaoAto: 'Ato elaborado com sucesso. Tipo de documento selecionado: IntimaçãoX',
+            textoConfirmacaoPolo: 'IntimaçãoTipo de Expediente',
+            seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivoEPassivo',
+            
         },
         'triagem_inicial_intimar_designacao':{
             tipoExpediente: 'Notificação inicial',
-            descricao: 'Intimação - informa novo link',
+            descricao: 'Notificação Inicial - Designação de audiência',
             tipos:[
                 {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
                 {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
             ],
-            textoConfirmacao: 'Modelo de documento inserido com sucesso no editorX',
-            seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivo'
+            textoConfirmacaoAto: 'Modelo de documento inserido com sucesso no editorX',
+            textoConfirmacaoPolo: 'Notificação inicialTipo de Expediente',
+            seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivo',
+            proximoPasso: {comando: ['triagem_inicial_aguardando_audiencia'], parametros:[{tipo: 'triagem_inicial_aguardando_audiencia'}]}
         }
     }
     let dados = opcoesIntimar[tipoIntimar]
@@ -818,7 +822,9 @@ async function triagem_inicial_acoesIntimar(){
     if (!dados.modelo && !linkIntimar){
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
         window.addEventListener('beforeunload', () => {
-            comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
+            if (dados.proximoPasso) {
+                comandar(dados.proximoPasso.comando, dados.proximoPasso.parametros)
+            }
         })
         return
     }
@@ -835,26 +841,23 @@ async function triagem_inicial_acoesIntimar(){
     await suspender(200)
     let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
     await clicar(botaoFinalizarMinuta)
-    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto: dados.textoConfirmacao})
+    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto: dados.textoConfirmacaoAto})
+    console.log('%c[Rota PJE]%c 839: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let i = 0
     while (await sel('prepararExpedientesMensagemModeloInserido')){
         await suspender(500)
         if (i++ > 3 * 2) break
     }
+    console.log('%c[Rota PJE]%c 839 845: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let botaoPolo = await aguardarElementoNovo(dados.seletorBotaoPolo)
+    console.log('%c[Rota PJE]%c 839 847: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
     await clicar(botaoPolo)
-    if (dados.tipoExpediente == 'Notificação inicial'){ 
-        //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
-        let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto:'Notificação inicialTipo de Expediente'})
-        i = 0
-        while (verificarCarregamentoDestinatario.isConnected){
-            await suspender(500)
-            if (i++ > 3 * 2) break
-        }
-    } else {
-        await monitorarBody(6000, 500)
-        return
+    let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto: dados.textoConfirmacaoPolo})
+    i = 0
+    while (verificarCarregamentoDestinatario.isConnected){
+        await suspender(500)
+        if (i++ > 3 * 2) break
     }
     //await suspender(500)
     let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')
@@ -867,7 +870,9 @@ async function triagem_inicial_acoesIntimar(){
     }
     await clicar(botaoAssinar)
     window.addEventListener('beforeunload', () => {
-        comandar(['triagem_inicial_aguardando_audiencia'], [{tipo: 'triagem_inicial_aguardando_audiencia'}])
+        if (dados.proximoPasso) {
+            comandar(dados.proximoPasso.comando, dados.proximoPasso.parametros)
+        }
     })
     monitorarBody(6000, 100)
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Expediente(s) assinado(s) com sucesso.X'})

@@ -134,9 +134,24 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaTexto({
         id: id(tarefaNome, bloco, 'texto'),
         texto: dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig
-            ? `A extensão identificou a seguinte sala: ${dados.rota_dadosTriagemInicial.sala.nome}.`
-            : 'Não foi identificada sala.',
+            ? `A extensão identificou a sala a seguir. Altere no menu abaixo.`
+            : 'Não foi identificada sala. Escolha a sala adequada no menu abaixo.',
         ancestral: id(tarefaNome, bloco)
+    })
+    console.log('%c[Rota PJE]%c dados?.rota_dadosTriagemInicial?.salas: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.salas), LOG.rosa, 'color:inherit')
+    let opcoesSalas = (dados?.rota_dadosTriagemInicial?.salas ?? []).map(sala => ({
+        valor: sala.id,
+        texto: sala.nome,
+    }))
+
+    criaMenuSuspenso({
+        id:        id(tarefaNome, bloco, 'menu_suspenso_juizes'),
+        opcoes:    opcoesSalas,
+        valorInicial: dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig
+            ? dados.rota_dadosTriagemInicial.sala?.id   // id, não .nome
+            : undefined,
+        placeholder: 'Escolha a sala adequada.',
+        ancestral: id(tarefaNome, bloco),
     })
 
     if (!dados?.rota_dadosTriagemInicial?.horariosVagos?.length) {

@@ -440,6 +440,200 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
 }
 
 
+// ── criaMenuSuspenso ─────────────────────────────────────────
+//
+// Menu suspenso (dropdown) com a mesma aparência dos botões —
+// mesmo formato, fonte e cor — com uma seta na direita indicando
+// abrir/fechar.
+//
+// O elemento retornado se comporta como um <select> nativo: tem
+// `.value` com o valor selecionado, e dispara um evento 'change'
+// sempre que o usuário escolhe uma opção. Dá pra reagir tanto pelo
+// callback `acao` quanto por addEventListener, como preferir:
+//
+//   const menu = criaMenuSuspenso({
+//       id:       'meu-menu',
+//       opcoes:   [
+//           { valor: 'a', texto: 'Opção A' },
+//           { valor: 'b', texto: 'Opção B' },
+//       ],
+//       valorInicial: 'a',
+//       ancestral:    'meu-container',
+//       acao: (valor, opcao) => console.log('mudou para', valor),
+//   })
+//
+//   // alternativa via eventlistener (equivalente ao 'acao' acima) —
+//   // útil se você for adicionar o listener em outro lugar do código:
+//   document.getElementById('meu-menu').addEventListener('change', (e) => {
+//       console.log('mudou para', e.detail.valor, e.detail.opcao)
+//   })
+//
+//   // e a qualquer momento dá pra ler ou setar o valor atual:
+//   document.getElementById('meu-menu').value = 'b'
+//
+// criaMenuSuspenso({ id, opcoes, valorInicial, ancestral, cor, acao })
+//   opcoes:       array de { valor, texto } — ou strings simples (valor = texto)
+//   valorInicial: opcional — padrão é a primeira opção
+//   cor:          'azul' (padrão) | 'laranja' | '#hexadecimal' customizado
+//   acao:         opcional — function(valor, opcao) chamada na troca
+
+function _ui_resolveCor(cor) {
+    if (cor === 'laranja')          return { cor: UI_CORES.laranja, corHover: UI_CORES.laranjaHover }
+    if (cor === 'azul' || !cor)     return { cor: UI_CORES.azul,    corHover: UI_CORES.azulHover }
+    return { cor: cor, corHover: _ui_escurecerHex(cor, 15) } // hex customizado
+}
+
+// Escurece uma cor hex em X% — usada para gerar o hover de cores customizadas
+function _ui_escurecerHex(hex, porcentagem) {
+    hex = hex.replace('#', '')
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('')
+    const num   = parseInt(hex, 16)
+    const fator = 1 - porcentagem / 100
+    const r = Math.max(0, Math.min(255, Math.floor(((num >> 16) & 0xff) * fator)))
+    const g = Math.max(0, Math.min(255, Math.floor(((num >> 8)  & 0xff) * fator)))
+    const b = Math.max(0, Math.min(255, Math.floor(( num        & 0xff) * fator)))
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
+}
+
+function criaMenuSuspenso({ id, opcoes = [], valorInicial, ancestral, cor = 'azul', acao }) {
+    const { cor: corBase, corHover } = _ui_resolveCor(cor)
+
+    const opcoesNormalizadas = opcoes.map(o =>
+        typeof o === 'string' ? { valor: o, texto: o } : o
+    )
+
+    // ── container (posição relativa — ancora a lista) ──────────
+    const container = _ui_el('div', {
+        position:    'relative',
+        marginLeft:  '3px',
+        marginRight: '3px',
+    })
+    container.id = id
+
+    // ── "botão" visível (mesma cara dos demais botões) ─────────
+    const botao = _ui_el('div', {
+        ..._ui_estiloBotao(corBase, corHover),
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'space-between',
+        marginLeft:     '0',
+        marginRight:    '0',
+        userSelect:     'none',
+    })
+    botao.tabIndex = 0
+
+    const textoSpan = _ui_el('span', {
+        overflow:     'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace:   'nowrap',
+    })
+    textoSpan.id = id + '-texto'
+
+    const seta = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    seta.setAttribute('viewBox', '0 0 10 6')
+    seta.setAttribute('width', '10')
+    seta.setAttribute('height', '6')
+    seta.style.marginLeft = '8px'
+    seta.style.flexShrink = '0'
+    seta.style.transition = 'transform 0.15s'
+    seta.innerHTML = '<path d="M0 0 L5 6 L10 0 Z" fill="#ffffff"></path>'
+
+    botao.appendChild(textoSpan)
+    botao.appendChild(seta)
+    _ui_hoverBotao(botao, corBase, corHover)
+
+    // ── lista de opções (oculta por padrão) ─────────────────────
+    const lista = _ui_el('div', {
+        position:     'absolute',
+        top:          'calc(100% + 4px)',
+        left:         '0',
+        right:        '0',
+        background:   UI_CORES.branco,
+        border:       '1px solid ' + UI_CORES.borda,
+        borderRadius: '6px',
+        boxShadow:    '0 4px 12px rgba(0,0,0,0.15)',
+        maxHeight:    '200px',
+        overflowY:    'auto',
+        zIndex:       String((typeof ROTA_Z !== 'undefined' ? (ROTA_Z.flutuante ?? 9000) : 9000) + 1),
+        display:      'none',
+    })
+    lista.id = id + '-lista'
+
+    let valorAtual = valorInicial ?? opcoesNormalizadas[0]?.valor
+
+    function _renderTexto() {
+        const op = opcoesNormalizadas.find(o => o.valor === valorAtual)
+        textoSpan.textContent = op ? op.texto : ''
+    }
+
+    function _fechar() {
+        lista.style.display  = 'none'
+        seta.style.transform = 'rotate(0deg)'
+    }
+
+    function _abrir() {
+        lista.style.display  = 'block'
+        seta.style.transform = 'rotate(180deg)'
+    }
+
+    opcoesNormalizadas.forEach(op => {
+        const item = _ui_el('div', {
+            padding:    '7px 12px',
+            fontSize:   '12px',
+            fontFamily: "'Segoe UI', system-ui, sans-serif",
+            color:      UI_CORES.texto,
+            cursor:     'pointer',
+        })
+        item.textContent = op.texto
+        item.addEventListener('mouseenter', () => item.style.background = UI_CORES.fundo)
+        item.addEventListener('mouseleave', () => item.style.background = 'transparent')
+        item.addEventListener('click', () => {
+            valorAtual = op.valor
+            _renderTexto()
+            _fechar()
+            // dispara 'change' como um <select> nativo faria
+            container.dispatchEvent(new CustomEvent('change', { detail: { valor: valorAtual, opcao: op } }))
+            if (typeof acao === 'function') acao(valorAtual, op)
+        })
+        lista.appendChild(item)
+    })
+
+    botao.addEventListener('click', (e) => {
+        e.stopPropagation()
+        lista.style.display === 'none' ? _abrir() : _fechar()
+    })
+
+    // fecha ao clicar fora do menu
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) _fechar()
+    })
+
+    // acessibilidade básica: Enter/Espaço abre-fecha, Esc fecha
+    botao.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            lista.style.display === 'none' ? _abrir() : _fechar()
+        }
+        if (e.key === 'Escape') _fechar()
+    })
+
+    // ── expõe .value, como um <select> nativo ────────────────────
+    Object.defineProperty(container, 'value', {
+        get: () => valorAtual,
+        set: (novoValor) => {
+            valorAtual = novoValor
+            _renderTexto()
+        },
+    })
+
+    _renderTexto()
+    container.appendChild(botao)
+    container.appendChild(lista)
+    _ui_inserir(container, ancestral)
+    return container
+}
+
+
 // ── criaBotaoComInputAzul ─────────────────────────────────────
 //
 // Input de texto com botão azul abaixo.
