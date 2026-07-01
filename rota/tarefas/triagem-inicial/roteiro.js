@@ -326,7 +326,11 @@ async function triagem_inicial_acoesDespachar(){
     }
     let modeloDespacho = ''
     if (tipo !== 'triagem_inicial_emendar'){
-        modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
+        if (tipo = 'triagem_inicial_despachar_redesignacao'){
+            modeloDespacho = 'SCBAU_TI_REDESIGNA'
+        } else {
+            modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
+        }
     }
     await movimentar('Despacho', {
         'Conclusão ao magistrado':{'juiz': juizEnvio},
@@ -499,6 +503,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
         await clicar(juizSelecionado)
     }
+    await suspender(1000)
     rota_avisoObrigatorio(aviso, 15)
     await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
@@ -557,8 +562,6 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
     await preencher(inputNumeroProcesso, horario.processo)
-    let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
-    await preencher(inputLinkAudiencia, horario.link)
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
@@ -569,6 +572,8 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
     await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
     await clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
+    let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
+    await preencher(inputLinkAudiencia, horario.link)
     
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
 

@@ -134,7 +134,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaTexto({
         id: id(tarefaNome, bloco, 'texto'),
         texto: dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig
-            ? `A extensão identificou a sala a seguir. Altere no menu abaixo.`
+            ? `A extensão identificou a sala a seguir. Altere no menu abaixo, se necessário.`
             : 'Não foi identificada sala. Escolha a sala adequada no menu abaixo.',
         ancestral: id(tarefaNome, bloco)
     })
@@ -224,6 +224,17 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         acao: async () => {
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
             comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao'}])
+        },
+        grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
+    })
+    criaBotaoLaranjaComCheckBox({
+        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
+        idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
+        texto: 'Despachar REDESIGNAÇÃO - MODELO SIMPLES DE REDESIGNAÇÃO.',
+        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        acao: async () => {
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_redesignacao'}])
         },
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
