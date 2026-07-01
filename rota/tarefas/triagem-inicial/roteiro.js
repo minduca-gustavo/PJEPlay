@@ -131,6 +131,22 @@ async function triagem_inicial_atualizaJanelaDetalhes(){
     window.location.reload()
 }
 
+async function triagem_inicial_atualizaHorariosVagos(p){
+    let novaSala = dadosTriagemInicial.salas?.find(sala => String(sala.id) === String(p?.salaId)) || {}
+    let horariosVagos = []
+    if (novaSala.id) {
+        horariosVagos = await buscarSalasHorariosVagos(novaSala.id) || []
+    }
+    dadosTriagemInicial.sala          = novaSala
+    dadosTriagemInicial.horariosVagos = horariosVagos
+
+    await armazenar({ rota_dadosTriagemInicial: dadosTriagemInicial })
+    // Sinal próprio (não reaproveita rota_dadosProntos, que dispara o carregamento completo
+    // do assistente). Usamos Date.now() em vez de true/false pra garantir onChanged sempre disparar,
+    // mesmo que duas trocas de sala terminem gerando o "mesmo" valor.
+    await armazenar({ rota_triagem_inicial_horariosAtualizados: Date.now() })
+}
+
 //__________________________________________________
 //                      RETIFICAR
 //__________________________________________________
@@ -997,6 +1013,7 @@ Object.assign(rota_acoes, {
     'triagem_inicial_designa_audiencia':        async (p) => await triagem_inicial_designarAudiencia(p),
     'triagem_inicial_despachar':                async (p) => await triagem_inicial_despachar(p),
     'triagem_inicial_atualiza_janela_detalhes': async (p) => await triagem_inicial_atualizaJanelaDetalhes(p),
+    'triagem_inicial_atualiza_horarios_vagos':  async (p) => await triagem_inicial_atualizaHorariosVagos(p),
     'triagem_inicial_gig':                      async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
     'triagem_inicial_certidao':                 async (p) => await triagem_inicial_certificar(p),
     'triagem_inicial_retificar':                async (p) => await triagem_inicial_retificarAutuacao(p),
@@ -1014,5 +1031,3 @@ async function verificarOQueChegou(p) {
 //__________________________________________________
 //                      BUSCAR JUIZ NO MODELO - POSSÍVEL FUNÇÃO GLOBAL 
 //__________________________________________________
-
-
