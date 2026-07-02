@@ -309,7 +309,7 @@ async function triagem_inicial_aoAbrirDespachar(){
 async function triagem_inicial_acoesDespachar(){
     let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
         obterArmazenamento('rota_pje_triagem_inicial_despachar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig || ''),
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.sala?.nome || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
     ])
     if(!juizEnvio) {
