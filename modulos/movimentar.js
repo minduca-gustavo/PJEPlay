@@ -293,7 +293,10 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
   let juiz = parametros.juiz.toUpperCase()
   await aguardarElementoNovo('conclusaoAoMagistradoOpcoesDeMagistrados')
   let juizes = [...(await sel ('conclusaoAoMagistradoOpcoesDeMagistrados', '', true))]
-  let juizSelecionado = juizes.find(j => juiz.includes(j.textContent?.trim()))
+  let juizSelecionado = juizes.find(j => {
+    let texto = j.textContent?.trim() ?? ''
+    return texto.includes(juiz) || juiz.includes(texto)
+  })
   if (!juizSelecionado) {
     rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
     return

@@ -99,12 +99,14 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     }
     let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
     let juizSimetriaPeloGig = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim() || ''
+    console.log('%c[Rota PJE]%c juizSimetriaPeloGig 106: ' + JSON.stringify(juizSimetriaPeloGig), LOG.rosa, 'color:inherit')
     let peticaoInicialId = timeline[timeline.length - 1]?.idUnicoDocumento || ''
     let salas = await buscarSalas(processo?.orgaoJulgador?.id) || []
     let salaJuizes = []
-    let sala = salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) || {}
+    let sala = juizSimetriaPeloGig ? salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) : null
+    console.log('%c[Rota PJE]%c sala 106: ' + JSON.stringify(sala), LOG.rosa, 'color:inherit')
     let horariosVagos = []
-    if (sala.id) {
+    if (sala) {
         horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
     }
     let idBusca = processo.id || idURL

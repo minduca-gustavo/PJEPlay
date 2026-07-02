@@ -139,10 +139,19 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: id(tarefaNome, bloco)
     })
     console.log('%c[Rota PJE]%c dados?.rota_dadosTriagemInicial?.salas: ' + JSON.stringify(dados?.rota_dadosTriagemInicial?.salas), LOG.rosa, 'color:inherit')
-    let opcoesSalas = (dados?.rota_dadosTriagemInicial?.salas ?? []).map(sala => ({
-        valor: sala.id,
-        texto: sala.nome,
-    }))
+    let opcoesSalas = [
+        { valor: null, texto: 'Selecione a sala.' },
+        ...(dados?.rota_dadosTriagemInicial?.salas ?? []).map(sala => ({
+            valor: sala.id,
+            texto: sala.nome,
+        })),
+    ]
+
+    let salaIdentificadaId =
+        dados?.rota_dadosTriagemInicial?.juizSimetriaPeloGig &&
+        opcoesSalas.some(o => o.valor === dados.rota_dadosTriagemInicial.sala?.id)
+            ? dados.rota_dadosTriagemInicial.sala.id
+            : null
 
     criaMenuSuspenso({
         id:        id(tarefaNome, bloco, 'menu_suspenso_juizes'),
@@ -277,15 +286,16 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     // Pode ser chamada de novo (troca de sala) sem duplicar nada, pois sempre limpa antes de recriar.
     function renderizarHorariosVagos(dadosAtual) {
         let horariosVagos = dadosAtual?.rota_dadosTriagemInicial?.horariosVagos
-
+        console.log('%c[Rota PJE]%c horariosVagos: ' + JSON.stringify(horariosVagos), LOG.rosa, 'color:inherit')
+        console.log('%c[Rota PJE]%c dadosAtual?.rota_dadosTriagemInicial?.sala?.nome: ' + JSON.stringify(dadosAtual?.rota_dadosTriagemInicial?.sala?.nome), LOG.rosa, 'color:inherit')
         let idLista = id(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios')
         let containerLista = document.getElementById(idLista)
         containerLista.innerHTML = ''
-
-        if (!horariosVagos?.length && dadosAtual?.rota_dadosTriagemInicial?.sala?.nome) {
+        let textoSemHorario = dadosAtual?.rota_dadosTriagemInicial?.sala?.nome ? `Não foram encontrados horários vagos para esta sala. Utilize a opção abaixo para designar manualmente a audiência.` : `Não há sala selecionada.`
+        if (!horariosVagos?.length/* && dadosAtual?.rota_dadosTriagemInicial?.sala?.nome*/) {
             criaTexto({
                 id: id(tarefaNome, bloco, 'sem_horario'),
-                texto: `Não foram encontrados horários vagos para esta sala. Utilize a opção abaixo para designar manualmente a audiência.`,
+                texto: textoSemHorario,//`Não foram encontrados horários vagos para esta sala. Utilize a opção abaixo para designar manualmente a audiência.`,
                 ancestral: idLista
             })
         }
