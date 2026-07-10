@@ -103,6 +103,7 @@
         "rota/modelo.js",
         "rota/interceptador.js",
         "rota/interceptador_documento.js",
+        "modulos/evita_queda.js",
         "modulos/seletores.js",
         "rota/ui.js",
         "modulos/movimentar.js",

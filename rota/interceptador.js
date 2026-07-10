@@ -50,7 +50,7 @@ const INTERCEPTADOR_ROTULO = {
     responsaveis:                   'responsaveis',
     dadosBasicos:                   'dados_basicos',
     timeline:                       'timeline',
-    orgaosJulgadores:               'orgaosJulgadores',
+    orgaosJulgadores:               'orgaos_julgadores',
     tarefasProcesso:                'tarefas_processo',
     modelosDocumentos:              'modelos_documentos',
     expedientesMateria:             'expedientes_materia',
@@ -130,11 +130,21 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
             'processo_partes',
             'audiencias',
             'responsaveis',
-            'documentos'
+            'documentos',
+            'orgaos_julgadores'
         ]
         if(rotulosParaStorage.includes(rotulo)){
             let chaveStorage = 'rotaDados_' + rotulo.replaceAll('-', '_')
-            armazenar({ [chaveStorage]: dados }).catch(() => {})
+            console.log('%c[Rota PJE]%c chaveStorage 139: ' + JSON.stringify(chaveStorage), LOG.rosa, 'color:inherit')
+            console.log('%c[Rota PJE]%c dados 139: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+            armazenar({ chaveStorage: dados }).catch(() => {})
+        }
+        if(rotulo === 'orgaos_julgadores'){
+            let chaveStorage = 'rota_evita_queda'
+            let agora = new Date()
+            console.log('%c[Rota PJE]%c chaveStorage 145: ' + JSON.stringify(chaveStorage), LOG.rosa, 'color:inherit')
+            console.log('%c[Rota PJE]%c agora 145: ' + JSON.stringify(agora), LOG.rosa, 'color:inherit')
+            armazenar({ chaveStorage: agora}).catch(() => {})
         }
 
     } catch(erro){
