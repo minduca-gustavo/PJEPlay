@@ -137,14 +137,14 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
             let chaveStorage = 'rotaDados_' + rotulo.replaceAll('-', '_')
             console.log('%c[Rota PJE]%c chaveStorage 139: ' + JSON.stringify(chaveStorage), LOG.rosa, 'color:inherit')
             console.log('%c[Rota PJE]%c dados 139: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
-            armazenar({ chaveStorage: dados }).catch(() => {})
+            armazenar({ [chaveStorage]: dados }).catch(() => {})
         }
         if(rotulo === 'orgaos_julgadores'){
             let chaveStorage = 'rota_evita_queda'
-            let agora = new Date()
+            let agora = Date.now()
             console.log('%c[Rota PJE]%c chaveStorage 145: ' + JSON.stringify(chaveStorage), LOG.rosa, 'color:inherit')
             console.log('%c[Rota PJE]%c agora 145: ' + JSON.stringify(agora), LOG.rosa, 'color:inherit')
-            armazenar({ chaveStorage: agora}).catch(() => {})
+            armazenar({ [chaveStorage]: agora}).catch(() => {})
         }
 
     } catch(erro){
