@@ -60,6 +60,10 @@ async function iniciar(){
 	let btnSalvarTarefa = document.getElementById('btn-salvar-tarefa')
 	let statusTarefa    = document.getElementById('status-tarefa')
 
+	// Referências Evita Queda (página 1)
+	let btnEvitaQueda    = document.getElementById('btn-evita-queda')
+	let statusEvitaQueda = document.getElementById('status-evita-queda')
+
 	// Referências temporizador (página 1)
 	let chkTemporizador      = document.getElementById('chk-temporizador')
 	let temporizadorConfig   = document.getElementById('temporizador-config')
@@ -81,6 +85,54 @@ async function iniciar(){
 	// Referências página 4 — Modo Desenvolvedor
 	let btnModoDev           = document.getElementById('btn-modo-dev')
 	let statusModoDev        = document.getElementById('status-modo-dev')
+
+	// ════════════════════════════════════════════════════════
+	// EVITA QUEDA
+	// ════════════════════════════════════════════════════════
+	const EVITA_QUEDA_KEY = 'rota_evitaQuedaAtivo'
+
+	let rota_evitaQuedaAtivo = true
+
+	let storeEvitaQueda = await NAV.storage.local.get([EVITA_QUEDA_KEY])
+	rota_evitaQuedaAtivo = storeEvitaQueda[EVITA_QUEDA_KEY] !== false  // default = ligado
+
+	// Se a chave ainda não existe no storage (primeira vez), grava o default
+	// — senão o content script lê "undefined" até o usuário clicar no botão.
+	if (storeEvitaQueda[EVITA_QUEDA_KEY] === undefined) {
+		await NAV.storage.local.set({ [EVITA_QUEDA_KEY]: rota_evitaQuedaAtivo })
+	}
+
+	function _aplicarEstadoEvitaQueda(ativo) {
+		rota_evitaQuedaAtivo = ativo
+		if (ativo) {
+			btnEvitaQueda.classList.add('ativo')
+			btnEvitaQueda.title = 'Evita Queda ativo — clique para desativar'
+			statusEvitaQueda.textContent = '✅ Protegendo contra queda de OJ'
+			statusEvitaQueda.style.color = '#2ecc71'
+		} else {
+			btnEvitaQueda.classList.remove('ativo')
+			btnEvitaQueda.title = 'Evita Queda inativo — clique para ativar'
+			statusEvitaQueda.textContent = '○ Proteção desativada'
+			statusEvitaQueda.style.color = '#5e84a8'
+		}
+	}
+
+	_aplicarEstadoEvitaQueda(rota_evitaQuedaAtivo)
+
+	btnEvitaQueda.addEventListener('click', async () => {
+		rota_evitaQuedaAtivo = !rota_evitaQuedaAtivo
+		await NAV.storage.local.set({ [EVITA_QUEDA_KEY]: rota_evitaQuedaAtivo })
+		_aplicarEstadoEvitaQueda(rota_evitaQuedaAtivo)
+		// Propaga para as abas abertas do PJE
+		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
+		tabs.forEach(tab => {
+			NAV.scripting.executeScript({
+				target: { tabId: tab.id },
+				func: (ativo) => { window.ROTA_EVITA_QUEDA_ATIVO = ativo },
+				args: [rota_evitaQuedaAtivo],
+			}).catch(() => {})
+		})
+	})
 
 	// Navegação
 	let setaEsq    = document.getElementById('seta-esq')

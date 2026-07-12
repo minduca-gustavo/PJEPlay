@@ -37,7 +37,7 @@
 
     <div class="header-text">
       <h1>ROTA PJE</h1>
-      <p id="subtitulo">Editor de Tarefa</p>
+      <p id="subtitulo">Evita Queda + Editor de Tarefa do Usuário</p>
     </div>
 
     <button id="btn-toggle" class="btn-toggle ativo" title="Ligar/Desligar extensão">
@@ -57,6 +57,19 @@
 
     <!-- PÁGINA 1 — Editor de Tarefa -->
     <div class="pagina ativa" id="pagina-1">
+
+      <div class="bloco bloco-destaque" id="bloco-evita-queda">
+        <div class="bloco-row">
+          <label class="bloco-label" style="flex:1">
+            Evita Queda de OJ
+            <span class="bloco-hint">Mantém o usuário conectado e cria botão para troca de OJ quando necessário</span>
+          </label>
+          <button class="btn-filtro-liga" id="btn-evita-queda" title="Ativar/Desativar Evita Queda">🛡️</button>
+        </div>
+        <div style="margin-top:5px;">
+          <span id="status-evita-queda" class="status-filtros-inline"></span>
+        </div>
+      </div>
 
       <div class="bloco">
         <div class="bloco-row">
