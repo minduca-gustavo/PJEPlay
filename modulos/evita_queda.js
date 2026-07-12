@@ -6,6 +6,7 @@ async function evitaQueda() {
     console.log('%c[Rota PJE]%c eq3: tentando evitar queda.' + JSON.stringify(3), LOG.info, 'color:inherit')
     let oj = await obterArmazenamento('rotaDados_orgaos_julgadores')
     let timestamp = await obterArmazenamento('rota_evita_queda')
+    
     console.log('%c[Rota PJE]%c oj eq7: ' + JSON.stringify(oj?.rotaDados_orgaos_julgadores), LOG.rosa, 'color:inherit')
     console.log('%c[Rota PJE]%c timestamp eq7: ' + JSON.stringify(timestamp?.rota_evita_queda), LOG.rosa, 'color:inherit')
     let leitura = await interceptador_ler('evitaQuedaAtivo') || null
