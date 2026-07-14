@@ -2,7 +2,7 @@ async function evitaQueda() {
     let name = 'rota_evitaQuedaAtivo'
     let evitaQuedaAtivo = await obterArmazenamento([name])
     console.log('%c[Rota PJE]%c evitaQuedaAtivo eq3: ' + JSON.stringify(evitaQuedaAtivo?.rota_evitaQuedaAtivo), LOG.rosa, 'color:inherit')
-    if (!location.href.includes('trt15.jus.br/pjekz') || !evitaQuedaAtivo || location.href.includes('gigs/meu-painel')) return
+    if (!location.href.includes('trt15.jus.br/pjekz') || !evitaQuedaAtivo /*|| location.href.includes('gigs/meu-painel')*/) return
     console.log('%c[Rota PJE]%c eq3: tentando evitar queda.' + JSON.stringify(3), LOG.info, 'color:inherit')
     let oj = await obterArmazenamento('rotaDados_orgaos_julgadores')
     let timestamp = await obterArmazenamento('rota_evita_queda')
@@ -31,14 +31,16 @@ async function evitaQueda() {
 window.addEventListener('focus', function() {
     evitaQueda()
 });
+
 /*
 browser.storage.onChanged.addListener(function ouvir(mudancas) {
-    if (mudancas['rota_evita_queda']?.newValue === true) {
+    if (mudancas['rota_evita_queda']?.newValue) {
         browser.storage.onChanged.removeListener(ouvir)
-        window.location.reload()
+//        window.location.reload()
+        evitaQueda()
     }
 })
-    */
+*/
 /*
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible') {
