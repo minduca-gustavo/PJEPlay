@@ -26,15 +26,9 @@ const TIPOS_JANELA = [
 	{ valor:'siscondj', label:'SISCONDJ - só funciona com AVJT ativo' }
 ]
 
-const CORES = [
-	{ hex:'#e74c3c', nome:'Vermelho' }, { hex:'#e67e22', nome:'Laranja' },
-	{ hex:'#f1c40f', nome:'Amarelo'  }, { hex:'#2ecc71', nome:'Verde'   },
-	{ hex:'#3498db', nome:'Azul'     }, { hex:'#9b59b6', nome:'Roxo'    },
-	{ hex:'#1abc9c', nome:'Turquesa' }, { hex:'#e91e63', nome:'Rosa'    },
-	{ hex:'#ffffff', nome:'Branco'   },
-]
-
-const REGRAS_PADRAO = CORES.slice(0,6).map(c => ({ cor:c.hex, termos:'' }))
+// CORES e REGRAS_PADRAO agora vêm de rota/tarefas/index.js (carregado
+// antes deste script em pagina.htm) — fonte única compartilhada com
+// o background, pra seed de instalação nunca divergir do popup.
 
 
 // ── Estado ────────────────────────────────────────────────────
@@ -200,7 +194,7 @@ async function iniciar(){
 	nomeAtivo = Object.keys(store.tarefas || {})[0] || ''
 
 	if(!Object.keys(tarefas).length){
-		tarefas['Padrão'] = _tarefaPadrao()
+		tarefas['Padrão'] = catalogo_tarefaPadrao()
 		nomeAtivo = 'Padrão'
 		await NAV.storage.local.set({ tarefas})
 	}
@@ -230,7 +224,7 @@ async function iniciar(){
 		let nome = inputNomeTarefa.value.trim()
 		if(!nome){ mostrarStatus(statusTarefa,'Nome não pode estar vazio.','#e74c3c'); return }
 		if(tarefas[nome]){ mostrarStatus(statusTarefa,'Já existe uma tarefa com esse nome.','#e74c3c'); return }
-		tarefas[nome] = _tarefaPadrao()
+		tarefas[nome] = catalogo_tarefaPadrao()
 		nomeAtivo     = nome
 		_popularSelectTarefas()
 		_carregarTarefaAtiva()
@@ -863,15 +857,6 @@ async function iniciar(){
 
 	function _fecharMenusCor(){
 		regrasContainer.querySelectorAll('.color-menu').forEach(m => m.classList.add('hidden'))
-	}
-
-	function _tarefaPadrao(){
-		return {
-			tarefaUnica: '',
-			slots: [{ posicao:'esquerda', tipo:'detalhes', tipoDoc:'', selecao:'recente', orientacao:'horizontal', ordem:0 }],
-			regras:  REGRAS_PADRAO,
-			temporizador: { ativo: false, segundos: 30, opcoes: '' },
-		}
 	}
 
 	function mostrarStatus(el, msg, cor){

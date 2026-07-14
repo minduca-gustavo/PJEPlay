@@ -135,3 +135,37 @@ function catalogo_paraSlots(itemCatalogo) {
             slotIndex: i,
         }))
 }
+
+
+// ── Paleta de cores e valores default de tarefa (👤 usuário) ──
+//
+// Fonte única usada pelo popup (seletor de cor da Pintura) e pela
+// seed de instalação no background. Compartilhado aqui para os
+// dois contextos nunca divergirem sobre o "shape" de uma tarefa.
+// ============================================================
+
+const CORES = [
+    { hex:'#e74c3c', nome:'Vermelho' }, { hex:'#e67e22', nome:'Laranja' },
+    { hex:'#f1c40f', nome:'Amarelo'  }, { hex:'#2ecc71', nome:'Verde'   },
+    { hex:'#3498db', nome:'Azul'     }, { hex:'#9b59b6', nome:'Roxo'    },
+    { hex:'#1abc9c', nome:'Turquesa' }, { hex:'#e91e63', nome:'Rosa'    },
+    { hex:'#ffffff', nome:'Branco'   },
+]
+
+const REGRAS_PADRAO = CORES.slice(0, 6).map(c => ({ cor: c.hex, termos: '' }))
+
+
+// ── Gera uma tarefa de usuário (👤) com valores default ────────
+//
+// Cada chamada retorna um objeto novo, com seu próprio array de
+// regras (clone de REGRAS_PADRAO) — chamadas diferentes nunca
+// compartilham a mesma referência de array/objeto de regra.
+
+function catalogo_tarefaPadrao() {
+    return {
+        tarefaUnica: '',
+        slots: [{ posicao: 'esquerda', tipo: 'detalhes', tipoDoc: '', selecao: 'recente', orientacao: 'horizontal', ordem: 0 }],
+        regras: REGRAS_PADRAO.map(r => ({ ...r })),
+        temporizador: { ativo: false, segundos: 30, opcoes: '' },
+    }
+}
