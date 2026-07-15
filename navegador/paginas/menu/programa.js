@@ -189,18 +189,13 @@ async function iniciar(){
 	})
 
 	// ── Carrega storage ──────────────────────────────────────
-	let store = await NAV.storage.local.get(['tarefas','tarefaAtiva'])
-	tarefas   = store.tarefas  || {}
-	nomeAtivo = Object.keys(store.tarefas || {})[0] || ''
-
-	if(!Object.keys(tarefas).length){
-		tarefas['Padrão'] = catalogo_tarefaPadrao()
-		nomeAtivo = 'Padrão'
-		await NAV.storage.local.set({ tarefas})
-	}
-
-	// Garante que nomeAtivo aponta para uma tarefa existente
-
+	// catalogo_garantirTarefaAtiva() (rota/tarefas/index.js) já cuida de
+	// criar 'Padrão' se não houver nenhuma tarefa, e de apontar
+	// tarefaAtiva pra ela — sem risco de deixar uma preenchida e a
+	// outra não, mesmo que o onInstalled do background já tenha rodado.
+	let resultado = await catalogo_garantirTarefaAtiva()
+	tarefas   = resultado.tarefas
+	nomeAtivo = resultado.tarefaAtiva
 
 	_popularSelectTarefas()
 	_carregarTarefaAtiva()

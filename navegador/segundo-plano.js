@@ -4,10 +4,11 @@
 
 let _PRONTO = (async () => {
 	CONFIGURACAO = await obterArmazenamento()
+	await _semearTarefaPadrao()
 })()
 
 
-// ── Seed da tarefa padrão na instalação ────────────────────────
+// ── Seed da tarefa padrão ──────────────────────────────────────
 //
 // Sem isso, um usuário novo que nunca abre o popup fica sem
 // nenhuma tarefa 👤 no menu do botão Rota, e o rótulo do botão
@@ -15,24 +16,17 @@ let _PRONTO = (async () => {
 // popup (programa.js) continua existindo como reforço — esta
 // aqui garante o caso de o usuário só usar o botão em tela.
 //
-// catalogo_tarefaPadrao() vem de rota/tarefas/index.js, carregado
-// antes deste arquivo no manifest.json (background.scripts).
+// Roda a cada início do background (não só via runtime.onInstalled)
+// porque esse evento não dispara de forma confiável em extensões
+// temporárias carregadas via about:debugging — só em instalações
+// reais. catalogo_garantirTarefaAtiva() (rota/tarefas/index.js) é
+// idempotente: só escreve quando falta algo, então chamá-la toda
+// vez que o background acorda não tem custo nem risco de sobrescrever
+// uma tarefa já em uso.
 
-NAVEGADOR.runtime.onInstalled.addListener((detalhes) => {
-	_semearTarefaPadrao(detalhes)
-})
-
-async function _semearTarefaPadrao(detalhes){
-	if(detalhes.reason !== 'install') return
+async function _semearTarefaPadrao(){
 	try{
-		let store = await obterArmazenamento(['tarefas'])
-		if(store?.tarefas && Object.keys(store.tarefas).length) return  // já existe, não sobrescreve
-
-		await armazenar({
-			tarefas:              { 'Padrão': catalogo_tarefaPadrao() },
-			tarefaAtiva:           'Padrão',
-			tarefaAtivaIsSistema:  false,
-		})
+		await catalogo_garantirTarefaAtiva()
 	} catch(e){
 		relatar('_semearTarefaPadrao: erro ao gravar tarefa padrão', e, 'rota')
 	}

@@ -169,3 +169,38 @@ function catalogo_tarefaPadrao() {
         temporizador: { ativo: false, segundos: 30, opcoes: '' },
     }
 }
+
+
+// ── Garante tarefas + tarefaAtiva de forma atômica ─────────────
+//
+// Chamada tanto pelo popup (iniciar()) quanto pelo background
+// (onInstalled). Os dois podem disparar em ordem imprevisível —
+// esta função sempre lê o estado atual e só escreve o que falta,
+// numa única chamada de armazenar(), pra nunca deixar `tarefas`
+// preenchida sem `tarefaAtiva` (ou vice-versa) por causa de quem
+// rodou primeiro.
+//
+// Retorna { tarefas, tarefaAtiva } já garantidos.
+
+async function catalogo_garantirTarefaAtiva(){
+    let store   = await obterArmazenamento(['tarefas', 'tarefaAtiva'])
+    let tarefas = store?.tarefas || {}
+    let mudou   = false
+
+    if(!Object.keys(tarefas).length){
+        tarefas['Padrão'] = catalogo_tarefaPadrao()
+        mudou = true
+    }
+
+    let tarefaAtiva = store?.tarefaAtiva
+    if(!tarefaAtiva || !tarefas[tarefaAtiva]){
+        tarefaAtiva = Object.keys(tarefas)[0]
+        mudou = true
+    }
+
+    if(mudou){
+        await armazenar({ tarefas, tarefaAtiva, tarefaAtivaIsSistema: false })
+    }
+
+    return { tarefas, tarefaAtiva }
+}

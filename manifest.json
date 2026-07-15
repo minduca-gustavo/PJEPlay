@@ -136,6 +136,7 @@
     "scripts": [
       "modulos/definicoes.js",
       "modulos/relatar.js",
+      "rota/configuracao.js",
       "rota/tarefas/index.js",
       "navegador/segundo-plano.js"
     ]
