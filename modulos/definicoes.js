@@ -36,6 +36,7 @@ var JANELA = {
 	pec:				    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
 	processoTarefa: 		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	pautaAudiencias: 		/\/pjekz\/pauta-audiencias/,
+	atasAudiencias: 		/\/pjekz\/atas-audiencias/,
 }
 
 

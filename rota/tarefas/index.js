@@ -183,7 +183,7 @@ function catalogo_tarefaPadrao() {
 // Retorna { tarefas, tarefaAtiva } já garantidos.
 
 async function catalogo_garantirTarefaAtiva(){
-    let store   = await obterArmazenamento(['tarefas', 'tarefaAtiva'])
+    let store   = await obterArmazenamento(['tarefas', 'tarefaAtiva', 'tarefaAtivaIsSistema'])
     let tarefas = store?.tarefas || {}
     let mudou   = false
 
@@ -192,15 +192,24 @@ async function catalogo_garantirTarefaAtiva(){
         mudou = true
     }
 
-    let tarefaAtiva = store?.tarefaAtiva
-    if(!tarefaAtiva || !tarefas[tarefaAtiva]){
-        tarefaAtiva = Object.keys(tarefas)[0]
+    let tarefaAtiva          = store?.tarefaAtiva
+    let tarefaAtivaIsSistema = store?.tarefaAtivaIsSistema || false
+
+    // Válida se existir como tarefa de usuário OU como tarefa de sistema
+    // (ROTA_CATALOGO) — antes só checava `tarefas`, então uma seleção de
+    // tarefa 🤖 (ex: Triagem Inicial) era tratada como inválida a cada
+    // reload do background e sobrescrita de volta pra 'Padrão'.
+    let valida = tarefaAtiva && (tarefas[tarefaAtiva] || catalogo_obter(tarefaAtiva))
+
+    if(!valida){
+        tarefaAtiva          = Object.keys(tarefas)[0]
+        tarefaAtivaIsSistema = false
         mudou = true
     }
 
     if(mudou){
-        await armazenar({ tarefas, tarefaAtiva, tarefaAtivaIsSistema: false })
+        await armazenar({ tarefas, tarefaAtiva, tarefaAtivaIsSistema })
     }
 
-    return { tarefas, tarefaAtiva }
+    return { tarefas, tarefaAtiva, tarefaAtivaIsSistema }
 }

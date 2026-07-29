@@ -192,10 +192,14 @@ async function iniciar(){
 	// catalogo_garantirTarefaAtiva() (rota/tarefas/index.js) já cuida de
 	// criar 'Padrão' se não houver nenhuma tarefa, e de apontar
 	// tarefaAtiva pra ela — sem risco de deixar uma preenchida e a
-	// outra não, mesmo que o onInstalled do background já tenha rodado.
+	// outra não, mesmo que o background já tenha rodado.
 	let resultado = await catalogo_garantirTarefaAtiva()
 	tarefas   = resultado.tarefas
-	nomeAtivo = resultado.tarefaAtiva
+	// O popup só edita tarefas 👤 (de usuário). Se a tarefa ativa
+	// globalmente for uma 🤖 de sistema, não há nada aqui pra editar —
+	// cai no primeiro item de usuário só pro editor, sem tocar no
+	// storage (o botão-rota continua respeitando a seleção real).
+	nomeAtivo = tarefas[resultado.tarefaAtiva] ? resultado.tarefaAtiva : (Object.keys(tarefas)[0] || '')
 
 	_popularSelectTarefas()
 	_carregarTarefaAtiva()

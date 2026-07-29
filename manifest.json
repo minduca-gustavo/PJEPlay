@@ -123,6 +123,7 @@
         "rota/acoes.js",
         "rota/formatadores.js",
         "rota/componentes.js",
+        "leitura-dinamica/leitura_dinamica_documentos.js",
         "rota/tarefas/index.js",
         "rota/tarefas/balcao-virtual/roteiro.js",
         "rota/tarefas/triagem-inicial/roteiro.js",
