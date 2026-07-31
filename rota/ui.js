@@ -90,10 +90,10 @@ function _ui_hoverBotao(btn, cor, corHover) {
 //
 // criaDiv({ id, ancestral })
 
-function criaDiv({ id, ancestral }) {
+function criaDiv({ id, ancestral , rowColumn = 'column'}) {
     const el = _ui_el('div', {
         display:       'flex',
-        flexDirection: 'column',
+        flexDirection: rowColumn,
         gap:           '6px',
         marginBottom:  '8px',
     })
@@ -114,7 +114,7 @@ function criaDiv({ id, ancestral }) {
 //   largura: opcional, padrão '280px'
 //   ancestral: opcional — se omitido, insere em document.body
 
-async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral }) {
+async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral, armazenarRecolhido = false }) {
 
     // ── posição inicial ───────────────────────────────────────
     const CHAVE   = 'ui_flutuante_pos_' + id
@@ -224,9 +224,22 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral 
 
     // ── recolher / expandir ─────────────────────────────────────
     let recolhido = false
+    if (armazenarRecolhido){
+        let label = id + 'estado'
+        recolhido = await obterArmazenamento([label]).then(d=> d[label])
+        console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
+    }
+    corpo.style.display    = recolhido ? 'none' : 'flex'
+    
     botaoRecolher.addEventListener('click', (e) => {
         e.stopPropagation()
         recolhido = !recolhido
+        if (armazenarRecolhido){
+            let label = id + 'estado'
+            armazenar({[label]: recolhido})
+            console.log('%c[Rota PJE]%c recolhido 239: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
+            console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(label), LOG.rosa, 'color:inherit')
+        }
         corpo.style.display    = recolhido ? 'none' : 'flex'
         botaoRecolher.textContent = recolhido ? '▢' : '─'
         botaoRecolher.title       = recolhido ? 'Expandir' : 'Recolher'
@@ -826,11 +839,12 @@ function criaInput({ id, textoEmCima = '', ancestral, placeholder = '' }) {
     input.id          = id
     input.type        = 'text'
     input.placeholder = placeholder
+    input.container = container
     
 
     container.appendChild(input)
     _ui_inserir(container, ancestral)
-    return container
+    return input
 }
 
 function criaInputAnotacao({ id, textoEmCima = '', ancestral, placeholder = '' }) {
