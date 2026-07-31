@@ -152,9 +152,23 @@ async function criaWidgetLeituraDinamica() {
             for (d of documentosTimeline){
                 let teor = await extrairTexto(id, d?.id)
                 console.log('%c[Rota PJE]%c teor 142: ' + JSON.stringify(teor), LOG.aviso, 'color:inherit')
+                let i=0
+                let resultado = []
                 for (r of regras){
-                    r.palavras.map(d=> buscaEmTextoMalFormatado(teor, d))
+                    i++
+                    let encontrado = r?.palavras !== '' ? r?.palavras.map(d=> d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null) : null
+                    if (encontrado && encontrado?.some(d=> d !== null)){
+                        let dado = {}
+                        let dados = encontrado?.filter(d => d !== null)
+                        console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+                        dado.palavra = dados?.map(d=> d)
+                        //dado.palavra = dados?.map(d=termo
+                        dado.cor = r?.cor
+                        resultado.push(dado)
+                    }
+                    
                 }
+                console.log('%c[Rota PJE]%c encontrado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
             }
             return
             //let naoApreciados = timeline
@@ -165,29 +179,35 @@ async function criaWidgetLeituraDinamica() {
 
 }
 
-function buscaEmTextoMalFormatado(textoABuscar, termo, caracteres = 50){
+function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
     let texto = normalizar(textoABuscar).toLowerCase()
     console.log('%c[Rota PJE]%c texto' + JSON.stringify(texto), LOG.rosa, 'color:inherit')
     let mapa = []
+    let espacos = []
     let limpo = ''
     for (let i=0; i < texto.length; i++){
         let c = texto[i];
-        if (/\s/.test(c)) continue; // pula espaços/quebras de linha
+        if (/\s/.test(c)) {
+            espacos.push(i);
+            continue; // pula espaços/quebras de linha
+        }
         limpo += c;
         mapa.push(i);
     }
-    console.log('%c[Rota PJE]%c limpo' + JSON.stringify(limpo), LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c limpo' + JSON.stringify(limpo), LOG.teste, 'color:inherit')
     let busca = normalizar(termo).toLowerCase()
     let posicao = limpo.indexOf(busca)
     if (posicao === -1) return null
     let inicio = mapa[posicao]
     let fim = mapa[posicao + busca.length - 1] + 1
-    let resultado = textoABuscar.slice(
-            Math.max(0, inicio - caracteres),
-            Math.min(textoABuscar.length, fim + caracteres));
-    console.log('%c[Rota PJE]%c resultado' + JSON.stringify(resultado.split(' ', 2)[1]), LOG.rosa, 'color:inherit')
-    console.log('%c[Rota PJE]%c inicio' + JSON.stringify(inicio), LOG.rosa, 'color:inherit')
-    console.log('%c[Rota PJE]%c fim' + JSON.stringify(fim), LOG.teste, 'color:inherit')
+    //return {encontrado: true, }
+    let espacoInicio = espacos[espacos.findIndex(d=> d > Math.max(0, inicio - antes)) - 1]
+    let espacoFim = espacos[espacos.findIndex(d=> d > Math.min(textoABuscar.length, fim + depois))]
+    //console.log('%c[Rota PJE]%c espacoInicio: ' + JSON.stringify(espacoInicio), LOG.rosa, 'color:inherit')
+    //console.log('%c[Rota PJE]%c espacoInicio: ' + JSON.stringify(espacoFim), LOG.rosa, 'color:inherit')
+    let resultado = textoABuscar.slice(espacoInicio, espacoFim)
+    console.log('%c[Rota PJE]%c resultado 200: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
+    return {trechos: resultado, termo: termo}
             ///*return*/ console.log(textoABuscar.slice(
     //        Math.max(0, inicio - caracteres),
     //        Math.min(textoABuscar.length, fim + caracteres)
