@@ -86,6 +86,9 @@ const SELETORES_218 = {
     pautaDeAudienciaBotaoDesignarAudiencia:{
       seletor: '[aria-label*="Designar Audiência"]'
     },
+    pautaDeAudienciaBotaoCancelarEmLote:{
+      seletor: '[aria-label*="Cancelar audiências em lote"]'
+    },
     pautaDeAudienciaInputNumeroProcessoDesignarAudiencia:{
       seletor: '#inputNumeroProcesso',
       ancestral: 'mat-dialog-container'

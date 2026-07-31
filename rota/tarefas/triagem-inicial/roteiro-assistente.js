@@ -237,8 +237,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
     criaBotaoLaranjaComCheckBox({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
-        idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
+        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna'),
+        idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna', 'checkbox'),
         texto: 'Despachar REDESIGNAÇÃO - MODELO SIMPLES DE REDESIGNAÇÃO.',
         ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: async () => {
@@ -469,6 +469,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))) {
             comandos.push('triagem_inicial_despachar')
             dados.push({tipo: 'triagem_inicial_despachar_designacao'})
+        }
+
+        if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna', 'checkbox'))) {
+            comandos.push('triagem_inicial_despachar')
+            dados.push({tipo: 'triagem_inicial_despachar_redesignacao'})
         }
 
         if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {

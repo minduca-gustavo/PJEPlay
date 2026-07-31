@@ -224,7 +224,7 @@ async function triagem_inicial_acoesRetificar(){
         let botoesConfirmaJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalBotoes', quadroJuizoDigital, true)
         quadroJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
         if (!quadroJuizoDigital) await atualizaJanelaDetalhes(4000)
-        for(botao of botoesConfirmaJuizoDigital){
+        for(let botao of botoesConfirmaJuizoDigital){
             if (botao.textContent ==='Sim'){
                 botoesContagem++
                 await clicar(botao)
@@ -328,7 +328,7 @@ async function triagem_inicial_acoesDespachar(){
     }
     let modeloDespacho = ''
     if (tipo !== 'triagem_inicial_emendar'){
-        if (tipo = 'triagem_inicial_despachar_redesignacao'){
+        if (tipo == 'triagem_inicial_despachar_redesignacao'){
             modeloDespacho = 'SCBAU_TI_REDESIGNA'
         } else {
             modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
@@ -352,6 +352,7 @@ async function triagem_inicial_acoesDespachar(){
         if (audienciasMarcadas?.dataInicio) {
             await armazenar({rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar'})
             window.close()
+            return
         } else{ 
             await rota_avisoObrigatorio('Não foi identificada audiência designada. Prossiga manualmente.', 30)
         }
@@ -519,7 +520,9 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     // selecionar juiz
     let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
+    let bodyTeste = false
     if (seletorJuiz.textContent != horario.nomeDaSala){
+        bodyTeste = true
         await clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
@@ -538,6 +541,12 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     } else {
         await aguardarElementoNovo('pautaDeAudienciaMetaQuadroHorariosVagos')
     }
+    let body = document.body.textContent
+    console.log('%c[Rota PJE]%c body: ' + JSON.stringify(body), LOG.rosa, 'color:inherit')
+    if (body.includes(seletorJuiz.textContent) && bodyTeste) {
+        console.log('%c[Rota PJE]%c body 547: ' + JSON.stringify(body), LOG.rosa, 'color:inherit')
+        await suspender(2000)
+    }
     //return
     //// clicar no botao do primeiro dia
     //await aguardarElementoNovo(['pautaDeAudienciaCelulaDaTabela', 'pautaDeAudienciaMetaQuadroHorariosVagos'], {modo: 'e'})
@@ -552,7 +561,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await clicar(celula)
 
     // clicar no botao de designar
-
+    await aguardarElementoNovo('pautaDeAudienciaBotaoCancelarEmLote')
     let botaoDesignar = await aguardarElementoNovo('pautaDeAudienciaBotaoDesignarAudiencia')
     await clicar(botaoDesignar)
 
@@ -626,6 +635,7 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
     await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
     await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
     //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
+    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_gig' })
 }
 
 
@@ -842,7 +852,10 @@ async function triagem_inicial_acoesIntimar(){
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
     await suspender(200)
-    if (!dados.modelo && !linkIntimar){
+    console.log('%c[Rota PJE]%c dados.modelo: ' + JSON.stringify(dados.modelo), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c linkIntimar: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c dados.texto: ' + JSON.stringify(dados.texto), LOG.rosa, 'color:inherit')
+    if (!dados.tipos && !linkIntimar){
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
         window.addEventListener('beforeunload', () => {
             if (dados.proximoPasso) {

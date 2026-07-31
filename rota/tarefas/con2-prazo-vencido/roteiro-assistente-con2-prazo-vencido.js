@@ -201,6 +201,12 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
     })
 
+    criaTexto({
+        id: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra', 'texto'),
+        texto: 'Em desenvolvimento.',
+        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe')
+    })
+
     
     // ___________________________________________________
     //  SECAO REMESSA
@@ -229,6 +235,12 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         id: id(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
         texto: 'Remessa ao TRT.',
         ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
+    })
+
+    criaTexto({
+        id: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra', 'texto'),
+        texto: 'Em desenvolvimento.',
+        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe')
     })
     
     return
