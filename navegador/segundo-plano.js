@@ -4,7 +4,33 @@
 
 let _PRONTO = (async () => {
 	CONFIGURACAO = await obterArmazenamento()
+	await _semearTarefaPadrao()
 })()
+
+
+// ── Seed da tarefa padrão ──────────────────────────────────────
+//
+// Sem isso, um usuário novo que nunca abre o popup fica sem
+// nenhuma tarefa 👤 no menu do botão Rota, e o rótulo do botão
+// mostra '—' porque tarefaAtiva nunca foi gravada. A seed do
+// popup (programa.js) continua existindo como reforço — esta
+// aqui garante o caso de o usuário só usar o botão em tela.
+//
+// Roda a cada início do background (não só via runtime.onInstalled)
+// porque esse evento não dispara de forma confiável em extensões
+// temporárias carregadas via about:debugging — só em instalações
+// reais. catalogo_garantirTarefaAtiva() (rota/tarefas/index.js) é
+// idempotente: só escreve quando falta algo, então chamá-la toda
+// vez que o background acorda não tem custo nem risco de sobrescrever
+// uma tarefa já em uso.
+
+async function _semearTarefaPadrao(){
+	try{
+		await catalogo_garantirTarefaAtiva()
+	} catch(e){
+		relatar('_semearTarefaPadrao: erro ao gravar tarefa padrão', e, 'rota')
+	}
+}
 
 NAVEGADOR.runtime.onMessage.addListener((msg, _remetente, responder) => {
 	_processar(); return true
@@ -34,4 +60,3 @@ async function _extrairPDF(bytes){
 	}
 	return texto
 }
-

@@ -26,15 +26,9 @@ const TIPOS_JANELA = [
 	{ valor:'siscondj', label:'SISCONDJ - só funciona com AVJT ativo' }
 ]
 
-const CORES = [
-	{ hex:'#e74c3c', nome:'Vermelho' }, { hex:'#e67e22', nome:'Laranja' },
-	{ hex:'#f1c40f', nome:'Amarelo'  }, { hex:'#2ecc71', nome:'Verde'   },
-	{ hex:'#3498db', nome:'Azul'     }, { hex:'#9b59b6', nome:'Roxo'    },
-	{ hex:'#1abc9c', nome:'Turquesa' }, { hex:'#e91e63', nome:'Rosa'    },
-	{ hex:'#ffffff', nome:'Branco'   },
-]
-
-const REGRAS_PADRAO = CORES.slice(0,6).map(c => ({ cor:c.hex, termos:'' }))
+// CORES e REGRAS_PADRAO agora vêm de rota/tarefas/index.js (carregado
+// antes deste script em pagina.htm) — fonte única compartilhada com
+// o background, pra seed de instalação nunca divergir do popup.
 
 
 // ── Estado ────────────────────────────────────────────────────
@@ -60,6 +54,10 @@ async function iniciar(){
 	let btnSalvarTarefa = document.getElementById('btn-salvar-tarefa')
 	let statusTarefa    = document.getElementById('status-tarefa')
 
+	// Referências Evita Queda (página 1)
+	let btnEvitaQueda    = document.getElementById('btn-evita-queda')
+	let statusEvitaQueda = document.getElementById('status-evita-queda')
+
 	// Referências temporizador (página 1)
 	let chkTemporizador      = document.getElementById('chk-temporizador')
 	let temporizadorConfig   = document.getElementById('temporizador-config')
@@ -81,6 +79,54 @@ async function iniciar(){
 	// Referências página 4 — Modo Desenvolvedor
 	let btnModoDev           = document.getElementById('btn-modo-dev')
 	let statusModoDev        = document.getElementById('status-modo-dev')
+
+	// ════════════════════════════════════════════════════════
+	// EVITA QUEDA
+	// ════════════════════════════════════════════════════════
+	const EVITA_QUEDA_KEY = 'rota_evitaQuedaAtivo'
+
+	let rota_evitaQuedaAtivo = true
+
+	let storeEvitaQueda = await NAV.storage.local.get([EVITA_QUEDA_KEY])
+	rota_evitaQuedaAtivo = storeEvitaQueda[EVITA_QUEDA_KEY] !== false  // default = ligado
+
+	// Se a chave ainda não existe no storage (primeira vez), grava o default
+	// — senão o content script lê "undefined" até o usuário clicar no botão.
+	if (storeEvitaQueda[EVITA_QUEDA_KEY] === undefined) {
+		await NAV.storage.local.set({ [EVITA_QUEDA_KEY]: rota_evitaQuedaAtivo })
+	}
+
+	function _aplicarEstadoEvitaQueda(ativo) {
+		rota_evitaQuedaAtivo = ativo
+		if (ativo) {
+			btnEvitaQueda.classList.add('ativo')
+			btnEvitaQueda.title = 'Evita Queda ativo — clique para desativar'
+			statusEvitaQueda.textContent = '✅ Protegendo contra queda de OJ'
+			statusEvitaQueda.style.color = '#2ecc71'
+		} else {
+			btnEvitaQueda.classList.remove('ativo')
+			btnEvitaQueda.title = 'Evita Queda inativo — clique para ativar'
+			statusEvitaQueda.textContent = '○ Proteção desativada'
+			statusEvitaQueda.style.color = '#5e84a8'
+		}
+	}
+
+	_aplicarEstadoEvitaQueda(rota_evitaQuedaAtivo)
+
+	btnEvitaQueda.addEventListener('click', async () => {
+		rota_evitaQuedaAtivo = !rota_evitaQuedaAtivo
+		await NAV.storage.local.set({ [EVITA_QUEDA_KEY]: rota_evitaQuedaAtivo })
+		_aplicarEstadoEvitaQueda(rota_evitaQuedaAtivo)
+		// Propaga para as abas abertas do PJE
+		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
+		tabs.forEach(tab => {
+			NAV.scripting.executeScript({
+				target: { tabId: tab.id },
+				func: (ativo) => { window.ROTA_EVITA_QUEDA_ATIVO = ativo },
+				args: [rota_evitaQuedaAtivo],
+			}).catch(() => {})
+		})
+	})
 
 	// Navegação
 	let setaEsq    = document.getElementById('seta-esq')
@@ -143,18 +189,17 @@ async function iniciar(){
 	})
 
 	// ── Carrega storage ──────────────────────────────────────
-	let store = await NAV.storage.local.get(['tarefas','tarefaAtiva'])
-	tarefas   = store.tarefas  || {}
-	nomeAtivo = Object.keys(store.tarefas || {})[0] || ''
-
-	if(!Object.keys(tarefas).length){
-		tarefas['Padrão'] = _tarefaPadrao()
-		nomeAtivo = 'Padrão'
-		await NAV.storage.local.set({ tarefas})
-	}
-
-	// Garante que nomeAtivo aponta para uma tarefa existente
-
+	// catalogo_garantirTarefaAtiva() (rota/tarefas/index.js) já cuida de
+	// criar 'Padrão' se não houver nenhuma tarefa, e de apontar
+	// tarefaAtiva pra ela — sem risco de deixar uma preenchida e a
+	// outra não, mesmo que o background já tenha rodado.
+	let resultado = await catalogo_garantirTarefaAtiva()
+	tarefas   = resultado.tarefas
+	// O popup só edita tarefas 👤 (de usuário). Se a tarefa ativa
+	// globalmente for uma 🤖 de sistema, não há nada aqui pra editar —
+	// cai no primeiro item de usuário só pro editor, sem tocar no
+	// storage (o botão-rota continua respeitando a seleção real).
+	nomeAtivo = tarefas[resultado.tarefaAtiva] ? resultado.tarefaAtiva : (Object.keys(tarefas)[0] || '')
 
 	_popularSelectTarefas()
 	_carregarTarefaAtiva()
@@ -178,7 +223,7 @@ async function iniciar(){
 		let nome = inputNomeTarefa.value.trim()
 		if(!nome){ mostrarStatus(statusTarefa,'Nome não pode estar vazio.','#e74c3c'); return }
 		if(tarefas[nome]){ mostrarStatus(statusTarefa,'Já existe uma tarefa com esse nome.','#e74c3c'); return }
-		tarefas[nome] = _tarefaPadrao()
+		tarefas[nome] = catalogo_tarefaPadrao()
 		nomeAtivo     = nome
 		_popularSelectTarefas()
 		_carregarTarefaAtiva()
@@ -811,15 +856,6 @@ async function iniciar(){
 
 	function _fecharMenusCor(){
 		regrasContainer.querySelectorAll('.color-menu').forEach(m => m.classList.add('hidden'))
-	}
-
-	function _tarefaPadrao(){
-		return {
-			tarefaUnica: '',
-			slots: [{ posicao:'esquerda', tipo:'detalhes', tipoDoc:'', selecao:'recente', orientacao:'horizontal', ordem:0 }],
-			regras:  REGRAS_PADRAO,
-			temporizador: { ativo: false, segundos: 30, opcoes: '' },
-		}
 	}
 
 	function mostrarStatus(el, msg, cor){

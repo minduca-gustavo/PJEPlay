@@ -103,6 +103,7 @@
         "rota/modelo.js",
         "rota/interceptador.js",
         "rota/interceptador_documento.js",
+        "modulos/evita_queda.js",
         "modulos/seletores.js",
         "rota/ui.js",
         "modulos/movimentar.js",
@@ -122,6 +123,7 @@
         "rota/acoes.js",
         "rota/formatadores.js",
         "rota/componentes.js",
+        "leitura-dinamica/leitura_dinamica_documentos.js",
         "rota/tarefas/index.js",
         "rota/tarefas/balcao-virtual/roteiro.js",
         "rota/tarefas/triagem-inicial/roteiro.js",
@@ -135,6 +137,8 @@
     "scripts": [
       "modulos/definicoes.js",
       "modulos/relatar.js",
+      "rota/configuracao.js",
+      "rota/tarefas/index.js",
       "navegador/segundo-plano.js"
     ]
   },

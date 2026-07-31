@@ -421,6 +421,12 @@ header {
 
 .btn-toggle:hover { filter: brightness(1.2); }
 
+/* ── Bloco de destaque (config. global, separado do conteúdo da página) ── */
+.bloco-destaque {
+  background: var(--pje-info-bg);
+  border: 1px solid var(--pje-info-borda);
+}
+
 /* ── Botão ativar filtros ────────────────────────────────────── */
 .btn-filtro-liga {
   width: 26px;

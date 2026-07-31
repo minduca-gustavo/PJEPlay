@@ -135,3 +135,81 @@ function catalogo_paraSlots(itemCatalogo) {
             slotIndex: i,
         }))
 }
+
+
+// ── Paleta de cores e valores default de tarefa (👤 usuário) ──
+//
+// Fonte única usada pelo popup (seletor de cor da Pintura) e pela
+// seed de instalação no background. Compartilhado aqui para os
+// dois contextos nunca divergirem sobre o "shape" de uma tarefa.
+// ============================================================
+
+const CORES = [
+    { hex:'#e74c3c', nome:'Vermelho' }, { hex:'#e67e22', nome:'Laranja' },
+    { hex:'#f1c40f', nome:'Amarelo'  }, { hex:'#2ecc71', nome:'Verde'   },
+    { hex:'#3498db', nome:'Azul'     }, { hex:'#9b59b6', nome:'Roxo'    },
+    { hex:'#1abc9c', nome:'Turquesa' }, { hex:'#e91e63', nome:'Rosa'    },
+    { hex:'#ffffff', nome:'Branco'   },
+]
+
+const REGRAS_PADRAO = CORES.slice(0, 6).map(c => ({ cor: c.hex, termos: '' }))
+
+
+// ── Gera uma tarefa de usuário (👤) com valores default ────────
+//
+// Cada chamada retorna um objeto novo, com seu próprio array de
+// regras (clone de REGRAS_PADRAO) — chamadas diferentes nunca
+// compartilham a mesma referência de array/objeto de regra.
+
+function catalogo_tarefaPadrao() {
+    return {
+        tarefaUnica: '',
+        slots: [{ posicao: 'esquerda', tipo: 'detalhes', tipoDoc: '', selecao: 'recente', orientacao: 'horizontal', ordem: 0 }],
+        regras: REGRAS_PADRAO.map(r => ({ ...r })),
+        temporizador: { ativo: false, segundos: 30, opcoes: '' },
+    }
+}
+
+
+// ── Garante tarefas + tarefaAtiva de forma atômica ─────────────
+//
+// Chamada tanto pelo popup (iniciar()) quanto pelo background
+// (onInstalled). Os dois podem disparar em ordem imprevisível —
+// esta função sempre lê o estado atual e só escreve o que falta,
+// numa única chamada de armazenar(), pra nunca deixar `tarefas`
+// preenchida sem `tarefaAtiva` (ou vice-versa) por causa de quem
+// rodou primeiro.
+//
+// Retorna { tarefas, tarefaAtiva } já garantidos.
+
+async function catalogo_garantirTarefaAtiva(){
+    let store   = await obterArmazenamento(['tarefas', 'tarefaAtiva', 'tarefaAtivaIsSistema'])
+    let tarefas = store?.tarefas || {}
+    let mudou   = false
+
+    if(!Object.keys(tarefas).length){
+        tarefas['Padrão'] = catalogo_tarefaPadrao()
+        mudou = true
+    }
+
+    let tarefaAtiva          = store?.tarefaAtiva
+    let tarefaAtivaIsSistema = store?.tarefaAtivaIsSistema || false
+
+    // Válida se existir como tarefa de usuário OU como tarefa de sistema
+    // (ROTA_CATALOGO) — antes só checava `tarefas`, então uma seleção de
+    // tarefa 🤖 (ex: Triagem Inicial) era tratada como inválida a cada
+    // reload do background e sobrescrita de volta pra 'Padrão'.
+    let valida = tarefaAtiva && (tarefas[tarefaAtiva] || catalogo_obter(tarefaAtiva))
+
+    if(!valida){
+        tarefaAtiva          = Object.keys(tarefas)[0]
+        tarefaAtivaIsSistema = false
+        mudou = true
+    }
+
+    if(mudou){
+        await armazenar({ tarefas, tarefaAtiva, tarefaAtivaIsSistema })
+    }
+
+    return { tarefas, tarefaAtiva, tarefaAtivaIsSistema }
+}

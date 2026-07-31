@@ -169,7 +169,45 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral 
     const barraTexto = _ui_el('span', {})
     barraTexto.textContent = titulo
 
+    // ── botões (recolher / fechar) ─────────────────────────────
+    const barraBotoes = _ui_el('div', {
+        display:    'flex',
+        alignItems: 'center',
+        gap:        '2px',
+        flexShrink: '0',
+    })
+
+    function _criaBotaoBarra(texto, tituloBotao) {
+        const botao = _ui_el('button', {
+            background:   'transparent',
+            border:       'none',
+            color:        UI_CORES.branco,
+            cursor:       'pointer',
+            fontSize:     '13px',
+            lineHeight:   '1',
+            padding:      '2px 5px',
+            borderRadius: '4px',
+        })
+        botao.type = 'button'
+        botao.textContent = texto
+        botao.title = tituloBotao
+        botao.addEventListener('mouseenter', () => {
+            botao.style.background = 'rgba(255,255,255,0.2)'
+        })
+        botao.addEventListener('mouseleave', () => {
+            botao.style.background = 'transparent'
+        })
+        return botao
+    }
+
+    const botaoRecolher = _criaBotaoBarra('─', 'Recolher')
+    const botaoFechar   = _criaBotaoBarra('✕', 'Fechar')
+
+    barraBotoes.appendChild(botaoRecolher)
+    barraBotoes.appendChild(botaoFechar)
+
     barra.appendChild(barraTexto)
+    barra.appendChild(barraBotoes)
     wrapper.appendChild(barra)
 
     // ── corpo (ancestral dos componentes filhos) ──────────────
@@ -184,11 +222,28 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral 
     corpo.id = id + '-corpo'
     wrapper.appendChild(corpo)
 
+    // ── recolher / expandir ─────────────────────────────────────
+    let recolhido = false
+    botaoRecolher.addEventListener('click', (e) => {
+        e.stopPropagation()
+        recolhido = !recolhido
+        corpo.style.display    = recolhido ? 'none' : 'flex'
+        botaoRecolher.textContent = recolhido ? '▢' : '─'
+        botaoRecolher.title       = recolhido ? 'Expandir' : 'Recolher'
+    })
+
+    // ── fechar ───────────────────────────────────────────────────
+    botaoFechar.addEventListener('click', (e) => {
+        e.stopPropagation()
+        wrapper.remove()
+    })
+
     // ── arrasto ───────────────────────────────────────────────
     let arrastando = false
     let origemX, origemY, inicioTop, inicioLeft
 
     barra.addEventListener('mousedown', (e) => {
+        if (e.target.closest('button')) return
         arrastando = true
         origemX    = e.clientX
         origemY    = e.clientY
