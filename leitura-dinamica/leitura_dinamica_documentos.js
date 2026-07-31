@@ -124,15 +124,73 @@ async function criaWidgetLeituraDinamica() {
         let seletorProcessos = [
             seletorPorVersao('painelGlobalAbrirTarefaDoProcesso'),
         ]
-        let inputs = selecionar('[id*="' + seletores + '"]')
-        let processos = []
+        let inputs = [...selecionar('[id*="' + seletores + '"]', '', true)]
+        let regras = []
+        for (e of inputs){
+            if (e?.id.includes('container')) continue
+            console.log('%c[Rota PJE]%c e.id10:' + JSON.stringify(e.id), LOG.info, 'color:inherit', e)
+            let valor = e?.value
+            console.log('%c[Rota PJE]%c valor' + JSON.stringify(valor), LOG.erro, 'color:inherit')
+            let conteudo = valor.split(',').map(d=> d.trim()) || []
+            let cor = e?.dataset.cor
+            console.log('%c[Rota PJE]%c cor' + JSON.stringify(cor), LOG.aviso, 'color:inherit')
+            regras.push({palavras: conteudo, cor: cor})
+        }
+        console.log('%c[Rota PJE]%c inputs' + JSON.stringify(inputs), LOG.teste, 'color:inherit', inputs)
+        let processo = []
         for (s of seletorProcessos){
             console.log('%c[Rota PJE]%c s: ' + JSON.stringify(s), LOG.rosa, 'color:inherit')
-            let processo = [...selecionar(s, '', true)].map(d=> d.textContent.split(' ')[2])
+            processo = [...selecionar(s, '', true)].map(d=> d.textContent.split(' ')[2])
             console.log('%c[Rota PJE]%c processo: ' + JSON.stringify(processo), LOG.rosa, 'color:inherit', processo)
-            processos.push(processo)
         }
-        console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.rosa, 'color:inherit')
+        for (p of processo){
+            let id = await buscarIdPeloNumeroCNJ(p).then(d=> d?.id) || null
+            if (!id) continue
+            let documentosTimeline = (await buscarDocumentos(id)).filter(d=> d?.documentoApreciavel == true) 
+            console.log('%c[Rota PJE]%c documentos' + JSON.stringify(documentosTimeline), LOG.rosa, 'color:inherit')
+            let documentosTeor = []
+            for (d of documentosTimeline){
+                let teor = await extrairTexto(id, d?.id)
+                console.log('%c[Rota PJE]%c teor 142: ' + JSON.stringify(teor), LOG.aviso, 'color:inherit')
+                for (r of regras){
+                    r.palavras.map(d=> buscaEmTextoMalFormatado(teor, d))
+                }
+            }
+            return
+            //let naoApreciados = timeline
+        }
+        console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processo), LOG.rosa, 'color:inherit')
+        
     }
 
+}
+
+function buscaEmTextoMalFormatado(textoABuscar, termo, caracteres = 50){
+    let texto = normalizar(textoABuscar).toLowerCase()
+    console.log('%c[Rota PJE]%c texto' + JSON.stringify(texto), LOG.rosa, 'color:inherit')
+    let mapa = []
+    let limpo = ''
+    for (let i=0; i < texto.length; i++){
+        let c = texto[i];
+        if (/\s/.test(c)) continue; // pula espaços/quebras de linha
+        limpo += c;
+        mapa.push(i);
+    }
+    console.log('%c[Rota PJE]%c limpo' + JSON.stringify(limpo), LOG.teste, 'color:inherit')
+    let busca = normalizar(termo).toLowerCase()
+    let posicao = limpo.indexOf(busca)
+    if (posicao === -1) return null
+    let inicio = mapa[posicao]
+    let fim = mapa[posicao + busca.length - 1] + 1
+    let resultado = textoABuscar.slice(
+            Math.max(0, inicio - caracteres),
+            Math.min(textoABuscar.length, fim + caracteres));
+    console.log('%c[Rota PJE]%c resultado' + JSON.stringify(resultado.split(' ', 2)[1]), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c inicio' + JSON.stringify(inicio), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c fim' + JSON.stringify(fim), LOG.teste, 'color:inherit')
+            ///*return*/ console.log(textoABuscar.slice(
+    //        Math.max(0, inicio - caracteres),
+    //        Math.min(textoABuscar.length, fim + caracteres)
+    //    ).split(' ', 1)[1]
+    //)
 }
