@@ -128,60 +128,72 @@ async function criaWidgetLeituraDinamica() {
         let regras = []
         for (e of inputs){
             if (e?.id.includes('container')) continue
-            console.log('%c[Rota PJE]%c e.id10:' + JSON.stringify(e.id), LOG.info, 'color:inherit', e)
             let valor = e?.value
-            console.log('%c[Rota PJE]%c valor' + JSON.stringify(valor), LOG.erro, 'color:inherit')
-            let conteudo = valor.split(',').map(d=> d.trim()) || []
-            let cor = e?.dataset.cor
-            console.log('%c[Rota PJE]%c cor' + JSON.stringify(cor), LOG.aviso, 'color:inherit')
-            regras.push({palavras: conteudo, cor: cor})
+            if (valor !== ''){
+                let conteudo = valor.split(',').map(d=> d.trim()) || []
+                let cor = e?.dataset.cor
+                regras.push({palavras: conteudo, cor: cor})
+            }
         }
-        console.log('%c[Rota PJE]%c inputs' + JSON.stringify(inputs), LOG.teste, 'color:inherit', inputs)
-        let processo = []
+        let processos = []
         for (s of seletorProcessos){
-            console.log('%c[Rota PJE]%c s: ' + JSON.stringify(s), LOG.rosa, 'color:inherit')
-            processo = [...selecionar(s, '', true)].map(d=> d.textContent.split(' ')[2])
-            console.log('%c[Rota PJE]%c processo: ' + JSON.stringify(processo), LOG.rosa, 'color:inherit', processo)
+            processos = [...selecionar(s, '', true)].map(d=> d.textContent.split(' ')[2])
         }
-        for (p of processo){
+        let processosResultado = []
+        for (p of processos){
             let id = await buscarIdPeloNumeroCNJ(p).then(d=> d?.id) || null
             if (!id) continue
-            let documentosTimeline = (await buscarDocumentos(id)).filter(d=> d?.documentoApreciavel == true) 
-            console.log('%c[Rota PJE]%c documentos' + JSON.stringify(documentosTimeline), LOG.rosa, 'color:inherit')
-            let documentosTeor = []
+            let documentosTimeline = await buscaDocumentosNaoApreciados(id)
+            let documentos = []
             for (d of documentosTimeline){
                 let teor = await extrairTexto(id, d?.id)
-                console.log('%c[Rota PJE]%c teor 142: ' + JSON.stringify(teor), LOG.aviso, 'color:inherit')
                 let i=0
                 let resultado = []
                 for (r of regras){
                     i++
-                    let encontrado = r?.palavras !== '' ? r?.palavras.map(d=> d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null) : null
+                    let encontrado = r?.palavras.map(d=> d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null)
                     if (encontrado && encontrado?.some(d=> d !== null)){
                         let dado = {}
                         let dados = encontrado?.filter(d => d !== null)
-                        console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
-                        dado.palavra = dados?.map(d=> d)
-                        //dado.palavra = dados?.map(d=termo
+                        //console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+                        dado.busca = dados
                         dado.cor = r?.cor
                         resultado.push(dado)
                     }
                     
                 }
-                console.log('%c[Rota PJE]%c encontrado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
+                //console.log('%c[Rota PJE]%c encontrado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
+                let documento = {idUnico: d?.idUnico, dados: resultado, teor: teor}
+                documentos.push( documento)
             }
-            return
+            let processo = {}
+            processo.processo = p
+            processo.documentos = documentos
+            //console.log('%c[Rota PJE]%c documentos: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
+            processosResultado.push(processo)
+            let linha = [...document.querySelectorAll('tr')].find(d=> d.textContent.includes(p))
+            console.log('%c[Rota PJE]%c linha: ' + JSON.stringify(linha), LOG.teste, 'color:inherit', linha)
+            linha.style.background = LOG.rosa
+
             //let naoApreciados = timeline
         }
-        console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processo), LOG.rosa, 'color:inherit')
+        
+        
+        //let celula = selecionar('td', linha)
+
+        console.log('%c[Rota PJE]%c processosResultado: ' + JSON.stringify(processosResultado), LOG.teste, 'color:inherit', processosResultado)
         
     }
 
+    async function buscaDocumentosNaoApreciados(id) {
+        let documentos = (await buscarDocumentos(id)).filter(d=> d?.documentoApreciavel == true) || []
+        return documentos
+    }
 }
 
 function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
     let texto = normalizar(textoABuscar).toLowerCase()
-    console.log('%c[Rota PJE]%c texto' + JSON.stringify(texto), LOG.rosa, 'color:inherit')
+    //console.log('%c[Rota PJE]%c texto' + JSON.stringify(texto), LOG.rosa, 'color:inherit')
     let mapa = []
     let espacos = []
     let limpo = ''
@@ -206,8 +218,8 @@ function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
     //console.log('%c[Rota PJE]%c espacoInicio: ' + JSON.stringify(espacoInicio), LOG.rosa, 'color:inherit')
     //console.log('%c[Rota PJE]%c espacoInicio: ' + JSON.stringify(espacoFim), LOG.rosa, 'color:inherit')
     let resultado = textoABuscar.slice(espacoInicio, espacoFim)
-    console.log('%c[Rota PJE]%c resultado 200: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
-    return {trechos: resultado, termo: termo}
+    //console.log('%c[Rota PJE]%c resultado 200: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
+    return {trechos: resultado, termo: termo, inicio: inicio, fim: fim}
             ///*return*/ console.log(textoABuscar.slice(
     //        Math.max(0, inicio - caracteres),
     //        Math.min(textoABuscar.length, fim + caracteres)

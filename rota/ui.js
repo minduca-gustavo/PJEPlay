@@ -199,8 +199,14 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
         })
         return botao
     }
-
-    const botaoRecolher = _criaBotaoBarra('─', 'Recolher')
+    let recolhido = false
+    if (armazenarRecolhido){
+        let label = id + 'estado'
+        recolhido = await obterArmazenamento([label]).then(d=> d[label])
+        console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
+    }
+    let textoBotao = recolhido ? '▢' : '─'
+    const botaoRecolher = _criaBotaoBarra(textoBotao, 'Recolher')
     const botaoFechar   = _criaBotaoBarra('✕', 'Fechar')
 
     barraBotoes.appendChild(botaoRecolher)
@@ -223,12 +229,7 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
     wrapper.appendChild(corpo)
 
     // ── recolher / expandir ─────────────────────────────────────
-    let recolhido = false
-    if (armazenarRecolhido){
-        let label = id + 'estado'
-        recolhido = await obterArmazenamento([label]).then(d=> d[label])
-        console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
-    }
+    
     corpo.style.display    = recolhido ? 'none' : 'flex'
     
     botaoRecolher.addEventListener('click', (e) => {
