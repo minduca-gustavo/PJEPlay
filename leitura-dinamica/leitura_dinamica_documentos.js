@@ -33,6 +33,42 @@ async function criaWidgetLeituraDinamica() {
         texto: 'Colore de acordo com os termos escolhidos.',
         ancestral: 'rota_leituraDinamica-corpo',
     })
+    let tipos = [
+        {
+            tipo: 'peticao',
+            label: 'Petições não apreciadas',
+        },
+        {
+            tipo: 'ataDeAudiencia',
+            label: 'Última ata de audiência',
+        },
+        {
+            tipo: 'sentenca',
+            label: 'Sentenças e Acórdãos',
+        },
+    ]
+    for(t of tipos){
+        let checkBox = criaCheckBox({
+            id: 'rota_leituraDinamica_check_' + t?.tipo, 
+            textoAoLado: t?.label, 
+            ancestral: 'rota_leituraDinamica-corpo',
+        })
+        checkBox.addEventListener('click', () => alternarCheckLeituraDinamica('rota_leituraDinamica_check_' + t?.tipo))
+    }
+    async function alternarCheckLeituraDinamica(seletor) {
+        console.log('%c[Rota PJE]%c chamou 59: ' + JSON.stringify(seletor), LOG.teste, 'color:inherit')
+        let todosChecks = [...document.querySelectorAll('[id*="rota_leituraDinamica_check_"]')]
+        let el = document.querySelector('#' + seletor)
+        console.log('%c[Rota PJE]%c el: ' + JSON.stringify(el), LOG.teste, 'color:inherit', el)
+        if (el.dataset.marcado = 1){
+            for (c of todosChecks){
+                console.log('%c[Rota PJE]%c c: ' + JSON.stringify(c), LOG.aviso, 'color:inherit', c)
+                if (c?.id !== el?.id && c.dataset.marcado == 1){
+                    c.dataset.marcado = 0
+                }
+            }
+        }
+    }
     let cores = [
         {
             nome: 'Vermelho'
@@ -124,6 +160,7 @@ async function criaWidgetLeituraDinamica() {
         let seletorProcessos = [
             seletorPorVersao('painelGlobalAbrirTarefaDoProcesso'),
         ]
+        let exclusao = [...document.querySelectorAll('[id*="rota_leituraDinamica_pintura"]')].map(d=> d.remove())
         let inputs = [...selecionar('[id*="' + seletores + '"]', '', true)]
         let regras = []
         for (e of inputs){
@@ -137,14 +174,17 @@ async function criaWidgetLeituraDinamica() {
         }
         let processos = []
         for (s of seletorProcessos){
-            processos = [...selecionar(s, '', true)].map(d=> d.textContent.split(' ')[2])
+            elementos = [...selecionar(s, '', true)]/*.map(d=> d.textContent.split(' ')[2])*/
         }
         let processosResultado = []
-        for (p of processos){
+        let i = 0
+        for (el of elementos){
+            let p = el.textContent.split(' ')[2]
             let id = await buscarIdPeloNumeroCNJ(p).then(d=> d?.id) || null
             if (!id) continue
             let documentosTimeline = await buscaDocumentosNaoApreciados(id)
             let documentos = []
+            let corTeste = ''
             for (d of documentosTimeline){
                 let teor = await extrairTexto(id, d?.id)
                 let i=0
@@ -158,6 +198,7 @@ async function criaWidgetLeituraDinamica() {
                         //console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
                         dado.busca = dados
                         dado.cor = r?.cor
+                        corTeste = r?.cor
                         resultado.push(dado)
                     }
                     
@@ -171,10 +212,26 @@ async function criaWidgetLeituraDinamica() {
             processo.documentos = documentos
             //console.log('%c[Rota PJE]%c documentos: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
             processosResultado.push(processo)
-            let linha = [...document.querySelectorAll('tr')].find(d=> d.textContent.includes(p))
-            console.log('%c[Rota PJE]%c linha: ' + JSON.stringify(linha), LOG.teste, 'color:inherit', linha)
-            linha.style.background = LOG.rosa
-
+            //let linha = [...document.querySelectorAll('tr')].find(d=> d.textContent.includes(p))
+            //let celula = [...linha.querySelectorAll('td')].find(d=> d.textContent.includes(p))
+            //let celulaId = celula.id
+            //celula.style.background = corTeste
+            i++
+            let badgeId = 'rota_leituraDinamica_pintura' + i
+            let badge = criaPlaquinhaComTooltip({
+                id: badgeId,
+                texto: '✔️',
+                cor: corTeste,
+                tooltip: 'Testando',
+                
+            })
+            el.appendChild(badge)
+            let badgeEdita = document.querySelector('#rota_leituraDinamica_pintura' + i)
+            badgeEdita.style.backgroundColor = corTeste
+            badgeEdita.style.border = '1px solid ' + corTeste
+            badgeEdita.style.borderRadius = "50%"
+            badgeEdita.style.padding = '2px 2px'
+            
             //let naoApreciados = timeline
         }
         
