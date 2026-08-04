@@ -55,18 +55,16 @@ async function criaWidgetLeituraDinamica() {
         })
         checkBox.style.marginLeft = '3px'
         let checkListener = document.querySelector('#rota_leituraDinamica_check_' + t?.tipo)
+        checkListener.dataset.tipo = t?.tipo
         checkListener.addEventListener('click', () => alternarCheckLeituraDinamica(checkListener))
     }
     async function alternarCheckLeituraDinamica(el) {
-        //console.log('%c[Rota PJE]%c chamou 59: ' + JSON.stringify(el), LOG.teste, 'color:inherit')
         let todosChecks = [...document.querySelectorAll('[id*="rota_leituraDinamica_check_"]')]
-        //console.log('%c[Rota PJE]%c el: ' + JSON.stringify(el), LOG.teste, 'color:inherit', el)
         
-        for (c of todosChecks){
-            
-            if (c !== el && !c?.id.includes('linha') && c.dataset.marcado == 1){
-                console.log('%c[Rota PJE]%c c: ' + JSON.stringify(c), LOG.aviso, 'color:inherit', c)
-                c.click()
+        for (t of tipos){
+            let check = document.querySelector('#rota_leituraDinamica_check_' + t?.tipo)
+            if (check !== el && el.dataset.marcado == 1 && check.dataset.marcado == 1){
+                check.click()
                 await suspender(200)
             }
         }
@@ -187,24 +185,35 @@ async function criaWidgetLeituraDinamica() {
             if (!id) continue
             let documentosTimeline = await buscaDocumentosNaoApreciados(id)
             let documentos = []
-            let corTeste = ''
+            let corBadge = ''
+            let textoBadge = ''
+            let tooltipBadge = ''
             for (d of documentosTimeline){
                 let teor = await extrairTexto(id, d?.id)
                 let i=0
                 let resultado = []
                 for (r of regras){
-                    i++
-                    let encontrado = r?.palavras.map(d=> d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null)
+                    
+                    let encontrado = r?.palavras.map(d=> {
+                        let valor = d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null
+                        if (valor && textoBadge == ''){
+                            textoBadge = d
+                            corBadge = r?.cor
+                            tooltipBadge = valor?.trechos
+                            
+                        }
+                        return valor
+                    })
                     if (encontrado && encontrado?.some(d=> d !== null)){
                         let dado = {}
                         let dados = encontrado?.filter(d => d !== null)
                         //console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
                         dado.busca = dados
                         dado.cor = r?.cor
-                        corTeste = r?.cor
+                        //corBadge = r?.cor
                         resultado.push(dado)
                     }
-                    
+                    i++
                 }
                 //console.log('%c[Rota PJE]%c encontrado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
                 let documento = {idUnico: d?.idUnico, dados: resultado, teor: teor}
@@ -223,16 +232,16 @@ async function criaWidgetLeituraDinamica() {
             let badgeId = 'rota_leituraDinamica_pintura' + i
             let badge = criaPlaquinhaComTooltip({
                 id: badgeId,
-                texto: '✔️',
-                cor: corTeste,
-                tooltip: 'Testando',
+                texto: textoBadge.toUpperCase(),
+                cor: corBadge,
+                tooltip: tooltipBadge,
                 
             })
             el.appendChild(badge)
             let badgeEdita = document.querySelector('#rota_leituraDinamica_pintura' + i)
-            badgeEdita.style.backgroundColor = corTeste
-            badgeEdita.style.border = '1px solid ' + corTeste
-            badgeEdita.style.borderRadius = "50%"
+            badgeEdita.style.backgroundColor = corBadge
+            badgeEdita.style.border = '1px solid ' + corBadge
+            badgeEdita.style.borderRadius = "2px"
             badgeEdita.style.padding = '2px 2px'
             
             //let naoApreciados = timeline
@@ -246,7 +255,27 @@ async function criaWidgetLeituraDinamica() {
     }
 
     async function buscaDocumentosNaoApreciados(id) {
-        let documentos = (await buscarDocumentos(id)).filter(d=> d?.documentoApreciavel == true) || []
+        let valor = [...document.querySelectorAll('[id^="rota_leituraDinamica_check_"')].find(d=> d.dataset.marcado==1).dataset.tipo || ''
+        console.log('%c[Rota PJE]%c seletores: ' + JSON.stringify(valor), LOG.aviso, 'color:inherit')
+        let tipos = 
+            {
+                peticao: {
+                    busca: 'documentoApreciavel',
+                    valor: true
+                },
+                ataDeAudiencia: {
+                    busca: 'tipo',
+                    valor: 'Ata da Audiência'
+                },
+                sentenca: {
+                    busca: 'tipo',
+                    valor: ['Sentença', 'Acórdão']
+                },
+                
+            }
+        
+        let busca = tipos[valor]
+        let documentos = (await buscarDocumentos(id)).filter(d => [].concat(busca.valor).includes(d[busca.busca])) || []
         return documentos
     }
 }

@@ -913,7 +913,7 @@ function criaCheckBox({ id, textoAoLado = '', ancestral }) {
         cursor:     'pointer',
         marginBottom:'4px',
     })
-    linha.id = id + '-linha'
+    linha.id = id
 
     const chk = _ui_el('div', {
         width:          '16px',
@@ -928,8 +928,8 @@ function criaCheckBox({ id, textoAoLado = '', ancestral }) {
         transition:     'all 0.15s',
         fontSize:       '11px',
     })
-    chk.id              = id
-    chk.dataset.marcado = '0'
+    chk.id              = id + '-caixa'
+    linha.dataset.marcado = '0'
 
     const label = _ui_el('span', {
         fontSize:  '12px',
@@ -940,13 +940,13 @@ function criaCheckBox({ id, textoAoLado = '', ancestral }) {
     label.textContent = textoAoLado
 
     function alternar() {
-        if (chk.dataset.marcado === '1') {
-            chk.dataset.marcado  = '0'
+        if (linha.dataset.marcado === '1') {
+            linha.dataset.marcado  = '0'
             chk.style.background = UI_CORES.branco
             chk.style.borderColor= UI_CORES.borda
             chk.textContent      = ''
         } else {
-            chk.dataset.marcado  = '1'
+            linha.dataset.marcado  = '1'
             chk.style.background = UI_CORES.azul
             chk.style.borderColor= UI_CORES.azul
             chk.textContent      = '✓'
