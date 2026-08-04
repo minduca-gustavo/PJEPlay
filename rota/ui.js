@@ -1459,6 +1459,17 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
             top = rect.bottom + 4
         }
 
+        // Corrige se saiu por baixo (pode acontecer mesmo após a correção acima,
+        // quando a plaquinha está perto do rodapé e o tooltip é alto)
+        if (top + tip.offsetHeight > window.innerHeight - 8) {
+            top = window.innerHeight - tip.offsetHeight - 8
+        }
+
+        // Última garantia: nunca deixa o topo negativo (tooltip maior que a viewport)
+        if (top < 8) {
+            top = 8
+        }
+
         tip.style.left = left + 'px'
         tip.style.top  = top  + 'px'
     })

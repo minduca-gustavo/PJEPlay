@@ -24,6 +24,7 @@ NAVEGADOR.storage.onChanged.addListener((changes) => {
 })   // ativado via popup página 4 — controla o relatar()
 var JANELA = {
     meuPainel:          	/\/pjekz\/gigs\/meu-painel/,
+    gigsRelatorios:          	/\/pjekz\/gigs\/relatorios\/atividades/,
     painelGlobal:      		/\/pjekz\/painel\/global/,
 	painelGlobalTarefas:	/\/pjekz\/painel\/global\/\d*\/lista-processos/,
     painelGlobalTodos: 		/\/pjekz\/painel\/global\/todos\/lista-processos/,
