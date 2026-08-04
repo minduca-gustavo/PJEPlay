@@ -53,21 +53,24 @@ async function criaWidgetLeituraDinamica() {
             textoAoLado: t?.label, 
             ancestral: 'rota_leituraDinamica-corpo',
         })
-        checkBox.addEventListener('click', () => alternarCheckLeituraDinamica('rota_leituraDinamica_check_' + t?.tipo))
+        checkBox.style.marginLeft = '3px'
+        let checkListener = document.querySelector('#rota_leituraDinamica_check_' + t?.tipo)
+        checkListener.addEventListener('click', () => alternarCheckLeituraDinamica(checkListener))
     }
-    async function alternarCheckLeituraDinamica(seletor) {
-        console.log('%c[Rota PJE]%c chamou 59: ' + JSON.stringify(seletor), LOG.teste, 'color:inherit')
+    async function alternarCheckLeituraDinamica(el) {
+        //console.log('%c[Rota PJE]%c chamou 59: ' + JSON.stringify(el), LOG.teste, 'color:inherit')
         let todosChecks = [...document.querySelectorAll('[id*="rota_leituraDinamica_check_"]')]
-        let el = document.querySelector('#' + seletor)
-        console.log('%c[Rota PJE]%c el: ' + JSON.stringify(el), LOG.teste, 'color:inherit', el)
-        if (el.dataset.marcado = 1){
-            for (c of todosChecks){
+        //console.log('%c[Rota PJE]%c el: ' + JSON.stringify(el), LOG.teste, 'color:inherit', el)
+        
+        for (c of todosChecks){
+            
+            if (c !== el && !c?.id.includes('linha') && c.dataset.marcado == 1){
                 console.log('%c[Rota PJE]%c c: ' + JSON.stringify(c), LOG.aviso, 'color:inherit', c)
-                if (c?.id !== el?.id && c.dataset.marcado == 1){
-                    c.dataset.marcado = 0
-                }
+                c.click()
+                await suspender(200)
             }
         }
+        
     }
     let cores = [
         {
