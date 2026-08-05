@@ -19,7 +19,16 @@ const ROTA_LEITURA_DINAMICA_TDS_EXCLUIDOS = [
 async function leituraDinamicaDocumentos() {
     let widget = document.querySelector('#rota_leituraDinamica')
     if (widget) widget.remove()
-    let janela = confereJanela(JANELA.escaninho, JANELA.pautaAudiencias, JANELA.atasAudiencias)
+    let janela = confereJanela(
+        JANELA.meuPainel,          
+        JANELA.painelGlobal,      	
+        JANELA.painelGlobalTarefas,
+        JANELA.painelGlobalTodos, 	
+        JANELA.escaninho, 			
+        JANELA.pautaAudiencias, 	
+        JANELA.atasAudiencias, 	
+        JANELA.gigsRelatorios, 	
+    )
     if (!janela){
         console.log('%c[Rota PJE]%c leituraDinamica4: ' + JSON.stringify(4), LOG.rosa, 'color:inherit')
         return
