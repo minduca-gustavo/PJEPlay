@@ -19,16 +19,7 @@ const ROTA_LEITURA_DINAMICA_TDS_EXCLUIDOS = [
 async function leituraDinamicaDocumentos() {
     let widget = document.querySelector('#rota_leituraDinamica')
     if (widget) widget.remove()
-    let janela = confereJanela(
-        JANELA.meuPainel,          
-        JANELA.painelGlobal,      	
-        JANELA.painelGlobalTarefas,
-        JANELA.painelGlobalTodos, 	
-        JANELA.escaninho, 			
-        JANELA.pautaAudiencias, 	
-        JANELA.atasAudiencias, 	
-        JANELA.gigsRelatorios, 	
-    )
+    let janela = confereJanela(JANELA.escaninho, JANELA.pautaAudiencias, JANELA.atasAudiencias)
     if (!janela){
         console.log('%c[Rota PJE]%c leituraDinamica4: ' + JSON.stringify(4), LOG.rosa, 'color:inherit')
         return
@@ -469,7 +460,10 @@ async function criaWidgetLeituraDinamica() {
                 }
                 
                 //console.log('%c[Rota PJE]%c encontrado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
-                let documento = {idUnicoDocumento: d?.idUnicoDocumento, dados: resultado, teor: teor}
+                // 'data' é um placeholder — o nome real do campo de data no
+                // objeto retornado por buscaDocumentosNaoApreciados ainda
+                // precisa ser conferido; deixe pronto pra troca.
+                let documento = {idUnicoDocumento: d?.idUnicoDocumento, dados: resultado, teor: teor, data: d?.data}
                 documentos.push( documento)
             }
             tooltipBadge += complemento
@@ -484,17 +478,22 @@ async function criaWidgetLeituraDinamica() {
             //celula.style.background = corTeste
             i++
             let badgeId = 'rota_leituraDinamica_pintura' + i
+            let encontrouAlgo = textoBadge !== ''
+            let textoBadgeFinal = encontrouAlgo ? textoBadge.toUpperCase() : 'NÃO ENCONTRADO'
+            // cinza neutro quando nada foi encontrado — sem cor de regra pra usar aqui,
+            // e sem isso o override manual logo abaixo zeraria o background do badge
+            let corBadgeFinal = encontrouAlgo ? corBadge : '#6b7c93'
             let badge = criaPlaquinhaComTooltip({
                 id: badgeId,
-                texto: textoBadge.toUpperCase(),
-                cor: corBadge,
+                texto: textoBadgeFinal,
+                cor: corBadgeFinal,
                 tooltip: tooltipBadge,
                 
             })
             el.appendChild(badge)
             let badgeEdita = document.querySelector('#rota_leituraDinamica_pintura' + i)
-            badgeEdita.style.backgroundColor = corBadge
-            badgeEdita.style.border = '1px solid ' + corBadge
+            badgeEdita.style.backgroundColor = corBadgeFinal
+            badgeEdita.style.border = '1px solid ' + corBadgeFinal
             badgeEdita.style.borderRadius = "2px"
             badgeEdita.style.padding = '2px 2px'
             badgeEdita.style.cursor = 'pointer'
@@ -694,16 +693,34 @@ function rota_leituraDinamica_abrirCompiladoProcesso(processo) {
     if (!documentos.length){
         corpo.textContent = 'Nenhum documento encontrado para este processo.'
     } else {
+        // 'data' é placeholder (ver comentário em colorirDinamico) — ordena do
+        // jeito que der por enquanto, sem quebrar se vier vazio/inválido
+        let porData = (a, b) => {
+            let da = a?.data ? new Date(a.data).getTime() : 0
+            let db = b?.data ? new Date(b.data).getTime() : 0
+            return (da || 0) - (db || 0)
+        }
+        let encontrados = documentos.filter(doc => (doc?.dados || []).length > 0).sort(porData)
+        let naoEncontrados = documentos.filter(doc => !(doc?.dados || []).length).sort(porData)
+
         let divisor = '─'.repeat(59)
-        let blocos = documentos.map(doc => {
+        let blocoDoc = doc => {
             let teorDestacado = rota_leituraDinamica_destacarTermos(doc?.teor || '', doc?.dados)
             return '<div style="margin-bottom:16px;">'
                 + '<div style="color:#6b7c93;">' + divisor + '</div>'
                 + '<div style="font-weight:700;margin:4px 0;">id: ' + rota_leituraDinamica_escapeHtml(doc?.idUnicoDocumento ?? '—') + '</div>'
                 + '<div>' + teorDestacado + '</div>'
                 + '</div>'
-        })
-        corpo.innerHTML = blocos.join('')
+        }
+
+        let html = encontrados.map(blocoDoc).join('')
+        if (naoEncontrados.length){
+            if (encontrados.length){
+                html += '<div style="color:#6b7c93;font-weight:700;margin:6px 0 10px;">— Sem termos encontrados —</div>'
+            }
+            html += naoEncontrados.map(blocoDoc).join('')
+        }
+        corpo.innerHTML = html
     }
 
     caixa.appendChild(cabecalho)
