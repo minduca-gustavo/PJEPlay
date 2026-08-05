@@ -459,7 +459,6 @@ async function criaWidgetLeituraDinamica() {
                     if (encontrado && encontrado?.some(d=> d !== null)){
                         let dado = {}
                         let dados = encontrado?.filter(d => d !== null)
-                        //console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
                         dado.busca = dados
                         dado.cor = r?.cor
                         //corBadge = r?.cor
@@ -468,7 +467,6 @@ async function criaWidgetLeituraDinamica() {
                     i++
                 }
                 
-                //console.log('%c[Rota PJE]%c encontrado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
                 // 'data' é um placeholder — o nome real do campo de data no
                 // objeto retornado por buscaDocumentosNaoApreciados ainda
                 // precisa ser conferido; deixe pronto pra troca.
@@ -479,18 +477,11 @@ async function criaWidgetLeituraDinamica() {
             let processo = {}
             processo.processo = p
             processo.documentos = documentos
-            //console.log('%c[Rota PJE]%c documentos: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
             processosResultado.push(processo)
-            //let linha = [...document.querySelectorAll('tr')].find(d=> d.textContent.includes(p))
-            //let celula = [...linha.querySelectorAll('td')].find(d=> d.textContent.includes(p))
-            //let celulaId = celula.id
-            //celula.style.background = corTeste
             i++
             let badgeId = 'rota_leituraDinamica_pintura' + i
             let encontrouAlgo = textoBadge !== ''
             let textoBadgeFinal = encontrouAlgo ? textoBadge.toUpperCase() : 'NÃO ENCONTRADO'
-            // cinza neutro quando nada foi encontrado — sem cor de regra pra usar aqui,
-            // e sem isso o override manual logo abaixo zeraria o background do badge
             let corBadgeFinal = encontrouAlgo ? corBadge : '#6b7c93'
             let badge = criaPlaquinhaComTooltip({
                 id: badgeId,
@@ -512,13 +503,7 @@ async function criaWidgetLeituraDinamica() {
                 rota_leituraDinamica_abrirCompiladoProcesso(processo)
             })
             
-            //let naoApreciados = timeline
         }
-        
-        
-        //let celula = selecionar('td', linha)
-
-        console.log('%c[Rota PJE]%c processosResultado: ' + JSON.stringify(processosResultado), LOG.teste, 'color:inherit', processosResultado)
         
     }
 
@@ -537,15 +522,25 @@ async function criaWidgetLeituraDinamica() {
                 },
                 sentenca: {
                     busca: 'tipo',
-                    valor: ['Sentença', 'Acórdão']
+                    valor: ['Sentença', 'Acórdão'],
+                    // No TST o campo 'tipo' não vem preenchido do mesmo jeito, então
+                    // completa a busca pelo TÍTULO — mas só ancorado em "TST -" no
+                    // começo, senão pega qualquer petição de parte com "Acórdão"/
+                    // "Decisão" no nome. 'titulo' é placeholder — confira o campo certo.
+                    tituloRegex: /^TST\s*-\s*(Acórdão|Decisão)\b/i
                 },
                 
             }
         
         let busca = tipos[valor]
-        let documentos = (await buscarDocumentos(id)).filter(d => [].concat(busca.valor).includes(d[busca.busca])) || []
+        let documentosBrutos = await buscarDocumentos(id)
+        let documentos = documentosBrutos.filter(d =>
+            [].concat(busca.valor).includes(d[busca.busca]) ||
+            (busca.tituloRegex && busca.tituloRegex.test(d?.titulo || ''))
+        ) || []
         return documentos
     }
+
 }
 
 // ── rota_leituraDinamica_avisoTemporario ──────────────────────────────────────────
@@ -743,7 +738,6 @@ function rota_leituraDinamica_abrirCompiladoProcesso(processo) {
 
 function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
     let texto = normalizar(textoABuscar).toLowerCase()
-    //console.log('%c[Rota PJE]%c texto' + JSON.stringify(texto), LOG.rosa, 'color:inherit')
     let mapa = []
     let espacos = []
     let limpo = ''
@@ -756,23 +750,14 @@ function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
         limpo += c;
         mapa.push(i);
     }
-    //console.log('%c[Rota PJE]%c limpo' + JSON.stringify(limpo), LOG.teste, 'color:inherit')
     let busca = normalizar(termo).toLowerCase()
     let posicao = limpo.indexOf(busca)
     if (posicao === -1) return null
     let inicio = mapa[posicao]
     let fim = mapa[posicao + busca.length - 1] + 1
-    //return {encontrado: true, }
     let espacoInicio = espacos[espacos.findIndex(d=> d > Math.max(0, inicio - antes)) - 1]
     let espacoFim = espacos[espacos.findIndex(d=> d > Math.min(textoABuscar.length, fim + depois))]
-    //console.log('%c[Rota PJE]%c espacoInicio: ' + JSON.stringify(espacoInicio), LOG.rosa, 'color:inherit')
-    //console.log('%c[Rota PJE]%c espacoInicio: ' + JSON.stringify(espacoFim), LOG.rosa, 'color:inherit')
     let resultado = textoABuscar.slice(espacoInicio, espacoFim)
-    //console.log('%c[Rota PJE]%c resultado 200: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
     return {trechos: resultado, termo: termo, inicio: inicio, fim: fim}
-            ///*return*/ console.log(textoABuscar.slice(
-    //        Math.max(0, inicio - caracteres),
-    //        Math.min(textoABuscar.length, fim + caracteres)
-    //    ).split(' ', 1)[1]
-    //)
+    
 }

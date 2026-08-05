@@ -159,6 +159,11 @@ async function extrairTexto(idProcesso, idDocumento) {
     // Fallback: texto puro
     return res.text()
 }
+async function extrairHtml(idProcesso, idDocumento) {
+    let url  = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/html`
+    let pesquisa = await rota_fetch(url).then(d=> d?.modeloDocumento) || ''
+    return pesquisa
+}
 
 async function extrairTextoTeste(idProcesso, idDocumento) {
     let url = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/conteudo?incluirCapa=false&incluirAssinatura=true`

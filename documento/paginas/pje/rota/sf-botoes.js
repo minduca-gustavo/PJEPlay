@@ -196,7 +196,7 @@ const SF_BOTOES = [
 						tx.push(...t)
 						
 					}
-					if (idsx.length) break
+					if (idsx.length>0) break
 				}
 			}
 			console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
@@ -209,14 +209,17 @@ const SF_BOTOES = [
 				let sentencas = timeline.filter(d=> d.tipo == 'Sentença')|| []
 				let documento = sentencas[sentencas.length - 1]
 				console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(documento), LOG.info, 'color:inherit')
+				let conteudo = await extrairHtml(id, documento?.id)
+				
 				await suspender(30000)
-				return {id: documento?.id, juiz: nomeSignatario}
+				return {id: documento?.id, juiz: nomeSignatario, conteudo: conteudo, }
 			}, {
 				concorrencia: contexto.concorrencia,
 				tentativas:   contexto.tentativas,
 				pausaMs:      contexto.pausaMs,
 				onProgresso:  contexto.progresso,
 			})
+			
 
 			for (let i = 0; i < idsx.length; i++) {
 				

@@ -123,13 +123,24 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
     
 
     const salvo = await obterArmazenamento([CHAVE])
-    if (salvo && salvo[CHAVE] && typeof salvo[CHAVE].top === 'number') {
-        const maxTop  = Math.max(0, window.innerHeight - 120)
-        const maxLeft = Math.max(0, window.innerWidth  - 120)
+    if (salvo && salvo[CHAVE] && typeof salvo[CHAVE].top === 'number' && typeof salvo[CHAVE].left === 'number') {
+        // largura real do widget, com fallback caso `largura` não seja um valor em px
+        const larguraPx = parseInt(largura) || 280
+        const alturaBarraPx = 34 // altura aproximada da barra de título (sempre precisa ficar visível)
+        const margemMinimaVisivel = 40 // pelo menos essa fatia do widget precisa continuar na tela
+
+        const maxTop  = Math.max(0, window.innerHeight - alturaBarraPx)
+        const maxLeft = Math.max(0, window.innerWidth  - margemMinimaVisivel)
+        const minLeft = -(larguraPx - margemMinimaVisivel) // permite sair parcialmente pra esquerda, mas não sumir
+
         posicao = {
-            top:  Math.min(Math.max(0, salvo[CHAVE].top),  maxTop),
-            left: Math.min(Math.max(0, salvo[CHAVE].left), maxLeft),
+            top:  Math.min(Math.max(0, salvo[CHAVE].top), maxTop),
+            left: Math.min(Math.max(minLeft, salvo[CHAVE].left), maxLeft),
         }
+
+        // guarda extra contra valores corrompidos (NaN, Infinity etc.)
+        if (!Number.isFinite(posicao.top))  posicao.top  = POS_PAD
+        if (!Number.isFinite(posicao.left)) posicao.left = POS_PAD
     }
 
     // ── wrapper (position:fixed) ──────────────────────────────
