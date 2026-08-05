@@ -1005,6 +1005,23 @@ function criaCheckBox({ id, textoAoLado = '', ancestral }) {
 //   idDasColunas: ['col-nome', 'col-cpf', 'col-acao']
 //   colunas:      ['Nome', 'CPF', 'Ação']  ← opcional
 
+function criaGrade({ id, ancestral, numeroColunas, larguraColunas = {} }) {
+    const colunasCss = Array.from({ length: numeroColunas }, (_, i) => {
+        const chave = 'coluna' + i
+        return larguraColunas[chave] || `${100 / numeroColunas}%`
+    }).join(' ')
+
+    const grade = _ui_el('div', {
+        display:             'grid',
+        gridTemplateColumns: colunasCss,
+        marginBottom:        '8px',
+        gap: '4px'
+    })
+    grade.id = id
+    _ui_inserir(grade, ancestral)
+    return grade
+}
+
 function criaTabela({ id, idDasColunas = [], colunas, ancestral, semDivisao = false }) {
     const wrapper = _ui_el('div', {
         overflowX:    'auto',
@@ -1055,6 +1072,8 @@ function criaTabela({ id, idDasColunas = [], colunas, ancestral, semDivisao = fa
     _ui_inserir(wrapper, ancestral)
     return wrapper
 }
+
+
 
 function ui_adicionarLinhaTabela(idTabela, valores = {}) {
     const tbody = document.getElementById(idTabela + '-corpo')
@@ -1779,22 +1798,14 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
 
         if (!elementos) return
 
-        let colunas     = elementos > 3 ? 3 : elementos
-        let idDasColunas = []
-        for (let i = 1; i <= colunas; i) {
-            idDasColunas.push(id(idPrefixo, 'tabela', 'coluna', i++))
-        }
+        let colunas = elementos > 3 ? 3 : elementos
+        let idGrade = id(idPrefixo, 'tabela')
 
-        let idTabela = id(idPrefixo, 'tabela')
-        criaTabela({
-            id:           idTabela,
-            idDasColunas: idDasColunas,
-            semDivisao:   true,
-            ancestral:    ancestral
+        criaGrade({
+            id:            idGrade,
+            ancestral:     ancestral,
+            numeroColunas: colunas
         })
-
-        let contadorTipo = 0
-        let linha = {}
 
         for (let [tipo, doc] of Object.entries(documentosCriar)) {
 
@@ -1804,14 +1815,11 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
             if (!tipoDef) continue
 
             let chaveContador = id(idPrefixo, tipo)
-            //contadoresDocumentos[chaveContador] = { atual: -1, total: doc.length }
-            //contadoresDocumentos[chaveContador] = { atual: total, total: doc.length }
             contadoresDocumentos[chaveContador] = { atual: 0, total: doc.length, primeiroClique: true }
 
             let idBotao    = id(idPrefixo, 'botao', tipo)
             let idCheckbox = id(idPrefixo, 'checkbox', tipo)
             let textoBotao = tipoDef.label + ' 0/' + doc.length
-            let idColuna   = idDasColunas[contadorTipo]
 
             let acaoBotao = async () => {
                 let resultado = _avancarContadorDocumento(tipo)
@@ -1821,21 +1829,9 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
                 await onAbrir(documentosCriar[tipoContador][contador])
             }
 
-            linha[idColuna] = comCheckBox
-                ? _criaBotaoComCheckBox({ id: idBotao, idCheckbox, texto: textoBotao, acao: acaoBotao })
-                : _criaBotao({ id: idBotao, texto: textoBotao, acao: acaoBotao })
-
-            contadorTipo++
-
-            if (contadorTipo % colunas === 0) {
-                ui_adicionarLinhaTabela(idTabela, linha)
-                linha = {}
-                contadorTipo = 0
-            }
-        }
-
-        if (Object.keys(linha).length) {
-            ui_adicionarLinhaTabela(idTabela, linha)
+            comCheckBox
+                ? _criaBotaoComCheckBox({ id: idBotao, idCheckbox, texto: textoBotao, acao: acaoBotao, ancestral: idGrade })
+                : _criaBotao({ id: idBotao, texto: textoBotao, acao: acaoBotao, ancestral: idGrade })
         }
     }
 
@@ -1878,22 +1874,14 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
         let elementos = docs.length
         if (!elementos) return
 
-        let colunas      = elementos > 3 ? 3 : elementos
-        let idDasColunas = []
-        for (let i = 1; i <= colunas; i) {
-            idDasColunas.push(id(idPrefixo, 'tabela', 'coluna', i++))
-        }
+        let colunas = elementos > 3 ? 3 : elementos
+        let idGrade = id(idPrefixo, 'tabela')
 
-        let idTabela = id(idPrefixo, 'tabela')
-        criaTabela({
-            id:           idTabela,
-            idDasColunas: idDasColunas,
-            semDivisao:   true,
-            ancestral:    ancestral
+        criaGrade({
+            id:            idGrade,
+            ancestral:     ancestral,
+            numeroColunas: colunas
         })
-
-        let contadorDoc = 0
-        let linha = {}
 
         for (let documento of docs) {
             let docId     = documento.idUnicoDocumento
@@ -1906,28 +1894,15 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
 
             let idBotao    = id(idPrefixo, 'botao', docId)
             let idCheckbox = id(idPrefixo, 'checkbox', docId)
-            let idColuna   = idDasColunas[contadorDoc]
 
             let acaoBotao = async () => {
                 console.log('%c[Rota PJE]%c onAbrir documento: ' + JSON.stringify(documento), LOG.rosa, 'color:inherit')
                 await onAbrir(documento)
             }
 
-            linha[idColuna] = comCheckBox
-                ? _criaBotaoComCheckBox({ id: idBotao, idCheckbox, texto: textoBotao, acao: acaoBotao })
-                : _criaBotao({ id: idBotao, texto: textoBotao, acao: acaoBotao })
-
-            contadorDoc++
-
-            if (contadorDoc % colunas === 0) {
-                ui_adicionarLinhaTabela(idTabela, linha)
-                linha = {}
-                contadorDoc = 0
-            }
-        }
-
-        if (Object.keys(linha).length) {
-            ui_adicionarLinhaTabela(idTabela, linha)
+            comCheckBox
+                ? _criaBotaoComCheckBox({ id: idBotao, idCheckbox, texto: textoBotao, acao: acaoBotao, ancestral: idGrade })
+                : _criaBotao({ id: idBotao, texto: textoBotao, acao: acaoBotao, ancestral: idGrade })
         }
     }
 }
