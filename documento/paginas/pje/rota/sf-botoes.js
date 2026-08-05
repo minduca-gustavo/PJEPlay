@@ -1,3 +1,5 @@
+const STOP_MAX_PROCESSOS    = 5  
+const STOP_SALVAR_INDEXEDDB = false
 // ============================================================
 // sf-botoes.js
 // Define os botões que aparecem no widget Super Filtros.
@@ -173,76 +175,94 @@ const SF_BOTOES = [
 	},
 	{
 		nome: 'Compila sentenças.',
-		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		modo: ['Tarefa'],
 		funcao: async (contexto) => {
-			let {idsx, tx} = { idsx: [], tx: [] }
+			let { idsx, tx } = { idsx: [], tx: [] }
 			console.log('%c[Rota PJE]%c contexto' + JSON.stringify(contexto), LOG.rosa, 'color:inherit')
+	
 			if (contexto.modo === 'Tarefa') {
-				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
 				if (contexto.valor !== 'TODAS') {
 					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
 				}
 				for (let tarefa of tarefas) {
 					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
 						let opcoes = {
-							concorrencia: 	contexto.concorrencia || 1,
-							tentativas: 	contexto.tentativas || 2, 
-							pausaMs:		contexto.pausaMs || 1000,     
-							
+							concorrencia: contexto.concorrencia || 1,
+							tentativas:   contexto.tentativas || 2,
+							pausaMs:      contexto.pausaMs || 1000,
 						}
 						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome, '', opcoes)
-						console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.rosa, 'color:inherit')
 						idsx.push(...ids)
 						tx.push(...t)
-						
 					}
-					if (idsx.length>0) break
+					if (idsx.length > 0) break
 				}
 			}
-			console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
+			
+			// ---------- STOP: limita quantos processos entram no lote de teste ----------
+			if (STOP_MAX_PROCESSOS > 0) {
+				idsx = idsx.slice(0, STOP_MAX_PROCESSOS)
+				tx   = tx.slice(0, STOP_MAX_PROCESSOS)
+			}
+			console.log(`%c[Rota PJE]%c processando ${idsx.length} processo(s) — STOP_MAX_PROCESSOS=${STOP_MAX_PROCESSOS}`, LOG.rosa, 'color:inherit')
+	
 			if (!idsx.length) return 'Nenhum processo encontrado.'
 			let d = []
-
-			let sentenca = await sf_pool(idsx, async (id, idx) => {
+	
+			await sf_pool(idsx, async (id, idx) => {
 				console.log('%c[Rota PJE]%c id' + JSON.stringify(id), LOG.rosa, 'color:inherit')
 				let timeline = await buscarDocumentos(id) || []
-				let sentencas = timeline.filter(d=> d.tipo == 'Sentença')|| []
+				let sentencas = timeline.filter(doc => doc.tipo == 'Sentença') || []
+	
+				// ---------- STOP: limita quantas sentenças do processo são consideradas ----------
+				//if (STOP_MAX_SENTENCAS > 0) sentencas = sentencas.slice(-STOP_MAX_SENTENCAS)
+	
 				let documento = sentencas[sentencas.length - 1]
-				console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(documento), LOG.info, 'color:inherit')
-				let conteudo = await extrairHtml(id, documento?.id)
-				
-				await suspender(30000)
-				return {id: documento?.id, juiz: nomeSignatario, conteudo: conteudo, }
+				console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(documento), LOG.rosa, 'color:inherit')
+				//if (!documento) continue
+	
+				let html = await extrairHtml(id, documento.id)
+				let markdown = htmlParaMarkdown(html)
+	
+				let registro = {
+					id:          documento.id,
+					processo:    tx[idx]?.numero || '',
+					juiz:        nomeSignatario,
+					autuadoEm:   tx[idx]?.autuadoEm || '',
+					markdown:    markdown,
+					capturadoEm: new Date().toISOString(),
+				}
+	
+				if (STOP_SALVAR_INDEXEDDB) {
+					await salvarSentenca(registro)
+				} else {
+					console.log('%c[Rota PJE]%c [dry-run] não gravou no IndexedDB:', LOG.rosa, 'color:inherit', registro)
+				}
+				console.log('%c[Rota PJE]%c registro: ', LOG.erro, 'color:inherit', registro)
+				//await suspender(30000)
+				return registro
 			}, {
 				concorrencia: contexto.concorrencia,
 				tentativas:   contexto.tentativas,
 				pausaMs:      contexto.pausaMs,
 				onProgresso:  contexto.progresso,
 			})
-			
-
+	
 			for (let i = 0; i < idsx.length; i++) {
-				
-
-				let numero 		= tx[i]?.numero || ''
-				let tipo		= tx[i]?.descricaoClasseJudicial || ''
-				let autor  		= tx[i]?.autor  || ''
-				let reu			= tx[i]?.reu || ''
-				let id 			= idsx[i] || ''
-				let autuacao	= (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
 				d.push({
-					Id:					id,
-					Processo:         	numero,
-					Tipo:				tipo,
-					Reclamada:        	reu,
-					Reclamante:       	autor,
-					Autuado_em: 		autuacao,
+					Id:         idsx[i] || '',
+					Processo:   tx[i]?.numero || '',
+					Tipo:       tx[i]?.descricaoClasseJudicial || '',
+					Reclamada:  tx[i]?.reu || '',
+					Reclamante: tx[i]?.autor || '',
+					Autuado_em: (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || '',
 				})
-				
 			}
-
+	
 			return d
-		}
+		},
+
 	},
 	{
 		nome: 'Lista informações dos processos pelo GIG.',

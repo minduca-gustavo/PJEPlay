@@ -4,12 +4,21 @@
 
 ;(async function iniciarSuperFiltro(){
 
-	if(window._superfiltro_iniciado) return
-	window._superfiltro_iniciado = true
+	const NAV       = (typeof browser !== 'undefined') ? browser : chrome
+	const WIDGET_ID = 'pjerota-superfiltro-widget'
 
-	const NAV         = (typeof browser !== 'undefined') ? browser : chrome
-	const WIDGET_ID   = 'pjerota-superfiltro-widget'
-	const STORAGE_POS = 'superfiltro_widget_pos'
+	// Se uma instância anterior deste script já rodou nesta mesma página
+	// (reinjeção do content script sem navegação, reload da extensão em
+	// modo dev etc.), o widget velho pode ter ficado no DOM com closures
+	// mortas. O guard antigo (`if(window._superfiltro_iniciado) return`)
+	// abortava a reinicialização inteira nesse cenário — não removia o
+	// widget órfão nem montava um novo. Aqui, em vez de abortar, remove
+	// o resquício e segue o fluxo normal, que decide se remonta com base
+	// no estado atual (storage + URL).
+	if (window._superfiltro_iniciado) {
+		document.getElementById(WIDGET_ID)?.remove()
+	}
+	window._superfiltro_iniciado = true
 
 	// ── Paleta institucional ─────────────────────────────────
 	const C = {
@@ -34,15 +43,10 @@
 	}
 
 	// ── Estado do widget ─────────────────────────────────────
-	let _expandido     = false
-	let _modoAtivo     = null
-	let _arrastando    = false
+	let _modoAtivo = null
 
 	// ── Carrega storage ──────────────────────────────────────
-	let store = await NAV.storage.local.get([
-		'superfiltro_ativo',
-		STORAGE_POS,
-	])
+	let store = await NAV.storage.local.get(['superfiltro_ativo'])
 
 	window._superfiltro_ativo = store.superfiltro_ativo === true
 
@@ -59,9 +63,9 @@
 
 	// ── Sincronização com popup ──────────────────────────────
 	const URLS_SUPERFILTRO = ['pjekz/painel', 'pjekz/pauta-audiencias', 'pjekz/escaninho', 'pjekz/gigs/meu-painel']
-	function sincronizarWidget(){
+	async function sincronizarWidget(){
 		let urlOk = URLS_SUPERFILTRO.some(u => location.href.includes(u))
-		if(window._superfiltro_ativo && urlOk) _montarWidget()
+		if(window._superfiltro_ativo && urlOk) await _montarWidget()
 		else _removerWidget()
 	}
 
@@ -80,123 +84,27 @@
 	// MONTAGEM DO WIDGET
 	// ════════════════════════════════════════════════════════
 
-	function _montarWidget(){
+	async function _montarWidget(){
 		if(document.getElementById(WIDGET_ID)) return
 
-		let pos = store[STORAGE_POS] || { top: 80, left: 20 }
-
-		// ── Raiz ─────────────────────────────────────────────
-		let widget = document.createElement('div')
-		widget.id = WIDGET_ID
-		_s(widget, {
-			position:     'fixed',
-			top:          pos.top + 'px',
-			left:         pos.left + 'px',
-			zIndex:       '999999',
-			width:        '240px',
-			background:   C.branco,
-			border:       '1px solid ' + C.borda,
-			borderRadius: '12px',
-			boxShadow:    '0 4px 20px rgba(0,0,0,0.14)',
-			fontFamily:   "system-ui, -apple-system, 'Segoe UI', Arial, sans-serif",
-			fontSize:     '12px',
-			color:        C.texto,
-			userSelect:   'none',
-			overflow:     'hidden',
-			transition:   'box-shadow 0.15s',
+		// ── Raiz + barra + arrasto + clamp de tela + posição ───
+		// tudo isso já vem pronto do criaDivFlutuante, no mesmo
+		// mecanismo usado pelos outros widgets flutuantes.
+		let widget = await criaDivFlutuante({
+			id:                 WIDGET_ID,
+			titulo:             'Super Filtros',
+			largura:            '240px',
+			armazenarRecolhido: true,
 		})
 
-		// ── Barra de título ───────────────────────────────────
-		let barra = document.createElement('div')
-		_s(barra, {
-			display:      'flex',
-			alignItems:   'center',
-			gap:          '0',
-			padding:      '0',
-			background:   C.azul,
-			borderBottom: '2px solid transparent',
-			cursor:       'grab',
-			height:       '32px',
-			transition:   'border-color 0.15s',
-		})
+		let corpo = document.getElementById(WIDGET_ID + '-corpo')
+		_s(corpo, { background: C.fundo })
 
-		// Logo SVG compacto
-		let logoWrap = document.createElement('span')
-		_s(logoWrap, { padding: '0 6px 0 8px', flexShrink: '0', display: 'flex', alignItems: 'center' })
-		logoWrap.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="18" height="18">
-			<defs><linearGradient id="sfsg" x1="0%" y1="0%" x2="0%" y2="100%">
-				<stop offset="0%" style="stop-color:#1565C0;stop-opacity:1"/>
-				<stop offset="100%" style="stop-color:#0D47A1;stop-opacity:1"/>
-			</linearGradient></defs>
-			<path d="M64 6L108 18L114 60Q114 95 64 122Q14 95 14 60L20 18Z" fill="url(#sfsg)"/>
-			<path d="M64 14L103 24L108 62Q108 91 64 114Q20 91 20 62L25 24Z" fill="none" stroke="white" stroke-width="2.5"/>
-			<path d="M64 14L103 24L101 42L27 42L25 24Z" fill="#F57C00"/>
-			<line x1="24" y1="42" x2="104" y2="42" stroke="white" stroke-width="2"/>
-			<text x="64" y="37" text-anchor="middle" font-family="'Arial Black',Impact,sans-serif" font-size="15" font-weight="900" fill="white" letter-spacing="2">ROTA</text>
-			<text x="64" y="88" text-anchor="middle" font-family="'Arial Black',Impact,sans-serif" font-size="36" font-weight="900" fill="white" letter-spacing="1">PJE</text>
-			<line x1="48" y1="97" x2="80" y2="97" stroke="white" stroke-width="1.5" stroke-dasharray="5,4" opacity="0.6"/>
-		</svg>`
-
-		// Título
-		let titulo = document.createElement('span')
-		titulo.textContent = 'Super Filtros'
-		_s(titulo, {
-			flex:          '1',
-			fontWeight:    '700',
-			fontSize:      '11px',
-			color:         '#ffffff',
-			letterSpacing: '0.4px',
-		})
-
-		// Seta acordeão
-		let seta = document.createElement('button')
-		seta.id = WIDGET_ID + '-seta'
-		seta.textContent = '▾'
-		_s(seta, {
-			background:  'transparent',
-			border:      'none',
-			color:       'rgba(255,255,255,0.8)',
-			fontSize:    '14px',
-			cursor:      'pointer',
-			padding:     '0 6px',
-			lineHeight:  '1',
-			transition:  'transform 0.2s',
-			flexShrink:  '0',
-		})
-		seta.title = 'Expandir / recolher'
-
-		// Botão fechar
-		let btnFechar = document.createElement('button')
-		btnFechar.textContent = '×'
-		_s(btnFechar, {
-			background:  'transparent',
-			border:      'none',
-			color:       'rgba(255,255,255,0.6)',
-			fontSize:    '17px',
-			cursor:      'pointer',
-			padding:     '0 8px 0 2px',
-			lineHeight:  '1',
-			flexShrink:  '0',
-		})
-		btnFechar.title = 'Fechar widget'
-		btnFechar.addEventListener('mouseover', () => btnFechar.style.color = '#ffffff')
-		btnFechar.addEventListener('mouseout',  () => btnFechar.style.color = 'rgba(255,255,255,0.6)')
-		btnFechar.addEventListener('click', (e) => { e.stopPropagation(); _removerWidget() })
-
-		barra.appendChild(logoWrap)
-		barra.appendChild(titulo)
-		barra.appendChild(seta)
-		barra.appendChild(btnFechar)
-
-		// ── Corpo acordeão ────────────────────────────────────
-		let corpo = document.createElement('div')
-		corpo.id = WIDGET_ID + '-corpo'
-		_s(corpo, {
-			display:       'none',
-			flexDirection: 'column',
-			overflow:      'hidden',
-			background:    C.fundo,
-		})
+		// O botão de fechar embutido no criaDivFlutuante só remove o
+		// wrapper do DOM — ele não conhece o estado interno do super
+		// filtro, então reseta o modo selecionado à parte.
+		let btnFechar = Array.from(widget.querySelectorAll('button')).find(b => b.title === 'Fechar')
+		btnFechar?.addEventListener('click', () => { _modoAtivo = null })
 
 		// ── Menu de modos: Tarefa | Sala | Lista ──────────────
 		let menuModos = document.createElement('div')
@@ -453,28 +361,6 @@
 		corpo.appendChild(areaFuncs)
 		corpo.appendChild(areaResultado)
 
-		// ── Montagem final ────────────────────────────────────
-		widget.appendChild(barra)
-		widget.appendChild(corpo)
-		document.body.appendChild(widget)
-
-		// ── Toggle acordeão ───────────────────────────────────
-		function _toggleExpansao(){
-			if(_arrastando) return
-			_expandido = !_expandido
-			corpo.style.display      = _expandido ? 'flex' : 'none'
-			seta.style.transform     = _expandido ? 'rotate(180deg)' : ''
-			barra.style.borderBottom = _expandido
-				? '2px solid ' + C.laranja
-				: '2px solid transparent'
-		}
-
-		seta.addEventListener('click', (e) => { e.stopPropagation(); _toggleExpansao() })
-		barra.addEventListener('click', (e) => {
-			if(e.target === btnFechar || e.target === seta) return
-			_toggleExpansao()
-		})
-
 		// ── Selecionar modo ───────────────────────────────────
 		function _selecionarModo(modo){
 			_modoAtivo = modo
@@ -499,9 +385,6 @@
 			inputContexto.focus()
 			_atualizarBotoesFunc()
 		}
-
-		// ── Arrastar ──────────────────────────────────────────
-		_ativarArrasto(widget, barra, btnFechar, seta)
 	}
 
 
@@ -682,50 +565,7 @@
 	function _removerWidget(){
 		let w = document.getElementById(WIDGET_ID)
 		if(w) w.remove()
-		_expandido = false
 		_modoAtivo = null
-	}
-
-
-	// ── Arrastar ──────────────────────────────────────────────
-	function _ativarArrasto(widget, alca, ...excluidos){
-		let ox = 0, oy = 0
-
-		alca.addEventListener('mousedown', (e) => {
-			if(excluidos.some(el => el.contains(e.target))) return
-			_arrastando = false
-			ox = e.clientX - widget.getBoundingClientRect().left
-			oy = e.clientY - widget.getBoundingClientRect().top
-			alca.style.cursor = 'grabbing'
-			e.preventDefault()
-
-			function onMove(e){
-				if(!_arrastando && (Math.abs(e.clientX - ox - widget.getBoundingClientRect().left + ox) > 3 ||
-				                    Math.abs(e.clientY - oy - widget.getBoundingClientRect().top  + oy) > 3)){
-					_arrastando = true
-				}
-				let novoLeft = Math.max(0, Math.min(e.clientX - ox, window.innerWidth  - widget.offsetWidth))
-				let novoTop  = Math.max(0, Math.min(e.clientY - oy, window.innerHeight - widget.offsetHeight))
-				widget.style.left = novoLeft + 'px'
-				widget.style.top  = novoTop  + 'px'
-			}
-
-			function onUp(){
-				alca.style.cursor = 'grab'
-				document.removeEventListener('mousemove', onMove)
-				document.removeEventListener('mouseup',   onUp)
-				NAV.storage.local.set({
-					[STORAGE_POS]: {
-						top:  parseInt(widget.style.top),
-						left: parseInt(widget.style.left),
-					}
-				})
-				setTimeout(() => { _arrastando = false }, 0)
-			}
-
-			document.addEventListener('mousemove', onMove)
-			document.addEventListener('mouseup',   onUp)
-		})
 	}
 
 

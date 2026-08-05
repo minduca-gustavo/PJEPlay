@@ -120,11 +120,9 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
     const CHAVE   = 'ui_flutuante_pos_' + id
     const POS_PAD = 16
     let posicao   = { top: POS_PAD, left: POS_PAD }
-    
 
-    const salvo = await obterArmazenamento([CHAVE])
-    if (salvo && salvo[CHAVE] && typeof salvo[CHAVE].top === 'number' && typeof salvo[CHAVE].left === 'number') {
-        // largura real do widget, com fallback caso `largura` não seja um valor em px
+    // ── clamp reutilizável (carregamento + resize) ─────────────
+    function _clampPosicaoWidget(pos) {
         const larguraPx = parseInt(largura) || 280
         const alturaBarraPx = 34 // altura aproximada da barra de título (sempre precisa ficar visível)
         const margemMinimaVisivel = 40 // pelo menos essa fatia do widget precisa continuar na tela
@@ -133,14 +131,21 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
         const maxLeft = Math.max(0, window.innerWidth  - margemMinimaVisivel)
         const minLeft = -(larguraPx - margemMinimaVisivel) // permite sair parcialmente pra esquerda, mas não sumir
 
-        posicao = {
-            top:  Math.min(Math.max(0, salvo[CHAVE].top), maxTop),
-            left: Math.min(Math.max(minLeft, salvo[CHAVE].left), maxLeft),
+        const clamped = {
+            top:  Math.min(Math.max(0, pos.top), maxTop),
+            left: Math.min(Math.max(minLeft, pos.left), maxLeft),
         }
 
         // guarda extra contra valores corrompidos (NaN, Infinity etc.)
-        if (!Number.isFinite(posicao.top))  posicao.top  = POS_PAD
-        if (!Number.isFinite(posicao.left)) posicao.left = POS_PAD
+        if (!Number.isFinite(clamped.top))  clamped.top  = POS_PAD
+        if (!Number.isFinite(clamped.left)) clamped.left = POS_PAD
+
+        return clamped
+    }
+
+    const salvo = await obterArmazenamento([CHAVE])
+    if (salvo && salvo[CHAVE] && typeof salvo[CHAVE].top === 'number' && typeof salvo[CHAVE].left === 'number') {
+        posicao = _clampPosicaoWidget(salvo[CHAVE])
     }
 
     // ── wrapper (position:fixed) ──────────────────────────────
@@ -240,9 +245,9 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
     wrapper.appendChild(corpo)
 
     // ── recolher / expandir ─────────────────────────────────────
-    
+
     corpo.style.display    = recolhido ? 'none' : 'flex'
-    
+
     botaoRecolher.addEventListener('click', (e) => {
         e.stopPropagation()
         recolhido = !recolhido
@@ -301,6 +306,20 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
     } else {
         document.body.appendChild(wrapper)
     }
+
+    // ── re-clamp em resize da janela ────────────────────────────
+    window.addEventListener('resize', () => {
+        const topAtual  = parseInt(wrapper.style.top)  || 0
+        const leftAtual = parseInt(wrapper.style.left) || 0
+
+        const novaPosicao = _clampPosicaoWidget({ top: topAtual, left: leftAtual })
+
+        if (novaPosicao.top !== topAtual || novaPosicao.left !== leftAtual) {
+            wrapper.style.top  = novaPosicao.top  + 'px'
+            wrapper.style.left = novaPosicao.left + 'px'
+            armazenar({ [CHAVE]: novaPosicao })
+        }
+    })
 
     return wrapper
 }

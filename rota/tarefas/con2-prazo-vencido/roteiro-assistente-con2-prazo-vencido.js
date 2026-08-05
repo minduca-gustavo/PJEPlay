@@ -86,22 +86,45 @@ Clique para fixar/desafixar.`,
     }
 
     function criaTabelaDeSolucoes(solucoes){
-        let idTabela = id(tarefaNome, bloco, 'tabela')
-        let idEsq    = id(tarefaNome, bloco, 'tabela', 'esquerda')
-        let idDir    = id(tarefaNome, bloco, 'tabela', 'direita')
-        console.log('%c[Rota PJE]%c solucoes.length: ' + JSON.stringify(solucoes.length), LOG.rosa, 'color:inherit')
-        let idDasColunas = solucoes?.length > 1 ? [
-            id(tarefaNome, bloco, 'tabela', 'esquerda'),
-            id(tarefaNome, bloco, 'tabela', 'direita')
-        ] : [id(tarefaNome, bloco, 'tabela', 'esquerda')]
-        
-        criaTabela({
-            id: idTabela,
-            idDasColunas: idDasColunas,
-            semDivisao: true,
-            ancestral: id(tarefaNome, bloco)
+        let nomeTabela = 'tabelaSolucoes'
+        let divTabela = criaDiv({
+            id: id(tarefaNome, bloco, nomeTabela),
+            ancestral: id(tarefaNome, bloco),
+            rowColumn: 'column'
         })
-        
+        let colunas = solucoes.length == 1 ? 1 : 2
+        let linhas = solucoes.length == 1 ? 1: Math.ceil(solucoes.length / 2)
+        console.log('%c[Rota PJE]%c linhas: ' + JSON.stringify(linhas), LOG.erro, 'color:inherit')
+        for (let i = 0; i < linhas; i++){
+            let div = criaDiv({
+                id: id(tarefaNome, bloco, nomeTabela, 'linha' + i),
+                ancestral: id(tarefaNome, bloco, nomeTabela),
+                rowColumn: 'row'
+            })
+        }
+        let i = 0
+        for (s of solucoes){
+            let linha = Math.floor(i / 2)
+            let celula = criaDiv({
+                id: id(tarefaNome, bloco, nomeTabela, 'celula' + i),
+                ancestral: id(tarefaNome, bloco, nomeTabela, 'linha' + linha),
+            })
+            celula.style.width = '100%'
+            
+            let plaquinha = criaPlaquinhaComTooltip({
+                id: id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i),
+                texto: s.split('-', 2)[0].trim(),
+                cor: corDaSolucao(s),
+                tooltip: s,
+                ancestral: id(tarefaNome, bloco, nomeTabela, 'celula' + i)
+            })
+            let pl = document.querySelector('#' + id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i))
+            pl.style.width = '100%'
+            pl.style.textAlign = 'center'
+            i++
+
+        }
+
         function corDaSolucao(solucao) {
             if (solucao.includes('IMPROCEDENTES') || solucao.includes('EXTINTO')) return 'vermelho'
             if (solucao.includes('EM PARTE'))    return 'amarelo'
@@ -109,25 +132,6 @@ Clique para fixar/desafixar.`,
             return ''
         }
 
-        for (let i = 0; i < solucoes.length; i += 2) {
-            let esq = solucoes[i].split('-', 2)[0].trim()
-            let toolTipEsq = solucoes[i]
-            let dir = ''
-            let toolTipDir = ''
-            if (solucoes.length > 1) {
-                 dir = solucoes[i + 1].split('-', 2)[0].trim()   // pode ser undefined na última linha se quantidade for ímpar
-                toolTipDir = solucoes[i + 1]
-            }
-            
-            let valores = {
-                [idEsq]: criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i), texto: esq, tooltip: toolTipEsq, cor: corDaSolucao(esq) }),
-            }
-            if (dir !== undefined) {
-                valores[idDir] = criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i + 1), texto: dir, tooltip: toolTipDir, cor: corDaSolucao(dir) })
-            }
-
-            ui_adicionarLinhaTabela(idTabela, valores)
-        }
     }
 
     bloco = 'documentos'
