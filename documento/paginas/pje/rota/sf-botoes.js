@@ -172,6 +172,76 @@ const SF_BOTOES = [
 		}
 	},
 	{
+		nome: 'Compila sentenças.',
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {idsx, tx} = { idsx: [], tx: [] }
+			console.log('%c[Rota PJE]%c contexto' + JSON.stringify(contexto), LOG.rosa, 'color:inherit')
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}
+				for (let tarefa of tarefas) {
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						let opcoes = {
+							concorrencia: 	contexto.concorrencia || 1,
+							tentativas: 	contexto.tentativas || 2, 
+							pausaMs:		contexto.pausaMs || 1000,     
+							
+						}
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome, '', opcoes)
+						console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.rosa, 'color:inherit')
+						idsx.push(...ids)
+						tx.push(...t)
+						
+					}
+					if (idsx.length) break
+				}
+			}
+			console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
+			if (!idsx.length) return 'Nenhum processo encontrado.'
+			let d = []
+
+			let sentenca = await sf_pool(idsx, async (id, idx) => {
+				console.log('%c[Rota PJE]%c id' + JSON.stringify(id), LOG.rosa, 'color:inherit')
+				let timeline = await buscarDocumentos(id) || []
+				let sentencas = timeline.filter(d=> d.tipo == 'Sentença')|| []
+				let documento = sentencas[sentencas.length - 1]
+				console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(documento), LOG.info, 'color:inherit')
+				await suspender(30000)
+				return {id: documento?.id, juiz: nomeSignatario}
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			for (let i = 0; i < idsx.length; i++) {
+				
+
+				let numero 		= tx[i]?.numero || ''
+				let tipo		= tx[i]?.descricaoClasseJudicial || ''
+				let autor  		= tx[i]?.autor  || ''
+				let reu			= tx[i]?.reu || ''
+				let id 			= idsx[i] || ''
+				let autuacao	= (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				d.push({
+					Id:					id,
+					Processo:         	numero,
+					Tipo:				tipo,
+					Reclamada:        	reu,
+					Reclamante:       	autor,
+					Autuado_em: 		autuacao,
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
 		nome: 'Lista informações dos processos pelo GIG.',
 		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
