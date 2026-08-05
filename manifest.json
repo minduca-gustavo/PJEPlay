@@ -124,6 +124,7 @@
         "rota/formatadores.js",
         "rota/componentes.js",
         "leitura-dinamica/leitura_dinamica_documentos.js",
+        "filtros-novos/filtros_novos.js",
         "rota/tarefas/index.js",
         "rota/tarefas/balcao-virtual/roteiro.js",
         "rota/tarefas/triagem-inicial/roteiro.js",
