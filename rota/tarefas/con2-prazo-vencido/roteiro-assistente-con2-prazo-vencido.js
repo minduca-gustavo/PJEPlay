@@ -180,7 +180,101 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     // ___________________________________________________
     //  SECAO POS SENTENCA
     // ___________________________________________________    
+    let secoes = [
+        {
+            titulo: 'Pós Sentença',
+            label: 'posSentenca',
+            instrucaoLonga: {
+                label: 'instrucaoLonga',
+                texto: `Passe o mouse para ver a instrução completa da tarefa.
+Clique para fixar/desafixar.`,
+                textoBox: `Nesta tarefa, você deve:
+1) verificar se houve o trânsito em julgado da sentença (se as partes não entraram com Recurso Ordinário ou Embargos de Declaração no prazo);
+    1.a) Se houve o trânsito e for improcedente, verificar se há pendências como honorários advocatícios e periciais para execução, suspensão ou requisição, pagamento de custas, multa, despesas processuais, ofícios para expedir, etc. Se o caso, providenciar o necessário antes do arquivamento.
+    1.b) Se houve o trânsito, e for caso de liquidar a sentença, fazer o registro do trânsito em julgado, iniciar a liquidação, inserir o CHIP "Cálculo - Aguardar Secretaria" e encaminhar para a LIQ 1.
+    1.c) Se houve o trânsito, e for caso de sentença líquida, fazer o registro do trânsito em julgado, lançar obrigação de fazer, iniciar a execução (ou liquidação), inserir o CHIP "Sentença - partes cientes" e encaminhar encaminhar para a LIQ 2.
+    1.d) Se as partes recorreram, ou embargaram, prossiga para a análise dos recursos (2).
+2) Verifique a admissibilidade do Recurso Ordinário (RO) interposto, seguindo as instruções abaixo:
+
+Tempestividade:
+    - O recurso foi interposto no prazo de 8 dias úteis a partir da intimação da decisão/sentença?
+    - Sendo ente público (+ Correios): prazo de 16 dias úteis a partir da intimação.
+    - Houve prorrogação de prazo (feriados, recesso forense, indisponibilidade do PJe)?
+
+Regularidade de representação:
+    - O recurso foi subscrito por advogado com procuração válida nos autos?
+    - A procuração é específica para o processo em questão ou é procuração geral?
+
+Preparo:
+    - Custas: foram recolhidas na guia correta (GRU), no valor correto (geralmente 2% do valor da condenação ou da causa)?
+    - Depósito recursal: foi realizado e comprovado nos autos? O valor corresponde ao teto do TST vigente na data do recurso (R$ 13.813,83 a partir de 01.08.2025)?
+    - Se seguro garantia: verificar na apólice o número do processo, as partes e se o valor corresponde a 30% a mais do que o depósito recursal (salvo se a condenação for menor que o valor do depósito). Verificar também se há registro da apólice na Susep e certidão de regularidade/licenciamento da seguradora.
+    - O recorrente está dispensado do preparo (justiça gratuita, entidade filantrópica, empresa de pequeno porte etc.), com a devida justificativa no despacho? Verificar modelo no PJe.
+
+Recorribilidade:
+    - O recurso é cabível para a decisão atacada (sentença definitiva, terminativa ou decisão de competência originária do TRT)?
+    - A decisão é recorrível de imediato ou trata-se de decisão interlocutória?
+
+Também verifique:
+    - O tipo de petição: observe sempre o que está escrito na frente, não o que está entre parênteses (ex.: Recurso Adesivo(Recurso Adesivo)).
+    - Se o processo é de alçada: causas de até dois salários mínimos na data do ajuizamento seguem o rito sumário, com decisões em regra irrecorríveis, exceto matéria constitucional. Exemplo de despacho: "Denego seguimento ao recurso interposto pelo autor, em face da irrecorribilidade da sentença em causa de alçada exclusiva de Vara do Trabalho, nos termos dos §§ 3º e 4º do art. 2º da Lei 5.584/1970".
+    - Se há mais de um recurso da mesma parte: verifique se são idênticos; sendo o caso, conste no despacho: "Tratando-se de recursos idênticos, altere-se a petição sob id xxx para constar: 'manifestação'".
+    - Se a parte interpôs RO e, após decisão de Embargos de Declaração, interpôs outro RO: lance no PJe os dois ROs para dar baixa no sistema, pois o Tribunal analisará ambos.
+    - Quem efetivamente interpôs o recurso: passe o cursor no "bonequinho" ao lado da petição (lado esquerdo do PJe) para lançar corretamente. Havendo mais de um recurso, lance cada um deles.
+    - Há pedido de efeito suspensivo? Será possível deferir?
+    - Condenação solidária: o depósito recursal feito por uma das empresas aproveita as demais (Súmula 128, III, do TST), exceto se a empresa depositante pedir sua exclusão da lide — nesse caso, as demais deverão realizar depósito próprio.
+
+Após a conferência de todos os itens, utilize os botões para tomar as providências necessárias (juízo de admissibilidade positivo ou negativo, determinação de emenda, intimação para regularização de preparo/representação etc.).`,
+            },
+            elementos:[
+                {
+                    funcao: '',
+                    id: '',
+                    parametro: '',
+                }
+            ]
+        },
+        {
+            titulo: 'Remessa ao TRT',
+            label: 'remessa',
+            instrucaoLonga: {
+                texto: `Passe o mouse para ver a instrução completa da tarefa.
+Clique para fixar/desafixar.`,
+                textoBox: '',
+            },
+            elementos:[
+
+            ]
+        }
+    ]
     bloco = 'pos_sentenca'
+    
+    let divSecoes = criaDiv({
+        id: id(tarefaNome, bloco, 'divSecoes'),
+        ancestral: 'rota_corpo',
+        rowColumn: 'column'
+    })
+    for (secao of secoes){
+        let mostraRecolhe = criaSecaoMostraRecolhe({
+            id: id(tarefaNome, bloco, 'mostra_recolhe', secao?.label),
+            idSempreAMostra: id(tarefaNome, bloco, 'mostra', secao?.label),
+            idRecolhe: id(tarefaNome, bloco, 'recolhe', secao?.label),
+            ancestral: id(tarefaNome, bloco, 'divSecoes')
+        })
+        let titulo = criaTitulo({
+            id: id(tarefaNome, bloco, secao?.label, 'titulo'),
+            texto: secao?.titulo,
+            ancestral: id(tarefaNome, bloco, 'mostra', secao?.label)
+        })
+        let instrucaoLonga = criaTextoQueAbrePassandoOMouse({
+            id: id(tarefaNome, bloco, secao?.label, secao?.instrucaoLonga?.label),
+            texto: secao?.instrucaoLonga?.texto,
+            ancestral: id(tarefaNome, bloco, 'recolhe', secao?.label),
+            textoBox: secao?.instrucaoLonga?.textoBox
+        })
+    }
+    
+    return
 
     let SecaoPosSentenca = criaSecaoMostraRecolhe({
         id: id(tarefaNome, bloco, 'mostra_recolhe'),

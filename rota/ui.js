@@ -242,6 +242,7 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
         maxHeight:     '80vh',
     })
     corpo.id = id + '-corpo'
+    corpo.classList.add('ui-clip-liberavel')
     wrapper.appendChild(corpo)
 
     // ── recolher / expandir ─────────────────────────────────────
@@ -1014,7 +1015,8 @@ function criaGrade({ id, ancestral, numeroColunas, larguraColunas = {} }) {
     const grade = _ui_el('div', {
         display:             'grid',
         gridTemplateColumns: colunasCss,
-        marginBottom:        '8px',
+        marginBottom:        '2px',
+        marginRight: '6px',
         gap: '4px'
     })
     grade.id = id
@@ -1223,21 +1225,60 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
     box.id = id + '-box'
     box.textContent = textoBox
 
+    // Enquanto o box está visível, libera o overflow de qualquer ancestral
+    // marcado como '.ui-clip-liberavel' — o corpo recolhível de uma
+    // criaSecaoMostraRecolhe, o wrapper externo dela (que corta cantos
+    // arredondados), ou o corpo scrollável de um criaDivFlutuante — pra
+    // nenhum deles recortar o box. Guarda os valores originais em dataset
+    // e restaura ao fechar. Assim o box continua filho do wrapper (rola e
+    // se comporta como qualquer elemento normal da página), sem cálculo
+    // de posição manual.
+    function _ajustarOverflowAncestrais(mostrar) {
+        let el = wrapper.parentElement
+        while (el) {
+            if (el.classList && el.classList.contains('ui-clip-liberavel')) {
+                if (mostrar) {
+                    if (el.dataset.uiOverflowOriginal === undefined) {
+                        el.dataset.uiOverflowOriginal  = el.style.overflow  || ''
+                        el.dataset.uiOverflowYOriginal = el.style.overflowY || ''
+                    }
+                    el.style.overflow  = 'visible'
+                    el.style.overflowY = 'visible'
+                } else if (el.dataset.uiOverflowOriginal !== undefined) {
+                    el.style.overflow  = el.dataset.uiOverflowOriginal
+                    el.style.overflowY = el.dataset.uiOverflowYOriginal
+                    delete el.dataset.uiOverflowOriginal
+                    delete el.dataset.uiOverflowYOriginal
+                }
+            }
+            el = el.parentElement
+        }
+    }
+
+    function _mostrarBox() {
+        box.style.display = 'block'
+        _ajustarOverflowAncestrais(true)
+    }
+    function _esconderBox() {
+        box.style.display = 'none'
+        _ajustarOverflowAncestrais(false)
+    }
+
     // Hover: só age se não estiver fixado
     rotulo.addEventListener('mouseenter', () => {
-        if (!fixado) box.style.display = 'block'
+        if (!fixado) _mostrarBox()
     })
     rotulo.addEventListener('mouseleave', () => {
-        if (!fixado) setTimeout(() => { if (!box.matches(':hover')) box.style.display = 'none' }, 100)
+        if (!fixado) setTimeout(() => { if (!box.matches(':hover')) _esconderBox() }, 100)
     })
     box.addEventListener('mouseleave', () => {
-        if (!fixado) box.style.display = 'none'
+        if (!fixado) _esconderBox()
     })
 
     // Clique no rótulo: alterna fixação
     rotulo.addEventListener('click', () => {
         fixado = !fixado
-        box.style.display = fixado ? 'block' : 'none'
+        if (fixado) _mostrarBox(); else _esconderBox()
         rotulo.style.fontWeight = fixado ? 'bold' : 'normal'  // feedback visual opcional
         rotulo.textContent = texto + (fixado ? '▲' : '')  // seta para indicar fixação
     })
@@ -1246,7 +1287,7 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
     box.addEventListener('click', () => {
         if (fixado) {
             fixado = false
-            box.style.display = 'none'
+            _esconderBox()
             rotulo.style.fontWeight = 'normal'
             rotulo.textContent = texto
         } else {
@@ -1559,6 +1600,7 @@ function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral, idS
         background:   UI_CORES.branco,
     })
     wrapper.id = id
+    wrapper.classList.add('ui-clip-liberavel')
 
     const cabecalho = _ui_el('div', {
         display:    'flex',
@@ -1599,6 +1641,7 @@ function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral, idS
         opacity:    '1',
     })
     corpo.id = idRecolhe
+    corpo.classList.add('ui-clip-liberavel')
 
     // ── Estado e métodos expostos ─────────────────────────────
     wrapper.expandido  = true
