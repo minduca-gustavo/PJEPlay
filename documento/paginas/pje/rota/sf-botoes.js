@@ -119,7 +119,7 @@ const SF_BOTOES = [
 	},
 	{
 		nome: 'Lista número, partes, autuação, tarefa. "TODAS" para buscar em todas as tarefas.',
-		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		modo: ['Tarefa', 'Lista'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
 			let {idsx, tx} = { idsx: [], tx: [] }
 			if (contexto.modo === 'Tarefa') {
@@ -136,7 +136,9 @@ const SF_BOTOES = [
 					}
 				}
 			} else if (contexto.modo === 'Lista') {
-				;({ idsx, tx } = await filtrarPorLista(contexto))
+				({ ids, t } = await filtrarPorLista(contexto))
+				idsx.push(...ids)
+				tx.push(...t)
 			}
 			if (!idsx.length) return 'Nenhum processo encontrado.'
 			let d = []
