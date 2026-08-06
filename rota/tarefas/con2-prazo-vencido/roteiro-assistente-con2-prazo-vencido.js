@@ -232,7 +232,29 @@ Após a conferência de todos os itens, utilize os botões para tomar as provid�
                     id: '',
                     parametro: '',
                 }
-            ]
+            ],
+            casos: [
+                {
+                    id: 'improcedencia',
+                    texto: 'Improcedente'
+                },
+                {
+                    id: 'liquidar',
+                    texto: 'A liquidar'
+                },
+                {
+                    id: 'sentencaLiquida',
+                    texto: 'Sentença Líquida'
+                },
+                {
+                    id: 'recurso',
+                    texto: 'Recurso'
+                },
+                {
+                    id: 'embargos',
+                    texto: 'Embargos Declaratórios'
+                },
+            ],
         },
         {
             titulo: 'Remessa ao TRT',
@@ -242,46 +264,65 @@ Após a conferência de todos os itens, utilize os botões para tomar as provid�
 Clique para fixar/desafixar.`,
                 textoBox: '',
             },
+            casos: [
+                
+            ],
             elementos:[
 
             ]
         }
     ]
-    bloco = 'pos_sentenca'
+    
     
     let divSecoes = criaDiv({
-        id: id(tarefaNome, bloco, 'divSecoes'),
+        id: id(tarefaNome, 'divSecoes'),
         ancestral: 'rota_corpo',
         rowColumn: 'column'
     })
     for (secao of secoes){
         let mostraRecolhe = criaSecaoMostraRecolhe({
-            id: id(tarefaNome, bloco, 'mostra_recolhe', secao?.label),
-            idSempreAMostra: id(tarefaNome, bloco, 'mostra', secao?.label),
-            idRecolhe: id(tarefaNome, bloco, 'recolhe', secao?.label),
-            ancestral: id(tarefaNome, bloco, 'divSecoes')
+            id: id(tarefaNome, secao?.label, 'mostra_recolhe'),
+            idSempreAMostra: id(tarefaNome, secao?.label, 'mostra'),
+            idRecolhe: id(tarefaNome, secao?.label, 'recolhe'),
+            ancestral: id(tarefaNome, 'divSecoes')
         })
         let titulo = criaTitulo({
-            id: id(tarefaNome, bloco, secao?.label, 'titulo'),
+            id: id(tarefaNome, secao?.label, 'titulo'),
             texto: secao?.titulo,
-            ancestral: id(tarefaNome, bloco, 'mostra', secao?.label)
+            ancestral: id(tarefaNome, secao?.label, 'mostra')
         })
         let instrucaoLonga = criaTextoQueAbrePassandoOMouse({
-            id: id(tarefaNome, bloco, secao?.label, secao?.instrucaoLonga?.label),
+            id: id(tarefaNome, secao?.label, secao?.instrucaoLonga?.label),
             texto: secao?.instrucaoLonga?.texto,
-            ancestral: id(tarefaNome, bloco, 'recolhe', secao?.label),
+            ancestral: id(tarefaNome, secao?.label, 'recolhe'),
             textoBox: secao?.instrucaoLonga?.textoBox
         })
+        
+        for (caso of secao?.casos){
+            let checkBox = criaCheckBox({
+                id: id(tarefaNome, secao?.label, 'checkbox', caso?.id),
+                textoAoLado: caso?.texto,
+                ancestral: id(tarefaNome, secao?.label, 'recolhe'),
+            })
+            checkBox.dataset.caso = caso?.id
+            checkBox.addEventListener('click', () => con2_prazo_vencidoCriaAcoes(checkBox))
+        }
+
+        async function con2_prazo_vencidoCriaAcoes(seletor){
+            let idTodos = seletor?.id.replace(seletor?.dataset?.caso,'')
+            let botoes = [...document.querySelectorAll('[id^="' + idTodos + '"]')]
+            for (botao of botoes){
+                
+            }
+        }
+
+        let funcao = secao?.elementos?.funcao
+        
     }
     
     return
 
-    let SecaoPosSentenca = criaSecaoMostraRecolhe({
-        id: id(tarefaNome, bloco, 'mostra_recolhe'),
-        idSempreAMostra: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra'),
-        idRecolhe: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe'),
-        ancestral: 'rota_corpo'
-    })
+    
     
     let armazenarSecaoPosSentenca = (id(tarefaNome, bloco, 'mostra_recolhe'))
     let estadoSalvoPosSentenca = await obterArmazenamento(id(tarefaNome, bloco, 'mostra_recolhe'))

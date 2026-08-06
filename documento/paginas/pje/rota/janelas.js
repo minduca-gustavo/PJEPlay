@@ -424,7 +424,7 @@ function rota_geometriaModoAssistido() {
 	
     return {
         pje: {
-            width:  ROTA_LINUX ? (sw * 0.87) : largPJE,
+            width:  ROTA_LINUX ? (sw * 0.80) : largPJE,
             height: sh - espacoDev,
             left:   0,
             top:    0 + espacoDev,  // deixa espaço para o modo dev, se ativo
