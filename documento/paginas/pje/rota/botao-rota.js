@@ -249,6 +249,12 @@ function configuraAssistentes(){
 			texto: 'Consulta em qualquer OJ.'
 		}
 	]
+	for (assistente of assistentes){
+		let checkBox = criaCheckBox({
+			
+		})
+	}
+	
 }
 
 function _rota_posicionar(reg, ancoraEl, x, y){

@@ -19,6 +19,7 @@ const ROTA_ASSISTENTE_ASSINATURA_TDS_EXCLUIDOS = [
 async function assistenteAssinaturaDocumentos() {
     let widget = document.querySelector('#rota_assistenteAssinatura')
     if (widget) widget.remove()
+    document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
     let janela = confereJanela(
         /pjekz\/painel\/global\/2\/lista-processos/,      	
     )
@@ -33,7 +34,9 @@ async function assistenteAssinaturaDocumentos() {
 assistenteAssinaturaDocumentos()
 
 window.addEventListener('pjerota:url-mudou', () => {
-    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
+    // fecha o painel de minutas antes de remontar o widget — o conteúdo
+    // é sempre da tela anterior e ficaria órfão
+    document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
     assistenteAssinaturaDocumentos()
 })
 
@@ -376,7 +379,12 @@ async function criaWidgetAssistenteAssinatura() {
     if (ultimaSalva && configuracoesCache?.[ultimaSalva]) _aplicarConfiguracao(ultimaSalva)
     */
     async function buscarTextosAAssinar() {
-        
+        // a busca é assíncrona e demorada; sem essa trava dois cliques
+        // rodam dois loops preenchendo o mesmo painel
+        let botaoAcao = document.querySelector('#rota_assistenteAssinatura_botaoAcao')
+        if (botaoAcao?.dataset.rodando === '1') return
+        if (botaoAcao) botaoAcao.dataset.rodando = '1'
+
         let elementos = []
         for (let tr of document.querySelectorAll('tr')){
             if (!tr.textContent.match(ROTA_REGEX_CNJ)) continue
@@ -386,15 +394,68 @@ async function criaWidgetAssistenteAssinatura() {
             )
             if (tdProcesso) elementos.push(tdProcesso)
         }
+        // o painel abre já no clique, vazio, e vai sendo preenchido conforme
+        // cada processo responde — a busca é lenta (2 requisições por linha)
+        // e esperar tudo pra mostrar algo daria sensação de travamento
+        let painel = rota_assistenteAssinatura_abrirPainelMinutas()
+
+        if (!elementos.length){
+            painel.definirStatus('Nenhum processo encontrado nesta tela.')
+            painel.definirVazio('Nenhum processo encontrado nesta tela.')
+            if (botaoAcao) botaoAcao.dataset.rodando = '0'
+            return
+        }
+
+        let total = elementos.length
+        let feitos = 0
+        let comMinuta = 0
+        for (let el of elementos){
+            // se o usuário fechou o painel no meio, para de consultar
+            if (!painel.aberto()) break
+
+            let p = el.textContent.match(ROTA_REGEX_CNJ)?.[0]
+            if (!p) continue
+
+            feitos++
+            painel.definirStatus('Buscando ' + feitos + ' de ' + total + '…')
+
+            let id = await buscarIdPeloNumeroCNJ(p).then(d => d?.id) || null
+            if (!id){
+                painel.adicionarProcesso(p, [], 'Processo não localizado.')
+                continue
+            }
+
+            let documentos = []
+            try {
+                documentos = await buscaDocumentosNaoAssinados(id)
+            } catch (e) {
+                console.error('[Rota PJE] erro ao buscar minutas de ' + p + ':', e)
+                painel.adicionarProcesso(p, [], 'Erro ao buscar as minutas deste processo.')
+                continue
+            }
+
+            if (documentos.length) comMinuta++
+            painel.adicionarProcesso(p, documentos)
+        }
+
+        painel.definirStatus(comMinuta + ' de ' + feitos + ' com minuta')
+        painel.definirVazio('Nenhuma minuta pendente de assinatura nesta tela.')
+        if (botaoAcao) botaoAcao.dataset.rodando = '0'
+    }
+
+    // ── código antigo (badges por termo, vindo da leitura dinâmica) ─────
+    // mantido fora do fluxo até a busca por termos/cores voltar; depende
+    // de 'regras', que hoje está no bloco comentado acima.
+    async function _buscarTextosAAssinar_badges() {
+        let elementos = []
         let processosResultado = []
         let i = 0
-        for (el of elementos){
+        for (let el of elementos){
             let p = el.textContent.match(ROTA_REGEX_CNJ)?.[0]
             if (!p) continue
             let id = await buscarIdPeloNumeroCNJ(p).then(d=> d?.id) || null
             if (!id) continue
             let documentosTimeline = await buscaDocumentosNaoAssinados(id)
-            return
             let documentos = []
             let corBadge = ''
             let textoBadge = ''
@@ -475,13 +536,28 @@ async function criaWidgetAssistenteAssinatura() {
         
     }
 
+    // Devolve sempre um array de {idMinuta, titulo, html} — vazio quando o
+    // processo não tem minuta pendente. buscarMinutas pode devolver o id
+    // direto, um objeto ou uma lista; o normalizador abaixo cobre os três
+    // sem quebrar caso o formato mude.
     async function buscaDocumentosNaoAssinados(id) {
-        
-        let idMinuta = await buscarMinutas(id) || null
-        if (!idMinuta) return null
-        let textoMinuta = await extrairHtml(id, idMinuta)
-        console.log('%c[Rota PJE]%c textoMinuta: ' + JSON.stringify(textoMinuta), LOG.info, 'color:inherit')
-        return textoMinuta
+        let minutas = await buscarMinutas(id) || null
+        if (!minutas) return []
+
+        let lista = Array.isArray(minutas) ? minutas : [minutas]
+        let documentos = []
+        for (let m of lista){
+            let idMinuta = rota_assistenteAssinatura_idDeMinuta(m)
+            if (!idMinuta) continue
+            let html = rota_assistenteAssinatura_normalizaHtml(await extrairHtml(id, idMinuta))
+            if (!html) continue
+            documentos.push({
+                idMinuta: idMinuta,
+                titulo: (typeof m === 'object' && m !== null) ? (m?.titulo || m?.tipo || '') : '',
+                html: html,
+            })
+        }
+        return documentos
     }
 
 }
@@ -529,6 +605,324 @@ function rota_assistenteAssinatura_avisoTemporario(msg = '', duracaoMs = 2500) {
     corpo.appendChild(aviso)
  
     setTimeout(() => aviso.remove(), duracaoMs)
+}
+
+
+// ── Limpeza do HTML da minuta ──────────────────────────────────────
+//
+// O HTML que vem do PJe traz cabeçalho com brasão, folhas de estilo e
+// atributos do editor. Aqui fica só o texto e a formatação que o
+// servidor usa pra sinalizar trechos: negrito, itálico, sublinhado,
+// tachado e cores (fonte e realce). Tudo o mais é desembrulhado — a
+// tag some, o texto fica.
+//
+// Cor definida por CLASSE de folha de estilo se perde, porque as
+// folhas são removidas. Se aparecer uma minuta assim, o caminho é
+// mapear a classe pra uma cor aqui dentro.
+
+const ROTA_ASSISTENTE_ASSINATURA_TAGS_REMOVIDAS = [
+    'head', 'title', 'base', 'meta', 'link', 'style', 'script', 'noscript',
+    'img', 'picture', 'source', 'svg', 'canvas', 'iframe', 'object', 'embed',
+    'video', 'audio', 'form', 'input', 'button', 'select', 'textarea',
+]
+
+const ROTA_ASSISTENTE_ASSINATURA_TAGS_MANTIDAS = [
+    'P', 'BR', 'DIV', 'SPAN', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE', 'DEL', 'INS',
+    'FONT', 'MARK', 'UL', 'OL', 'LI', 'DL', 'DT', 'DD',
+    'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TD', 'TH', 'CAPTION',
+    'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'SUP', 'SUB', 'SMALL', 'HR', 'CENTER',
+]
+
+const ROTA_ASSISTENTE_ASSINATURA_ESTILOS_MANTIDOS = [
+    'color', 'background', 'background-color',
+    'font-weight', 'font-style',
+    'text-decoration', 'text-decoration-line', 'text-decoration-color',
+    'text-align',
+]
+
+function rota_assistenteAssinatura_limpaAtributos(el) {
+    let estilos = []
+    let anota = (prop, valor) => {
+        prop = String(prop ?? '').trim().toLowerCase()
+        valor = String(valor ?? '').trim()
+        if (prop === '' || valor === '') return
+        if (!ROTA_ASSISTENTE_ASSINATURA_ESTILOS_MANTIDOS.includes(prop)) return
+        if (/url\(|expression\(|javascript:/i.test(valor)) return
+        estilos.push(prop + ':' + valor)
+    }
+
+    for (let parte of (el.getAttribute('style') || '').split(';')){
+        let corte = parte.indexOf(':')
+        if (corte === -1) continue
+        anota(parte.slice(0, corte), parte.slice(corte + 1))
+    }
+    // equivalentes antigos que o editor do PJe ainda gera
+    if (el.tagName === 'FONT') anota('color', el.getAttribute('color'))
+    anota('background-color', el.getAttribute('bgcolor'))
+    anota('text-align', el.getAttribute('align'))
+
+    let colspan = el.getAttribute('colspan')
+    let rowspan = el.getAttribute('rowspan')
+
+    for (let attr of [...el.attributes]) el.removeAttribute(attr.name)
+
+    if (estilos.length) el.setAttribute('style', estilos.join(';'))
+    if (el.tagName === 'TD' || el.tagName === 'TH'){
+        if (colspan) el.setAttribute('colspan', colspan)
+        if (rowspan) el.setAttribute('rowspan', rowspan)
+    }
+}
+
+function rota_assistenteAssinatura_limparHtmlMinuta(html = '') {
+    let bruto = String(html ?? '')
+    if (bruto.trim() === '') return ''
+
+    // DOMParser não executa script nem baixa imagem: o documento nasce inerte
+    let doc = new DOMParser().parseFromString(bruto, 'text/html')
+    let raiz = doc?.body
+    if (!raiz) return ''
+
+    for (let el of [...raiz.querySelectorAll(ROTA_ASSISTENTE_ASSINATURA_TAGS_REMOVIDAS.join(','))]){
+        el.remove()
+    }
+
+    // a célula do brasão fica vazia depois que a imagem sai e viraria um
+    // retângulo com borda na tela — some com ela e com a linha/tabela que
+    // sobrar sem nada dentro
+    for (let seletor of ['td', 'th', 'tr', 'table']){
+        for (let el of [...raiz.querySelectorAll(seletor)]){
+            if (el.textContent.trim() === '' && !el.querySelector('br, hr')) el.remove()
+        }
+    }
+
+    // ordem inversa = filhos antes dos pais, então desembrulhar um pai
+    // nunca deixa filho por limpar
+    for (let el of [...raiz.querySelectorAll('*')].reverse()){
+        if (!ROTA_ASSISTENTE_ASSINATURA_TAGS_MANTIDAS.includes(el.tagName)){
+            el.replaceWith(...el.childNodes)
+            continue
+        }
+        rota_assistenteAssinatura_limpaAtributos(el)
+    }
+    return raiz.innerHTML
+}
+
+// extrairHtml pode devolver a string crua, um objeto com o HTML dentro
+// ou uma lista — normaliza os três num texto só
+function rota_assistenteAssinatura_normalizaHtml(valor) {
+    if (!valor) return ''
+    if (typeof valor === 'string') return valor
+    if (Array.isArray(valor)) return valor.map(rota_assistenteAssinatura_normalizaHtml).filter(Boolean).join('')
+    for (let chave of ['html', 'conteudo', 'texto', 'documento', 'teor', 'minuta', 'valor']){
+        let v = valor?.[chave]
+        if (typeof v === 'string' && v.trim() !== '') return v
+    }
+    return ''
+}
+
+function rota_assistenteAssinatura_idDeMinuta(minuta) {
+    if (minuta === null || minuta === undefined) return null
+    if (typeof minuta === 'string' || typeof minuta === 'number') return minuta
+    return minuta?.id ?? minuta?.idUnicoDocumento ?? minuta?.idDocumento ?? minuta?.idMinuta ?? null
+}
+
+
+// ── rota_assistenteAssinatura_abrirPainelMinutas ───────────────────
+//
+// Abre a div flutuante (60% largura, 80% altura, centralizada) já no
+// clique do botão e vai recebendo os processos um a um, conforme a
+// busca responde. Fecha no ✕, no Esc ou no clique fora da caixa —
+// clique dentro não fecha, senão não dá pra rolar nem selecionar texto.
+//
+// let painel = rota_assistenteAssinatura_abrirPainelMinutas()
+// painel.definirStatus('Buscando 1 de 12…')
+// painel.adicionarProcesso(numero, documentos)   // documentos: [{titulo, html}]
+// painel.adicionarProcesso(numero, [], 'Processo não localizado.')
+// painel.definirVazio(texto) / painel.aberto() / painel.fechar()
+
+function rota_assistenteAssinatura_abrirPainelMinutas() {
+    document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
+
+    let z = (typeof ROTA_Z !== 'undefined' ? (ROTA_Z.aviso ?? 9999) : 9999) + 2
+    let overlay = document.createElement('div')
+    overlay.id = 'rota_assistenteAssinatura_painelMinutas'
+    Object.assign(overlay.style, {
+        position: 'fixed', inset: '0',
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: String(z),
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Segoe UI', system-ui, sans-serif",
+    })
+
+    // o CSS da página do PJe alcança o conteúdo injetado; estas regras
+    // são escritas com id + classe pra ganhar em especificidade
+    let estilo = document.createElement('style')
+    estilo.textContent = `
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-processo { border:1px solid #dfe4ea; border-radius:6px; margin:0 0 14px; overflow:hidden; background:#ffffff; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-numero { background:#f9f9fa; border-left:4px solid #ffa726; padding:8px 12px; font-family:'Segoe UI',system-ui,sans-serif; font-size:13px; font-weight:700; color:#0078aa; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-doc { padding:12px 16px; border-top:1px solid #eef1f4; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-doc-titulo { font-family:'Segoe UI',system-ui,sans-serif; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:#6b7c93; margin:0 0 8px; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-aviso { padding:10px 12px; font-family:'Segoe UI',system-ui,sans-serif; font-size:12px; font-style:italic; color:#6b7c93; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo { font-family:Georgia,'Times New Roman',serif; font-size:14px; line-height:1.6; color:#1f2d3d; word-break:break-word; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo p { margin:0 0 10px; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo div { margin:0; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo h1,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo h2,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo h3,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo h4,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo h5,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo h6 { font-size:15px; margin:14px 0 6px; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo ul,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo ol { margin:0 0 10px 22px; padding:0; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo table { border-collapse:collapse; width:100%; margin:0 0 10px; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo td,
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo th { border:1px solid #dfe4ea; padding:4px 6px; vertical-align:top; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo hr { border:none; border-top:1px solid #dfe4ea; margin:10px 0; }
+#rota_assistenteAssinatura_painelMinutas .rota-minuta-conteudo blockquote { margin:0 0 10px 16px; }
+`
+    overlay.appendChild(estilo)
+
+    let caixa = document.createElement('div')
+    Object.assign(caixa.style, {
+        background: '#ffffff',
+        borderRadius: '8px',
+        width: '60vw',
+        height: '80vh',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        cursor: 'default',
+    })
+
+    let cabecalho = document.createElement('div')
+    Object.assign(cabecalho.style, {
+        background: '#0078aa',
+        color: '#ffffff',
+        padding: '10px 16px',
+        fontSize: '13px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        flexShrink: '0',
+    })
+
+    let tituloPainel = document.createElement('div')
+    tituloPainel.textContent = 'Minutas a assinar'
+    tituloPainel.style.fontWeight = '700'
+
+    let status = document.createElement('div')
+    status.id = 'rota_assistenteAssinatura_painelMinutas_status'
+    Object.assign(status.style, {flex: '1', fontSize: '12px', opacity: '0.9'})
+
+    let botaoFechar = document.createElement('button')
+    botaoFechar.type = 'button'
+    botaoFechar.textContent = '✕'
+    botaoFechar.title = 'Fechar (Esc)'
+    Object.assign(botaoFechar.style, {
+        background: 'transparent',
+        border: 'none',
+        color: '#ffffff',
+        fontSize: '15px',
+        lineHeight: '1',
+        padding: '2px 4px',
+        cursor: 'pointer',
+    })
+
+    cabecalho.appendChild(tituloPainel)
+    cabecalho.appendChild(status)
+    cabecalho.appendChild(botaoFechar)
+
+    let corpo = document.createElement('div')
+    Object.assign(corpo.style, {
+        padding: '14px 18px',
+        overflowY: 'auto',
+        flex: '1',
+        background: '#f9f9fa',
+    })
+
+    let vazio = document.createElement('div')
+    Object.assign(vazio.style, {
+        fontSize: '12px',
+        color: '#6b7c93',
+        textAlign: 'center',
+        padding: '24px 0',
+    })
+    vazio.textContent = 'Procurando as minutas dos processos desta tela…'
+    corpo.appendChild(vazio)
+
+    caixa.appendChild(cabecalho)
+    caixa.appendChild(corpo)
+    overlay.appendChild(caixa)
+    document.body.appendChild(overlay)
+
+    function fechar() {
+        document.removeEventListener('keydown', aoTeclar)
+        overlay.remove()
+    }
+    function aoTeclar(e) {
+        if (e.key === 'Escape') fechar()
+    }
+    document.addEventListener('keydown', aoTeclar)
+    botaoFechar.addEventListener('click', fechar)
+    // só o clique fora da caixa fecha — dentro é preciso rolar e selecionar
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) fechar()
+    })
+
+    function definirStatus(texto = '') {
+        status.textContent = texto
+    }
+    function definirVazio(texto = '') {
+        vazio.textContent = texto
+    }
+    function aberto() {
+        return document.body.contains(overlay)
+    }
+
+    function adicionarProcesso(numero, documentos = [], aviso = '') {
+        vazio.style.display = 'none'
+
+        let bloco = document.createElement('div')
+        bloco.className = 'rota-minuta-processo'
+        bloco.dataset.processo = numero || ''
+
+        let numeroEl = document.createElement('div')
+        numeroEl.className = 'rota-minuta-numero'
+        numeroEl.textContent = numero || '—'
+        bloco.appendChild(numeroEl)
+
+        if (aviso || !documentos.length){
+            let avisoEl = document.createElement('div')
+            avisoEl.className = 'rota-minuta-aviso'
+            avisoEl.textContent = aviso || 'Sem minuta pendente de assinatura.'
+            bloco.appendChild(avisoEl)
+        } else {
+            for (let doc of documentos){
+                let caixaDoc = document.createElement('div')
+                caixaDoc.className = 'rota-minuta-doc'
+
+                if (doc?.titulo){
+                    let tituloDoc = document.createElement('div')
+                    tituloDoc.className = 'rota-minuta-doc-titulo'
+                    tituloDoc.textContent = doc.titulo
+                    caixaDoc.appendChild(tituloDoc)
+                }
+
+                let conteudo = document.createElement('div')
+                conteudo.className = 'rota-minuta-conteudo'
+                conteudo.innerHTML = rota_assistenteAssinatura_limparHtmlMinuta(doc?.html)
+                caixaDoc.appendChild(conteudo)
+
+                bloco.appendChild(caixaDoc)
+            }
+        }
+
+        corpo.appendChild(bloco)
+        return bloco
+    }
+
+    return {aberto, fechar, definirStatus, definirVazio, adicionarProcesso}
 }
 
 
