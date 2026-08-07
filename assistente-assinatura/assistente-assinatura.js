@@ -16,6 +16,31 @@ const ROTA_ASSISTENTE_ASSINATURA_TDS_EXCLUIDOS = [
     // 'seletor-css-do-td-que-nao-deve-ser-usado',
 ]
 
+// ── Quais documentos entram no painel ───────────────────────────
+//
+// buscarDocumentos devolve a lista inteira do processo, assinados e
+// não assinados. O que separa os dois é a assinatura em si: o
+// documento assinado vem com idSignatario/nomeSignatario (e ganha
+// 'data', 'nomeResponsavel', 'idUsuario'); o pendente não tem nada
+// disso. 'data' sozinha não serve de teste — é a data de juntada, que
+// só existe depois de assinar, mas pode faltar por outros motivos.
+function rota_assistenteAssinatura_ehAssinado(doc) {
+    return !!(doc?.idSignatario || doc?.nomeSignatario)
+}
+
+// Deixe vazio para trazer todo documento pendente. Para restringir,
+// acrescente o 'tipo' como vem da api (comparação sem acento e sem
+// diferenciar maiúscula).
+// ex: ROTA_ASSISTENTE_ASSINATURA_TIPOS.push('Sentença', 'Despacho')
+const ROTA_ASSISTENTE_ASSINATURA_TIPOS = [
+]
+
+function rota_assistenteAssinatura_tipoInteressa(doc) {
+    if (!ROTA_ASSISTENTE_ASSINATURA_TIPOS.length) return true
+    let tipo = normalizar(String(doc?.tipo || doc?.titulo || '')).toLowerCase()
+    return ROTA_ASSISTENTE_ASSINATURA_TIPOS.some(t => normalizar(String(t)).toLowerCase() === tipo)
+}
+
 async function assistenteAssinaturaDocumentos() {
     let widget = document.querySelector('#rota_assistenteAssinatura')
     if (widget) widget.remove()
@@ -291,7 +316,7 @@ async function criaWidgetAssistenteAssinatura() {
     */
     let botao = criaBotaoAzul({
         id: 'rota_assistenteAssinatura_botaoAcao',
-        texto: 'Buscar textos.',
+        texto: 'Buscar textos dos documentos.',
         ancestral: 'rota_assistenteAssinatura-corpo',
         acao: () => buscarTextosAAssinar()
     })
@@ -408,7 +433,7 @@ async function criaWidgetAssistenteAssinatura() {
 
         let total = elementos.length
         let feitos = 0
-        let comMinuta = 0
+        let comPendente = 0
         for (let el of elementos){
             // se o usuário fechou o painel no meio, para de consultar
             if (!painel.aberto()) break
@@ -429,17 +454,17 @@ async function criaWidgetAssistenteAssinatura() {
             try {
                 documentos = await buscaDocumentosNaoAssinados(id)
             } catch (e) {
-                console.error('[Rota PJE] erro ao buscar minutas de ' + p + ':', e)
-                painel.adicionarProcesso(p, [], 'Erro ao buscar as minutas deste processo.')
+                console.error('[Rota PJE] erro ao buscar documentos de ' + p + ':', e)
+                painel.adicionarProcesso(p, [], 'Erro ao buscar os documentos deste processo.')
                 continue
             }
 
-            if (documentos.length) comMinuta++
+            if (documentos.length) comPendente++
             painel.adicionarProcesso(p, documentos)
         }
 
-        painel.definirStatus(comMinuta + ' de ' + feitos + ' com minuta')
-        painel.definirVazio('Nenhuma minuta pendente de assinatura nesta tela.')
+        painel.definirStatus(comPendente + ' de ' + feitos + ' com documento a assinar')
+        painel.definirVazio('Nenhum documento pendente de assinatura nesta tela.')
         if (botaoAcao) botaoAcao.dataset.rodando = '0'
     }
 
@@ -536,24 +561,42 @@ async function criaWidgetAssistenteAssinatura() {
         
     }
 
-    // Devolve sempre um array de {idMinuta, titulo, html} — vazio quando o
-    // processo não tem minuta pendente. buscarMinutas pode devolver o id
-    // direto, um objeto ou uma lista; o normalizador abaixo cobre os três
-    // sem quebrar caso o formato mude.
+    // Devolve sempre um array de {idDocumento, idUnicoDocumento, titulo, html},
+    // vazio quando o processo não tem documento pendente de assinatura.
+    // buscarDocumentos traz a lista inteira do processo — assinados e não
+    // assinados — então o filtro é rota_assistenteAssinatura_ehAssinado.
     async function buscaDocumentosNaoAssinados(id) {
-        let minutas = await buscarMinutas(id) || null
-        if (!minutas) return []
+        let todos = await buscarDocumentos(id)
+        if (!Array.isArray(todos)) todos = todos ? [todos] : []
 
-        let lista = Array.isArray(minutas) ? minutas : [minutas]
+        // ordena por id crescente: o id é sequencial, então serve de ordem
+        // cronológica também para os não assinados, que não têm 'data'
+        let pendentes = todos
+            .filter(d => d?.ativo !== false)
+            .filter(d => !rota_assistenteAssinatura_ehAssinado(d))
+            .filter(d => rota_assistenteAssinatura_tipoInteressa(d))
+            .sort((a, b) => (a?.id || 0) - (b?.id || 0))
+
         let documentos = []
-        for (let m of lista){
-            let idMinuta = rota_assistenteAssinatura_idDeMinuta(m)
-            if (!idMinuta) continue
-            let html = rota_assistenteAssinatura_normalizaHtml(await extrairHtml(id, idMinuta))
+        for (let d of pendentes){
+            // extrairHtml usa o id numérico do documento (mesma api de antes);
+            // se em alguma tela ele pedir o idUnicoDocumento, é só inverter aqui
+            let idDocumento = d?.id ?? d?.idUnicoDocumento
+            if (!idDocumento) continue
+
+            let html = ''
+            try {
+                html = rota_assistenteAssinatura_normalizaHtml(await extrairHtml(id, idDocumento))
+            } catch (e) {
+                console.error('[Rota PJE] erro ao extrair html do documento ' + idDocumento + ':', e)
+                continue
+            }
             if (!html) continue
+
             documentos.push({
-                idMinuta: idMinuta,
-                titulo: (typeof m === 'object' && m !== null) ? (m?.titulo || m?.tipo || '') : '',
+                idDocumento: idDocumento,
+                idUnicoDocumento: d?.idUnicoDocumento || '',
+                titulo: d?.titulo || d?.tipo || '',
                 html: html,
             })
         }
@@ -720,12 +763,6 @@ function rota_assistenteAssinatura_normalizaHtml(valor) {
     return ''
 }
 
-function rota_assistenteAssinatura_idDeMinuta(minuta) {
-    if (minuta === null || minuta === undefined) return null
-    if (typeof minuta === 'string' || typeof minuta === 'number') return minuta
-    return minuta?.id ?? minuta?.idUnicoDocumento ?? minuta?.idDocumento ?? minuta?.idMinuta ?? null
-}
-
 
 // ── rota_assistenteAssinatura_abrirPainelMinutas ───────────────────
 //
@@ -808,7 +845,7 @@ function rota_assistenteAssinatura_abrirPainelMinutas() {
     })
 
     let tituloPainel = document.createElement('div')
-    tituloPainel.textContent = 'Minutas a assinar'
+    tituloPainel.textContent = 'Documentos a assinar'
     tituloPainel.style.fontWeight = '700'
 
     let status = document.createElement('div')
@@ -848,7 +885,7 @@ function rota_assistenteAssinatura_abrirPainelMinutas() {
         textAlign: 'center',
         padding: '24px 0',
     })
-    vazio.textContent = 'Procurando as minutas dos processos desta tela…'
+    vazio.textContent = 'Procurando os documentos dos processos desta tela…'
     corpo.appendChild(vazio)
 
     caixa.appendChild(cabecalho)
@@ -895,7 +932,7 @@ function rota_assistenteAssinatura_abrirPainelMinutas() {
         if (aviso || !documentos.length){
             let avisoEl = document.createElement('div')
             avisoEl.className = 'rota-minuta-aviso'
-            avisoEl.textContent = aviso || 'Sem minuta pendente de assinatura.'
+            avisoEl.textContent = aviso || 'Sem documento pendente de assinatura.'
             bloco.appendChild(avisoEl)
         } else {
             for (let doc of documentos){

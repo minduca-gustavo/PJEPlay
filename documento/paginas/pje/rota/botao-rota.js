@@ -217,7 +217,7 @@ function _rota_sincronizar(reg){
 			id: 'rota_botaoConfiguraAssistentes',
 			ancestral: 'rota_rota_tutorial_div',
 			texto: 'Configura\nAssistentes',
-			acao: configuraAssistentes(),
+			acao: () => configuraAssistentes(),
 		})
 		botaoAssistentes.style.width = 'fit-content'
 		botaoAssistentes.style.fontSize = '9px'
@@ -230,28 +230,54 @@ function _rota_sincronizar(reg){
 	_rota_posicionar(reg, ancoraEl, x, y)
 }
 
-function configuraAssistentes(){
+async function configuraAssistentes(){
+	/*
+	let div = await criaDivFlutuante({
+		id: 'rota_divConfiguraAssistentes',
+		titulo: 'Selecione quais assistentes devem ser exibidos.'
+		//ancestral: 'rota_rota_tutorial_div',
+	})
+	let ancestral = document.getElementById('rota_rota_tutorial_div')
+	let el = document.getElementById('rota_divConfiguraAssistentes')
+	el.style.position = 'relative'
+	//el.style.left = '300px'
+	ancestral.insertAdjacentElement('afterend', el)
+	*/
 	let div = criaDiv({
 		id: 'rota_divConfiguraAssistentes',
-		ancestral: 'rota_botaoConfiguraAssistentes',
+		ancestral: 'rota_rota_tutorial_div'
 	})
+	document.getElementById('rota_rota_tutorial_div').insertAdjacentElement('afterend', div)
+	div.style.background = UI_CORES.fundo
+	div.style.position = 'relative'
+	div.style.left = '5px'
+	div.style.top = '-5%',
+    div.style.transform = 'translate(0%, 25%)'
+	
+
+	
 	let assistentes = [
 		{
-			id: 'pjerota-consulta_qualquer_oj-widget',
+			id: 'qualquer',
+			idRemocao: 'pjerota-consulta_qualquer_oj-widget',
 			texto: 'Consulta em qualquer OJ.'
 		},
 		{
-			id: 'rota_assistenteAssinatura',
+			id: 'assistente',
+			idRemocao: 'rota_assistenteAssinatura',
 			texto: 'Assistente de Assinatura'
 		},
 		{
-			id: 'pjerota-consulta_qualquer_oj-widget',
-			texto: 'Consulta em qualquer OJ.'
+			id: 'leitura',
+			idRemocao: 'rota_leituraDinamica',
+			texto: 'Leitura Dinâmica.'
 		}
 	]
 	for (assistente of assistentes){
 		let checkBox = criaCheckBox({
-			
+			id: id('configuraAssistentes', assistente?.id),
+			textoAoLado: assistente?.texto,
+			ancestral: 'rota_divConfiguraAssistentes'
 		})
 	}
 	
