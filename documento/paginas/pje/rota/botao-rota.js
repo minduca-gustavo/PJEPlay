@@ -219,12 +219,12 @@ function _rota_sincronizar(reg){
 			texto: 'Configura\nAssistentes',
 			acao: () => configuraAssistentes(),
 		})
-		botaoAssistentes.style.width = 'fit-content'
-		botaoAssistentes.style.fontSize = '9px'
-		botaoAssistentes.style.height     = '28px'
+		botaoAssistentes.style.width = 		'fit-content'
+		botaoAssistentes.style.fontSize = 	'9px'
+		botaoAssistentes.style.height = 	'30px'
 		botaoAssistentes.style.lineHeight = '14px'
-		botaoAssistentes.style.padding    = '0 8px'
-		botaoAssistentes.style.whiteSpace    = 'pre-wrap'
+		botaoAssistentes.style.padding = 	'0px 8px'
+		botaoAssistentes.style.whiteSpace = 'pre-wrap'
 	}
 
 	_rota_posicionar(reg, ancoraEl, x, y)
@@ -253,14 +253,31 @@ async function configuraAssistentes(){
 		ancestral: 'rota_rota_tutorial_div'
 	})
 	document.getElementById('rota_rota_tutorial_div').insertAdjacentElement('afterend', div)
-	div.style.background = UI_CORES.fundo
-	div.style.position = 'relative'
-	div.style.left = '5px'
-	//div.style.top = '-5%',
-    div.style.transform = 'translate(0%, 50%)'
+
+	// garante que o absolute se ancore no btn
+	let btnPai = document.getElementById('pjerota-btn-rota')
+	if(getComputedStyle(btnPai).position === 'static') btnPai.style.position = 'relative'
+
+	Object.assign(div.style, {
+		background: 	UI_CORES.fundo,
+		position:   	'absolute',
+		top:        	'0',      // logo abaixo do botão
+		width: 			'100%',
+		left:       	'100%',
+		marginTop:  	'6px',
+		padding:  		'6px',
+		zIndex:     	'9999999',
+		border:			'1px solid ',
+		borderColor:	ROTA_C.azul,
+		borderRadius:	'8px'
+	})
 	
 
-	
+	let tituloConfiguraAssistentes = criaTitulo({
+		id: id('configuraAssistentes', 'titulo'),
+		texto: 'Escolha quais assistentes devem aparecer na tela',
+		ancestral: 'rota_divConfiguraAssistentes'
+	})
 	let assistentes = [
 		{
 			id: 'qualquer',
@@ -284,6 +301,11 @@ async function configuraAssistentes(){
 			textoAoLado: assistente?.texto,
 			ancestral: 'rota_divConfiguraAssistentes'
 		})
+		checkBox.dataset.tipo = assistente?.id
+		checkBox.addEventListener('click', acionaAssistente(checkBox))
+	}
+	function acionaAssistente(checkBox){
+		let 
 	}
 	
 }
