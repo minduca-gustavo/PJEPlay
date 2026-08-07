@@ -231,6 +231,11 @@ function _rota_sincronizar(reg){
 }
 
 async function configuraAssistentes(){
+	let elemento = document.querySelector('#rota_divConfiguraAssistentes')
+	if (elemento) {
+		elemento.remove()
+		return
+	}
 	/*
 	let div = await criaDivFlutuante({
 		id: 'rota_divConfiguraAssistentes',
@@ -251,8 +256,8 @@ async function configuraAssistentes(){
 	div.style.background = UI_CORES.fundo
 	div.style.position = 'relative'
 	div.style.left = '5px'
-	div.style.top = '-5%',
-    div.style.transform = 'translate(0%, 25%)'
+	//div.style.top = '-5%',
+    div.style.transform = 'translate(0%, 50%)'
 	
 
 	
