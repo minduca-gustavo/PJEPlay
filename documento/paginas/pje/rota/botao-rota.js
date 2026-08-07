@@ -157,6 +157,8 @@ function _rota_sincronizar(reg){
 			ancestral: 'pjerota-btn-rota'    // se criaDiv já appenda no ancestral, ok
 		})
 		divTutorial.style.width = 'fit-content'
+		divTutorial.style.position = 'relative'
+		divTutorial.style.top = '2px'
 		// NÃO chame insertAdjacentElement — criaDiv já inseriu dentro do btn
 
 		let botaoTutorial = document.createElement('button')
@@ -211,10 +213,42 @@ function _rota_sincronizar(reg){
 		botaoTutorial.addEventListener('mouseleave', () => tooltip.style.opacity = '0')
 		botaoTutorial.addEventListener('click', () => window.open('https://drive.google.com/drive/u/0/folders/1kfZ6tCIIyv6RVeCG_S6eIoE9qF_oARn4', 'blank'))
 		divTutorial.appendChild(botaoTutorial)
-		
+		let botaoAssistentes = criaBotaoAzul({
+			id: 'rota_botaoConfiguraAssistentes',
+			ancestral: 'rota_rota_tutorial_div',
+			texto: 'Configura\nAssistentes',
+			acao: configuraAssistentes(),
+		})
+		botaoAssistentes.style.width = 'fit-content'
+		botaoAssistentes.style.fontSize = '9px'
+		botaoAssistentes.style.height     = '28px'
+		botaoAssistentes.style.lineHeight = '14px'
+		botaoAssistentes.style.padding    = '0 8px'
+		botaoAssistentes.style.whiteSpace    = 'pre-wrap'
 	}
 
 	_rota_posicionar(reg, ancoraEl, x, y)
+}
+
+function configuraAssistentes(){
+	let div = criaDiv({
+		id: 'rota_divConfiguraAssistentes',
+		ancestral: 'rota_botaoConfiguraAssistentes',
+	})
+	let assistentes = [
+		{
+			id: 'pjerota-consulta_qualquer_oj-widget',
+			texto: 'Consulta em qualquer OJ.'
+		},
+		{
+			id: 'rota_assistenteAssinatura',
+			texto: 'Assistente de Assinatura'
+		},
+		{
+			id: 'pjerota-consulta_qualquer_oj-widget',
+			texto: 'Consulta em qualquer OJ.'
+		}
+	]
 }
 
 function _rota_posicionar(reg, ancoraEl, x, y){

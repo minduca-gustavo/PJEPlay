@@ -88,6 +88,14 @@ async function buscarDocumentos(i) {
 	return dados.filter(entry => entry.documento === true)
 }
 
+async function buscarMinutas(i) {
+	let dados = await rota_fetch(
+		location.origin + '/pje-comum-api/api/processos/id/' + i + '/documentos/minutas'
+	) || null
+	return dados
+}
+//https://pje-web-hm.trt15.jus.br/pje-comum-api/api/processos/id/4882519/documentos/minutas
+
 // ── BUSCA DOCUMENTOS E MOVIMENTOS ─────────────────────────────────────────
 
 async function buscarDocumentosEMovimentos(i) {
