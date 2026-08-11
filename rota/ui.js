@@ -1227,7 +1227,7 @@ function criaTextoQueAbrePassandoOMouse({ id, texto = '📋 Passe o mouse', ance
 
     // Enquanto o box está visível, libera o overflow de qualquer ancestral
     // marcado como '.ui-clip-liberavel' — o corpo recolhível de uma
-    // criaSecaoMostraRecolhe, o wrapper externo dela (que corta cantos
+    // await criaSecaoMostraRecolhe, o wrapper externo dela (que corta cantos
     // arredondados), ou o corpo scrollável de um criaDivFlutuante — pra
     // nenhum deles recortar o box. Guarda os valores originais em dataset
     // e restaura ao fechar. Assim o box continua filho do wrapper (rola e
@@ -1580,7 +1580,7 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
     return wrapper
 }
 
-// ── criaSecaoMostraRecolhe ────────────────────────────────────
+// ── await criaSecaoMostraRecolhe ────────────────────────────────────
 //
 // Seção expansível com cabeçalho fixo e corpo recolhível.
 // A setinha (▲/▼) no canto direito do cabeçalho alterna
@@ -1589,9 +1589,9 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
 // O roteiro popula idSempreAMostra e idRecolhe com qualquer
 // componente de ui.js após a chamada, usando-os como ancestral.
 //
-// criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral })
+// await criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral })
 
-function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral, idSeta }) {
+async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral, armazenarExpandido = true }) {
     const wrapper = _ui_el('div', {
         border:       '1px solid ' + UI_CORES.borda,
         borderRadius: '6px',
@@ -1644,7 +1644,13 @@ function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestral, idS
     corpo.classList.add('ui-clip-liberavel')
 
     // ── Estado e métodos expostos ─────────────────────────────
-    wrapper.expandido  = true
+    let expandido = true
+    if (armazenarExpandido){
+        let label = id + 'estado'
+        expandido = await obterArmazenamento([label]).then(d=> d[label])
+        console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
+    }
+    wrapper.expandido  = expandido
     wrapper.aoAlternar = null   // roteiro pode atribuir: (expandido) => { ... }
 
     function _aplicar(expandido) {

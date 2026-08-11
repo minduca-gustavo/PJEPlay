@@ -1,6 +1,7 @@
 // ============================================================
 // janelas.js
-// Pipeline de janelas do PJE Play.
+// Fluxo de janelas do Rota PJE.
+// Controla a abertura de janelas.
 // ============================================================
 
 
@@ -8,15 +9,15 @@
 const ROTA_Z = { btn: 9000, widget: 9100, aviso: 9300, modal: 9400, painel: 9500 }
 
 
-// ── Estado global do pipeline ─────────────────────────────────
+// ── Estado global do fluxo ─────────────────────────────────
 let _rota_fila         = []
 let _rota_cursor       = 0
 let _rota_ativo        = false
 let _rota_relatorio    = []
 let _rota_janelasMundo = []
 
-// ── Chave de persistência do pipeline (sobrevive ao reload) ──
-const ROTA_KEY_PIPELINE = 'pjerota_pipeline_retomar'
+// ── Chave de persistência do fluxo (sobrevive ao reload) ──
+const ROTA_KEY_FLUXO = 'pjerota_fluxo_retomar'
 
 // Contexto do processarCursor em execução — acessível por _rota_garantirOJCorreta
 let _rota_slots_ativos        = []
@@ -24,10 +25,10 @@ let _rota_tarefaUnica_ativa   = ''
 let _rota_temporizador_ativo  = { ativo: false, segundos: 30, opcoes: '' }
 
 // Salva fila + cursor + config da tarefa no storage antes de recarregar
-async function rota_pipeline_salvar(slots, tarefaUnica, temporizador){
+async function rota_fluxo_salvar(slots, tarefaUnica, temporizador){
 	let cfg = await obterArmazenamento(['tarefaAtiva', 'tarefas', 'tarefaAtivaIsSistema'])
 	await armazenar({
-		[ROTA_KEY_PIPELINE]: {
+		[ROTA_KEY_FLUXO]: {
 			fila:        _rota_fila,
 			cursor:      _rota_cursor,
 			relatorio:   _rota_relatorio,
@@ -40,18 +41,18 @@ async function rota_pipeline_salvar(slots, tarefaUnica, temporizador){
 	})
 }
 
-// Tenta retomar pipeline persistido após reload
-async function rota_pipeline_retomar(){
-	let cfg = await obterArmazenamento(ROTA_KEY_PIPELINE)
-	let dados = cfg?.[ROTA_KEY_PIPELINE]
+// Tenta retomar fluxo persistido após reload
+async function rota_fluxo_retomar(){
+	let cfg = await obterArmazenamento(ROTA_KEY_FLUXO)
+	let dados = cfg?.[ROTA_KEY_FLUXO]
 	if(!dados || !dados.fila?.length) return
 	// Limpa imediatamente para não retomar duas vezes
-	await armazenar({ [ROTA_KEY_PIPELINE]: null })
+	await armazenar({ [ROTA_KEY_FLUXO]: null })
 	_rota_fila      = dados.fila
 	_rota_cursor    = dados.cursor ?? 0
 	_rota_relatorio = dados.relatorio || []
 	_rota_ativo     = true
-	rota_avisoTemporario('🔄 Retomando pipeline após atualização…', 'info', 3000)
+	rota_avisoTemporario('🔄 Retomando fluxo após atualização…', 'info', 3000)
 	await rota_processarCursor(dados.slots, dados.tarefaUnica, dados.temporizador)
 }
 
@@ -444,7 +445,7 @@ function rota_geometriaModoAssistido() {
 function rota_abrirAssistente(idTarefa = '', execucao = '') {
     const geo = rota_geometriaModoAssistido()
 
-    let url = extensao_raiz('rota/assistente/assistente.html')
+    let url = extensao_raiz('funcoes-botao-rota/assistente/assistente.html')
     url += '?pjerota_execucao=' + encodeURIComponent(execucao)
     url += '&pjerota_tarefa='   + encodeURIComponent(idTarefa)
 
@@ -542,9 +543,9 @@ function rota_monitorarFechamento(sessao){
 }
 
 
-// ── Cancelar pipeline ativo ───────────────────────────────────
+// ── Cancelar fluxo ativo ───────────────────────────────────
 
-function rota_cancelarPipelineAtivo(){
+function rota_cancelarFluxoAtivo(){
     if(!_rota_ativo) return
     _rota_ativo       = false
     _rota_processando = false   // ← ADICIONAR esta linha
@@ -567,12 +568,12 @@ function _rota_fecharTodasJanelas(){
 }
 
 
-// ── Pipeline principal ────────────────────────────────────────
+// ── Fluxo principal ────────────────────────────────────────
 
-async function rota_iniciarPipeline({ fila }){
+async function rota_iniciarFluxo({ fila }){
     if(_rota_ativo){
-        rota_avisoTemporario('Pipeline anterior cancelado. Iniciando novo…', 'info', 3000)
-        rota_cancelarPipelineAtivo()
+        rota_avisoTemporario('Fluxo anterior cancelado. Iniciando novo…', 'info', 3000)
+        rota_cancelarFluxoAtivo()
         await suspender(500)
     }
 
@@ -1659,6 +1660,6 @@ function rota_exibirRelatorio(){
 }
 
 // ── Retomada automática após reload por troca de OJ ──────────
-// Executa assim que o script carrega. Se houver pipeline persistido
+// Executa assim que o script carrega. Se houver fluxo persistido
 // no storage (salvo antes do reload), retoma do ponto exato.
-rota_pipeline_retomar()
+rota_fluxo_retomar()

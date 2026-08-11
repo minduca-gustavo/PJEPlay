@@ -11,7 +11,7 @@ obterArmazenamento().then(async armazenamento => {
 	let habilitado = CONFIGURACAO?.habilitado !== false  // padrão: habilitado
 
 	if(location.search.includes('pjerota_sessao=')){
-		// Janelas filhas sempre funcionam (já foram abertas pelo pipeline)
+		// Janelas filhas sempre funcionam (já foram abertas pelo fluxo)
 		pinturaInicio().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 		rota_injetarWidget().catch(e => relatar('Widget: ' + e.message, '', 'erro'))
 	} else {

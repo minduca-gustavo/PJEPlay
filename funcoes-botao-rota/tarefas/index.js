@@ -12,11 +12,11 @@
 // janelas é um array de objetos { janela, posicao }:
 //   janela:  'detalhe' | 'assistente' | 'tarefa' | qualquer
 //            chave de ROTA_TIPOS_JANELA, mais 'assistente'
-//            que é tratado especialmente pelo pipeline
+//            que é tratado especialmente pelo fluxo
 //   posicao: 'esquerda' | 'direita' | 'esquerdaAssistida' |
 //            'direitaAssistente' | 'telaCheia'
 //
-// A janela 'assistente' é aberta pelo pipeline antes das
+// A janela 'assistente' é aberta pelo fluxo antes das
 // demais, recebendo pjerota_execucao e pjerota_tarefa na URL.
 // As demais janelas seguem a ordem do array.
 //
@@ -111,16 +111,16 @@ async function catalogo_listarTodas() {
 }
 
 
-// ── Converter janelas do catálogo em slots do pipeline ────────
+// ── Converter janelas do catálogo em slots do fluxo ────────
 //
-// O pipeline trabalha com 'slots' (formato antigo).
+// O fluxo trabalha com 'slots' (formato antigo).
 // Esta função traduz o formato novo { janela, posicao }
 // para o formato que rota_montarUrls() entende.
 //
 // A janela 'assistente' é filtrada — ela é aberta
-// separadamente por rota_abrirAssistente() no pipeline.
+// separadamente por rota_abrirAssistente() no fluxo.
 //
-// Uso em rota_iniciarPipeline():
+// Uso em rota_iniciarFluxo():
 //   const slots = catalogo_paraSlots(itemCatalogo)
 
 function catalogo_paraSlots(itemCatalogo) {

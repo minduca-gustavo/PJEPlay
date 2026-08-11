@@ -222,5 +222,5 @@ async function abre_tarefa_rotaAbrirEmModoJanelas(){
         return
     }
     rota_avisoTemporario('▶ Abrindo no modo janelas…', 'info', 3000)
-    rota_iniciarPipeline({ fila: [{ numProc: processo, id, dadosLinha: [], params: [] }] })
+    rota_iniciarFluxo({ fila: [{ numProc: processo, id, dadosLinha: [], params: [] }] })
 }

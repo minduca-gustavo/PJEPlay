@@ -525,7 +525,7 @@ async function _rota_aoClicarTela(){
 		return
 	}
 	rota_avisoTemporario('▶ ' + fila.length + ' processo(s) encontrado(s). Iniciando…', 'info', 4000)
-	rota_iniciarPipeline({ fila })
+	rota_iniciarFluxo({ fila })
 }
 
 
@@ -923,7 +923,7 @@ function _rota_aoClicarLista(btnRef){
 		_rota_painelLista = null
 
 		rota_avisoTemporario('▶ ' + fila.length + ' processo(s) na lista. Iniciando…', 'info', 4000)
-		rota_iniciarPipeline({ fila })
+		rota_iniciarFluxo({ fila })
 	})
 
 	rodape.appendChild(btnPlay)
@@ -1026,7 +1026,7 @@ function _rota_encontrarConteiner(el){
 //
 // Ponto único de entrada antes de qualquer navegação de processo.
 // Verifica e corrige a OJ da sessão se necessário — sem que o
-// pipeline externo precise saber disso.
+// fluxo externo precise saber disso.
 //
 async function _rota_buscarIdProcesso(numero){
 	let numLimpo = numero.replace(/[.\-]/g, '')
@@ -1039,10 +1039,10 @@ async function _rota_buscarIdProcesso(numero){
 	if(!ojCheck.ok){
 		let msg = _ROTA_OJ_ERROS[ojCheck.motivo] || 'Erro ao verificar OJ.'
 		rota_avisoTemporario('⚠ ' + msg, 'erro', 6000)
-		return null  // sinaliza ao pipeline para pular/abortar este processo
+		return null  // sinaliza ao fluxo para pular/abortar este processo
 	}
 	if(ojCheck.recarregar){
-		// Pipeline salvo — recarrega para corrigir o Angular após troca de OJ
+		// Fluxo salvo — recarrega para corrigir o Angular após troca de OJ
 		location.href = location.href
 		return null  // interrompe este tick; retomada acontece após reload
 	}
@@ -1060,7 +1060,7 @@ async function _rota_buscarIdProcesso(numero){
 //   1. Busca dados básicos do processo
 //   2. Busca dados completos para obter orgaoJulgador.id
 //   3. Compara com a OJ atual do usuário
-//   4. Se diferente → salva pipeline + POST + sinaliza reload
+//   4. Se diferente → salva fluxo + POST + sinaliza reload
 //   5. Retorna { ok, trocou, recarregar }
 //
 async function _rota_garantirOJCorreta(numero){
@@ -1084,9 +1084,9 @@ async function _rota_garantirOJCorreta(numero){
 		let perfil = perfis.find(p => p.idOrgaoJulgador === idOJProcesso)
 		if(!perfil) return { ok: false, motivo: 'sem_perfil_oj' }
 
-		// Persiste o pipeline ANTES do POST (o reload vai apagar a memória)
-		if(typeof rota_pipeline_salvar === 'function'){
-			await rota_pipeline_salvar(
+		// Persiste o fluxo ANTES do POST (o reload vai apagar a memória)
+		if(typeof rota_fluxo_salvar === 'function'){
+			await rota_fluxo_salvar(
 				_rota_slots_ativos,
 				_rota_tarefaUnica_ativa,
 				_rota_temporizador_ativo

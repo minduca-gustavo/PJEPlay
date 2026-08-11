@@ -280,7 +280,7 @@ Clique para fixar/desafixar.`,
         rowColumn: 'column'
     })
     for (secao of secoes){
-        let mostraRecolhe = criaSecaoMostraRecolhe({
+        let mostraRecolhe = await criaSecaoMostraRecolhe({
             id: id(tarefaNome, secao?.label, 'mostra_recolhe'),
             idSempreAMostra: id(tarefaNome, secao?.label, 'mostra'),
             idRecolhe: id(tarefaNome, secao?.label, 'recolhe'),
@@ -353,7 +353,7 @@ Clique para fixar/desafixar.`,
     bloco = 'remessa'
     
     
-    let SecaoRemessa = criaSecaoMostraRecolhe({
+    let SecaoRemessa = await criaSecaoMostraRecolhe({
         id: id(tarefaNome, bloco, 'mostra_recolhe'),
         idSempreAMostra: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra'),
         idRecolhe: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe'),
@@ -815,7 +815,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     }
     /*
     bloco = 'extras'
-    let secaoExtras = criaSecaoMostraRecolhe({
+    let secaoExtras = await criaSecaoMostraRecolhe({
         id: id(tarefaNome, bloco),
         idSempreAMostra: id(tarefaNome, bloco, 'extras-mostra'), 
         idRecolhe: id(tarefaNome, bloco, 'extras-recolhe'),  

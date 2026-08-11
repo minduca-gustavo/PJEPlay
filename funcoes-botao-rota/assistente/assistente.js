@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
     })
 
-    // Agora o pipeline já atualizou o cursor — cabeçalho correto
+    // Agora o fluxo já atualizou o cursor — cabeçalho correto
     await _ass_preencherCabecalho(tarefa)
 })
 
