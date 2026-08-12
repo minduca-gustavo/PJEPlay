@@ -41,7 +41,7 @@ function rota_assistenteAssinatura_tipoInteressa(doc) {
     return ROTA_ASSISTENTE_ASSINATURA_TIPOS.some(t => normalizar(String(t)).toLowerCase() === tipo)
 }
 
-async function assistenteAssinaturaDocumentos() {
+async function assistenteAssinaturaDocumentos(ancestral) {
     let widget = document.querySelector('#rota_assistenteAssinatura')
     if (widget) widget.remove()
     document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
@@ -53,28 +53,33 @@ async function assistenteAssinaturaDocumentos() {
         return
     }
     console.log('%c[Rota PJE]%c assistenteAssinatura4' + JSON.stringify('true'), LOG.rosa, 'color:inherit')
-    criaWidgetAssistenteAssinatura()
+    criaWidgetAssistenteAssinatura(ancestral)
 }
 
-assistenteAssinaturaDocumentos()
+//assistenteAssinaturaDocumentos()
+//
+//window.addEventListener('pjerota:url-mudou', () => {
+//    // fecha o painel de minutas antes de remontar o widget — o conteúdo
+//    // é sempre da tela anterior e ficaria órfão
+//    document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
+//    assistenteAssinaturaDocumentos()
+//})
 
-window.addEventListener('pjerota:url-mudou', () => {
-    // fecha o painel de minutas antes de remontar o widget — o conteúdo
-    // é sempre da tela anterior e ficaria órfão
-    document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
-    assistenteAssinaturaDocumentos()
-})
-
-async function criaWidgetAssistenteAssinatura() {
+async function criaWidgetAssistenteAssinatura(ancestral) {
     let mapaFuncoes ={
         criaInput
     }
-    let div = await criaDivFlutuante({
+    let div = await criaDiv({
         id: 'rota_assistenteAssinatura', 
         titulo: 'Assistente de Assinatura', 
         largura: '250px', 
-        ancestral: 'ffff',
+        ancestral: ancestral,
         armazenarRecolhido: true
+    })
+    let titulo = criaTitulo({
+        id: 'rota_assistenteAssinatura_Titulo',
+        texto: 'Assistente de Assinatura',
+        ancestral: 'rota_assistenteAssinatura'
     })
     let subTitulo = criaSubTitulo({
         id: 'rota_assistenteAssinatura_subTitulo',

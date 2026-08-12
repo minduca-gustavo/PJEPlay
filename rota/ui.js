@@ -1645,40 +1645,34 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
 
     // ── Estado e métodos expostos ─────────────────────────────
     let expandido = true
-    if (armazenarExpandido){
-        let label = id + 'estado'
-        expandido = await obterArmazenamento([label]).then(d=> d[label])
-        console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
-    }
-    wrapper.expandido  = expandido
-    wrapper.aoAlternar = null   // roteiro pode atribuir: (expandido) => { ... }
-
-    function _aplicar(expandido) {
-        wrapper.expandido = expandido
-        if (expandido) {
-            corpo.style.maxHeight = '1000px'
-            corpo.style.opacity   = '1'
-            seta.textContent      = '▲'
-        } else {
-            corpo.style.maxHeight = '0'
-            corpo.style.opacity   = '0'
-            seta.textContent      = '▼'
+        if (armazenarExpandido) {
+            const label = id + 'estado'
+            const guardado = await obterArmazenamento([label]).then(d => d[label])
+            if (typeof guardado === 'boolean') expandido = guardado
         }
-    }
+        wrapper.aoAlternar = null
 
-    wrapper.expandir  = () => _aplicar(true)
-    wrapper.recolher  = () => _aplicar(false)
+        function _aplicar(novoEstado, silencioso = false) {
+            if (armazenarExpandido) armazenar({ [id + 'estado']: novoEstado })
+            wrapper.expandido = novoEstado
 
-    cabecalho.addEventListener('click', () => {
-        _aplicar(!wrapper.expandido)
-        if (typeof wrapper.aoAlternar === 'function') wrapper.aoAlternar(wrapper.expandido)
-    })
-    // ─────────────────────────────────────────────────────────
+            corpo.style.maxHeight = novoEstado ? '1000px' : '0'
+            corpo.style.opacity   = novoEstado ? '1' : '0'
+            seta.textContent      = novoEstado ? '▲' : '▼'
 
-    wrapper.appendChild(cabecalho)
-    wrapper.appendChild(corpo)
-    _ui_inserir(wrapper, ancestral)
-    return wrapper
+            if (!silencioso && typeof wrapper.aoAlternar === 'function') wrapper.aoAlternar(novoEstado)
+        }
+
+        wrapper.expandir = () => _aplicar(true)
+        wrapper.recolher = () => _aplicar(false)
+        cabecalho.addEventListener('click', () => _aplicar(!wrapper.expandido))
+
+        wrapper.appendChild(cabecalho)
+        wrapper.appendChild(corpo)
+        _ui_inserir(wrapper, ancestral)
+
+        _aplicar(expandido, true)   // sincroniza o visual com o estado guardado
+        return wrapper
 }
 
 function rota_avisoObrigatorio(msg = '', segundos = 60) {
