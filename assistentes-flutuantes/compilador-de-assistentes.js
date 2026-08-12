@@ -1,5 +1,5 @@
 async function compiladorDeAssistentes() {
-    let funcao = 'compiladorDeAssisntes'
+    let funcao = 'compiladorDeAssistentes'
     let elemento = 'divFlutuante'
     let compilador = await criaDivFlutuante({
         id: id(funcao, elemento),
@@ -37,13 +37,22 @@ async function compiladorDeAssistentes() {
         },
     ]
     for (assistente of assistentes){
+        if (assistente.inativo) continue
+        let ancestral = id(funcao, elemento) + '-corpo'
         let mostraRecolhe = await criaSecaoMostraRecolhe({
-            id,
-            idSempreAMostra, 
-            idRecolhe, 
-            ancestral, 
-            expandido
+            id: id(assistente.id, 'mostra-recolhe'),
+            idSempreAMostra: id(assistente.id, 'mostra'), 
+            idRecolhe: id(assistente.id, 'recolhe'), 
+            ancestral: ancestral,
+            armazenarExpandido: true
         })
+        let titulo = criaSubTitulo({
+            id: id(assistente.id, 'titulo'),
+            texto: assistente.titulo,
+            ancestral: id(assistente.id, 'mostra')
+        })
+        let funcaoChamar = assistente?.funcao
+        mapaFuncoes[funcaoChamar](ancestral)
     }
 }
 
