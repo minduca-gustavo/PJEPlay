@@ -284,7 +284,8 @@ Clique para fixar/desafixar.`,
             id: id(tarefaNome, secao?.label, 'mostra_recolhe'),
             idSempreAMostra: id(tarefaNome, secao?.label, 'mostra'),
             idRecolhe: id(tarefaNome, secao?.label, 'recolhe'),
-            ancestral: id(tarefaNome, 'divSecoes')
+            ancestral: id(tarefaNome, 'divSecoes'),
+            armazenarExpandido: true
         })
         let titulo = criaTitulo({
             id: id(tarefaNome, secao?.label, 'titulo'),
