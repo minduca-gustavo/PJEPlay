@@ -42,17 +42,17 @@ function rota_assistenteAssinatura_tipoInteressa(doc) {
 }
 
 async function assistenteAssinaturaDocumentos(ancestral) {
-    let widget = document.querySelector('#rota_assistenteAssinatura')
-    if (widget) widget.remove()
-    document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
-    let janela = confereJanela(
-        /pjekz\/painel\/global\/2\/lista-processos/,      	
-    )
-    if (!janela){
-        console.log('%c[Rota PJE]%c assistenteAssinatura4: ' + JSON.stringify(4), LOG.rosa, 'color:inherit')
-        return
-    }
-    console.log('%c[Rota PJE]%c assistenteAssinatura4' + JSON.stringify('true'), LOG.rosa, 'color:inherit')
+    //let widget = document.querySelector('#rota_assistenteAssinatura')
+    //if (widget) widget.remove()
+    //document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
+    //let janela = confereJanela(
+    //    /pjekz\/painel\/global\/2\/lista-processos/,      	
+    //)
+    //if (!janela){
+    //    console.log('%c[Rota PJE]%c assistenteAssinatura4: ' + JSON.stringify(4), LOG.rosa, 'color:inherit')
+    //    return
+    //}
+    //console.log('%c[Rota PJE]%c assistenteAssinatura4' + JSON.stringify('true'), LOG.rosa, 'color:inherit')
     criaWidgetAssistenteAssinatura(ancestral)
 }
 
@@ -84,7 +84,7 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
     let subTitulo = criaSubTitulo({
         id: 'rota_assistenteAssinatura_subTitulo',
         texto: 'Apresenta os documentos a serem assinados em sequência.',
-        ancestral: 'rota_assistenteAssinatura-corpo',
+        ancestral: 'rota_assistenteAssinatura',
     })
     /*
     let tipos = [
@@ -322,7 +322,7 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
     let botao = criaBotaoAzul({
         id: 'rota_assistenteAssinatura_botaoAcao',
         texto: 'Buscar textos dos documentos.',
-        ancestral: 'rota_assistenteAssinatura-corpo',
+        ancestral: 'rota_assistenteAssinatura',
         acao: () => buscarTextosAAssinar()
     })
     /*

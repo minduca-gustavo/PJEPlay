@@ -164,6 +164,7 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
         fontFamily:    "'Segoe UI', system-ui, sans-serif",
         userSelect:    'none',
         minWidth:      '180px',
+        overflow:      'visible',  // não corta os filhos — o scroll fica no corpo
     })
     wrapper.id = id
 
@@ -241,6 +242,7 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
         padding:       '8px 0 6px 0',
         overflowY:     'auto',
         maxHeight:     '80vh',
+        borderRadius:  '0 0 8px 8px',  // cantos de baixo — compensa overflow:visible no wrapper
     })
     corpo.id = id + '-corpo'
     corpo.classList.add('ui-clip-liberavel')
@@ -1596,7 +1598,7 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
     const wrapper = _ui_el('div', {
         border:       '1px solid ' + UI_CORES.borda,
         borderRadius: '6px',
-        overflow:     'hidden',
+        // overflow:hidden removido — cortava o conteúdo e impedia o scroll do divFlutuante pai
         marginBottom: '8px',
         background:   UI_CORES.branco,
     })
@@ -1636,10 +1638,11 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
     const corpo = _ui_el('div', {
         borderTop:  '1px solid ' + UI_CORES.borda,
         padding:    '6px 0 4px 0',
+        // overflow começa hidden; _aplicar troca para visible quando expandido
         overflow:   'hidden',
         transition: 'max-height 0.25s ease, opacity 0.2s ease',
-        maxHeight:  '1000px',
-        opacity:    '1',
+        maxHeight:  '0',
+        opacity:    '0',
     })
     corpo.id = idRecolhe
     corpo.classList.add('ui-clip-liberavel')
@@ -1655,11 +1658,16 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
 
     function _aplicar(expandido) {
         wrapper.expandido = expandido
+        let label = id + 'estado'
+        armazenar({[label]: expandido})
         if (expandido) {
-            corpo.style.maxHeight = '1000px'
+            // overflow:visible permite que o divFlutuante pai enxergue a altura real e role
+            corpo.style.overflow  = 'visible'
+            corpo.style.maxHeight = 'none'
             corpo.style.opacity   = '1'
             seta.textContent      = '▲'
         } else {
+            corpo.style.overflow  = 'hidden'
             corpo.style.maxHeight = '0'
             corpo.style.opacity   = '0'
             seta.textContent      = '▼'
@@ -1679,10 +1687,9 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
         wrapper.appendChild(corpo)
         _ui_inserir(wrapper, ancestral)
 
-    _aplicar(expandido, true)   // sincroniza o visual com o estado guardado
-
-        _aplicar(expandido, true)   // sincroniza o visual com o estado guardado
-        return wrapper
+    _aplicar(expandido)   // sincroniza o visual com o estado guardado
+    wrapper.corpo = corpo
+    return wrapper
 }
 
 function rota_avisoObrigatorio(msg = '', segundos = 60) {

@@ -1,22 +1,22 @@
-function consultaQualquerOJ(){
-    let janela = confereJanela(JANELA.meuPainel, JANELA.painelGlobal, JANELA.painelGlobalTodos)
-    if (!janela) return
-    consulta_qualquer_ojCriaCampoConsulta()
+function consultaQualquerOJ(ancestral){
+    //let janela = confereJanela(JANELA.meuPainel, JANELA.painelGlobal, JANELA.painelGlobalTodos)
+    //if (!janela) return
+    consulta_qualquer_ojCriaCampoConsulta(ancestral)
 }
 
-window.addEventListener('pjerota:url-mudou', () => {
-    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
-    consultaQualquerOJ()
-})
+//window.addEventListener('pjerota:url-mudou', () => {
+//    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
+//    consultaQualquerOJ()
+//})
 
-consultaQualquerOJ()
+//consultaQualquerOJ()
 
-async function consulta_qualquer_ojCriaCampoConsulta() {
+async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
 
     let WIDGET_ID   = 'pjerota-consulta_qualquer_oj-widget'
     let STORAGE_POS = 'consulta_qualquer_oj_widget_pos'
 
-    if (document.getElementById(WIDGET_ID)) return
+    //if (document.getElementById(WIDGET_ID)) return
 
     let C = {
         azul:       '#0078aa',
@@ -223,49 +223,51 @@ async function consulta_qualquer_ojCriaCampoConsulta() {
     corpo.appendChild(rodape)
     corpo.appendChild(aviso)
 
+    let ancestralElemento = document.getElementById(ancestral)
+
     widget.appendChild(barra)
-    widget.appendChild(corpo)
+    ancestralElemento.appendChild(corpo)
     document.body.appendChild(widget)
 
     // ── Aplica estado visual ──────────────────────────────────
-    function aplicarEstado() {
-        if (minimo) {
-            // Quadradinho: só ► visível
-            widget.style.width         = '32px'
-            barra.style.padding        = '0'
-            barra.style.justifyContent = 'center'
-            titulo.style.display       = 'none'
-            btnToggle.style.display    = 'none'
-            btnHoriz.style.display     = 'inline'
-            btnHoriz.textContent       = '►'
-            btnHoriz.style.padding     = '0'
-            corpo.style.display        = 'none'
-        } else if (recolhido) {
-            // Barra visível, corpo oculto, ◄ aparece
-            widget.style.width         = '240px'
-            barra.style.padding        = '0 8px'
-            barra.style.justifyContent = ''
-            titulo.style.display       = ''
-            btnToggle.style.display    = 'inline'
-            btnToggle.textContent      = '▼'
-            btnHoriz.style.display     = 'inline'
-            btnHoriz.textContent       = '◄'
-            btnHoriz.style.padding     = '0 6px 0 0'
-            corpo.style.display        = 'none'
-        } else {
-            // Aberto: sem ◄
-            widget.style.width         = '240px'
-            barra.style.padding        = '0 8px'
-            barra.style.justifyContent = ''
-            titulo.style.display       = ''
-            btnToggle.style.display    = 'inline'
-            btnToggle.textContent      = '▲'
-            btnHoriz.style.display     = 'none'
-            corpo.style.display        = 'flex'
-        }
-    }
+    //function aplicarEstado() {
+    //    if (minimo) {
+    //        // Quadradinho: só ► visível
+    //        widget.style.width         = '32px'
+    //        barra.style.padding        = '0'
+    //        barra.style.justifyContent = 'center'
+    //        titulo.style.display       = 'none'
+    //        btnToggle.style.display    = 'none'
+    //        btnHoriz.style.display     = 'inline'
+    //        btnHoriz.textContent       = '►'
+    //        btnHoriz.style.padding     = '0'
+    //        corpo.style.display        = 'none'
+    //    } else if (recolhido) {
+    //        // Barra visível, corpo oculto, ◄ aparece
+    //        widget.style.width         = '240px'
+    //        barra.style.padding        = '0 8px'
+    //        barra.style.justifyContent = ''
+    //        titulo.style.display       = ''
+    //        btnToggle.style.display    = 'inline'
+    //        btnToggle.textContent      = '▼'
+    //        btnHoriz.style.display     = 'inline'
+    //        btnHoriz.textContent       = '◄'
+    //        btnHoriz.style.padding     = '0 6px 0 0'
+    //        corpo.style.display        = 'none'
+    //    } else {
+    //        // Aberto: sem ◄
+    //        widget.style.width         = '240px'
+    //        barra.style.padding        = '0 8px'
+    //        barra.style.justifyContent = ''
+    //        titulo.style.display       = ''
+    //        btnToggle.style.display    = 'inline'
+    //        btnToggle.textContent      = '▲'
+    //        btnHoriz.style.display     = 'none'
+    //        corpo.style.display        = 'flex'
+    //    }
+    //}
 
-    aplicarEstado()
+    //aplicarEstado()
 
     let tarefaAtiva = await obterArmazenamento('tarefaAtiva')
 

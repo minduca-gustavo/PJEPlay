@@ -16,7 +16,7 @@ const ROTA_LEITURA_DINAMICA_TDS_EXCLUIDOS = [
     // 'seletor-css-do-td-que-nao-deve-ser-usado',
 ]
 
-async function leituraDinamicaDocumentos() {
+async function leituraDinamicaDocumentos(ancestral) {
     let widget = document.querySelector('#rota_leituraDinamica')
     if (widget) widget.remove()
     let janela = confereJanela(
@@ -34,31 +34,31 @@ async function leituraDinamicaDocumentos() {
         return
     }
     console.log('%c[Rota PJE]%c leituraDinamica4' + JSON.stringify('true'), LOG.rosa, 'color:inherit')
-    criaWidgetLeituraDinamica()
+    criaWidgetLeituraDinamica(ancestral)
 }
 
-leituraDinamicaDocumentos()
+//leituraDinamicaDocumentos()
+//
+//window.addEventListener('pjerota:url-mudou', () => {
+//    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
+//    leituraDinamicaDocumentos()
+//})
 
-window.addEventListener('pjerota:url-mudou', () => {
-    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
-    leituraDinamicaDocumentos()
-})
-
-async function criaWidgetLeituraDinamica() {
+async function criaWidgetLeituraDinamica(ancestral) {
     let mapaFuncoes ={
         criaInput
     }
-    let div = await criaDivFlutuante({
+    let div = await criaDiv({
         id: 'rota_leituraDinamica', 
-        titulo: 'Leitura Dinâmica', 
-        largura: '250px', 
-        ancestral: 'ffff',
-        armazenarRecolhido: true
+        //titulo: 'Leitura Dinâmica', 
+        //largura: '250px', 
+        ancestral: ancestral,
+        //armazenarRecolhido: true
     })
     let subTitulo = criaSubTitulo({
         id: 'rota_leituraDinamica_subTitulo',
         texto: 'Colore de acordo com os termos escolhidos.',
-        ancestral: 'rota_leituraDinamica-corpo',
+        ancestral: 'rota_leituraDinamica',
     })
     let tipos = [
         {
@@ -78,7 +78,7 @@ async function criaWidgetLeituraDinamica() {
         let checkBox = criaCheckBox({
             id: 'rota_leituraDinamica_check_' + t?.tipo, 
             textoAoLado: t?.label, 
-            ancestral: 'rota_leituraDinamica-corpo',
+            ancestral: 'rota_leituraDinamica',
         })
         checkBox.style.marginLeft = '3px'
         let checkListener = document.querySelector('#rota_leituraDinamica_check_' + t?.tipo)
@@ -187,11 +187,11 @@ async function criaWidgetLeituraDinamica() {
     let subTituloConfigs = criaSubTitulo({
         id: 'rota_leituraDinamica_subTituloConfigs',
         texto: 'Configurações salvas',
-        ancestral: 'rota_leituraDinamica-corpo',
+        ancestral: 'rota_leituraDinamica',
     })
     let divLinhaConfiguracoes = criaDiv({
         id: 'rota_leituraDinamica_divLinhaConfiguracoes',
-        ancestral: 'rota_leituraDinamica-corpo',
+        ancestral: 'rota_leituraDinamica',
         rowColumn: 'row',
     })
     let divMenuConfig = criaDiv({
@@ -254,7 +254,7 @@ async function criaWidgetLeituraDinamica() {
         let idDivCores = 'rota_leituraDinamica_divCores' + j?.nome.toLowerCase()
         let divCores = criaDiv({
             id: idDivCores,
-            ancestral: 'rota_leituraDinamica-corpo',
+            ancestral: 'rota_leituraDinamica',
             rowColumn: 'row'
         })
         divCores.style.margin = '4px'
@@ -295,14 +295,14 @@ async function criaWidgetLeituraDinamica() {
     let botao = criaBotaoAzul({
         id: 'rota_leituraDinamica_botaoAcao',
         texto: 'Colorir',
-        ancestral: 'rota_leituraDinamica-corpo',
+        ancestral: 'rota_leituraDinamica',
         acao: () => colorirDinamico('rota_leituraDinamica_divCores_input_')
     })
     
     // ── Salvar configuração atual ────────────────────────────────
     let divSalvarConfig = criaDiv({
         id: 'rota_leituraDinamica_divSalvarConfig',
-        ancestral: 'rota_leituraDinamica-corpo',
+        ancestral: 'rota_leituraDinamica',
         rowColumn: 'row',
     })
     let divInputNomeConfig = criaDiv({
@@ -554,7 +554,7 @@ async function criaWidgetLeituraDinamica() {
 function rota_leituraDinamica_avisoTemporario(msg = '', duracaoMs = 2500) {
     let existente = document.querySelector('#rota_leituraDinamica_avisoTemporario')
     if (existente) existente.remove()
-    let corpo = document.querySelector('#rota_leituraDinamica-corpo')
+    let corpo = document.querySelector('#rota_leituraDinamica')
     if (!corpo) return
     // 'corpo' não tem position:relative, então vira containing-block do
     // aviso (absolute) — sem isso o navegador sobe até o wrapper

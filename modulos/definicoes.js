@@ -27,6 +27,7 @@ var JANELA = {
     gigsRelatorios:         /\/pjekz\/gigs\/relatorios\/atividades/,
     painelGlobal:      		/\/pjekz\/painel\/global/,
 	painelGlobalTarefas:	/\/pjekz\/painel\/global\/\d*\/lista-processos/,
+	analisarEAssinar:	/\/pjekz\/painel\/global\/2\/lista-processos/,
     painelGlobalTodos: 		/\/pjekz\/painel\/global\/todos\/lista-processos/,
     detalhes:          		/\/pjekz\/processo\/\d*\/detalhe/,
     tarefa:          		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
