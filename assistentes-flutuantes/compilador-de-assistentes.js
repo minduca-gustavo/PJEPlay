@@ -17,22 +17,22 @@ async function compiladorDeAssistentes() {
         {
             id: 'consulta-qualquer-oj',
             titulo: 'Consulta em qualquer OJ',
-            funcao: 'consultaQualquerOJ'
+            funcao: consultaQualquerOJ
         },
         {
             id: 'leitura-dinamica',
             titulo: 'Leitura Dinâmica',
-            funcao: 'leituraDinamicaDocumentos'
+            funcao: leituraDinamicaDocumentos
         },
         {
             id: 'assistente-assinatura',
             titulo: 'Assistente de assinatura',
-            funcao: 'assistenteAssinaturaDocumentos'
+            funcao: assistenteAssinaturaDocumentos
         },
         {
             id: 'assistente-assinatura',
             titulo: 'Assistente de assinatura',
-            funcao: 'assistenteAssinaturaDocumentos',
+            funcao: assistenteAssinaturaDocumentos,
             inativo: true
         },
     ]
@@ -52,7 +52,9 @@ async function compiladorDeAssistentes() {
             ancestral: id(assistente.id, 'mostra')
         })
         let funcaoChamar = assistente?.funcao
-        mapaFuncoes[funcaoChamar](ancestral)
+        console.log('%c[Rota PJE]%c mapaFuncoes[funcaoChamar]: ' + JSON.stringify(typeof mapaFuncoes[funcaoChamar]), LOG.mb, 'color:inherit')
+        let funcaoConfere = mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+        console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
     }
 }
 

@@ -71,10 +71,10 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
     }
     let div = await criaDiv({
         id: 'rota_assistenteAssinatura', 
-        titulo: 'Assistente de Assinatura', 
-        largura: '250px', 
+        //titulo: 'Assistente de Assinatura', 
+        //largura: '250px', 
         ancestral: ancestral,
-        armazenarRecolhido: true
+        //armazenarRecolhido: true
     })
     let titulo = criaTitulo({
         id: 'rota_assistenteAssinatura_Titulo',

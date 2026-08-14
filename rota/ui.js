@@ -1649,7 +1649,6 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
     if (armazenarExpandido){
         let label = id + 'estado'
         expandido = await obterArmazenamento([label]).then(d=> d[label])
-        console.log('%c[Rota PJE]%c recolhido 230: ' + JSON.stringify(recolhido), LOG.rosa, 'color:inherit')
     }
     wrapper.expandido  = expandido
     wrapper.aoAlternar = null   // roteiro pode atribuir: (expandido) => { ... }
