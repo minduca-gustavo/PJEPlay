@@ -227,7 +227,7 @@ async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
 
     widget.appendChild(barra)
     ancestralElemento.appendChild(corpo)
-    document.body.appendChild(widget)
+    //document.body.appendChild(widget)
 
     // ── Aplica estado visual ──────────────────────────────────
     //function aplicarEstado() {

@@ -76,11 +76,11 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
         ancestral: ancestral,
         //armazenarRecolhido: true
     })
-    let titulo = criaTitulo({
-        id: 'rota_assistenteAssinatura_Titulo',
-        texto: 'Assistente de Assinatura',
-        ancestral: 'rota_assistenteAssinatura'
-    })
+    //let titulo = criaTitulo({
+    //    id: 'rota_assistenteAssinatura_Titulo',
+    //    texto: 'Assistente de Assinatura',
+    //    ancestral: 'rota_assistenteAssinatura'
+    //})
     let subTitulo = criaSubTitulo({
         id: 'rota_assistenteAssinatura_subTitulo',
         texto: 'Apresenta os documentos a serem assinados em sequência.',

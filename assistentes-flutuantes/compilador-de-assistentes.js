@@ -28,9 +28,9 @@ async function compiladorDeAssistentes() {
             janelas: [JANELA.analisarEAssinar],
         },
         {
-            id: 'assistente-assinatura',
-            titulo: 'Assistente de assinatura',
-            funcao: 'assistenteAssinaturaDocumentos',
+            id: 'filtros-novos',
+            titulo: 'Super Filtros',
+            funcao: 'filtrosNovos',
             janelas: [],
             inativo: true
         },

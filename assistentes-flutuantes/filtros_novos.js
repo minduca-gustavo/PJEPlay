@@ -16,7 +16,7 @@ const ROTA_FILTROS_NOVOS_TDS_EXCLUIDOS = [
     // 'seletor-css-do-td-que-nao-deve-ser-usado',
 ]
 
-async function filtrosNovosDocumentos() {
+async function filtrosNovos() {
     let widget = document.querySelector('#rota_filtrosNovos')
     if (widget) widget.remove()
     let janela = confereJanela(
@@ -37,12 +37,12 @@ async function filtrosNovosDocumentos() {
     criaWidgetfiltrosNovos()
 }
 
-//filtrosNovosDocumentos()
+//filtrosNovos()
 
-window.addEventListener('pjerota:url-mudou', () => {
-    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
-    filtrosNovosDocumentos()
-})
+//window.addEventListener('pjerota:url-mudou', () => {
+//    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
+//    filtrosNovos()
+//})
 
 async function criaWidgetfiltrosNovos() {
     let mapaFuncoes ={
