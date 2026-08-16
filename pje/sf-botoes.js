@@ -176,8 +176,98 @@ const SF_BOTOES = [
 		}
 	},
 	{
+		nome: 'PJC único + Sentenças',
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {idsx, tx} = { idsx: [], tx: [] }
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}	
+				for (let tarefa of tarefas) {
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
+						idsx.push(...ids)
+						tx.push(...t)
+						
+					}
+				}
+			} else if (contexto.modo === 'Lista') {
+				({ ids, t } = await filtrarPorLista(contexto))
+				idsx.push(...ids)
+				tx.push(...t)
+			}
+			if (!idsx.length) return 'Nenhum processo encontrado.'
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+
+// https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/processo?pagina=1&tamanhoPagina=10&ordenacaoCrescente=true&idProcesso=1853658&incluirCalculosHomologados=true
+// https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/112833/pjc
+			for (let i = 0; i < idsx.length; i++) {
+				let id = idsx[i]
+				let calculos = await buscarCalculos(id) || {}
+				console.log('%c[Rota PJE]%c calculos 218:' + JSON.stringify(calculos), LOG.aviso, 'color:inherit')
+				let calculo = [...new Set((calculos?.resultado || []).map(d => d?.idPjeCalc))];
+				console.log('%c[Rota PJE]%c calculo 218:' + JSON.stringify(calculo), LOG.aviso, 'color:inherit')
+				console.log('%c[Rota PJE]%c calculo.length 218:' + JSON.stringify(calculo.length), LOG.aviso, 'color:inherit')
+				let maximo = 0
+				if (calculo.length === 1){
+					maximo++
+					let idCalculo = (calculos?.resultado.find(d => d?.idPjeCalc == calculo))?.idPJeCalcImportacao || null
+					let pjc = ''
+					let idsDocs = []
+					let conteudos = []
+					let conteudoString = ''
+					if (idCalculo){
+						pjc = await rota_fetch('https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/' + idCalculo + '/pjc')
+						let acordo = await rota_buscarDocumentoHomologatorio() || null
+						if (acordo) {
+							idsDocs.push(acordo)
+						} else {
+							let timeline = await buscarDocumentos(id) || []
+							let valor = ['Sentença', 'Acórdão']
+							let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
+							let sentencas = timeline.filter(d =>
+								[].concat(valor).includes(d?.tipo) ||
+								(tituloRegex && tituloRegex.test(d?.titulo || ''))
+								.map(d=> d?.id)
+							) || []
+							idsDocs.push(...sentencas)
+						}
+						
+					}
+					if (idsDocs.length > 0){
+						for (idDoc of idsDocs){
+							let conteudo = await extrairTexto(id, idDoc) || ''
+							if (conteudo) conteudos.push(idDoc + ': ' + conteudo)
+						}
+					}
+					d.push({
+						Id: id || '' ,
+						Numero: tx[i]?.numero || '',
+						PJC: pjc,
+						Conteudo: conteudos.join('')
+					})
+					if (maximo === 100){
+						return d
+					}
+				}
+			}
+		}
+
+	},
+	{
 		nome: 'Compila sentenças.',
-		modo: ['Tarefa'],
+		modo: [],
 		funcao: async (contexto) => {
 			let { idsx, tx } = { idsx: [], tx: [] }
 			console.log('%c[Rota PJE]%c contexto' + JSON.stringify(contexto), LOG.rosa, 'color:inherit')
