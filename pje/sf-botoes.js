@@ -136,7 +136,7 @@ const SF_BOTOES = [
 					}
 				}
 			} else if (contexto.modo === 'Lista') {
-				({ ids, t } = await filtrarPorLista(contexto))
+				let { ids, t } = await filtrarPorLista(contexto)
 				idsx.push(...ids)
 				tx.push(...t)
 			}
@@ -177,7 +177,7 @@ const SF_BOTOES = [
 	},
 	{
 		nome: 'PJC único + Sentenças',
-		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		modo: ['Tarefa', 'Lista'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {
 			let {idsx, tx} = { idsx: [], tx: [] }
 			if (contexto.modo === 'Tarefa') {
@@ -194,11 +194,16 @@ const SF_BOTOES = [
 					}
 				}
 			} else if (contexto.modo === 'Lista') {
-				({ ids, t } = await filtrarPorLista(contexto))
+				let ids = [], t = []
+				;({ ids, t } = await filtrarPorLista(contexto))
 				idsx.push(...ids)
 				tx.push(...t)
+				//console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
+				//console.log('%c[Rota PJE]%c tx' + JSON.stringify(tx), LOG.aviso, 'color:inherit')
 			}
+			//console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
 			if (!idsx.length) return 'Nenhum processo encontrado.'
+			
 			let d = []
 
 			//let resultados = await sf_pool(ids, async (id, idx) => {
@@ -209,27 +214,30 @@ const SF_BOTOES = [
 			//	pausaMs:      contexto.pausaMs,
 			//	onProgresso:  contexto.progresso,
 			//})
-
+			let maximo = 0
 // https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/processo?pagina=1&tamanhoPagina=10&ordenacaoCrescente=true&idProcesso=1853658&incluirCalculosHomologados=true
 // https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/112833/pjc
 			for (let i = 0; i < idsx.length; i++) {
 				let id = idsx[i]
 				let calculos = await buscarCalculos(id) || {}
-				console.log('%c[Rota PJE]%c calculos 218:' + JSON.stringify(calculos), LOG.aviso, 'color:inherit')
+				//console.log('%c[Rota PJE]%c calculos 218:' + JSON.stringify(calculos), LOG.aviso, 'color:inherit')
 				let calculo = [...new Set((calculos?.resultado || []).map(d => d?.idPjeCalc))];
-				console.log('%c[Rota PJE]%c calculo 218:' + JSON.stringify(calculo), LOG.aviso, 'color:inherit')
-				console.log('%c[Rota PJE]%c calculo.length 218:' + JSON.stringify(calculo.length), LOG.aviso, 'color:inherit')
-				let maximo = 0
+				//console.log('%c[Rota PJE]%c calculo 218:' + JSON.stringify(calculo), LOG.aviso, 'color:inherit')
+				//console.log('%c[Rota PJE]%c calculo.length 218:' + JSON.stringify(calculo.length), LOG.aviso, 'color:inherit')
+				
 				if (calculo.length === 1){
-					maximo++
-					let idCalculo = (calculos?.resultado.find(d => d?.idPjeCalc == calculo))?.idPJeCalcImportacao || null
+					
+					let idCalculo = (calculos?.resultado.find(d => d?.idPjeCalc == calculo[0]))?.idPJeCalcImportacao || null
+					//console.log('%c[Rota PJE]%c idCalculo 218: ' + JSON.stringify(idCalculo), LOG.aviso, 'color:inherit')
 					let pjc = ''
 					let idsDocs = []
 					let conteudos = []
 					let conteudoString = ''
 					if (idCalculo){
-						pjc = await rota_fetch('https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/' + idCalculo + '/pjc')
-						let acordo = await rota_buscarDocumentoHomologatorio() || null
+						pjc = await rota_download('https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/' + idCalculo + '/pjc')
+						//console.log('%c[Rota PJE]%c pjc 221: ' + JSON.stringify(pjc), LOG.erro, 'color:inherit')
+						let acordo = await rota_buscarDocumentoHomologatorio(id) || null
+						//console.log('%c[Rota PJE]%c acordo 219: ' + JSON.stringify(acordo), LOG.aviso, 'color:inherit')
 						if (acordo) {
 							idsDocs.push(acordo)
 						} else {
@@ -238,30 +246,54 @@ const SF_BOTOES = [
 							let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
 							let sentencas = timeline.filter(d =>
 								[].concat(valor).includes(d?.tipo) ||
-								(tituloRegex && tituloRegex.test(d?.titulo || ''))
-								.map(d=> d?.id)
-							) || []
+								(tituloRegex && tituloRegex.test(d?.titulo || '')))
+								.map(d=> d?.id) || []
 							idsDocs.push(...sentencas)
 						}
 						
 					}
+					let encontrado = false
 					if (idsDocs.length > 0){
 						for (idDoc of idsDocs){
 							let conteudo = await extrairTexto(id, idDoc) || ''
-							if (conteudo) conteudos.push(idDoc + ': ' + conteudo)
+							//console.log('%c[Rota PJE]%c conteudo 220: ' + JSON.stringify(conteudo), LOG.aviso, 'color:inherit')
+							let horasExtras = buscaEmTextoMalFormatado(conteudo, 'horas extras', 0, 0)
+							console.log('%c[Rota PJE]%c conteudo' + JSON.stringify(conteudo), LOG.aviso, 'color:inherit')
+							console.log('%c[Rota PJE]%c horasExtras?.trechos' + JSON.stringify(horasExtras), LOG.aviso, 'color:inherit')
+							if (horasExtras?.trechos) encontrado = true
+							conteudos.push(idDoc + ': ' + conteudo)
 						}
 					}
-					d.push({
-						Id: id || '' ,
-						Numero: tx[i]?.numero || '',
-						PJC: pjc,
-						Conteudo: conteudos.join('')
-					})
-					if (maximo === 100){
-						return d
+					if (pjc && encontrado) {
+						maximo++
+						d.push({
+							Id: id || '' ,
+							Numero: tx[i]?.numero || '',
+							PJC: await blobParaBase64(pjc),
+							Conteudo: conteudos.join('')
+						})
 					}
+					if (maximo === 50){
+						let json = JSON.stringify(d)
+						const blob = new Blob([json], {type: 'application/json'})
+						const a = document.createElement('a')
+						a.href = URL.createObjectURL(blob)
+						a.download = 'calculos.json'
+						a.click()
+						let f = d.map(t=> {t?.Id, t?.Numero})
+						return f
+					}
+					
 				}
 			}
+			let json = JSON.stringify(d)
+			const blob = new Blob([json], {type: 'application/json'})
+			const a = document.createElement('a')
+			a.href = URL.createObjectURL(blob)
+			a.download = 'calculos.json'
+			a.click()
+			let f = d.map(t=> {t?.Id, t?.Numero})
+			return f
 		}
 
 	},

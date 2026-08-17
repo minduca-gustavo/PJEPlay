@@ -91,3 +91,34 @@ function _ass_nomeTarefa(id) {
     // Fallback: kebab-case → Title Case
     return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
+
+function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
+    console.log('%c[Rota PJE]%c chamou buscaEm ' + JSON.stringify(123), LOG.rosa, 'color:inherit')
+    let texto = normalizar(textoABuscar).toLowerCase()
+    let mapa = []
+    let espacos = []
+    let limpo = ''
+    for (let i=0; i < texto.length; i++){
+        let c = texto[i];
+        if (/\s/.test(c)) {
+            espacos.push(i);
+            continue; // pula espaços/quebras de linha
+        }
+        limpo += c;
+        mapa.push(i);
+    }
+    console.log('termo: ' + JSON.stringify(termo))
+    //let d = termo.map(e => !/\s/.test(e)).join('')
+    //console.log('%c[Rota PJE]%c d: ' + JSON.stringify(d), LOG.aviso, 'color:inherit')
+    let busca = normalizar(termo).toLowerCase().replace(/\s+/g, '')
+    console.log('busca: ' + JSON.stringify(busca))
+    let posicao = limpo.indexOf(busca)
+    if (posicao === -1) return null
+    let inicio = mapa[posicao]
+    let fim = mapa[posicao + busca.length - 1] + 1
+    let espacoInicio = espacos[espacos.findIndex(d=> d > Math.max(0, inicio - antes)) - 1]
+    let espacoFim = espacos[espacos.findIndex(d=> d > Math.min(textoABuscar.length, fim + depois))]
+    let resultado = textoABuscar.slice(espacoInicio, espacoFim)
+    return {trechos: resultado, termo: termo, inicio: inicio, fim: fim}
+    
+}

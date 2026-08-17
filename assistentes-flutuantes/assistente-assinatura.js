@@ -1115,28 +1115,28 @@ function rota_assistenteAssinatura_abrirCompiladoProcesso(processo) {
     overlay.addEventListener('click', () => overlay.remove())
 }
 
-function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
-    let texto = normalizar(textoABuscar).toLowerCase()
-    let mapa = []
-    let espacos = []
-    let limpo = ''
-    for (let i=0; i < texto.length; i++){
-        let c = texto[i];
-        if (/\s/.test(c)) {
-            espacos.push(i);
-            continue; // pula espaços/quebras de linha
-        }
-        limpo += c;
-        mapa.push(i);
-    }
-    let busca = normalizar(termo).toLowerCase()
-    let posicao = limpo.indexOf(busca)
-    if (posicao === -1) return null
-    let inicio = mapa[posicao]
-    let fim = mapa[posicao + busca.length - 1] + 1
-    let espacoInicio = espacos[espacos.findIndex(d=> d > Math.max(0, inicio - antes)) - 1]
-    let espacoFim = espacos[espacos.findIndex(d=> d > Math.min(textoABuscar.length, fim + depois))]
-    let resultado = textoABuscar.slice(espacoInicio, espacoFim)
-    return {trechos: resultado, termo: termo, inicio: inicio, fim: fim}
-    
-}
+//function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
+//    let texto = normalizar(textoABuscar).toLowerCase()
+//    let mapa = []
+//    let espacos = []
+//    let limpo = ''
+//    for (let i=0; i < texto.length; i++){
+//        let c = texto[i];
+//        if (/\s/.test(c)) {
+//            espacos.push(i);
+//            continue; // pula espaços/quebras de linha
+//        }
+//        limpo += c;
+//        mapa.push(i);
+//    }
+//    let busca = normalizar(termo).toLowerCase()
+//    let posicao = limpo.indexOf(busca)
+//    if (posicao === -1) return null
+//    let inicio = mapa[posicao]
+//    let fim = mapa[posicao + busca.length - 1] + 1
+//    let espacoInicio = espacos[espacos.findIndex(d=> d > Math.max(0, inicio - antes)) - 1]
+//    let espacoFim = espacos[espacos.findIndex(d=> d > Math.min(textoABuscar.length, fim + depois))]
+//    let resultado = textoABuscar.slice(espacoInicio, espacoFim)
+//    return {trechos: resultado, termo: termo, inicio: inicio, fim: fim}
+//    
+//}
