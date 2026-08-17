@@ -90,6 +90,7 @@ async function compiladorDeAssistentes() {
             if (!temValorSalvo) {
                 let elemento = document.querySelector('#' + id(assistente.id, 'mostra'))
                 await clicar(elemento)
+                await armazenar({ [chaveStorage]: true })
             } 
         }
         // depois que o mecanismo rodar, ele gerencia o overflow normalmente
