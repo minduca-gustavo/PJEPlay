@@ -213,102 +213,13 @@ function _rota_sincronizar(reg){
 		botaoTutorial.addEventListener('mouseleave', () => tooltip.style.opacity = '0')
 		botaoTutorial.addEventListener('click', () => window.open('https://drive.google.com/drive/u/0/folders/1kfZ6tCIIyv6RVeCG_S6eIoE9qF_oARn4', 'blank'))
 		divTutorial.appendChild(botaoTutorial)
-		let botaoAssistentes = criaBotaoAzul({
-			id: 'rota_botaoConfiguraAssistentes',
-			ancestral: 'rota_rota_tutorial_div',
-			texto: 'Configura\nAssistentes',
-			acao: () => configuraAssistentes(),
-		})
-		botaoAssistentes.style.width = 		'fit-content'
-		botaoAssistentes.style.fontSize = 	'9px'
-		botaoAssistentes.style.height = 	'30px'
-		botaoAssistentes.style.lineHeight = '14px'
-		botaoAssistentes.style.padding = 	'0px 8px'
-		botaoAssistentes.style.whiteSpace = 'pre-wrap'
+		
 	}
 
 	_rota_posicionar(reg, ancoraEl, x, y)
 }
 
-async function configuraAssistentes(){
-	let elemento = document.querySelector('#rota_divConfiguraAssistentes')
-	if (elemento) {
-		elemento.remove()
-		return
-	}
-	/*
-	let div = await criaDivFlutuante({
-		id: 'rota_divConfiguraAssistentes',
-		titulo: 'Selecione quais assistentes devem ser exibidos.'
-		//ancestral: 'rota_rota_tutorial_div',
-	})
-	let ancestral = document.getElementById('rota_rota_tutorial_div')
-	let el = document.getElementById('rota_divConfiguraAssistentes')
-	el.style.position = 'relative'
-	//el.style.left = '300px'
-	ancestral.insertAdjacentElement('afterend', el)
-	*/
-	let div = criaDiv({
-		id: 'rota_divConfiguraAssistentes',
-		ancestral: 'rota_rota_tutorial_div'
-	})
-	document.getElementById('rota_rota_tutorial_div').insertAdjacentElement('afterend', div)
 
-	// garante que o absolute se ancore no btn
-	let btnPai = document.getElementById('pjerota-btn-rota')
-	if(getComputedStyle(btnPai).position === 'static') btnPai.style.position = 'relative'
-
-	Object.assign(div.style, {
-		background: 	UI_CORES.fundo,
-		position:   	'absolute',
-		top:        	'0',      // logo abaixo do botão
-		width: 			'100%',
-		left:       	'100%',
-		marginTop:  	'6px',
-		padding:  		'6px',
-		zIndex:     	'9999999',
-		border:			'1px solid ',
-		borderColor:	ROTA_C.azul,
-		borderRadius:	'8px'
-	})
-	
-
-	let tituloConfiguraAssistentes = criaTitulo({
-		id: id('configuraAssistentes', 'titulo'),
-		texto: 'Escolha quais assistentes devem aparecer na tela',
-		ancestral: 'rota_divConfiguraAssistentes'
-	})
-	let assistentes = [
-		{
-			id: 'qualquer',
-			idRemocao: 'pjerota-consulta_qualquer_oj-widget',
-			texto: 'Consulta em qualquer OJ.'
-		},
-		{
-			id: 'assistente',
-			idRemocao: 'rota_assistenteAssinatura',
-			texto: 'Assistente de Assinatura'
-		},
-		{
-			id: 'leitura',
-			idRemocao: 'rota_leituraDinamica',
-			texto: 'Leitura Dinâmica.'
-		}
-	]
-	for (assistente of assistentes){
-		let checkBox = criaCheckBox({
-			id: id('configuraAssistentes', assistente?.id),
-			textoAoLado: assistente?.texto,
-			ancestral: 'rota_divConfiguraAssistentes'
-		})
-		checkBox.dataset.tipo = assistente?.id
-		checkBox.addEventListener('click', acionaAssistente(checkBox))
-	}
-	function acionaAssistente(checkBox){
-		let 
-	}
-	
-}
 
 function _rota_posicionar(reg, ancoraEl, x, y){
 	let btn = reg.btn

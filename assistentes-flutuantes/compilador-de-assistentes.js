@@ -46,7 +46,7 @@ async function compiladorDeAssistentes() {
     let compilador = await criaDivFlutuante({
         id: idCompilador,
         titulo: 'Assistentes',
-        largura: '340px',
+        largura: '230px',
         ancestral: '#ffff',
         armazenarRecolhido: true
     })

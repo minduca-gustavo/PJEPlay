@@ -1,15 +1,6 @@
 function consultaQualquerOJ(ancestral){
-    //let janela = confereJanela(JANELA.meuPainel, JANELA.painelGlobal, JANELA.painelGlobalTodos)
-    //if (!janela) return
     consulta_qualquer_ojCriaCampoConsulta(ancestral)
 }
-
-//window.addEventListener('pjerota:url-mudou', () => {
-//    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
-//    consultaQualquerOJ()
-//})
-
-//consultaQualquerOJ()
 
 async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
 
@@ -227,48 +218,7 @@ async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
 
     widget.appendChild(barra)
     ancestralElemento.appendChild(corpo)
-    //document.body.appendChild(widget)
-
-    // ── Aplica estado visual ──────────────────────────────────
-    //function aplicarEstado() {
-    //    if (minimo) {
-    //        // Quadradinho: só ► visível
-    //        widget.style.width         = '32px'
-    //        barra.style.padding        = '0'
-    //        barra.style.justifyContent = 'center'
-    //        titulo.style.display       = 'none'
-    //        btnToggle.style.display    = 'none'
-    //        btnHoriz.style.display     = 'inline'
-    //        btnHoriz.textContent       = '►'
-    //        btnHoriz.style.padding     = '0'
-    //        corpo.style.display        = 'none'
-    //    } else if (recolhido) {
-    //        // Barra visível, corpo oculto, ◄ aparece
-    //        widget.style.width         = '240px'
-    //        barra.style.padding        = '0 8px'
-    //        barra.style.justifyContent = ''
-    //        titulo.style.display       = ''
-    //        btnToggle.style.display    = 'inline'
-    //        btnToggle.textContent      = '▼'
-    //        btnHoriz.style.display     = 'inline'
-    //        btnHoriz.textContent       = '◄'
-    //        btnHoriz.style.padding     = '0 6px 0 0'
-    //        corpo.style.display        = 'none'
-    //    } else {
-    //        // Aberto: sem ◄
-    //        widget.style.width         = '240px'
-    //        barra.style.padding        = '0 8px'
-    //        barra.style.justifyContent = ''
-    //        titulo.style.display       = ''
-    //        btnToggle.style.display    = 'inline'
-    //        btnToggle.textContent      = '▲'
-    //        btnHoriz.style.display     = 'none'
-    //        corpo.style.display        = 'flex'
-    //    }
-    //}
-
-    //aplicarEstado()
-
+    
     let tarefaAtiva = await obterArmazenamento('tarefaAtiva')
 
     setTimeout(() => { if (!recolhido && !minimo) input.focus() }, 80)
