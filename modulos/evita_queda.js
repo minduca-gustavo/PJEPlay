@@ -1,5 +1,5 @@
 async function evitaQueda() {
-    if (!location.href.includes('jus.bre/pjekz')) return
+    if (!location.href.includes('trt15.jus.br/pjekz')) return
     let name = 'rota_evitaQuedaAtivo'
     let evitaQuedaAtivo = await obterArmazenamento([name]).then(d => d?.[name])
     console.log('%c[Rota PJE]%c evitaQuedaAtivo: ' + JSON.stringify(evitaQuedaAtivo), LOG.aviso, 'color:inherit')
