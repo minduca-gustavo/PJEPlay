@@ -1,3 +1,17 @@
+/*
+Filtro
+SUMARÍSSIMO COM ADVOGADOS EM TODAS AS PARTES
+SEM ÓRGÃO PÚBLICO
+SEM OBRIGAÇÃO DE FAZER DE IMPLANTAÇÃO
+SEM FALÊNCIA NEM RECUPERAÇÃO JUDICIAL
+
+folha
+implementacao
+vincenda
+obrigação de fazer
+habilita
+*/
+
 const STOP_MAX_PROCESSOS    = 5  
 const STOP_SALVAR_INDEXEDDB = false
 // ============================================================

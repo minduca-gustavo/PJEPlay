@@ -324,7 +324,7 @@ async function criaDivFlutuante({ id, titulo = '', largura = '280px', ancestral,
             armazenar({ [CHAVE]: novaPosicao })
         }
     })
-
+    wrapper.corpo = corpo
     return wrapper
 }
 

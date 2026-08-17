@@ -50,10 +50,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
     }
     let div = await criaDiv({
         id: 'rota_leituraDinamica', 
-        //titulo: 'Leitura Dinâmica', 
-        //largura: '250px', 
         ancestral: ancestral,
-        //armazenarRecolhido: true
     })
     let subTitulo = criaSubTitulo({
         id: 'rota_leituraDinamica_subTitulo',

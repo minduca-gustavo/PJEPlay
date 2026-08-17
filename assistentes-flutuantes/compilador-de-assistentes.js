@@ -50,9 +50,15 @@ async function compiladorDeAssistentes() {
         ancestral: '#ffff',
         armazenarRecolhido: true
     })
+    let chaveStorage = id(idCompilador) + '-expandido'
+    let store = await obterArmazenamento([chaveStorage])
+    let temValorSalvo = store?.[chaveStorage] !== undefined
     let compiladorCorpo = document.getElementById(idCompilador + '-corpo')
     compiladorCorpo.style.gap = '0px'
     compiladorCorpo.style.padding = '0px 0 0px 0'
+    if (!temValorSalvo) {
+        compiladorCorpo.style.diplay = 'flex'
+    } 
     let mapaFuncoes = {
         assistenteAssinaturaDocumentos,
         consultaQualquerOJ,
@@ -75,7 +81,18 @@ async function compiladorDeAssistentes() {
         mostraRecolhe.style.marginTop = '0px'
         mostraRecolhe.style.gap = '0px'
         mostraRecolhe.style.padding = '0px 0px 0px 0px'
+        let mostraRecolheCorpo = document.querySelector(id(assistente.id, 'recolhe'))
         mostraRecolhe.corpo.style.padding = '0px 0px 0px 0px'
+        if (!mostraRecolheCorpo && assistente?.id === 'consulta-qualquer-oj'){
+            let chaveStorage = id(assistente.id, 'mostra-recolhe') + '-expandido'
+            let store = await obterArmazenamento([chaveStorage])
+            let temValorSalvo = store?.[chaveStorage] !== undefined
+            if (!temValorSalvo) {
+                let elemento = document.querySelector('#' + id(assistente.id, 'mostra'))
+                await clicar(elemento)
+            } 
+        }
+        // depois que o mecanismo rodar, ele gerencia o overflow normalmente
         let titulo = criaTitulo({
             id: id(assistente.id, 'titulo'),
             texto: assistente.titulo,

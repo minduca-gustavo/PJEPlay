@@ -45,6 +45,7 @@ async function assistenteAssinaturaDocumentos(ancestral) {
     criaWidgetAssistenteAssinatura(ancestral)
 }
 
+
 async function criaWidgetAssistenteAssinatura(ancestral) {
     let mapaFuncoes ={
         criaInput
@@ -58,7 +59,14 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
         texto: 'Apresenta os documentos a serem assinados em sequência.',
         ancestral: 'rota_assistenteAssinatura',
     })
-    
+
+    let botao = criaBotaoAzul({
+        id: 'rota_assistenteAssinatura_botaoAcao',
+        texto: 'Buscar textos dos documentos.',
+        ancestral: 'rota_assistenteAssinatura',
+        acao: () => buscarTextosAAssinar()
+    })
+
     async function buscarTextosAAssinar() {
         // a busca é assíncrona e demorada; sem essa trava dois cliques
         // rodam dois loops preenchendo o mesmo painel
@@ -765,3 +773,4 @@ function rota_assistenteAssinatura_abrirCompiladoProcesso(processo) {
     // clicar em qualquer lugar (overlay ou dentro da caixa, já que o clique borbulha) fecha
     overlay.addEventListener('click', () => overlay.remove())
 }
+
