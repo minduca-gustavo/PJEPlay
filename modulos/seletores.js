@@ -329,6 +329,12 @@ const VERSOES = [
       retificacaoAutuacaoSeletorJuizoDigitalBotoes:{
         seletor:  'button',
       },
+      pjeAcessoNegado:{
+        seletor:  'pje-acesso-negado',
+      },
+      pjeMudancaDePerfil:{
+        seletor:  '.mat-dialog-content',
+      },
       //detalhesDoProcessoBarraSuperior: {
       //  seletor: 'mat-toolbar'
       //},

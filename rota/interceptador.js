@@ -144,6 +144,7 @@ function interceptador_salvarMetaTag(rotulo = '', resposta = ''){
             let agora = Date.now()
             console.log('%c[Rota PJE]%c chaveStorage 145: ' + JSON.stringify(chaveStorage), LOG.rosa, 'color:inherit')
             console.log('%c[Rota PJE]%c agora 145: ' + JSON.stringify(agora), LOG.rosa, 'color:inherit')
+            sessionStorage.setItem('rota_evita_queda_origem', agora)
             armazenar({ [chaveStorage]: agora}).catch(() => {})
         }
 
