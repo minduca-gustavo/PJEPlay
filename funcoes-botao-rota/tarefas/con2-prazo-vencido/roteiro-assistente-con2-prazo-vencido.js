@@ -313,8 +313,16 @@ Clique para fixar/desafixar.`,
             let idTodos = seletor?.id.replace(seletor?.dataset?.caso,'')
             let botoes = [...document.querySelectorAll('[id^="' + idTodos + '"]')]
             for (botao of botoes){
-                
+                if (botao?.id.includes('caixa')) continue
+                if (botao !== seletor && botao?.dataset?.marcado == 1 && seletor.dataset.marcado == 1){
+                    clicar(botao)
+                }
+                await montarAcoes_con2_prazo_vencido(seletor?.dataset?.caso)
             }
+        }
+
+        async function montarAcoes_con2_prazo_vencido(caso) {
+            
         }
 
         let funcao = secao?.elementos?.funcao
