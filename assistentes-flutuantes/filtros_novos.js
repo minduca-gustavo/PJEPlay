@@ -3,6 +3,42 @@ const ROTA_FILTROS_NOVOS_TDS_EXCLUIDOS = [
     // 'seletor-css-do-td-que-nao-deve-ser-usado',
 ]
 
+// ── Contador (Etapa / Filtrando) ──────────────────────────────
+//
+// Chamar a cada volta de um for loop que faz requisição ao servidor.
+// ancestral  → id do container onde o botão Filtrar foi criado
+//              (aparece logo abaixo dele).
+// etapa      → string "atual/total" (ex: '2/3'). Passe 0 (padrão) para
+//              omitir a linha "Etapa" — funções com um único for loop
+//              não devem mostrá-la.
+// filtrando  → string "atual/total" (ex: '15/251') com o índice da
+//              chamada dentro do loop atual. Se vier uma string SEM
+//              "/" (ex: 'Nenhum processo encontrado.'), é tratada como
+//              mensagem final — substitui o texto inteiro, sem os
+//              prefixos "Etapa"/"Filtrando". É assim que o retorno
+//              negativo da função de filtro chega até aqui (ver
+//              criaFiltro).
+function atualizar_contador(ancestral, etapa = 0, filtrando = 1) {
+    let idContador = ancestral + '_contador'
+    let ehMensagem = typeof filtrando === 'string' && !filtrando.includes('/')
+    let texto
+    if (ehMensagem) {
+        texto = filtrando
+    } else {
+        let linhas = []
+        if (etapa) linhas.push('Etapa ' + etapa)
+        linhas.push('Filtrando ' + filtrando)
+        texto = linhas.join(' — ')
+    }
+
+    let el = document.querySelector('#' + idContador)
+    if (el) {
+        el.innerText = texto
+    } else {
+        criaTexto({ id: idContador, texto: texto, ancestral: ancestral })
+    }
+}
+
 async function filtrosNovos(ancestral) {
     let widget = document.querySelector('#rota_filtrosNovos')
     if (widget) widget.remove()
@@ -166,18 +202,32 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let nomeTarefa = valores[0]?.trim()
                     if (!nomeTarefa) return 'Informe o nome da tarefa.'
-                    let { ids, t } = await buscarProcessosPorTarefa(nomeTarefa)
+
+                    // Etapa 1/2 — coleta dos processos da tarefa
+                    let tarefa = await resolverTarefa(nomeTarefa)
+                    if (!tarefa) return 'Tarefa não encontrada.'
+                    let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                    let ids = r.ids, t = r.t
+                    atualizar_contador(ancestral, '1/2', '1/' + r.paginas)
+                    for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                        atualizar_contador(ancestral, '1/2', pagina + '/' + r.paginas)
+                        let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                        ids.push(...rp.ids); t.push(...rp.t)
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
+
+                    // Etapa 2/2 — partes de cada processo
                     let d = []
                     for (let idx = 0; idx < ids.length; idx++) {
-                        let r = await buscarProcesso(ids[idx], '/partes')
+                        atualizar_contador(ancestral, '2/2', (idx + 1) + '/' + ids.length)
+                        let r2 = await buscarProcesso(ids[idx], '/partes')
                         let numero = t[idx]?.numero || ''
                         let autor  = t[idx]?.autor  || ''
-                        for (let j of r?.PASSIVO || []) {
-                            let maisReclamadas = r?.PASSIVO.length === 1 ? 'Não' : 'Sim'
+                        for (let j of r2?.PASSIVO || []) {
+                            let maisReclamadas = r2?.PASSIVO.length === 1 ? 'Não' : 'Sim'
                             d.push({
                                 documento:         j?.documento || '',
                                 processo:          numero,
@@ -203,13 +253,27 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let nomeTarefa = valores[0]?.trim()
                     if (!nomeTarefa) return 'Informe o nome da tarefa.'
-                    let { ids, t } = await buscarProcessosPorTarefa(nomeTarefa)
+
+                    // Etapa 1/2 — coleta dos processos da tarefa
+                    let tarefa = await resolverTarefa(nomeTarefa)
+                    if (!tarefa) return 'Tarefa não encontrada.'
+                    let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                    let ids = r.ids, t = r.t
+                    atualizar_contador(ancestral, '1/2', '1/' + r.paginas)
+                    for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                        atualizar_contador(ancestral, '1/2', pagina + '/' + r.paginas)
+                        let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                        ids.push(...rp.ids); t.push(...rp.t)
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
+
+                    // Etapa 2/2 — sobrestamento/gigs de cada processo
                     let d = []
                     for (let idx = 0; idx < ids.length; idx++) {
+                        atualizar_contador(ancestral, '2/2', (idx + 1) + '/' + ids.length)
                         let sobrestamentos = await rota_fetch(location.origin + '/pje-comum-api/api/processos/id/' + ids[idx] + '/sobrestamentos') || []
                         let sobrestamento = sobrestamentos.find(s => !s.dataRevogacao)
                         let textoSobrestamento = sobrestamento?.textoFinalExternoSobrestamento || ''
@@ -251,18 +315,29 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let valorTarefa = valores[0]?.trim() || 'TODAS'
                     let idsx = [], tx = []
                     let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
                     if (valorTarefa !== 'TODAS') {
                         tarefas = [tarefas.find(t => t.nome.toLowerCase() === valorTarefa.toLowerCase())]
                     }
-                    for (let tarefa of tarefas) {
-                        if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
-                            let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
-                            idsx.push(...ids)
-                            tx.push(...t)
+                    // Único estágio de rede: para cada tarefa (etapa), percorre
+                    // suas páginas (filtrando). Só se aplica quando "TODAS".
+                    for (let it = 0; it < tarefas.length; it++) {
+                        let tarefaNome = tarefas[it]?.nome
+                        if (!tarefaNome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+                            let etapaTexto = tarefas.length > 1 ? (it + 1) + '/' + tarefas.length : 0
+                            let tarefa = await resolverTarefa(tarefaNome)
+                            if (!tarefa) continue
+                            let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                            atualizar_contador(ancestral, etapaTexto, '1/' + r.paginas)
+                            idsx.push(...r.ids); tx.push(...r.t)
+                            for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                                atualizar_contador(ancestral, etapaTexto, pagina + '/' + r.paginas)
+                                let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                                idsx.push(...rp.ids); tx.push(...rp.t)
+                            }
                         }
                     }
                     if (!idsx.length) return 'Nenhum processo encontrado.'
@@ -293,14 +368,15 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let numerosRaw = valores[0] || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
                     let idsx = [], tx = []
-                    for (let numero of numeros) {
-                        let idProcesso = await buscarIdPeloNumeroCNJ(numero)
-                        if (idProcesso) { idsx.push(idProcesso); tx.push({ numero }) }
+                    for (let i = 0; i < numeros.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + numeros.length)
+                        let idProcesso = await buscarIdPeloNumeroCNJ(numeros[i])
+                        if (idProcesso) { idsx.push(idProcesso); tx.push({ numero: numeros[i] }) }
                     }
                     if (!idsx.length) return 'Nenhum processo encontrado.'
                     let d = []
@@ -330,22 +406,30 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let valorTarefa = valores[0]?.trim() || 'TODAS'
                     let idsx = [], tx = []
                     let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
                     if (valorTarefa !== 'TODAS') {
                         tarefas = [tarefas.find(t => t.nome.toLowerCase() === valorTarefa.toLowerCase())]
                     }
-                    for (let tarefa of tarefas) {
-                        if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
-                            let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
-                            idsx.push(...ids)
-                            tx.push(...t)
+                    // Etapa 1/2 — coleta dos processos (uma ou mais tarefas)
+                    for (let tarefaAtiva of tarefas) {
+                        if (!tarefaAtiva?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+                            let tarefa = await resolverTarefa(tarefaAtiva.nome)
+                            if (!tarefa) continue
+                            let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                            atualizar_contador(ancestral, '1/2', '1/' + r.paginas)
+                            idsx.push(...r.ids); tx.push(...r.t)
+                            for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                                atualizar_contador(ancestral, '1/2', pagina + '/' + r.paginas)
+                                let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                                idsx.push(...rp.ids); tx.push(...rp.t)
+                            }
                         }
                     }
                     if (!idsx.length) return 'Nenhum processo encontrado.'
-                    return await _executaPjcSentencas(idsx, tx)
+                    return await _executaPjcSentencas(idsx, tx, ancestral, '2/2')
                 }
             },
 
@@ -361,17 +445,18 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let numerosRaw = valores[0] || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
                     let idsx = [], tx = []
-                    for (let numero of numeros) {
-                        let idProcesso = await buscarIdPeloNumeroCNJ(numero)
-                        if (idProcesso) { idsx.push(idProcesso); tx.push({ numero }) }
+                    for (let i = 0; i < numeros.length; i++) {
+                        atualizar_contador(ancestral, '1/2', (i + 1) + '/' + numeros.length)
+                        let idProcesso = await buscarIdPeloNumeroCNJ(numeros[i])
+                        if (idProcesso) { idsx.push(idProcesso); tx.push({ numero: numeros[i] }) }
                     }
                     if (!idsx.length) return 'Nenhum processo encontrado.'
-                    return await _executaPjcSentencas(idsx, tx)
+                    return await _executaPjcSentencas(idsx, tx, ancestral, '2/2')
                 }
             },
 
@@ -387,10 +472,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let nomeGig = valores[0]?.trim()
                     if (!nomeGig) return 'Informe o nome do GIG.'
-                    let { ids, t } = await buscarProcessosPorGig(nomeGig)
+                    let gigs = await resolverGigs(nomeGig)
+                    if (!gigs.length) return 'Nenhum processo encontrado.'
+                    let ids = [], t = []
+                    for (let ig = 0; ig < gigs.length; ig++) {
+                        let etapaTexto = gigs.length > 1 ? (ig + 1) + '/' + gigs.length : 0
+                        let r = await buscarProcessosPorGigPagina(gigs[ig].id, 1)
+                        atualizar_contador(ancestral, etapaTexto, '1/' + r.paginas)
+                        ids.push(...r.ids); t.push(...r.t)
+                        for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                            atualizar_contador(ancestral, etapaTexto, pagina + '/' + r.paginas)
+                            let rp = await buscarProcessosPorGigPagina(gigs[ig].id, pagina)
+                            ids.push(...rp.ids); t.push(...rp.t)
+                        }
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
                     let d = []
                     for (let i = 0; i < ids.length; i++) {
@@ -418,12 +516,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let nomeTarefa = valores[0]?.trim()
                     if (!nomeTarefa) return 'Informe o nome da tarefa.'
-                    let { ids, t } = await filtrarPorTarefa({ valor: nomeTarefa }, '&idEtiqueta=316')
+
+                    // Etapa 1/2 — coleta dos processos da tarefa
+                    let tarefa = await resolverTarefa(nomeTarefa)
+                    if (!tarefa) return 'Tarefa não encontrada.'
+                    let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1, '&idEtiqueta=316')
+                    let ids = r.ids, t = r.t
+                    atualizar_contador(ancestral, '1/2', '1/' + r.paginas)
+                    for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                        atualizar_contador(ancestral, '1/2', pagina + '/' + r.paginas)
+                        let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina, '&idEtiqueta=316')
+                        ids.push(...rp.ids); t.push(...rp.t)
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
-                    return await _executaSimetriaSemGig(ids, t)
+                    return await _executaSimetriaSemGig(ids, t, ancestral, '2/2')
                 }
             },
 
@@ -439,17 +548,18 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let numerosRaw = valores[0] || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
                     let ids = [], t = []
-                    for (let numero of numeros) {
-                        let idProcesso = await buscarIdPeloNumeroCNJ(numero)
-                        if (idProcesso) { ids.push(idProcesso); t.push({ numero }) }
+                    for (let i = 0; i < numeros.length; i++) {
+                        atualizar_contador(ancestral, '1/2', (i + 1) + '/' + numeros.length)
+                        let idProcesso = await buscarIdPeloNumeroCNJ(numeros[i])
+                        if (idProcesso) { ids.push(idProcesso); t.push({ numero: numeros[i] }) }
                     }
                     if (!ids.length) return 'Nenhum processo encontrado.'
-                    return await _executaSimetriaSemGig(ids, t)
+                    return await _executaSimetriaSemGig(ids, t, ancestral, '2/2')
                 }
             },
 
@@ -465,12 +575,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let nomeTarefa = valores[0]?.trim()
                     if (!nomeTarefa) return 'Informe o nome da tarefa.'
-                    let { ids, t } = await buscarProcessosPorTarefa(nomeTarefa)
+
+                    // Etapa 1/2 — coleta dos processos da tarefa
+                    let tarefa = await resolverTarefa(nomeTarefa)
+                    if (!tarefa) return 'Tarefa não encontrada.'
+                    let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                    let ids = r.ids, t = r.t
+                    atualizar_contador(ancestral, '1/2', '1/' + r.paginas)
+                    for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                        atualizar_contador(ancestral, '1/2', pagina + '/' + r.paginas)
+                        let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                        ids.push(...rp.ids); t.push(...rp.t)
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
-                    return await _executaSemPjc(ids, t)
+                    return await _executaSemPjc(ids, t, ancestral, '2/2')
                 }
             },
 
@@ -486,17 +607,18 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let numerosRaw = valores[0] || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
                     let ids = [], t = []
-                    for (let numero of numeros) {
-                        let idProcesso = await buscarIdPeloNumeroCNJ(numero)
-                        if (idProcesso) { ids.push(idProcesso); t.push({ numero }) }
+                    for (let i = 0; i < numeros.length; i++) {
+                        atualizar_contador(ancestral, '1/2', (i + 1) + '/' + numeros.length)
+                        let idProcesso = await buscarIdPeloNumeroCNJ(numeros[i])
+                        if (idProcesso) { ids.push(idProcesso); t.push({ numero: numeros[i] }) }
                     }
                     if (!ids.length) return 'Nenhum processo encontrado.'
-                    return await _executaSemPjc(ids, t)
+                    return await _executaSemPjc(ids, t, ancestral, '2/2')
                 }
             },
 
@@ -512,12 +634,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let nomeTarefa = valores[0]?.trim()
                     if (!nomeTarefa) return 'Informe o nome da tarefa.'
-                    let { ids, t } = await buscarProcessosPorTarefa(nomeTarefa)
+
+                    // Etapa 1/2 — coleta dos processos da tarefa
+                    let tarefa = await resolverTarefa(nomeTarefa)
+                    if (!tarefa) return 'Tarefa não encontrada.'
+                    let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                    let ids = r.ids, t = r.t
+                    atualizar_contador(ancestral, '1/2', '1/' + r.paginas)
+                    for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                        atualizar_contador(ancestral, '1/2', pagina + '/' + r.paginas)
+                        let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                        ids.push(...rp.ids); t.push(...rp.t)
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
-                    return await _executaRecebimentoTRT(ids, t)
+                    return await _executaRecebimentoTRT(ids, t, ancestral, '2/2')
                 }
             },
 
@@ -533,17 +666,18 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let numerosRaw = valores[0] || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
                     let ids = [], t = []
-                    for (let numero of numeros) {
-                        let idProcesso = await buscarIdPeloNumeroCNJ(numero)
-                        if (idProcesso) { ids.push(idProcesso); t.push({ numero }) }
+                    for (let i = 0; i < numeros.length; i++) {
+                        atualizar_contador(ancestral, '1/2', (i + 1) + '/' + numeros.length)
+                        let idProcesso = await buscarIdPeloNumeroCNJ(numeros[i])
+                        if (idProcesso) { ids.push(idProcesso); t.push({ numero: numeros[i] }) }
                     }
                     if (!ids.length) return 'Nenhum processo encontrado.'
-                    return await _executaRecebimentoTRT(ids, t)
+                    return await _executaRecebimentoTRT(ids, t, ancestral, '2/2')
                 }
             },
 
@@ -565,7 +699,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInput',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let juiz = valores[0]?.trim() || ''
                     let data = valores[1]?.trim() || ''
                     let dataTransformada = _dataParaJS(data)
@@ -574,7 +708,15 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     }
                     let hoje = new Date()
                     let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
-                    let { ids, t } = await buscarProcessosPorSala(juiz, dias)
+                    let sala = await resolverSala(juiz)
+                    if (!sala) return 'Sala não encontrada.'
+                    let ids = [], t = []
+                    let datas = listarDatasParaSala(dias)
+                    for (let i = 0; i < datas.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + datas.length)
+                        let r = await buscarProcessosNaSalaPorData(sala.id, datas[i])
+                        ids.push(...r.ids); t.push(...r.t)
+                    }
                     if (!ids.length) return 'Nenhum processo encontrado.'
                     let d = []
                     const formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : ''
@@ -610,12 +752,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let idsRaw = valores[0] || ''
                     let ids = idsRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!ids.length) return 'Nenhum ID informado.'
                     let d = []
-                    for (let idProcesso of ids) {
+                    for (let i = 0; i < ids.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + ids.length)
+                        let idProcesso = ids[i]
                         let audienciasMarcadas = await buscarAudienciasMarcadas(idProcesso)
                         let dataInicio = '-', sala = '-', processo = '-', autuacao = '-', tipo = '-'
                         if (audienciasMarcadas?.dataInicio) {
@@ -650,12 +794,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let idsRaw = valores[0] || ''
                     let ids = idsRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!ids.length) return 'Nenhum ID informado.'
                     let d = []
-                    for (let idProcesso of ids) {
+                    for (let i = 0; i < ids.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + ids.length)
+                        let idProcesso = ids[i]
                         let dados    = await buscarProcesso(idProcesso)
                         let processo = dados?.numero || '-'
                         let autuacao = new Date(dados?.autuadoEm).toLocaleDateString('pt-BR') || '-'
@@ -681,12 +827,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         tipoInput: 'criaInputAnotacao',
                     }
                 ],
-                funcao: async (valores) => {
+                funcao: async (valores, ancestral) => {
                     let idsRaw = valores[0] || ''
                     let ids = idsRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!ids.length) return 'Nenhum ID informado.'
                     let d = []
-                    for (let idProcesso of ids) {
+                    for (let i = 0; i < ids.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + ids.length)
+                        let idProcesso = ids[i]
                         let documentos   = await buscarDocumentos(idProcesso)
                         let sentenca     = documentos?.find(d => d?.tipo?.toLowerCase().includes('sentença'))
                         let dataSentenca = sentenca ? new Date(sentenca.data).toLocaleDateString('pt-BR') : '-'
@@ -723,7 +871,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
     async function criaFiltro(inputs, ancestral, funcao, mapaFuncoes) {
         // Remove filtro anterior se já aberto
         let idConteiner = ancestral + '_filtro'
-        document.querySelector('#' + idConteiner)?.remove()
+        let remover = document.querySelector('#' + idConteiner) || null
+        if (remover){
+            remover.remove()
+            return
+        }
         let divFiltro = criaDiv({ id: idConteiner, ancestral: ancestral })
 
         for (let input of inputs) {
@@ -740,7 +892,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
             id: idConteiner + '_executar',
             texto: 'Filtrar',
             ancestral: idConteiner,
-            acao: () => funcao(inputs.map(inp => document.querySelector('#' + inp.id)?.value))
+            acao: async () => {
+                let resultado = await funcao(inputs.map(inp => document.querySelector('#' + inp.id)?.value), idConteiner)
+                if (Array.isArray(resultado)) {
+                    apresentaResultados(resultado)
+                } else {
+                    atualizar_contador(idConteiner, 0, resultado)
+                }
+            }
         })
     }
 
@@ -753,10 +912,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
         return new Date(a, m - 1, d)
     }
 
-    async function _executaPjcSentencas(idsx, tx) {
+    async function _executaPjcSentencas(idsx, tx, ancestral, etapa = 0) {
         let d = []
         let maximo = 0
         for (let i = 0; i < idsx.length; i++) {
+            atualizar_contador(ancestral, etapa, (i + 1) + '/' + idsx.length)
             let id = idsx[i]
             let calculos = await buscarCalculos(id) || {}
             let calculo = [...new Set((calculos?.resultado || []).map(d => d?.idPjeCalc))]
@@ -804,10 +964,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
         return d.map(t => ({ Id: t?.Id, Numero: t?.Numero }))
     }
 
-    async function _executaSimetriaSemGig(ids, t) {
+    async function _executaSimetriaSemGig(ids, t, ancestral, etapa = 0) {
         let d = []
         let numeros = t.map(tt => tt.numero)
         for (let idx = 0; idx < numeros.length; idx++) {
+            atualizar_contador(ancestral, etapa, (idx + 1) + '/' + numeros.length)
             let numero     = numeros[idx]
             let gigs       = await buscarGigs(numero)
             let ativos     = gigs.filter(gig => gig.statusAtividade !== 'Concluído')
@@ -825,9 +986,10 @@ async function criaWidgetfiltrosNovos(ancestral) {
         return d.length ? d : 'Nenhum processo encontrado sem GIG de Gabinete ativo.'
     }
 
-    async function _executaSemPjc(ids, t) {
+    async function _executaSemPjc(ids, t, ancestral, etapa = 0) {
         let d = []
         for (let idx = 0; idx < ids.length; idx++) {
+            atualizar_contador(ancestral, etapa, (idx + 1) + '/' + ids.length)
             let calculos = await buscarCalculos(ids[idx])
             if (calculos?.totalRegistros === 0) {
                 d.push({
@@ -842,9 +1004,10 @@ async function criaWidgetfiltrosNovos(ancestral) {
         return d.length ? d : 'Nenhum processo encontrado sem PJC.'
     }
 
-    async function _executaRecebimentoTRT(ids, t) {
+    async function _executaRecebimentoTRT(ids, t, ancestral, etapa = 0) {
         let d = []
         for (let idx = 0; idx < ids.length; idx++) {
+            atualizar_contador(ancestral, etapa, (idx + 1) + '/' + ids.length)
             let acordo_ou_improcedencia = ''
             let documentosemovimentos   = await buscarDocumentosEMovimentos(ids[idx])
 
@@ -872,4 +1035,145 @@ async function criaWidgetfiltrosNovos(ancestral) {
         }
         return d.length ? d : 'Nenhum processo encontrado.'
     }
+}
+
+function apresentaResultados(array){
+    let nome = 'resultado_superFiltros'
+    let divId = id(nome)
+    let div = criaDiv({
+        id: divId,
+        ancestral: 'ffff'
+    })
+    Object.assign(div.style,{
+        position:       'absolute',
+        top:            '50%',
+        left:           '50%',
+        transform:      'translate(-50%, -50%)',
+        width:          '80%',
+        height:         '80%',
+        background:     UI_CORES.branco,
+        border:         '1px solid ' + UI_CORES.borda,
+        borderRadius:   '8px',
+        boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
+        zIndex:         String(ROTA_Z.flutuante ?? 9000),
+        display:        'flex',
+    })
+    div.addEventListener('click', () => {
+        
+    })
+    let divTitulo = criaDiv({
+        id: id(nome, 'divTitulo'),
+        ancestral: divId,
+        rowColumn: 'row'
+    })
+    let titulo = criaTitulo({
+        id: id(nome, 'titulo'),
+        texto: 'Resultado',
+        ancestral: id(nome, 'divTitulo')
+    })
+    let botaoFechar = criaBotaoAzul({
+        id: id(nome, 'fechar'),
+        texto: '✕',
+        ancestral: id(nome, 'divTitulo'),
+        acao: () => {
+            document.getElementById(divId).remove()
+            return
+        }
+    })
+    botaoFechar.style.height =          '15px'
+    botaoFechar.style.fontSize =        '13px'
+    botaoFechar.style.lineHeight =      '1'
+    botaoFechar.style.padding =         '2px 5px'
+    botaoFechar.style.borderRadius =    '4px'
+    let i = 0
+    for (let objeto of array){
+        i++
+        let linha = criaDiv({
+            id: id(nome, 'linha' + i),
+            ancestral: divId, 
+            rowColumn: 'row'
+        })
+        let funcaoLinha = i === 1 ? criaSubTitulo : criaTexto
+        let j = 0
+        for(let d of Object.entries(objeto)){
+            j++
+            let largura = Math.floor(100/Object.entries(objeto).length)
+            let celula = funcaoLinha({
+                id: id(nome, 'linha' + i, 'celula' + j),
+                ancestral: id(nome, 'linha' + i),
+                texto: d
+            })
+            celula.style.width = largura + '%'
+        }
+    }
+    let linha = criaDiv({
+        id: id(nome, 'linha' + i),
+        ancestral: divId, 
+        rowColumn: 'row'
+    })
+    let botoesFinais = [
+        {
+            id: id(nome, 'copiar'),
+            texto: 'Copiar dados tabulados',
+            ancestral: id(nome, 'linha' + i),
+        },
+        {
+            id: id(nome, 'baixarTexto'),
+            texto: 'Baixar em formato TXT',
+            ancestral: id(nome, 'linha' + i),
+        },
+        {
+            id: id(nome, 'baixarJSON'),
+            texto: 'Baixar em formato JSON',
+            ancestral: id(nome, 'linha' + i),
+        },
+    ]
+    for (let k = 0; k < botoesFinais.length; k++) {
+        let botaoConfig = botoesFinais[k]
+        let funcaoBotao = k % 2 === 0 ? criaBotaoAzul : criaBotaoLaranja
+        funcaoBotao({
+            id: botaoConfig.id,
+            texto: botaoConfig.texto,
+            ancestral: botaoConfig.ancestral,
+            acao: () => extrairResultado(botaoConfig.id)
+        })
+    }
+
+    // ── Exportação — usam o `array` recebido por apresentaResultados,
+    //    não o que já foi renderizado na tela ─────────────────────
+    function extrairResultado(tipo){
+        let nomeFuncao = tipo.split('_').pop()
+        let funcoes = { copiar, baixarJSON, baixarTexto }
+        funcoes[nomeFuncao]?.()
+
+        function copiar(){
+            navigator.clipboard.writeText(arrayParaTsv(array))
+        }
+
+        function baixarTexto(){
+            _baixarArquivo(arrayParaTsv(array), 'resultado.txt', 'text/plain')
+        }
+
+        function baixarJSON(){
+            _baixarArquivo(JSON.stringify(array, null, 2), 'resultado.json', 'application/json')
+        }
+    }
+}
+
+function arrayParaTsv(array){
+    if (!array.length) return ''
+    let cabecalho = Object.keys(array[0])
+    let linhas = [cabecalho.join('\t')]
+    for (let objeto of array) {
+        linhas.push(cabecalho.map(chave => objeto[chave] ?? '').join('\t'))
+    }
+    return linhas.join('\n')
+}
+
+function _baixarArquivo(conteudo, nomeArquivo, tipo){
+    const blob = new Blob([conteudo], { type: tipo })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = nomeArquivo
+    a.click()
 }
