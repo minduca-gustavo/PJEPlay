@@ -16,7 +16,7 @@ const ROTA_FILTROS_NOVOS_TDS_EXCLUIDOS = [
     // 'seletor-css-do-td-que-nao-deve-ser-usado',
 ]
 
-async function filtrosNovos() {
+async function filtrosNovos(ancestral) {
     let widget = document.querySelector('#rota_filtrosNovos')
     if (widget) widget.remove()
     let janela = confereJanela(
@@ -34,7 +34,7 @@ async function filtrosNovos() {
         return
     }
     console.log('%c[Rota PJE]%c filtrosNovos4' + JSON.stringify('true'), LOG.rosa, 'color:inherit')
-    criaWidgetfiltrosNovos()
+    criaWidgetfiltrosNovos(ancestral)
 }
 
 //filtrosNovos()
@@ -44,7 +44,34 @@ async function filtrosNovos() {
 //    filtrosNovos()
 //})
 
-async function criaWidgetfiltrosNovos() {
+async function criaWidgetfiltrosNovos(ancestral) {
+    let autenticacaoArmazenada = 'rota_filtroAutenticacao'
+    let autenticado = await obterArmazenamento([autenticacaoArmazenada]).then(d => d[autenticacaoArmazenada])
+    let div = 'filtros'
+    let divFiltros = criaDiv({
+        id: id(div), 
+        ancestral: ancestral
+    })
+    
+    if (!autenticado){
+        await obterAutenticacao(id(div))
+    } else {
+        await apresentaFiltros()
+    }
+    return
+
+    async function obterAutenticacao(ancestral) {
+        
+        let subTitulo = criaSubTitulo({
+
+        })
+        return
+    }
+
+    async function apresentaFiltros(params) {
+        return
+    }
+    
     let mapaFuncoes ={
         criaInput
 
