@@ -31,8 +31,7 @@ async function compiladorDeAssistentes() {
             id: 'filtros-novos',
             titulo: 'Super Filtros',
             funcao: 'filtrosNovos',
-            janelas: [],
-            inativo: true
+            janelas: [JANELA.meuPainel, JANELA.painelGlobal, JANELA.painelGlobalTodos],
         },
     ]
     
@@ -62,7 +61,8 @@ async function compiladorDeAssistentes() {
     let mapaFuncoes = {
         assistenteAssinaturaDocumentos,
         consultaQualquerOJ,
-        leituraDinamicaDocumentos
+        leituraDinamicaDocumentos,
+        filtrosNovos
     }
     
     for (assistente of assistentes){
@@ -101,8 +101,12 @@ async function compiladorDeAssistentes() {
         })
         let funcaoChamar = assistente?.funcao
         console.log('%c[Rota PJE]%c mapaFuncoes[funcaoChamar]: ' + JSON.stringify(typeof mapaFuncoes[funcaoChamar]), LOG.mb, 'color:inherit')
-        let funcaoConfere = mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
-        console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
+        if (assistente.id !== 'filtros-novos'){
+            let funcaoConfere = mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+            console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
+        } else {
+            mostraRecolhe.aoAlternar = mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+        }
     }
     
 }

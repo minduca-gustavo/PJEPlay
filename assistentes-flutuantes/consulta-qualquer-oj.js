@@ -146,9 +146,10 @@ async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
     _s(wrapInput, { display: 'flex', gap: '4px' })
 
     let input = document.createElement('input')
-    input.type        = 'text'
-    input.placeholder = 'Nº do processo…'
-    input.id          = 'pjerota-consulta_qualquer_oj-input'
+    input.type          = 'text'
+    input.placeholder   = 'Nº do processo…'
+    input.autocomplete  = 'off'
+    input.id            = 'pjerota-consulta_qualquer_oj-input'
     _s(input, {
         flex:         '1',
         background:   C.branco,
