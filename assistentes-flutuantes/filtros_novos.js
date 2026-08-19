@@ -923,7 +923,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
             if (calculo.length !== 1) continue
             let idCalculo = (calculos?.resultado.find(d => d?.idPjeCalc == calculo[0]))?.idPJeCalcImportacao || null
             if (!idCalculo) continue
-            let pjc     = await rota_download('https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/' + idCalculo + '/pjc')
+            let pjc     = await rota_download(location.origin + '/pje-comum-api/api/calculos/' + idCalculo + '/pjc')
             let acordo  = await rota_buscarDocumentoHomologatorio(id) || null
             let idsDocs = []
             if (acordo) {
@@ -1052,15 +1052,14 @@ function apresentaResultados(array){
         width:          '80%',
         height:         '80%',
         background:     UI_CORES.branco,
-        border:         '1px solid ' + UI_CORES.borda,
+        border:         '1px solid ' + UI_CORES.azul,
         borderRadius:   '8px',
         boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
         zIndex:         String(ROTA_Z.flutuante ?? 9000),
         display:        'flex',
+        padding:        '4px 4px 4px 4px'
     })
-    div.addEventListener('click', () => {
-        
-    })
+    
     let divTitulo = criaDiv({
         id: id(nome, 'divTitulo'),
         ancestral: divId,
@@ -1085,32 +1084,57 @@ function apresentaResultados(array){
     botaoFechar.style.lineHeight =      '1'
     botaoFechar.style.padding =         '2px 5px'
     botaoFechar.style.borderRadius =    '4px'
+    botaoFechar.style.position =        'fixed'
+    botaoFechar.style.right =           '4px'
+    let divLinhas = criaDiv({
+        id: id(nome, 'linhas'),
+        ancestral: divId
+    })
+    divLinhas.style.overflowY = 'auto'
     let i = 0
-    for (let objeto of array){
-        i++
-        let linha = criaDiv({
+    for (i; i < array.length; i++){
+        if (i === 0){
+            let primeiraLinha = criaDiv({
             id: id(nome, 'linha' + i),
-            ancestral: divId, 
+            ancestral: id(nome, 'linhas'), 
             rowColumn: 'row'
         })
-        let funcaoLinha = i === 1 ? criaSubTitulo : criaTexto
-        let j = 0
-        for(let d of Object.entries(objeto)){
-            j++
+        }
+        let linha = criaDiv({
+            id: id(nome, 'linha' + (i + 1)),
+            ancestral: id(nome, 'linhas'), 
+            rowColumn: 'row'
+        })
+        let objeto = array[i]
+        for(let j = 0 ; j < Object.entries(objeto).length; j++){
+            
             let largura = Math.floor(100/Object.entries(objeto).length)
-            let celula = funcaoLinha({
+            if (i === 0){
+                let celula = criaSubTitulo({
+                    id: id(nome, 'linha' + i, 'celula' + j),
+                    ancestral: id(nome, 'linha' + i),
+                    texto: Object.keys(objeto)[j]
+                })
+                celula.style.width = largura + '%'
+            }
+            
+            let celula = criaTexto({
                 id: id(nome, 'linha' + i, 'celula' + j),
-                ancestral: id(nome, 'linha' + i),
-                texto: d
+                ancestral: id(nome, 'linha' + (i + 1)),
+                texto: Object.values(objeto)[j]
             })
+            
             celula.style.width = largura + '%'
+            
         }
     }
-    let linha = criaDiv({
+    i++
+    let linhaFinal = criaDiv({
         id: id(nome, 'linha' + i),
         ancestral: divId, 
         rowColumn: 'row'
     })
+    //linhaFinal.style.
     let botoesFinais = [
         {
             id: id(nome, 'copiar'),
