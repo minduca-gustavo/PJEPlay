@@ -145,7 +145,7 @@
   }
 
   // ── Extração de texto ──────────────────────────────────────
-  function extrairTexto(el) {
+  function extrairTextoElemento(el) {
     let texto = (
       el.innerText?.trim() ||
       el.textContent?.trim() ||
@@ -192,9 +192,9 @@
 
     NAV.storage.local.get(STORAGE_KEY).then(result => {
       if (result[STORAGE_KEY]) config = { ...DEFAULTS, ...result[STORAGE_KEY] };
-      exibir(extrairTexto(e.target));
+      exibir(extrairTextoElemento(e.target));
     }).catch(() => {
-      exibir(extrairTexto(e.target));
+      exibir(extrairTextoElemento(e.target));
     });
   }, true);
 

@@ -31,7 +31,8 @@ async function compiladorDeAssistentes() {
             id: 'filtros-novos',
             titulo: 'Super Filtros',
             funcao: 'filtrosNovos',
-            janelas: [JANELA.meuPainel, JANELA.painelGlobal, JANELA.painelGlobalTodos],
+            janelas: [JANELA.painelGlobalTodos],
+            //inativo: true
         },
     ]
     

@@ -683,6 +683,127 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 9. Audiências até data — por Sala ─────────────────
             {
+                id: id(secao, 'botao', 'analisa_triagem'),
+                texto: 'Analisa a triagem.',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'audiencias_sala_juiz'),
+                        textoEmCima: 'Nome da sala na OJ.',
+                        placeholder: 'Ex: FULANO DE TAL',
+                        tipoInput: 'criaInput',
+                    },
+                    {
+                        id: id(secao, 'input', 'audiencias_tipo'),
+                        textoEmCima: 'Tipos de audiência a buscar, separados por vírgula. Deixe em branco para todas.',
+                        placeholder: 'Ex: "inicial, una", "una", "rito sumarissimo, instrucao"',
+                        tipoInput: 'criaInput',
+                    },
+                    {
+                        id: id(secao, 'input', 'audiencias_maximo'),
+                        textoEmCima: 'Quantos processos devem ser buscados',
+                        placeholder: '100. Caso não seja informado, será 50.',
+                        tipoInput: 'criaInput',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let nomeSala        = valores[0]?.trim() || ''
+                    let tipoAudiencia   = valores[1]?.trim() || ''
+                    let maximo          = Number(valores[2]?.trim()) || ''
+                    if (!nomeSala) {
+                        return 'Informe o nome da sala.'
+                    }
+                    if (!maximo) maximo = 50
+                    if (typeof maximo !== 'number') {
+                        return 'O valor informado para a quantidade de processos deve ser um número.'
+                    }
+                    let sala = await resolverSala(nomeSala)
+                    if (!sala) return 'Sala não encontrada.'
+                    let i = 0
+                    let resultadoAudiencia = []
+                    atualizar_contador(ancestral, '1 / X', 0 + '/' + maximo)
+                    for (let j = 0; j < 10; j++){
+                        if (i > maximo) break
+                        let data = acertaData()
+                        let dados = await buscarProcessosNaSalaPorData(sala.id, data)
+                        console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit', dados)
+                        if (!dados?.t) continue
+                        for (audiencia of dados?.t){
+                            console.log('%c[Rota PJE]%c audiencia: ' + JSON.stringify(audiencia), LOG.teste, 'color:inherit')
+                            if(
+                                tipoAudiencia.split(',').map(d => d.trim()).some(d=> (normalizar(audiencia?.tipo?.descricao.toLowerCase())).includes(d))
+                                && audiencia.idProcesso
+                            ){
+                                i++
+                                atualizar_contador(ancestral, '1 / X', i + '/' + maximo)
+                                resultadoAudiencia.push(audiencia)
+                                if (i > maximo) break
+                            }
+                        }
+                        function acertaData(){
+                            let data = new Date()
+                            data.setDate(data.getDate() + i)
+                            let dado = data.toISOString().slice(0, 10)
+                            return dado
+                        }
+                    }
+                    console.log('%c[Rota PJE]%c resultadoAudiencia: ' + JSON.stringify(resultadoAudiencia), LOG.rosa, 'color:inherit')
+                    if (!resultadoAudiencia.length) return 'Não foram encontradas audiências para o tipo informado.'
+                    let resultadoProcesso = []
+                    for (dado of resultadoAudiencia){
+                        let id = dado?.idProcesso
+                        let timeline = await buscarDocumentos(id) || []
+                        let documentos = timeline.filter(d => d?.usuarioInterno || d?.tipo === 'Petição Inicial')
+                        let teorDocumentos = await Promise.all(
+                            documentos.map(async (d) => {
+                                let idDocumento = d?.id;
+                                let teor = await extrairTexto(id, idDocumento);
+                                return {
+                                    teorDocumento: {
+                                        idDocumento: idDocumento,
+                                        teor: teor
+                                    }
+                                };
+                            })
+                        )
+                        resultadoProcesso.push({dadosAudiencia: dado, timeline: timeline, teorDocumentosPrincipais: teorDocumentos})
+                    }
+                    _baixarArquivo(JSON.stringify(resultadoProcesso, null, 2), 'audiencias.json', 'application/json')
+                    return 'O arquivo foi baixado.'
+                    //let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
+                    //let sala = await resolverSala(nomeSala)
+                    //if (!sala) return 'Sala não encontrada.'
+                    //let ids = [], t = []
+                    //let datas = listarDatasParaSala(dias)
+                    //for (let i = 0; i < datas.length; i++) {
+                    //    atualizar_contador(ancestral, 0, (i + 1) + '/' + datas.length)
+                    //    let r = await buscarProcessosNaSalaPorData(sala.id, datas[i])
+                    //    ids.push(...r.ids); t.push(...r.t)
+                    //}
+                    //if (!ids.length) return 'Nenhum processo encontrado.'
+                    //let d = []
+                    //const formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : ''
+                    //const formatarData = d => d ? d.slice(0, 10).split('-').reverse().join('/') : ''
+                    //const limiteSimet = new Date('2025-10-19')
+                    //for (let i in t) {
+                    //    const horarioRaw  = t[i]?.pautaAudienciaHorario?.horaInicial || ''
+                    //    const dataRaw     = t[i]?.data || ''
+                    //    const autuacaoRaw = t[i]?.processo?.autuadoEm || ''
+                    //    const autuacaoDate = new Date(autuacaoRaw.slice(0, 10))
+                    //    const processo    = t[i]?.nrProcesso || ''
+                    //    d.push({
+                    //        processo:          processo,
+                    //        horario:           formatarHora(horarioRaw),
+                    //        data:              formatarData(dataRaw),
+                    //        autuacao:          formatarData(autuacaoRaw),
+                    //        simetriaOuLegado:  processo === '' ? '' : autuacaoDate > limiteSimet ? 'SIMETRIA' : 'LEGADO',
+                    //    })
+                    //}
+                    //return d.length ? d : 'Nenhum processo encontrado.'
+                    
+                }
+            },
+            // ── 9. Audiências até data — por Sala ─────────────────
+            {
                 id: id(secao, 'botao', 'audiencias_sala'),
                 texto: 'Listar audiências na sala até a data — por Sala',
                 inputs: [
@@ -852,19 +973,25 @@ async function criaWidgetfiltrosNovos(ancestral) {
         // ── Renderiza cada botão ──────────────────────────────────
         let mapaFuncoes = { criaInput, criaInputAnotacao }
 
-        for (let botao of botoes) {
+        let ranking = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
+        let botoesOrdenados = [...botoes].sort((a, b) => {
+            let ra = ranking[id(secao, a?.id)] || { pontos: 0, ultimoUso: 0 }
+            let rb = ranking[id(secao, b?.id)] || { pontos: 0, ultimoUso: 0 }
+            if (rb.pontos !== ra.pontos) return rb.pontos - ra.pontos
+            return rb.ultimoUso - ra.ultimoUso
+        })
+
+        for (let botao of botoesOrdenados) {
             let divId = id(secao, botao?.id)
-            let divBotao = criaDiv({
+            let divBotao = criaDiv({ id: divId, ancestral: ancestral })
+            criaBotaoAzul({
                 id: divId,
-                ancestral: ancestral
-            })
-            let botaoConsulta = criaBotaoAzul({
-                id: id(secao, botao?.id),
                 texto: botao?.texto || 'OK',
                 ancestral: divId,
                 acao: () => criaFiltro(botao?.inputs, divId, botao?.funcao, mapaFuncoes)
             })
         }
+    
     }
 
     // ── criaFiltro ───────────────────────────────────────────────
@@ -893,6 +1020,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
             texto: 'Filtrar',
             ancestral: idConteiner,
             acao: async () => {
+                let ranking = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
+                let atual = ranking[idConteiner] || { pontos: 0, ultimoUso: 0 }
+                // ou use `ancestral`, que é o mesmo valor que idConteiner deriva
+                atual.pontos += 1
+                atual.ultimoUso = Date.now()
+                ranking[idConteiner] = atual
+                await armazenar({ rota_ranking_botoesFiltro: ranking})
+
                 let resultado = await funcao(inputs.map(inp => document.querySelector('#' + inp.id)?.value), idConteiner)
                 if (Array.isArray(resultado)) {
                     apresentaResultados(resultado)

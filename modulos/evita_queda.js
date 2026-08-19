@@ -7,7 +7,8 @@ async function evitaQueda() {
         ['pjeMudancaDePerfil', 'pjeAcessoNegado'],
         {modo: 'ou', timeout: 3000}
     )
-    if (elemento) window.location.reload()
+    if (!elemento) return
+    if (elemento.textContent.includes('Acesso Negado') || elemento.textContent.includes('mudança de perfil')) window.location.reload()
     return
 }
 
