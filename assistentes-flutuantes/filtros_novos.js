@@ -701,7 +701,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     {
                         id: id(secao, 'input', 'audiencias_maximo'),
                         textoEmCima: 'Quantos processos devem ser buscados',
-                        placeholder: '100. Caso não seja informado, será 50.',
+                        placeholder: 'Máximo: 50. Caso não seja informado, será 50.',
                         tipoInput: 'criaInput',
                     }
                 ],
@@ -712,7 +712,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     if (!nomeSala) {
                         return 'Informe o nome da sala.'
                     }
-                    if (!maximo) maximo = 50
+                    if (!maximo || maximo > 50) maximo = 50
                     if (typeof maximo !== 'number') {
                         return 'O valor informado para a quantidade de processos deve ser um número.'
                     }
@@ -720,9 +720,9 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     if (!sala) return 'Sala não encontrada.'
                     let i = 0
                     let resultadoAudiencia = []
-                    atualizar_contador(ancestral, '1 / X', 0 + '/' + maximo)
-                    for (let j = 0; j < 10; j++){
-                        if (i > maximo) break
+                    atualizar_contador(ancestral, '1 / 2', 0 + '/' + maximo)
+                    for (let j = 0; j < 1000; j++){
+                        if (i >= maximo) break
                         let data = acertaData()
                         let dados = await buscarProcessosNaSalaPorData(sala.id, data)
                         console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit', dados)
@@ -730,13 +730,35 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         for (audiencia of dados?.t){
                             console.log('%c[Rota PJE]%c audiencia: ' + JSON.stringify(audiencia), LOG.teste, 'color:inherit')
                             if(
-                                tipoAudiencia.split(',').map(d => d.trim()).some(d=> (normalizar(audiencia?.tipo?.descricao.toLowerCase())).includes(d))
+                                tipoAudiencia.split(',').map(d => normalizar(d).toLowerCase().trim()).some(d=> (normalizar(audiencia?.tipo?.descricao.toLowerCase())).includes(d))
                                 && audiencia.idProcesso
                             ){
                                 i++
                                 atualizar_contador(ancestral, '1 / X', i + '/' + maximo)
-                                resultadoAudiencia.push(audiencia)
-                                if (i > maximo) break
+                                let processo = audiencia?.processo
+                                console.log('%c[Rota PJE]%c processo 739: ' + JSON.stringify(processo), LOG.aviso, 'color:inherit')
+                                let partes   = processo?.parteProcessual?.map(d=>{
+                                    let nome = d?.nome.slice(0, 10)
+                                    console.log('%c[Rota PJE]%c nome 742: ' + JSON.stringify(nome), LOG.aviso, 'color:inherit')
+                                    let tipoPessoa = d?.pessoa?.tipoPessoa?.descricao
+                                    console.log('%c[Rota PJE]%c tipoPessoa 742: ' + JSON.stringify(tipoPessoa), LOG.aviso, 'color:inherit')
+                                    return {nome: nome, tipoPessoa: tipoPessoa}
+                                })
+                                let atividade = processo?.processoJT?.atividade?.nome
+                                resultadoAudiencia.push({
+                                    idProcesso:             audiencia?.idProcesso,
+                                    nrProcesso:             audiencia?.nrProcesso,
+                                    tipo:                   audiencia?.tipo?.descricao,
+                                    virtual:                audiencia?.isVirtual,
+                                    horario:                audiencia?.pautaAudienciaHorario?.horaInicial,
+                                    classe:                 processo?.classeJudicial?.descricao,
+                                    autuadoEm:              processo?.autuadoEm.slice(0, 10),
+                                    apreciadoTutelaLiminar: processo?.apreciadoTutelaLiminar,
+                                    apreciadoTutelaLiminar: processo?.apreciadoTutelaLiminar,
+                                    partes:                 partes,
+                                    atividade:              atividade
+                                })
+                                if (i >= maximo) break
                             }
                         }
                         function acertaData(){
@@ -749,57 +771,67 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     console.log('%c[Rota PJE]%c resultadoAudiencia: ' + JSON.stringify(resultadoAudiencia), LOG.rosa, 'color:inherit')
                     if (!resultadoAudiencia.length) return 'Não foram encontradas audiências para o tipo informado.'
                     let resultadoProcesso = []
+                    let k = 0
                     for (dado of resultadoAudiencia){
+                        atualizar_contador(ancestral, '2 / 2', k++ + '/' + resultadoAudiencia.length)
+                    
                         let id = dado?.idProcesso
                         let timeline = await buscarDocumentos(id) || []
-                        let documentos = timeline.filter(d => d?.usuarioInterno || d?.tipo === 'Petição Inicial')
-                        let teorDocumentos = await Promise.all(
-                            documentos.map(async (d) => {
-                                let idDocumento = d?.id;
-                                let teor = await extrairTexto(id, idDocumento);
-                                return {
-                                    teorDocumento: {
-                                        idDocumento: idDocumento,
-                                        teor: teor
-                                    }
-                                };
+                        let timelineImportante = timeline
+                            .filter(d => d?.tipo === 'Petição Inicial' || d?.usuarioInterno === true)
+                            .map(d => {
+                                let tipo = d?.tipo || '';
+                                
+                                if (d?.tipo === 'Petição Inicial') {
+                                    return {
+                                        id: d?.id || '',
+                                        tipo,
+                                        titulo: d?.titulo || '',
+                                        anexos: d?.anexos ? d?.anexos.map(c => ({
+                                            id: c?.id || '',
+                                            tipo: c?.tipo || '',
+                                            titulo: c?.titulo || ''
+                                        })) : []
+                                    };
+                                }
+                                
+                                return { tipo };
+                            });
+                        let peticaoInicial = timeline.filter(d => d?.tipo === 'Petição Inicial')
+                        let teorPeticaoInicial = peticaoInicial.length ? await extrairTexto(id, peticaoInicial[0]?.id) : ''
+                        let peticao = {idDocumento: peticaoInicial[0]?.id || '', teor: teorPeticaoInicial}
+                        let certidaoSimetria = timeline.findLast(d => d?.titulo.includes('Simetria'))
+                        let tiposBusca = ['Certidão', 'Intimação', 'Despacho'];
+                        let documentosInternos = timeline
+                            .toReversed()
+                            .filter(d => d?.usuarioInterno === true)
+                            .reduce((array, item) => {
+                                if (tiposBusca.includes(item?.tipo) && !array.some(d => d.tipo === item.tipo)) {
+                                array.push(item);
+                                }
+                                return array;
+                        }, [])
+                        documentosInternos.push(certidaoSimetria)
+                        let documentosInternosTexto = await Promise.all
+                            (documentosInternos.map(async (d) => {
+                                let teor = await extrairHtml(id, d?.id)
+                                let parser = new DOMParser();
+                                let teorHtml = parser.parseFromString(teor, 'text/html');
+                                let teorCorpo = teorHtml 
+                                    ? [...teorHtml.querySelectorAll('div.corpo')]
+                                        .map(div => div.innerText.replace(/\n\s*\n/g, '\n').trim())
+                                        .filter(texto => texto.length > 0) // Remove eventuais blocos vazios
+                                        .join('\n\n') 
+                                    : ''
+                                return {idDocumento: d?.id, teor: teorCorpo}
                             })
                         )
-                        resultadoProcesso.push({dadosAudiencia: dado, timeline: timeline, teorDocumentosPrincipais: teorDocumentos})
+
+                        resultadoProcesso.push({dadosAudiencia: dado, timeline: timelineImportante, teorDocumentosPrincipais: [peticao, ...documentosInternosTexto]})
                     }
                     _baixarArquivo(JSON.stringify(resultadoProcesso, null, 2), 'audiencias.json', 'application/json')
                     return 'O arquivo foi baixado.'
-                    //let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
-                    //let sala = await resolverSala(nomeSala)
-                    //if (!sala) return 'Sala não encontrada.'
-                    //let ids = [], t = []
-                    //let datas = listarDatasParaSala(dias)
-                    //for (let i = 0; i < datas.length; i++) {
-                    //    atualizar_contador(ancestral, 0, (i + 1) + '/' + datas.length)
-                    //    let r = await buscarProcessosNaSalaPorData(sala.id, datas[i])
-                    //    ids.push(...r.ids); t.push(...r.t)
-                    //}
-                    //if (!ids.length) return 'Nenhum processo encontrado.'
-                    //let d = []
-                    //const formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : ''
-                    //const formatarData = d => d ? d.slice(0, 10).split('-').reverse().join('/') : ''
-                    //const limiteSimet = new Date('2025-10-19')
-                    //for (let i in t) {
-                    //    const horarioRaw  = t[i]?.pautaAudienciaHorario?.horaInicial || ''
-                    //    const dataRaw     = t[i]?.data || ''
-                    //    const autuacaoRaw = t[i]?.processo?.autuadoEm || ''
-                    //    const autuacaoDate = new Date(autuacaoRaw.slice(0, 10))
-                    //    const processo    = t[i]?.nrProcesso || ''
-                    //    d.push({
-                    //        processo:          processo,
-                    //        horario:           formatarHora(horarioRaw),
-                    //        data:              formatarData(dataRaw),
-                    //        autuacao:          formatarData(autuacaoRaw),
-                    //        simetriaOuLegado:  processo === '' ? '' : autuacaoDate > limiteSimet ? 'SIMETRIA' : 'LEGADO',
-                    //    })
-                    //}
-                    //return d.length ? d : 'Nenhum processo encontrado.'
-                    
+
                 }
             },
             // ── 9. Audiências até data — por Sala ─────────────────
