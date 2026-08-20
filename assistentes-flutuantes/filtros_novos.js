@@ -763,7 +763,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         }
                         function acertaData(){
                             let data = new Date()
-                            data.setDate(data.getDate() + i)
+                            data.setDate(data.getDate() + j)
                             let dado = data.toISOString().slice(0, 10)
                             return dado
                         }
@@ -829,7 +829,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
                         resultadoProcesso.push({dadosAudiencia: dado, timeline: timelineImportante, teorDocumentosPrincipais: [peticao, ...documentosInternosTexto]})
                     }
-                    _baixarArquivo(JSON.stringify(resultadoProcesso, null, 2), 'audiencias.json', 'application/json')
+                    _baixarArquivo(JSON.stringify(resultadoProcesso, null, 2), 'audiencias.txt', 'text/plain')
                     return 'O arquivo foi baixado.'
 
                 }
