@@ -72,10 +72,6 @@ async function iniciar(){
 	// Referências página 3 — Melhor Leitura
 	let btnAtivarML          = document.getElementById('btn-ativar-melhor-leitura')
 
-	// Referências página 4 — Super Filtros
-	let btnAtivarFiltros     = document.getElementById('btn-ativar-filtros')
-	let statusFiltros        = document.getElementById('status-filtros')
-
 	// Referências página 4 — Modo Desenvolvedor
 	let btnModoDev           = document.getElementById('btn-modo-dev')
 	let statusModoDev        = document.getElementById('status-modo-dev')
@@ -345,8 +341,7 @@ async function iniciar(){
 
 	async function _autenticar() {
 		await NAV.storage.local.set({ [AUTH_KEY]: Date.now() })
-		// Notifica abas para remontarem o widget
-		_notificarAbasFiltro()
+		
 	}
 
 	function _mostrarSuperfiltro(autenticado) {
@@ -375,54 +370,7 @@ async function iniciar(){
 		if (e.key === 'Enter') btnSenha.click()
 	})
 
-	// Estado local do filtro
-	let filtroAtivo = false
-
-	// ── Carregar estado inicial ──────────────────────────────
-	let storeFiltro = await NAV.storage.local.get(['superfiltro_ativo'])
-	filtroAtivo = storeFiltro.superfiltro_ativo === true
-
-	_aplicarEstadoFiltro(filtroAtivo)
-
-	// ── Botão Ativar/Desativar widget ────────────────────────
-	function _aplicarEstadoFiltro(ativo){
-		filtroAtivo = ativo
-		if(ativo){
-			btnAtivarFiltros.classList.add('ativo')
-			btnAtivarFiltros.title = 'Widget ativo — clique para desativar'
-			statusFiltros.textContent = '✅ Widget ativo no painel'
-			statusFiltros.style.color = '#2ecc71'
-		} else {
-			btnAtivarFiltros.classList.remove('ativo')
-			btnAtivarFiltros.title = 'Widget inativo — clique para ativar'
-			statusFiltros.textContent = '○ Widget desativado'
-			statusFiltros.style.color = '#5e84a8'
-		}
-	}
-
-	btnAtivarFiltros.addEventListener('click', async () => {
-		filtroAtivo = !filtroAtivo
-		await NAV.storage.local.set({ superfiltro_ativo: filtroAtivo })
-		_aplicarEstadoFiltro(filtroAtivo)
-		// Notifica abas do PJE
-		_notificarAbasFiltro()
-	})
-
-	// ── Notificar abas do PJE sobre mudança no super filtro ──
-	async function _notificarAbasFiltro() {
-		let storeDados = await NAV.storage.local.get(['superfiltro_ativo'])
-		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
-		tabs.forEach(tab => {
-			NAV.scripting.executeScript({
-				target: { tabId: tab.id },
-				func: (dados) => {
-					window._superfiltro_ativo = dados.ativo
-					window.dispatchEvent(new CustomEvent('pjerota:superfiltro-atualizado', { detail: dados }))
-				},
-				args: [{ ativo: storeDados.superfiltro_ativo === true }],
-			}).catch(()=>{})
-		})
-	}
+	
 
 	// ════════════════════════════════════════════════════════
 	// MODO DESENVOLVEDOR

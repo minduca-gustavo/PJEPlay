@@ -1114,7 +1114,8 @@ async function criaWidgetfiltrosNovos(ancestral) {
         // ── Renderiza cada botão ──────────────────────────────────
         let mapaFuncoes = { criaInput, criaInputAnotacao }
 
-        let ranking = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
+        let armazenamento = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
+        let ranking = armazenamento?.rota_ranking_botoesFiltro ? armazenamento?.rota_ranking_botoesFiltro : []
         let botoesOrdenados = [...botoes].sort((a, b) => {
             let ra = ranking[id(secao, a?.id)] || { pontos: 0, ultimoUso: 0 }
             let rb = ranking[id(secao, b?.id)] || { pontos: 0, ultimoUso: 0 }
@@ -1162,11 +1163,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
             ancestral: idConteiner,
             acao: async () => {
                 let ranking = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
-                let atual = ranking[idConteiner] || { pontos: 0, ultimoUso: 0 }
+                let atual = ranking[ancestral] || { pontos: 0, ultimoUso: 0 }
                 // ou use `ancestral`, que é o mesmo valor que idConteiner deriva
                 atual.pontos += 1
                 atual.ultimoUso = Date.now()
-                ranking[idConteiner] = atual
+                ranking[ancestral] = atual
                 await armazenar({ rota_ranking_botoesFiltro: ranking})
 
                 let resultado = await funcao(inputs.map(inp => document.querySelector('#' + inp.id)?.value), idConteiner)
