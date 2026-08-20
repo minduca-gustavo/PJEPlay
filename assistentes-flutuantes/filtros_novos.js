@@ -355,6 +355,101 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     return d
                 }
             },
+            {
+                id: id(secao, 'botao', 'sentenca_acordao'),
+                texto: 'Busca textos das Sentenças e Acórdãos',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'sentenca_acordao'),
+                        textoEmCima: 'Nome da tarefa (ou TODAS - MUITO DEMORADO)',
+                        placeholder: 'TODAS',
+                        tipoInput: 'criaInput',
+                    },
+                    {
+                        id: id(secao, 'input', 'sentenca_acordao_quantidade'),
+                        textoEmCima: 'Quantos processos devem ser buscados',
+                        placeholder: 'Máximo: 50',
+                        tipoInput: 'criaInput',
+                    },
+                ],
+                funcao: async (valores, ancestral) => {
+                    let valorTarefa = valores[0]?.trim() || 'TODAS'
+                    let maximo = Number(valores[1]?.trim()) || 50
+                    if (!maximo || maximo > 50) maximo = 50
+                    if (typeof maximo !== 'number') {
+                        return 'O valor informado para a quantidade de processos deve ser um número.'
+                    }
+                    let idsx = [], tx = []
+                    let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+                    if (valorTarefa !== 'TODAS') {
+                        tarefas = [tarefas.find(t => t.nome.toLowerCase() === valorTarefa.toLowerCase())]
+                    }
+                    // Único estágio de rede: para cada tarefa (etapa), percorre
+                    // suas páginas (filtrando). Só se aplica quando "TODAS".
+                    for (let it = 0; it < tarefas.length; it++) {
+                        let tarefaNome = tarefas[it]?.nome
+                        if (!tarefaNome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+                            let etapaTexto = tarefas.length > 1 ? (it + 1) + '/' + (tarefas.length + 1) : 0
+                            let tarefa = await resolverTarefa(tarefaNome)
+                            if (!tarefa) continue
+                            let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                            atualizar_contador(ancestral, etapaTexto, '1/' + r.paginas)
+                            idsx.push(...r.ids); tx.push(...r.t)
+                            if (idsx.length >= maximo) break
+                            for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                                atualizar_contador(ancestral, etapaTexto, pagina + '/' + r.paginas)
+                                let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                                idsx.push(...rp.ids); tx.push(...rp.t)
+                                if (idsx.length >= maximo) break
+                            }
+                        }
+                    }
+                    if (!idsx.length) return 'Nenhum processo encontrado.'
+                    let d = []
+                    for (let i = 0; i < maximo; i++) {
+                        atualizar_contador(ancestral, (tarefas.length + 1) + '/' + (tarefas.length + 1), (i + 1) + '/' + maximo)
+                        let id = idsx[i] || null
+                        if (!id) continue
+                        let idsDocs = []
+                        let timeline   = await buscarDocumentos(id) || []
+                        let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
+                        let sentencas  = timeline
+                            .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
+                            .map(d => d?.id) || []
+                        idsDocs.push(...sentencas)
+                        let documentosInternosTexto = await Promise.all
+                            (idsDocs.map(async (d) => {
+                                let teor = await extrairHtml(id, d) || null
+                                let parser = new DOMParser();
+                                let teorHtml = teor ? parser.parseFromString(teor, 'text/html') : null
+                                let divs = teorHtml ? [...teorHtml.querySelectorAll('div.corpo')] : []
+                                // Se não encontrou nenhuma div.corpo, tenta div.body
+                                if (teorHtml && divs.length === 0) {
+                                    divs = [...teorHtml.querySelectorAll('.conteudo_editor')]
+                                }
+
+                                let teorCorpo = divs
+                                    .map(div => div.innerText.replace(/\n\s*\n/g, '\n').trim())
+                                    .filter(texto => texto.length > 0)
+                                    .join('\n\n')
+                                if (!teor){
+                                    let teorPDF = await extrairTexto(id, d) || null
+                                    if (teorPDF) teorCorpo = teorPDF
+                                }
+                                return {idDocumento: d, teor: teorCorpo}
+                            })
+                        )
+                        d.push({
+                            id:         idsx[i] || '',
+                            numero:     tx[i].numero || '',
+                            sentencasEAcordaos: documentosInternosTexto
+                        })
+                    }
+                    _baixarArquivo(JSON.stringify(d, null, 2), 'sentencasEAcordaos.json', 'application/json')
+                    _baixarArquivo(JSON.stringify(d, null, 2), 'sentencasEAcordaos.txt', 'text/plain')
+                    return 'O arquivo foi baixado.'
+                }
+            },
 
             // ── 3b. Lista número/partes/autuação/tarefa — por Lista ──
             {
@@ -404,10 +499,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         textoEmCima: 'Nome da tarefa (ou TODAS)',
                         placeholder: 'TODAS',
                         tipoInput: 'criaInput',
+                    },
+                    {
+                        id: id(secao, 'input', 'pjc_termo_nome'),
+                        textoEmCima: 'Digite o termo que deve constar da sentença/acórdão.',
+                        placeholder: 'Ex.: horas extras, ferias vencidas.',
+                        tipoInput: 'criaInput',
                     }
                 ],
                 funcao: async (valores, ancestral) => {
                     let valorTarefa = valores[0]?.trim() || 'TODAS'
+                    let termoEspecifico = valores[1]?.trim() || ''
                     let idsx = [], tx = []
                     let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
                     if (valorTarefa !== 'TODAS') {
@@ -429,7 +531,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         }
                     }
                     if (!idsx.length) return 'Nenhum processo encontrado.'
-                    return await _executaPjcSentencas(idsx, tx, ancestral, '2/2')
+                    return await _executaPjcSentencas(idsx, tx, ancestral, '2/2', termoEspecifico)
                 }
             },
 
@@ -443,10 +545,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         textoEmCima: 'Números CNJ (um por linha)',
                         placeholder: '0000000-00.0000.0.00.0000',
                         tipoInput: 'criaInputAnotacao',
+                    },
+                    {
+                        id: id(secao, 'input', 'pjc_termo_nome'),
+                        textoEmCima: 'Digite o termo que deve constar da sentença/acórdão.',
+                        placeholder: 'Ex.: horas extras, ferias vencidas.',
+                        tipoInput: 'criaInput',
                     }
                 ],
                 funcao: async (valores, ancestral) => {
                     let numerosRaw = valores[0] || ''
+                    let termoEspecifico = valores[1]?.trim() || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
                     let idsx = [], tx = []
@@ -456,7 +565,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         if (idProcesso) { idsx.push(idProcesso); tx.push({ numero: numeros[i] }) }
                     }
                     if (!idsx.length) return 'Nenhum processo encontrado.'
-                    return await _executaPjcSentencas(idsx, tx, ancestral, '2/2')
+                    return await _executaPjcSentencas(idsx, tx, ancestral, '2/2', termoEspecifico)
                 }
             },
 
@@ -1079,7 +1188,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
         return new Date(a, m - 1, d)
     }
 
-    async function _executaPjcSentencas(idsx, tx, ancestral, etapa = 0) {
+    async function _executaPjcSentencas(idsx, tx, ancestral, etapa = 0, termo) {
         let d = []
         let maximo = 0
         for (let i = 0; i < idsx.length; i++) {
@@ -1107,8 +1216,8 @@ async function criaWidgetfiltrosNovos(ancestral) {
             let conteudos  = []
             for (let idDoc of idsDocs) {
                 let conteudo    = await extrairTexto(id, idDoc) || ''
-                let horasExtras = buscaEmTextoMalFormatado(conteudo, 'horas extras', 0, 0)
-                if (horasExtras?.trechos) encontrado = true
+                let termoEncontrado = termo.split(',').some(d => buscaEmTextoMalFormatado(conteudo, d.trim(), 0, 0)?.trechos)
+                if (termoEncontrado) encontrado = true
                 conteudos.push(idDoc + ': ' + conteudo)
             }
             if (pjc && encontrado) {
