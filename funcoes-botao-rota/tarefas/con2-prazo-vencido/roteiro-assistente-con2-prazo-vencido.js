@@ -325,8 +325,8 @@ Clique para fixar/desafixar.`,
 
         async function montarAcoes_con2_prazo_vencido(caso, ancestral) {
             console.log('%c[Rota PJE]%c montaracoes: ' + JSON.stringify(caso + ' - ' + ancestral), LOG.teste, 'color:inherit')
-            let idDiv = id('divAcoes', ancestral, caso)
-            let remover = document.querySelector('[id^="' + id('divAcoes', ancestral) +'"]')
+            let idDiv = id('divAcoes', ancestral)
+            let remover = document.getElementById(idDiv)
             if (remover) {
                 remover.remove()
                 return
@@ -335,7 +335,7 @@ Clique para fixar/desafixar.`,
                 id: idDiv,
                 ancestral: ancestral
             })
-            let idDivEmail = id('divEmail', ancestral, caso)
+            let idDivEmail = id('divEmail', ancestral)
             let divEmail = criaDiv({
                 id: idDivEmail,
                 ancestral: idDiv
@@ -343,14 +343,15 @@ Clique para fixar/desafixar.`,
             let idBotaoLaranjaEmail = id('e-mail')
             let armazenamentoBotaoLaranjaEmail = await obterArmazenamento(idBotaoLaranjaEmail)
             let expandido = armazenamentoBotaoLaranjaEmail[idBotaoLaranjaEmail] ? armazenamentoBotaoLaranjaEmail[idBotaoLaranjaEmail] : false
+            console.log('%c[Rota PJE]%c expandido: ' + JSON.stringify(expandido), LOG.erro, 'color:inherit')
             let textoSeta = expandido ? '▲' : '▼'
             let botaoEMail = criaBotaoLaranja({
                 id: idBotaoLaranjaEmail,
-                texto: 'Encaminhar documento atual por e-mail.'+ textoSeta,
+                texto: 'Encaminhar documento atual por e-mail. '+ textoSeta,
                 ancestral: idDivEmail,
-                acao: () => montarMenuEmail(caso, idDivEmail, id('e-mail'), expandido),
+                acao: () => montarMenuEmail(idDivEmail, idBotaoLaranjaEmail, true),
             })
-            if (expandido) montarMenuEmail(caso, idDivEmail, id('e-mail'), expandido)
+            if (expandido) montarMenuEmail(idDivEmail, idBotaoLaranjaEmail, false)
             let idDivRequisicao = id('divRequisicao', ancestral, caso)
             let divRequisicao = criaDiv({
                 id: idDivRequisicao,
@@ -364,16 +365,21 @@ Clique para fixar/desafixar.`,
             })
         }
 
-        async function montarMenuEmail(caso, ancestral, botao, expandido){
-            let armazenaExpandido = !expandido
-            await armazenar({[botao]: armazenaExpandido})
-            let textoSeta = expandido ? '▲' : '▼'
-            let idDiv = id(caso, 'menuEMail')
+        async function montarMenuEmail(ancestral, botao, expandir){
+            
+            let idDiv = id('menuEMail')
             let remover = document.getElementById(idDiv)
-            if (remover) {
+            let botaoSeta = document.getElementById(botao)
+            if (remover && expandir) {
+                botaoSeta.textContent = 'Encaminhar documento atual por e-mail. ▼'
+                let armazenaExpandido = false
+                await armazenar({[botao]: armazenaExpandido})
                 remover.remove()
                 return
             }
+            let armazenaExpandido = true
+            await armazenar({[botao]: armazenaExpandido})
+            botaoSeta.textContent = 'Encaminhar documento atual por e-mail. ▲'
             let div = criaDiv({
                 id: idDiv,
                 ancestral: ancestral
@@ -382,24 +388,47 @@ Clique para fixar/desafixar.`,
             if (emailsArmazenados[idDiv]){
                 console.log('%c[Rota PJE]%c emailsArmazenados: ' + JSON.stringify(emailsArmazenados), LOG.erro, 'color:inherit')
                 for (email of emailsArmazenados[idDiv]){
-                    let idCheckbox = id(caso, 'checkEMail')
+                    let idCheckbox = id('checkEMail')
                     let checkBox = criaCheckBox({
                         id: idCheckbox,
-                        ancestral: idDiv
+                        ancestral: idDiv,
+                        textoAoLado: email
                     })
                 }
             }
+            let inputId = id('inputEMail')
             let inputEMail = criaInput({
-                id: id(caso, 'inputEMail'),
+                id: id('inputEMail'),
                 ancestral: idDiv,
                 textoEmCima: 'Digite os e-mails, separados por vírgula',
                 placeholder: 'email@email.com, email2@email.org, email3@email.jus.br'
             })
             let botaoEMail = criaBotaoAzul({
-                id: id(caso, 'botaoEMail'),
+                id: id('botaoEMail'),
                 ancestral: idDiv,
                 texto: 'Encaminhar para todos (inclusive os selecionados)',
-                acao: () => comandar()
+                acao: () => {
+                    let checkId = id('checkEMail')
+                    let checks = [...document.querySelectorAll('#' + checkId)].map(d => d.textContent)
+                    let input = document.querySelector('#' + inputId)
+                    let regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/g
+                    let emailsInput = input.textContent.match(regexEmail) || ''
+                    let emails = []
+                    emails.push(emailsInput, ...checks)
+                    armazenar ({[idDiv]: emails})
+//                    comandar(
+//                        ['email'], 
+//                        {
+//                            endereco: checks,
+//                            texto: `Prezados,
+//
+//Encaminho, em anexo, os documentos referentes ao processo ${dados.rota_dadosCon2PrazoVencido.processo.numero}, para ciência/providências.
+//
+//At.te`
+//
+//                        }
+//                    )
+                }
             })
             
         }
@@ -719,7 +748,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     criaTexto({
         id: id(tarefaNome, bloco, 'texto'),
         texto: dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig
-            ? `A extensão identificou a seguinte sala: ${dados.rota_dadosCon2PrazoVencido.sala.nome}.`
+            ? `A extensão identificou a seguinte sala: ${dados.rota_dadosCon2PrazoVencido.processo.sala.nome}.`
             : 'Não foi identificada sala.',
         ancestral: id(tarefaNome, bloco)
     })

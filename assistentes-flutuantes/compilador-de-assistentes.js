@@ -34,6 +34,8 @@ async function compiladorDeAssistentes() {
             janelas: [JANELA.painelGlobalTodos],
             //inativo: true
         },
+        { id: 'prazos-periciais', titulo: 'Prazos Periciais', funcao: 'assistentePrazosPericiais', janelas: [JANELA.aud] },
+        { id: 'peritos',          titulo: 'Peritos',          funcao: 'assistentePeritos',          janelas: [JANELA.aud] },
     ]
     
     let janela = confereJanela(...assistentes.map(d => d?.janelas).flat())
@@ -63,7 +65,9 @@ async function compiladorDeAssistentes() {
         assistenteAssinaturaDocumentos,
         consultaQualquerOJ,
         leituraDinamicaDocumentos,
-        filtrosNovos
+        filtrosNovos,
+        assistentePeritos,
+        assistentePrazosPericiais,
     }
     
     for (assistente of assistentes){
