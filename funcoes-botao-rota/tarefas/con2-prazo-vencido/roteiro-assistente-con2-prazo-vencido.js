@@ -300,16 +300,17 @@ Clique para fixar/desafixar.`,
         })
         
         for (caso of secao?.casos){
+            let ancestral = id(tarefaNome, secao?.label, 'recolhe')
             let checkBox = criaCheckBox({
                 id: id(tarefaNome, secao?.label, 'checkbox', caso?.id),
                 textoAoLado: caso?.texto,
-                ancestral: id(tarefaNome, secao?.label, 'recolhe'),
+                ancestral: ancestral,
             })
             checkBox.dataset.caso = caso?.id
-            checkBox.addEventListener('click', () => con2_prazo_vencidoCriaAcoes(checkBox))
+            checkBox.addEventListener('click', () => con2_prazo_vencidoCriaAcoes(checkBox, ancestral))
         }
 
-        async function con2_prazo_vencidoCriaAcoes(seletor){
+        async function con2_prazo_vencidoCriaAcoes(seletor, ancestral){
             let idTodos = seletor?.id.replace(seletor?.dataset?.caso,'')
             let botoes = [...document.querySelectorAll('[id^="' + idTodos + '"]')]
             for (botao of botoes){
@@ -317,12 +318,101 @@ Clique para fixar/desafixar.`,
                 if (botao !== seletor && botao?.dataset?.marcado == 1 && seletor.dataset.marcado == 1){
                     clicar(botao)
                 }
-                await montarAcoes_con2_prazo_vencido(seletor?.dataset?.caso)
+                
             }
+            await montarAcoes_con2_prazo_vencido(seletor?.dataset?.caso, ancestral)
         }
 
-        async function montarAcoes_con2_prazo_vencido(caso) {
+        async function montarAcoes_con2_prazo_vencido(caso, ancestral) {
+            console.log('%c[Rota PJE]%c montaracoes: ' + JSON.stringify(caso + ' - ' + ancestral), LOG.teste, 'color:inherit')
+            let idDiv = id('divAcoes', ancestral, caso)
+            let remover = document.querySelector('[id^="' + id('divAcoes', ancestral) +'"]')
+            if (remover) {
+                remover.remove()
+                return
+            }
+            let div = criaDiv({
+                id: idDiv,
+                ancestral: ancestral
+            })
+            let idDivEmail = id('divEmail', ancestral, caso)
+            let divEmail = criaDiv({
+                id: idDivEmail,
+                ancestral: idDiv
+            })
+            let idBotaoLaranjaEmail = id('e-mail')
+            let armazenamentoBotaoLaranjaEmail = await obterArmazenamento(idBotaoLaranjaEmail)
+            let expandido = armazenamentoBotaoLaranjaEmail[idBotaoLaranjaEmail] ? armazenamentoBotaoLaranjaEmail[idBotaoLaranjaEmail] : false
+            let textoSeta = expandido ? '▲' : '▼'
+            let botaoEMail = criaBotaoLaranja({
+                id: idBotaoLaranjaEmail,
+                texto: 'Encaminhar documento atual por e-mail.'+ textoSeta,
+                ancestral: idDivEmail,
+                acao: () => montarMenuEmail(caso, idDivEmail, id('e-mail'), expandido),
+            })
+            if (expandido) montarMenuEmail(caso, idDivEmail, id('e-mail'), expandido)
+            let idDivRequisicao = id('divRequisicao', ancestral, caso)
+            let divRequisicao = criaDiv({
+                id: idDivRequisicao,
+                ancestral: idDiv
+            })
+            let botaoRequisicao = criaBotaoLaranja({
+                id: id(caso, 'requisicaoHonorarios'),
+                texto: 'Fazer Requisição de Honorários Periciais ▼',
+                ancestral: idDivRequisicao,
+                acao: () => montarMenuRequisicao(caso, idDivRequisicao),
+            })
+        }
+
+        async function montarMenuEmail(caso, ancestral, botao, expandido){
+            let armazenaExpandido = !expandido
+            await armazenar({[botao]: armazenaExpandido})
+            let textoSeta = expandido ? '▲' : '▼'
+            let idDiv = id(caso, 'menuEMail')
+            let remover = document.getElementById(idDiv)
+            if (remover) {
+                remover.remove()
+                return
+            }
+            let div = criaDiv({
+                id: idDiv,
+                ancestral: ancestral
+            })
+            let emailsArmazenados = await obterArmazenamento(idDiv)
+            if (emailsArmazenados[idDiv]){
+                console.log('%c[Rota PJE]%c emailsArmazenados: ' + JSON.stringify(emailsArmazenados), LOG.erro, 'color:inherit')
+                for (email of emailsArmazenados[idDiv]){
+                    let idCheckbox = id(caso, 'checkEMail')
+                    let checkBox = criaCheckBox({
+                        id: idCheckbox,
+                        ancestral: idDiv
+                    })
+                }
+            }
+            let inputEMail = criaInput({
+                id: id(caso, 'inputEMail'),
+                ancestral: idDiv,
+                textoEmCima: 'Digite os e-mails, separados por vírgula',
+                placeholder: 'email@email.com, email2@email.org, email3@email.jus.br'
+            })
+            let botaoEMail = criaBotaoAzul({
+                id: id(caso, 'botaoEMail'),
+                ancestral: idDiv,
+                texto: 'Encaminhar para todos (inclusive os selecionados)',
+                acao: () => comandar()
+            })
             
+        }
+        async function montarMenuRequisicao(caso, ancestral){
+            let idDiv = id(caso, 'menuEMail')
+            let div = criaDiv({
+                id: idDiv,
+                ancestral: ancestral
+            })
+            let emailsArmazenados = await obterArmazenamento(idDiv)
+            if (emailsArmazenados[idDiv]){
+                console.log('%c[Rota PJE]%c emailsArmazenados: ' + JSON.stringify(emailsArmazenados), LOG.erro, 'color:inherit')
+            }
         }
 
         let funcao = secao?.elementos?.funcao
