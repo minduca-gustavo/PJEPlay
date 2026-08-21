@@ -1,3 +1,41 @@
+
+//function decodificarHTML(str) {
+//  let parser = new DOMParser()
+//  let doc = parser.parseFromString(str, 'text/html')
+//  return doc.documentElement.textContent
+//}
+//
+//function teste(){
+//  let janela = confereJanela(JANELA.painelGlobal)
+//  if (!janela) return
+//
+//  let modelos1 = []
+//  for (let modelo of modelos){
+//    // Primeira decodificação: &lt;p&gt; → <p>
+//    let textoDecodificado = decodificarHTML(modelo.conteudo)
+//    
+//    // Segunda passagem: agora sim o HTML está real
+//    let parser = new DOMParser()
+//    let doc = parser.parseFromString(textoDecodificado, 'text/html')
+//    
+//    let paragrafos = doc.querySelectorAll('p.corpo')
+//    let textoTodo = [...doc.querySelectorAll('p.corpo')]
+//      .map(p => p.textContent.trim())
+//      .join('\n')
+//
+//    // Fallback
+//    if (!textoTodo) {
+//      textoTodo = [...doc.querySelectorAll('p')]
+//        .map(p => p.textContent.trim())
+//        .join('\n')
+//    }
+//
+//    modelos1.push({id: modelo.id, titulo: modelo.titulo, conteudo: textoTodo})
+//  }
+//
+//  _baixarArquivo(JSON.stringify(modelos1, null, 2), 'modelos.json', 'application/json')
+//}
+//teste()
 //(async ()=> {
 //    let testando = 1
 //    if (testando !== 1) return
