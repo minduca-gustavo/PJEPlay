@@ -22,15 +22,18 @@ async function gestao_inicializar() {
         {
             id: id('finais'),
             texto: '👨🏾‍⚖️\nFinais',
+            tooltip: 'Finais por Vara/Final.',
             colunas: [{vara: 'Vara'}, {digitos: 'Dígitos'}, {magistrado: 'Magistrado'}],
         },
         {
             id: id('pericias'),
             texto: '🩺\nPerícias',
+            tooltip: 'Tabela de peritos em atividade',
         },
         {
-            id: id('despachos'),
-            texto: '👩🏻‍⚖️\nDespachos',
+            id: id('juizes'),
+            texto: '👩🏻‍⚖️\nJuízes',
+            tooltip: 'Informações sobre Juízes - assistente/secretário, modelos de despacho, etc.',
         },
     ]
     for (let botao of botoesDoca) {
@@ -43,6 +46,11 @@ async function gestao_inicializar() {
         b.style.width = '100%'
         b.style.height = '50px'
         b.style.whiteSpace = 'pre-line'
+        b.addEventListener('mouseover', () => {
+            if (botao.tooltip) {
+                criaTooltip({ id: botao.id + '-tip', texto: botao.tooltip, elemento: b })
+            }
+        })
     }
     let divConteudo = id('gestao', 'conteudo')
     let conteudo = criaDiv({
@@ -80,7 +88,7 @@ async function gestao_inicializar() {
             criaGrade({
                 id: idGrade,
                 ancestral: divPrincipal,
-                numeroColunas: colunas
+                numeroColunas: colunas?.length || 1,
             })
         }
         

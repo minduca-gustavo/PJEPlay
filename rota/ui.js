@@ -1477,6 +1477,92 @@ function criaPlaquinha({ id, texto = '', cor = 'azul', ancestral }) {
 //
 // criaPlaquinhaComTooltip({ id, texto, cor, tooltip, ancestral })
 
+/**
+ * Cria e anexa um tooltip a qualquer elemento existente.
+ * @param {Object} opts
+ * @param {string}           opts.id       - id base (usado no tip)
+ * @param {string}           opts.texto    - texto do tooltip
+ * @param {string|HTMLElement} opts.elemento - o elemento-alvo ou seu id
+ * @returns {{ remover: Function, atualizar: Function }}
+ */
+function criaTooltip({ id, texto = '', elemento }) {
+    const alvo = typeof elemento === 'string'
+        ? document.getElementById(elemento)
+        : elemento
+
+    if (!alvo) {
+        console.warn(`criaTooltip: elemento não encontrado`, elemento)
+        return null
+    }
+
+    const tip = _ui_el('div', {
+        display:       'none',
+        position:      'fixed',
+        background:    '#000000',
+        color:         '#ffffff',
+        borderRadius:  '4px',
+        padding:       '5px 10px',
+        fontSize:      '11px',
+        fontFamily:    "'Segoe UI', system-ui, sans-serif",
+        whiteSpace:    'pre-wrap',
+        maxWidth:      '240px',
+        boxShadow:     '0 2px 8px rgba(0,0,0,0.15)',
+        zIndex:        '99999999',
+        pointerEvents: 'none',
+        lineHeight:    '1.4',
+    })
+    tip.id          = id + '-tip'
+    tip.textContent = texto
+    document.body.appendChild(tip)
+
+    function onEnter() {
+        const rect = alvo.getBoundingClientRect()
+        tip.style.display = 'block'
+
+        let left = rect.left + rect.width / 2 - tip.offsetWidth / 2
+        let top  = rect.top - tip.offsetHeight - 4
+
+        if (left + tip.offsetWidth > window.innerWidth - 8)
+            left = window.innerWidth - tip.offsetWidth - 8
+        if (left < 8) left = 8
+        if (top < 8)  top  = rect.bottom + 4
+        if (top + tip.offsetHeight > window.innerHeight - 8)
+            top = window.innerHeight - tip.offsetHeight - 8
+        if (top < 8)  top  = 8
+
+        tip.style.left = left + 'px'
+        tip.style.top  = top  + 'px'
+    }
+    function onLeave() { tip.style.display = 'none' }
+
+    alvo.addEventListener('mouseenter', onEnter)
+    alvo.addEventListener('mouseleave', onLeave)
+
+    // Limpa o tip se o alvo for removido do DOM
+    const observer = new MutationObserver(() => {
+        if (!document.body.contains(alvo)) {
+            tip.remove()
+            observer.disconnect()
+        }
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    return {
+        atualizar: (novoTexto) => { tip.textContent = novoTexto },
+        remover:   () => {
+            alvo.removeEventListener('mouseenter', onEnter)
+            alvo.removeEventListener('mouseleave', onLeave)
+            tip.remove()
+            observer.disconnect()
+        },
+    }
+}
+
+
+/**
+ * Cria plaquinha colorida com tooltip embutido.
+ * (agora delega o tooltip para criaTooltip)
+ */
 function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', ancestral }) {
     const CORES_PLAQUINHA = {
         azul:    { bg: '#90caf9', borda: '#1e88e5', texto: '#03071e' },
@@ -1512,74 +1598,12 @@ function criaPlaquinhaComTooltip({ id, texto = '', cor = 'azul', tooltip = '', a
     plaquinha.id          = id
     plaquinha.textContent = texto
 
-    const tip = _ui_el('div', {
-        display:       'none',
-        position:      'fixed',
-        background:    '#000000',
-        color:         '#ffffff',
-        borderRadius:  '4px',
-        padding:       '5px 10px',
-        fontSize:      '11px',
-        fontFamily:    "'Segoe UI', system-ui, sans-serif",
-        whiteSpace:    'pre-wrap',
-        maxWidth:      '240px',
-        boxShadow:     '0 2px 8px rgba(0,0,0,0.15)',
-        zIndex:        '99999999',
-        pointerEvents: 'none',
-        lineHeight:    '1.4',
-    })
-    tip.textContent = tooltip
-    document.body.appendChild(tip)
-
-    plaquinha.addEventListener('mouseenter', () => {
-        const rect = plaquinha.getBoundingClientRect()
-        tip.style.display = 'block'
-
-        // Posição inicial: centralizado acima da plaquinha
-        let left = rect.left + rect.width / 2 - tip.offsetWidth / 2
-        let top  = rect.top - tip.offsetHeight - 4
-
-        // Corrige se saiu pela direita
-        if (left + tip.offsetWidth > window.innerWidth - 8) {
-            left = window.innerWidth - tip.offsetWidth - 8
-        }
-        // Corrige se saiu pela esquerda
-        if (left < 8) {
-            left = 8
-        }
-        // Corrige se saiu pelo topo — mostra abaixo da plaquinha
-        if (top < 8) {
-            top = rect.bottom + 4
-        }
-
-        // Corrige se saiu por baixo (pode acontecer mesmo após a correção acima,
-        // quando a plaquinha está perto do rodapé e o tooltip é alto)
-        if (top + tip.offsetHeight > window.innerHeight - 8) {
-            top = window.innerHeight - tip.offsetHeight - 8
-        }
-
-        // Última garantia: nunca deixa o topo negativo (tooltip maior que a viewport)
-        if (top < 8) {
-            top = 8
-        }
-
-        tip.style.left = left + 'px'
-        tip.style.top  = top  + 'px'
-    })
-    plaquinha.addEventListener('mouseleave', () => tip.style.display = 'none')
-
-    // Limpa o tip do body se o wrapper for removido do DOM
-    const observer = new MutationObserver(() => {
-        if (!document.body.contains(wrapper)) {
-            tip.remove()
-            observer.disconnect()
-        }
-    })
-    observer.observe(document.body, { childList: true, subtree: true })
-
     wrapper.appendChild(plaquinha)
     if (ancestral) _ui_inserir(wrapper, ancestral)
-    wrapper.atualizarTooltip = (novoTexto) => { tip.textContent = novoTexto }
+
+    const { atualizar } = criaTooltip({ id, texto: tooltip, elemento: plaquinha })
+    wrapper.atualizarTooltip = atualizar
+
     return wrapper
 }
 
