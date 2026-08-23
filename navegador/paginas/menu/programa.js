@@ -75,6 +75,8 @@ async function iniciar(){
 	// Referências página 4 — Modo Desenvolvedor
 	let btnModoDev           = document.getElementById('btn-modo-dev')
 	let statusModoDev        = document.getElementById('status-modo-dev')
+	let btnConfigGestao      = document.getElementById('btn-config-gestao')
+	let abrirConfigGestao   = document.getElementById('abrir-config-gestao')
 
 	// ════════════════════════════════════════════════════════
 	// EVITA QUEDA
@@ -412,6 +414,11 @@ async function iniciar(){
 				args: [devAtivo],
 			}).catch(() => {})
 		})
+	})
+	btnConfigGestao.addEventListener('click', async () => {
+		// Lógica para abrir configurações de gestão
+		let url = extensao_raiz('navegador/paginas/menu/menu-gestor.htm')
+		window.open(url, '_blank'/*, 'width=800,height=600'*/)
 	})
 
 	const ML_KEY      = 'melhorLeitura_config'
