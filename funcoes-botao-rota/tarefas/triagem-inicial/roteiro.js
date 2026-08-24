@@ -718,12 +718,14 @@ async function triagem_inicial_acoesCertificar(){
         }
     }
     let dados = certidoes[tipoCertidao]
-    await suspender(200)
+    await suspender(1000)
     await preencherCampoComEscolhaDeOpcao(tipo, dados.tipo)
-    await suspender(200)
+    console.log('%c[Rota PJE]%c tipo 722: ' + JSON.stringify(tipo), LOG.info, 'color:inherit')
+    await suspender(1000)
     await preencher(descricao, dados.descricao)
+    console.log('%c[Rota PJE]%c : descricao 722: ' + JSON.stringify(descricao), LOG.info, 'color:inherit')
     if (dados.modelo){
-        await suspender(200)
+        await suspender(1000)
         await digitarNoInput(campoModelo, dados.modelo)
         await selecionarOpcaoDeModelo(dados.modelo)
         await esperarEClicar('elaborarDespachoInserirModelo')

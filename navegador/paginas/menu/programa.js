@@ -394,7 +394,7 @@ async function iniciar(){
 		} else {
 			btnModoDev.classList.remove('ativo')
 			btnModoDev.title = 'Modo dev inativo — clique para ativar'
-			statusModoDev.textContent = '○ Console silenciado'
+			statusModoDev.textContent = 'Console silenciado'
 			statusModoDev.style.color = '#5e84a8'
 		}
 	}
@@ -415,6 +415,7 @@ async function iniciar(){
 			}).catch(() => {})
 		})
 	})
+	btnConfigGestao.classList.add('ativo')
 	btnConfigGestao.addEventListener('click', async () => {
 		// Lógica para abrir configurações de gestão
 		let url = extensao_raiz('navegador/paginas/menu/menu-gestor.htm')

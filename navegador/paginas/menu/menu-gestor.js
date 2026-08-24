@@ -76,6 +76,12 @@ async function gestao_inicializar() {
     })
     rodape.style.width = '100%'
     rodape.style.height = '50px'
+    criaBotaoLaranja({
+        id: id('gestao', 'login'),
+        ancestral: divRodape,
+        texto: 'Fazer login como gestor.',
+        acao: () => loginGestor()
+    })
     async function grade_abrir(tipos, colunas) {
         let remover = document.getElementById(id('gestao', 'grade'))
         if (remover) {
@@ -93,5 +99,42 @@ async function gestao_inicializar() {
         }
         
     }
+    async function loginGestor() {
+        let nome = 'loginGestor'
+        let divId = id('gestao', nome)
+        let div = criaDiv({
+            id: divId,
+            ancestral: 'ffff'
+        })
+        Object.assign(div.style,{
+            position:       'absolute',
+            top:            '50%',
+            left:           '50%',
+            transform:      'translate(-50%, -50%)',
+            width:          '15%',
+            height:         'fit-content',
+            background:     UI_CORES.branco,
+            border:         '1px solid ' + UI_CORES.azul,
+            borderRadius:   '8px',
+            boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
+            display:        'flex',
+            padding:        '4px 4px 4px 4px'
+        })
+        let input = criaBotaoComInputAzul({
+            id: id('gestao', 'senhaBotao'),
+            idInput: id('gestao', 'senhaInput'),
+            texto: 'OK',
+            textoEmCima: 'Digite a senha',
+            ancestral: divId,
+            acao: () => confereSenha((document.getElementById(id('gestao', 'senhaInput'))).value)
+        })
+        let inputElemento = document.getElementById(id('gestao', 'senhaInput'))
+        inputElemento.type = 'password'
+        inputElemento.autocomplete = 'new-password'
+    }
+    async function confereSenha(senha) {
+        
+    }
 }
 gestao_inicializar()
+
