@@ -1,239 +1,223 @@
 /**
  * github_storage.js
- * Módulo para o RotaPJE — gerencia leitura e escrita dos JSONs no repo-dados.
+ * Funções para o RotaPJE — leitura e escrita dos JSONs no repo-dados do GitHub.
  *
- * Uso no menu-gestor.htm (salvar senha):
- *   await GitHubStorage.salvarSenha(senha);
- *   const ok = await GitHubStorage.testarSenha();
+ * Uso no menu-gestor.htm (salvar e testar senha):
+ *   await githubSalvarSenha(senha);
+ *   const ok = await githubTestarSenha();
  *
- * Uso no RotaPJE (leitura — sem senha, repo público):
- *   const juizes = await GitHubStorage.lerDados('juizes.json');
+ * Uso na extensão (leitura pública, sem senha):
+ *   const juizes = await githubLerDados('juizes.json');
  *
- * Uso no menu-gestor.htm (escrita — precisa da senha salva):
- *   await GitHubStorage.salvarDados('juizes.json', objetoAtualizado);
+ * Uso no menu-gestor.htm (escrita, requer senha salva):
+ *   await githubSalvarDados('juizes.json', objetoAtualizado);
  */
 
-const GitHubStorage = (() => {
+// ─── Configuração ────────────────────────────────────────────────────────────
+// Ajuste para os seus repositórios antes de usar.
 
-  // ─── Configuração ─────────────────────────────────────────────────────────
-  // Ajuste estas constantes para os seus repositórios.
+const GITHUB_OWNER         = 'minduca-gustavo';     // usuário/org GitHub
+const GITHUB_REPO_TOKEN    = 'rotaPJEt';   // repo público com token.enc
+const GITHUB_TOKEN_PATH    = 'token.enc';       // caminho do arquivo encriptado
+const GITHUB_REPO_DADOS    = 'rotaPJEd';   // repo público com os JSONs
+const GITHUB_BRANCH        = 'main';
+const GITHUB_SENHA_KEY     = 'rota_pje_senha_gestao';  // chave no armazenar
+const GITHUB_SENHA_TTL     = 7 * 24 * 60 * 60 * 1000; // 7 dias em ms
 
-  const CONFIG = {
-    owner:        'minduca-gustavo',          // usuário/org GitHub
-    repoToken:    'rotaPJEt',        // repo público com token.enc
-    repoTokenPath:'token.enc',            // caminho do arquivo encriptado
-    repoDados:    'rotaPJEd',        // repo público com os JSONs
-    branch:       'main',
-    senhaStorageKey:  'rota_pje_senha',
-    tokenCacheKey:    'rota_pje_token_cache',
-    tokenCacheTTL:    7 * 24 * 60 * 60 * 1000, // 7 dias em ms
-  };
+// Cache em memória do token decriptado (válido por 1 hora)
+let _githubTokenCache  = null;
+let _githubTokenExpira = 0;
 
-  // ─── Utilitários de crypto (Web Crypto API — disponível em extensões) ─────
+// ─── Utilitários internos ────────────────────────────────────────────────────
 
-  function encode(str) {
-    return new TextEncoder().encode(str);
+function _githubEncode(str) {
+  return new TextEncoder().encode(str);
+}
+
+function _githubFromBase64(str) {
+  return Uint8Array.from(atob(str), c => c.charCodeAt(0));
+}
+
+async function _githubDeriveKey(password, salt) {
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', _githubEncode(password), { name: 'PBKDF2' }, false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 310_000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+}
+
+async function _githubDecryptToken(encJson, password) {
+  let parsed;
+  try {
+    parsed = JSON.parse(encJson);
+  } catch {
+    throw new Error('token.enc inválido — não é JSON.');
   }
 
-  function fromBase64(str) {
-    return Uint8Array.from(atob(str), c => c.charCodeAt(0));
+  if (parsed.v !== 1) {
+    throw new Error(`Versão do token.enc não suportada: ${parsed.v}`);
   }
 
-  async function deriveKey(password, salt) {
-    const keyMaterial = await crypto.subtle.importKey(
-      'raw', encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
-    );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 310_000, hash: 'SHA-256' },
-      keyMaterial,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
-    );
+  const salt = _githubFromBase64(parsed.salt);
+  const iv   = _githubFromBase64(parsed.iv);
+  const data = _githubFromBase64(parsed.data);
+  const key  = await _githubDeriveKey(password, salt);
+
+  let decrypted;
+  try {
+    decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+  } catch {
+    throw new Error('Senha incorreta ou arquivo corrompido.');
   }
 
-  /**
-   * Decripta o conteúdo do token.enc usando a senha.
-   * Lança erro se a senha estiver errada (AES-GCM valida integridade).
-   */
-  async function decryptToken(encJson, password) {
-    let parsed;
-    try {
-      parsed = JSON.parse(encJson);
-    } catch {
-      throw new Error('token.enc inválido — não é JSON.');
+  return new TextDecoder().decode(decrypted);
+}
+
+async function _githubGetToken() {
+  // Retorna do cache se ainda válido
+  if (_githubTokenCache && Date.now() < _githubTokenExpira) {
+    return _githubTokenCache;
+  }
+
+  const senha = await githubGetSenha();
+  if (!senha) {
+    throw new Error('Senha não configurada ou expirada. Configure no menu-gestor.');
+  }
+
+  const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO_TOKEN}/${GITHUB_BRANCH}/${GITHUB_TOKEN_PATH}`;
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error(`Não foi possível buscar o token.enc: ${resp.status}`);
+  }
+  const encJson = await resp.text();
+
+  const token = await _githubDecryptToken(encJson, senha);
+
+  // Cacheia por 1 hora
+  _githubTokenCache  = token;
+  _githubTokenExpira = Date.now() + 60 * 60 * 1000;
+
+  return token;
+}
+
+// ─── Funções públicas ────────────────────────────────────────────────────────
+
+/**
+ * Salva a senha no armazenar com validade de 7 dias.
+ * Chame no menu-gestor quando o usuário digitar a senha.
+ */
+async function githubSalvarSenha(senha) {
+  armazenar({
+    [GITHUB_SENHA_KEY]: {
+      valor:  senha,
+      expira: Date.now() + GITHUB_SENHA_TTL,
     }
+  });
+  // Limpa cache de token ao trocar a senha
+  _githubTokenCache  = null;
+  _githubTokenExpira = 0;
+}
 
-    if (parsed.v !== 1) {
-      throw new Error(`Versão do token.enc não suportada: ${parsed.v}`);
-    }
+/**
+ * Retorna a senha salva, ou null se ausente/expirada.
+ * Use para saber se o usuário está "logado".
+ */
+async function githubGetSenha() {
+  const data  = await obterArmazenamento(GITHUB_SENHA_KEY);
+  const entry = data[GITHUB_SENHA_KEY];
+  if (!entry || Date.now() > entry.expira) return null;
+  return entry.valor;
+}
 
-    const salt = fromBase64(parsed.salt);
-    const iv   = fromBase64(parsed.iv);
-    const data = fromBase64(parsed.data);
-    const key  = await deriveKey(password, salt);
-
-    let decrypted;
-    try {
-      decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
-    } catch {
-      throw new Error('Senha incorreta ou arquivo corrompido.');
-    }
-
-    return new TextDecoder().decode(decrypted);
-  }
-
-  // ─── Gerenciamento de senha e token em cache ──────────────────────────────
-
-  /**
-   * Salva a senha no chrome.storage.sync com TTL de 7 dias.
-   * Chamado pelo menu-gestor quando o usuário digita a senha.
-   */
-  async function salvarSenha(senha) {
-    await chrome.storage.sync.set({
-      [CONFIG.senhaStorageKey]: {
-        valor:   senha,
-        expira:  Date.now() + CONFIG.tokenCacheTTL,
-      }
-    });
-  }
-
-  /**
-   * Retorna a senha salva, ou null se expirada/ausente.
-   */
-  async function getSenha() {
-    const data = await chrome.storage.sync.get(CONFIG.senhaStorageKey);
-    const entry = data[CONFIG.senhaStorageKey];
-    if (!entry || Date.now() > entry.expira) return null;
-    return entry.valor;
-  }
-
-  /**
-   * Busca o token.enc do repo público, decripta com a senha e retorna o token GitHub.
-   * Usa cache em memória para não buscar a cada operação.
-   */
-  const _cache = { token: null, expira: 0 };
-
-  async function getToken() {
-    // Cache em memória (válido enquanto a extensão estiver aberta)
-    if (_cache.token && Date.now() < _cache.expira) {
-      return _cache.token;
-    }
-
-    const senha = await getSenha();
-    if (!senha) {
-      throw new Error('Senha não configurada ou expirada. Configure no menu-gestor.');
-    }
-
-    // Busca o token.enc do repo público
-    const url = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repoToken}/${CONFIG.branch}/${CONFIG.repoTokenPath}`;
+/**
+ * Testa se a senha salva consegue decriptar o token.enc.
+ * Retorna true/false — use no menu-gestor para feedback visual.
+ */
+async function githubTestarSenha(senha) {
+  console.log('%c[Rota PJE]%c senha: ' + JSON.stringify(senha), LOG.teste, 'color:inherit')
+  try {
+    const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO_TOKEN}/${GITHUB_BRANCH}/${GITHUB_TOKEN_PATH}`;
     const resp = await fetch(url, { cache: 'no-store' });
-    if (!resp.ok) {
-      throw new Error(`Não foi possível buscar o token.enc: ${resp.status}`);
-    }
+    console.log('%c[Rota PJE]%c url: ' + JSON.stringify(url), LOG.aviso, 'color:inherit')
+    console.log('%c[Rota PJE]%c resp: ' + JSON.stringify(resp), LOG.aviso, 'color:inherit')
+    if (!resp.ok) throw new Error();
     const encJson = await resp.text();
+    await _githubDecryptToken(encJson, senha);
+    return true;
+  } catch(e) {
+    console.log('%c[Rota PJE]%c catch: ' + JSON.stringify(e.message), LOG.aviso, 'color:inherit')
+    return false;
+  }
+}
 
-    // Decripta
-    const token = await decryptToken(encJson, senha);
+/**
+ * Lê um JSON do repo-dados (público, sem autenticação).
+ * Use em qualquer parte da extensão.
+ *
+ * @param {string} arquivo  ex: 'juizes.json'
+ * @returns {Promise<any>}
+ */
+async function githubLerDados(arquivo) {
+  const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO_DADOS}/${GITHUB_BRANCH}/${arquivo}`;
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error(`Erro ao ler ${arquivo}: ${resp.status}`);
+  }
+  return resp.json();
+}
 
-    // Cacheia por 1 hora em memória
-    _cache.token  = token;
-    _cache.expira = Date.now() + 60 * 60 * 1000;
+/**
+ * Salva/atualiza um JSON no repo-dados.
+ * Requer senha configurada no menu-gestor.
+ *
+ * @param {string} arquivo   ex: 'juizes.json'
+ * @param {any}    conteudo  objeto JS — serializado como JSON formatado
+ * @param {string} [msg]     mensagem de commit (opcional)
+ */
+async function githubSalvarDados(arquivo, conteudo, msg) {
+  const token = await _githubGetToken();
+  const url   = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO_DADOS}/contents/${arquivo}`;
 
-    return token;
+  // Busca SHA atual (obrigatório para atualizar arquivo existente)
+  const getResp = await fetch(url, {
+    headers: { Authorization: `token ${token}` }
+  });
+
+  let sha;
+  if (getResp.ok) {
+    const info = await getResp.json();
+    sha = info.sha;
+  } else if (getResp.status !== 404) {
+    throw new Error(`Erro ao verificar ${arquivo}: ${getResp.status}`);
   }
 
-  // ─── API pública ──────────────────────────────────────────────────────────
+  const json    = JSON.stringify(conteudo, null, 2);
+  const base64  = btoa(unescape(encodeURIComponent(json)));
+  const message = msg || `dados: atualiza ${arquivo}`;
 
-  /**
-   * Testa se a senha salva consegue decriptar o token.enc.
-   * Retorna true/false — use no menu-gestor para feedback visual.
-   */
-  async function testarSenha() {
-    try {
-      await getToken();
-      return true;
-    } catch {
-      return false;
-    }
+  const putResp = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization:  `token ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      message,
+      content: base64,
+      branch:  GITHUB_BRANCH,
+      ...(sha ? { sha } : {}),
+    }),
+  });
+
+  if (!putResp.ok) {
+    const erro = await putResp.text();
+    throw new Error(`Erro ao salvar ${arquivo}: ${putResp.status} — ${erro}`);
   }
 
-  /**
-   * Lê um JSON do repo-dados (público, sem autenticação).
-   * Use em qualquer parte da extensão para carregar os dados.
-   *
-   * @param {string} arquivo  ex: 'juizes.json'
-   * @returns {Promise<any>}
-   */
-  async function lerDados(arquivo) {
-    const url = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repoDados}/${CONFIG.branch}/${arquivo}`;
-    const resp = await fetch(url, { cache: 'no-store' });
-    if (!resp.ok) {
-      throw new Error(`Erro ao ler ${arquivo}: ${resp.status}`);
-    }
-    return resp.json();
-  }
-
-  /**
-   * Salva/atualiza um JSON no repo-dados.
-   * Requer a senha configurada no menu-gestor.
-   *
-   * @param {string} arquivo   ex: 'juizes.json'
-   * @param {any}    conteudo  objeto JS — será serializado como JSON formatado
-   * @param {string} [msg]     mensagem de commit (opcional)
-   */
-  async function salvarDados(arquivo, conteudo, msg) {
-    const token = await getToken();
-
-    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repoDados}/contents/${arquivo}`;
-
-    // Busca SHA atual (obrigatório para atualizar)
-    const getResp = await fetch(url, {
-      headers: { Authorization: `token ${token}` }
-    });
-
-    let sha;
-    if (getResp.ok) {
-      const info = await getResp.json();
-      sha = info.sha;
-    } else if (getResp.status !== 404) {
-      throw new Error(`Erro ao verificar ${arquivo}: ${getResp.status}`);
-    }
-
-    const json    = JSON.stringify(conteudo, null, 2);
-    const base64  = btoa(unescape(encodeURIComponent(json)));
-    const message = msg || `dados: atualiza ${arquivo}`;
-
-    const putResp = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization:  `token ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message,
-        content: base64,
-        branch:  CONFIG.branch,
-        ...(sha ? { sha } : {}),
-      }),
-    });
-
-    if (!putResp.ok) {
-      const erro = await putResp.text();
-      throw new Error(`Erro ao salvar ${arquivo}: ${putResp.status} — ${erro}`);
-    }
-
-    return putResp.json();
-  }
-
-  // ─── Exports ──────────────────────────────────────────────────────────────
-
-  return {
-    salvarSenha,   // (senha: string) => Promise<void>
-    testarSenha,   // () => Promise<boolean>
-    lerDados,      // (arquivo: string) => Promise<any>
-    salvarDados,   // (arquivo: string, conteudo: any, msg?: string) => Promise<any>
-    getSenha,      // () => Promise<string|null>  — para saber se está logado
-  };
-
-})();
+  return putResp.json();
+}
