@@ -106,13 +106,18 @@ async function gestao_inicializar() {
         let nomeArquivo = _docaAtiva + '.json'
         try {
             _dadosGit = await githubLerDados(nomeArquivo)
+            console.log('%c[Rota PJE]%c dadosGit: ' + JSON.stringify(_dadosGit), LOG.aviso, 'color:inherit')
         } catch (e) {
-            removerCarregando()
-            //await rota_avisoObrigatorio('Erro ao carregar ' + nomeArquivo + ': ' + e.message)
-            return
+            if (e.message.includes('404')) {
+                _dadosGit = []
+            } else {
+                removerCarregando()
+                //await rota_avisoObrigatorio('Erro ao carregar ' + nomeArquivo + ': ' + e.message)
+                return
+            }
         }
-        removerCarregando()
-
+        removerCarregando()  // ← deve ficar FORA do try/catch, depois dele
+        
         // Deriva colunas: usa configBotao.colunas se existir, senão deriva do primeiro objeto
         if (configBotao.colunas && configBotao.colunas.length) {
             _colunasAtivas = configBotao.colunas.map(c => {
@@ -170,8 +175,9 @@ async function gestao_inicializar() {
                 padding:      '2px 0'
             })
             for (let col of _colunasAtivas) {
-                let valor = linha[col.chave]
+                let valor = linha[col.label]
                 let textoValor = Array.isArray(valor) ? valor.join(', ') : (valor ?? '')
+                console.log('%c[Rota PJE]%c textoValor' + JSON.stringify(textoValor), LOG.aviso, 'color:inherit')
                 let celula = criaTexto({
                     id: id('gestao', 'grade', 'cel', col.chave, String(i)),
                     texto: String(textoValor),
@@ -251,8 +257,9 @@ async function gestao_inicializar() {
         })
 
         for (let col of _colunasAtivas) {
-            let valorBruto = dadosLinha ? dadosLinha[col.chave] : ''
+            let valorBruto = dadosLinha ? dadosLinha[col.label] : ''
             let valorExibido = Array.isArray(valorBruto) ? valorBruto.join(',') : (valorBruto ?? '')
+            console.log('%c[Rota PJE]%c valorExibido' + JSON.stringify(valorExibido), LOG.aviso, 'color:inherit')
             let idCelula = id('gestao', 'grade', col.chave, String(indice))
             let inputEl = criaInput({
                 id: idCelula,
