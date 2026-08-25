@@ -126,6 +126,7 @@
         "assistentes-flutuantes/filtros_novos.js",
         "assistentes-flutuantes/assistente-assinatura.js",
         "assistentes-flutuantes/pericias-aud.js",
+        "assistentes-flutuantes/quadro-juizesSempreVisivel.js",
         "pje/teste.js",
         "funcoes-botao-rota/tarefas/index.js",
         "funcoes-botao-rota/tarefas/balcao-virtual/roteiro.js",
