@@ -143,8 +143,7 @@ async function iniciar(){
 		navInd.textContent   = n + ' / ' + TOTAL_PAGINAS
 		setaEsq.disabled     = n===1
 		setaDir.disabled     = n===TOTAL_PAGINAS
-		// Verifica autenticação ao entrar na página 4
-		if(n === 4) _superfiltroAutenticado().then(auth => _mostrarSuperfiltro(auth))
+		
 	}
 	setaEsq.addEventListener('click', () => { if(paginaAtual>1) irPara(paginaAtual-1) })
 	setaDir.addEventListener('click', () => { if(paginaAtual<TOTAL_PAGINAS) irPara(paginaAtual+1) })
@@ -314,68 +313,9 @@ async function iniciar(){
 	})
 
 
-	// ════════════════════════════════════════════════════════
-	// PÁGINA 3 — SUPER FILTROS (protegida por senha)
-	// ════════════════════════════════════════════════════════
-
-	// Hash SHA-256 da senha. Para trocar: gere o hash da nova senha em
-	// https://emn178.github.io/online-tools/sha256.html e substitua abaixo.
-	const SENHA_HASH  = 'd4b8b964ed94a604c3adb5accbf19a370a6cd7558a52bd30c2ea1c8d6b5370e4'
-	const AUTH_KEY    = 'superfiltro_auth_ts'
-	const AUTH_EXPIRY = 8 * 60 * 60 * 1000  // 8 horas em ms
-
-	let divSenha    = document.getElementById('superfiltro-senha')
-	let divConteudo = document.getElementById('superfiltro-conteudo')
-	let inputSenha  = document.getElementById('input-senha-sf')
-	let btnSenha    = document.getElementById('btn-senha-sf')
-	let statusSenha = document.getElementById('status-senha-sf')
-
-	async function _hashSenha(texto) {
-		let buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto))
-		return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('')
-	}
-
-	async function _superfiltroAutenticado() {
-		let s = await NAV.storage.local.get([AUTH_KEY])
-		let ts = s[AUTH_KEY] || 0
-		return (Date.now() - ts) < AUTH_EXPIRY
-	}
-
-	async function _autenticar() {
-		await NAV.storage.local.set({ [AUTH_KEY]: Date.now() })
-		
-	}
-
-	function _mostrarSuperfiltro(autenticado) {
-		divSenha.style.display    = autenticado ? 'none'  : 'block'
-		divConteudo.style.display = autenticado ? 'block' : 'none'
-	}
-
-	_mostrarSuperfiltro(await _superfiltroAutenticado())
-
-	btnSenha.addEventListener('click', async () => {
-		let hash = await _hashSenha(inputSenha.value)
-		if (hash === SENHA_HASH) {
-			await _autenticar()
-			inputSenha.value = ''
-			_mostrarSuperfiltro(true)
-		} else {
-			statusSenha.textContent = '❌ Senha incorreta.'
-			statusSenha.style.color = '#e74c3c'
-			inputSenha.value = ''
-			inputSenha.focus()
-			setTimeout(() => { statusSenha.textContent = '' }, 2500)
-		}
-	})
-
-	inputSenha.addEventListener('keydown', e => {
-		if (e.key === 'Enter') btnSenha.click()
-	})
-
-	
 
 	// ════════════════════════════════════════════════════════
-	// MODO DESENVOLVEDOR
+	// PÁGINA 3 — MODO DESENVOLVEDOR E CONFIGURAÇÕES
 	// ════════════════════════════════════════════════════════
 	const DEV_KEY = 'modoDev'
 
