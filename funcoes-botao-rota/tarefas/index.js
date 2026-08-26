@@ -52,6 +52,12 @@ const ROTA_CATALOGO = [
         descricao: 'Processamento de recurso e encaminhamento ao TRT.',
         tipo:      ROTA_TIPO.SISTEMA,
     },
+    {
+        id:        'visualizador_de_documentos',
+        label:     'Visualizador de Documentos',
+        descricao: 'Visualização rápida de documentos escolhidos do processo.',
+        tipo:      ROTA_TIPO.SISTEMA,
+    },
     
     /*
     {

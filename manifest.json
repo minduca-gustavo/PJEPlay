@@ -60,6 +60,7 @@
         "funcoes-botao-rota/tarefas/balcao-virtual/roteiro.js",
         "funcoes-botao-rota/tarefas/triagem-inicial/roteiro.js",
         "funcoes-botao-rota/tarefas/con2-prazo-vencido/roteiro-con2-prazo-vencido.js",
+        "funcoes-botao-rota/tarefas/visualizador-de-documentos/roteiro-visualizador-de-documentos.js",
         "funcoes-botao-rota/tarefas/pos-triagem/roteiro.js"
       ]
     }
@@ -132,6 +133,7 @@
         "funcoes-botao-rota/tarefas/balcao-virtual/roteiro.js",
         "funcoes-botao-rota/tarefas/triagem-inicial/roteiro.js",
         "funcoes-botao-rota/tarefas/con2-prazo-vencido/roteiro-con2-prazo-vencido.js",
+        "funcoes-botao-rota/tarefas/visualizador-de-documentos/roteiro-con2-visualizador-de-documentos.js",
         "funcoes-botao-rota/tarefas/pos-triagem/roteiro.js"
       ],
       "run_at": "document_idle"
