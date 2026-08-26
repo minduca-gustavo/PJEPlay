@@ -11,12 +11,12 @@
 
 
 
-async function con2_prazo_vencido_assistente_iniciar() {
-    let tarefaNome = 'con2_prazo_vencido'
+async function visualizador_de_documentos_assistente_iniciar() {
+    let tarefaNome = 'visualizador_de_documentos'
     
     // ── Filtra pelo parâmetro da URL ──────────────────────────
     const tarefa = new URL(location.href).searchParams.get('pjerota_tarefa')
-    if (tarefa !== 'con2_prazo_vencido') return
+    if (tarefa !== 'visualizador_de_documentos') return
     console.log('%c[Rota PJE]%c 13', LOG.teste, 'color:inherit')
     // ── Aguarda sinal de dados prontos via storage ────────────
     //
@@ -44,12 +44,12 @@ async function con2_prazo_vencido_assistente_iniciar() {
 
     // ── Remove o carregando ───────────────────────────────────
     removerCarregando()
-    let dados = await obterArmazenamento(['rota_dadosCon2PrazoVencido'])
-    console.log('%c[Rota PJE]%c dados?.rota_dadosCon2PrazoVencido' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido), LOG.rosa, 'color:inherit')
+    let dados = await obterArmazenamento(['rota_dadosVisualizadorDeDocumentos'])
+    console.log('%c[Rota PJE]%c dados?.rota_dadosVisualizadorDeDocumentos' + JSON.stringify(dados?.rota_dadosVisualizadorDeDocumentos), LOG.rosa, 'color:inherit')
     let bloco = 'inicial'
 
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Con2 Prazo Vencido', ancestral: id(tarefaNome, bloco) })
+    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Visualizador de Documentos', ancestral: id(tarefaNome, bloco) })
     criaTextoQueAbrePassandoOMouse({
         id: id(tarefaNome, bloco, 'instrucao_longa'),
         texto: `Passe o mouse para ver como utilizar este assistente.
@@ -68,7 +68,7 @@ Abaixo da tabela de documentos, o menu suspenso permite escolher, entre os tipos
     criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: id(tarefaNome, bloco) })
     let i = 0
     
-    let solucoes = dados?.rota_dadosCon2PrazoVencido?.solucao || []
+    let solucoes = dados?.rota_dadosVisualizadorDeDocumentos?.solucao || []
     console.log('%c[Rota PJE]%c solucoes.length: ' + JSON.stringify(solucoes.length), LOG.rosa, 'color:inherit')
     if (solucoes.length) {
         criaTabelaDeSolucoes(solucoes)
@@ -142,14 +142,14 @@ Abaixo da tabela de documentos, o menu suspenso permite escolher, entre os tipos
         { chave: 'procuracao',       label: 'Procuração' },
         { chave: 'substabelecimento',label: 'Substabelecimento' },
     ]
-    let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
+    let documentosTimeline = dados?.rota_dadosVisualizadorDeDocumentos?.timeline || []
     
     await criaWidgetDocumentos({
         ancestral:  id(tarefaNome, bloco),
         documentos: documentosTimeline,
         tipos:      tiposDocumentos,
         idPrefixo:  id(tarefaNome, bloco, 'widget'),
-        onAbrir:    (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
+        onAbrir:    (documento) => comandar(['visualizador_de_documentos_abrir_documentos'],[documento]),
         modo:       'tipo',
     })
 
@@ -159,4 +159,4 @@ Abaixo da tabela de documentos, o menu suspenso permite escolher, entre os tipos
 
 
 // Auto-executa ao carregar o script
-con2_prazo_vencido_assistente_iniciar()
+visualizador_de_documentos_assistente_iniciar()
