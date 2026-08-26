@@ -65,7 +65,7 @@ Abaixo da tabela de documentos, o menu suspenso permite escolher, entre os tipos
         id: id(tarefaNome, bloco, 'visualizador'),
         ancestral: id(tarefaNome, bloco),
         timeline: dados?.rota_dadosVisualizadorDeDocumentos?.timeline,
-        termos: 'certidao, manifestacao, peticao inicial, despacho, certidao, Manifestacao'
+        termos: 'certidao, manifestacao, documento diverso, peticao inicial, despacho, certidao, Manifestacao'
     })
     // ── Bloco: autuacao ───────────────────────────────────────
     

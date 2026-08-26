@@ -1775,16 +1775,30 @@ function rota_avisoObrigatorio(msg = '', segundos = 60) {
   })
 }
 
-async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termos}){
+async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termos, abrir}){
     let armazenamento = await obterArmazenamento(id)
     let ordemSalva = armazenamento[id] ?? null
     let maisAntigo = false
     if (!ordemSalva) maisAntigo = ordemSalva?.maisAntigo
     let arrayTermos = [... new Set (termos.split(',').map(d => normalizar(d).trim().toLowerCase()))]
     let termosIds = arrayTermos.map(d => {
-        let docs = timeline.filter(c => normalizar(c.titulo).toLowerCase().includes(d) || normalizar(c.tipo).toLowerCase().includes(d))
-        let idData = docs.map(d => ({id: d.idUnicoDocumento, titulo: d.titulo, data: d.data}))
-        return {[d]: idData}
+        let docs = timeline.filter(c => 
+            normalizar(c.titulo).toLowerCase().includes(d) 
+            || normalizar(c.tipo).toLowerCase().includes(d) 
+            || c?.anexos?.some(a => normalizar(a?.titulo).toLowerCase().includes(d)) 
+            || c?.anexos?.some(a => normalizar(a?.tipo).toLowerCase().includes(d))
+        )
+        let idDocs = docs.map(b => {
+            if (normalizar(b.titulo).toLowerCase().includes(d) 
+                || normalizar(b.tipo).toLowerCase().includes(d)
+            ) return {id: b.idUnicoDocumento, titulo: b.titulo}
+            else {
+                let anexos = b.anexos.filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d)).map(a => ({id: a.idUnicoDocumento, titulo: a.titulo, data: a.data}))
+                let anexosId = anexos.map(f => ({id: f.idUnicoDocumento, titulo: f.titulo, data: f.data}))
+                return {id: b.idUnicoDocumento, anexos: anexosId}
+            }
+        })
+        return {termo:d , documentos: idDocs}
     })
     let contadores = {}
     console.log('%c[Rota PJE]%c termosIds: ' + JSON.stringify(termosIds), LOG.teste, 'color:inherit')
@@ -1838,8 +1852,27 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         contadores[termo] = contadorAtualizar
         console.log('%c[Rota PJE]%c soma: ' + JSON.stringify(contadores[termo]), LOG.aviso, 'color:inherit')
     }
-    function criaTabelaDocumentos(){
-
+    function criaTabelaDocumentos(termo){
+        let idTabela = id + '_' + termo.replace(/\s/g,'_') + '_tabela'
+        let tabela = document.getElementById(idTabela)
+        if(tabela) tabela.remove()
+        let documentos = termosIds.find(d => d.termo === termo)?.documentos ?? []
+        let grade = criaGrade({
+            id: idTabela,
+            ancestral: id,
+            numeroColunas: 1
+        })
+        grade.style.padding = '0px 4px 0px 4px'
+        for(let doc of documentos){
+            let textoBotao = doc.titulo ?? doc.anexos[0]?.titulo ?? 'Documento sem título'
+            let idBotao = id + '_' + (doc.titulo ?? doc.anexos[0]?.titulo ?? 'sem_titulo').replace(/\s/g,'_') + '_botao'
+            criaBotaoAzul({
+                id: idBotao,
+                ancestral: idTabela,
+                texto: textoBotao,
+                acao: () => abrir(doc.id)
+            })
+        }
     }
     function criaBotaoTermos({id, texto, ancestral, acaoPrincipal, acaoSecundaria, tooltip}){
         let divId = id
