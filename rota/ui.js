@@ -1775,6 +1775,120 @@ function rota_avisoObrigatorio(msg = '', segundos = 60) {
   })
 }
 
+async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termos}){
+    let armazenamento = await obterArmazenamento(id)
+    let ordemSalva = armazenamento[id] ?? null
+    let maisAntigo = false
+    if (!ordemSalva) maisAntigo = ordemSalva?.maisAntigo
+    let arrayTermos = [... new Set (termos.split(',').map(d => normalizar(d).trim().toLowerCase()))]
+    let termosIds = arrayTermos.map(d => {
+        let docs = timeline.filter(c => normalizar(c.titulo).toLowerCase().includes(d) || normalizar(c.tipo).toLowerCase().includes(d))
+        let idData = docs.map(d => ({id: d.idUnicoDocumento, titulo: d.titulo, data: d.data}))
+        return {[d]: idData}
+    })
+    let contadores = {}
+    console.log('%c[Rota PJE]%c termosIds: ' + JSON.stringify(termosIds), LOG.teste, 'color:inherit')
+    criaDiv({
+        id: id,
+        ancestral: ancestral
+    })
+    let idBotaoOrdem = id + '_botaoOrdem'
+    let botaoOrdem = criaBotaoLaranja({
+        id: idBotaoOrdem,
+        texto: maisAntigo ? 'Do mais antigo para o mais novo' : 'Do mais novo para o mais antigo',
+        acao: () => inverteOrdem(idBotaoOrdem),
+        ancestral: id
+    })
+    let tabelaTermos = criaTabelaTermos(timeline, id, arrayTermos)
+    function inverteOrdem(id){
+        maisAntigo = !maisAntigo
+        let botao = document.getElementById(id)
+        botao.textContent = maisAntigo ? 'Do mais antigo para o mais novo' : 'Do mais novo para o mais antigo'
+    }
+    function criaTabelaTermos(timeline, ancestral, termos, quantidade = 20){
+        let idGrade = id + '_gradeTipos'
+        let grade = criaGrade({
+            id: id + '_gradeTipos',
+            ancestral: id,
+            numeroColunas: 3
+        })
+        grade.style.padding = '0px 4px 0px 4px'
+        for(let termo of termos){
+            contadores[termo] = 0
+            let texto = termo.charAt(0).toUpperCase() + termo.slice(1, )
+            let idBotao = id + '_' + termo.replace(/\s/g,'_')
+            criaBotaoTermos({
+                id: idBotao,
+                texto: defineTextoBotaoTermo(texto, 0, quantidade),
+                tooltip: texto,
+                ancestral: idGrade,
+                acaoPrincipal: () => buscaProximoDocumento(termo, idBotao, maisAntigo),
+                acaoSecundaria: () => criaTabelaDocumentos(termo)
+            })
+        }
+        
+    }
+    function defineTextoBotaoTermo(texto, posicao, quantidade){
+        return !texto.split(' ')[1] && texto.split(' ')[0].length > 8 ? texto.split(' ')[0].slice(0, 8) + '... ' + posicao + '/' + quantidade : texto.split(' ')[0] + ' ' + posicao + '/' + quantidade
+    }
+    function buscaProximoDocumento(termo, idBotao, maisAntigo){
+        let objeto = (arr, chave) => arr.find(d => chave in d)?.[chave] ?? []
+        let soma = maisAntigo ? -1 : 1
+        let contadorAtualizar = contadores[termo] + soma
+        contadores[termo] = contadorAtualizar
+        console.log('%c[Rota PJE]%c soma: ' + JSON.stringify(contadores[termo]), LOG.aviso, 'color:inherit')
+    }
+    function criaTabelaDocumentos(){
+
+    }
+    function criaBotaoTermos({id, texto, ancestral, acaoPrincipal, acaoSecundaria, tooltip}){
+        let divId = id
+        let div = criaDiv({
+            id: divId,
+            ancestral: ancestral,
+            rowColumn: 'row'
+        })
+        div.style.gap = '0px'
+        div.style.padding = '0px 0px 0px 0px'
+        div.style.margin = '0px'
+        div.style.background = '#0078aa'
+        div.style.border = '1px solid #0078aa'
+        div.style.borderRadius = '5%'
+        let idBotaoPrincipal = id + '_botaoPrincipal'
+        let botaoPrincipal = criaBotaoAzul({
+            id: idBotaoPrincipal,
+            ancestral: divId,
+            texto: texto,
+            acao: acaoPrincipal
+        })
+        botaoPrincipal.style.width = '100%'
+        botaoPrincipal.style.margin = '0px'
+        botaoPrincipal.style.borderRadius = '0px'
+        let tooltipPrincipal = criaTooltip({
+            id: id + '_tooltipPrincipal',
+            texto: 'Clique para mostrar o próximo documento do tipo ' + tooltip,
+            elemento: idBotaoPrincipal
+        })
+        let idBotaoSecundario = id + '_botaoSecundario'
+        let botaoSecundario = criaBotaoAzul({
+            id: idBotaoSecundario,
+            ancestral: divId,
+            texto: '🎛️',
+            acao: acaoSecundaria
+        })
+        botaoSecundario.style.margin = '0px'
+        botaoSecundario.style.padding = '0px 4px 0px 4px'
+        botaoSecundario.style.width = 'fit-content'
+        botaoSecundario.style.borderRadius = '0px'
+        let tooltipSecundario = criaTooltip({
+            id: id + '_tooltipSecundario',
+            texto: 'Clique para detalhar todos os documentos do tipo ' + tooltip,
+            elemento: idBotaoSecundario
+        })
+    }
+
+}
+
 /**
  * criaWidgetDocumentos
  *

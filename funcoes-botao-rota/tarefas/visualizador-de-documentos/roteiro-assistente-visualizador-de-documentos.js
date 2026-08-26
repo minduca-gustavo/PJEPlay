@@ -47,7 +47,7 @@ async function visualizador_de_documentos_assistente_iniciar() {
     let dados = await obterArmazenamento(['rota_dadosVisualizadorDeDocumentos'])
     console.log('%c[Rota PJE]%c dados?.rota_dadosVisualizadorDeDocumentos' + JSON.stringify(dados?.rota_dadosVisualizadorDeDocumentos), LOG.rosa, 'color:inherit')
     let bloco = 'inicial'
-
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
     criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Visualizador de Documentos', ancestral: id(tarefaNome, bloco) })
     criaTextoQueAbrePassandoOMouse({
@@ -61,7 +61,14 @@ Abaixo da tabela de documentos, o menu suspenso permite escolher, entre os tipos
     })
     criaInputAnotacao({ id: id(tarefaNome, bloco, 'tipos'), placeholder: 'Digite os termos a buscar no título e tipo do documento e pressione o botão laranja.', ancestral: id(tarefaNome, bloco) })
     criaBotaoLaranja({id: id(tarefaNome, bloco, 'botao_tipos'), texto: 'Seleciona Tipos', ancestral: id(tarefaNome, bloco)})
+    criaVisualizadorDeDocumentos({
+        id: id(tarefaNome, bloco, 'visualizador'),
+        ancestral: id(tarefaNome, bloco),
+        timeline: dados?.rota_dadosVisualizadorDeDocumentos?.timeline,
+        termos: 'certidao, manifestacao, peticao inicial, despacho, certidao, Manifestacao'
+    })
     // ── Bloco: autuacao ───────────────────────────────────────
+    
     bloco = 'solucao'
 
     criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })

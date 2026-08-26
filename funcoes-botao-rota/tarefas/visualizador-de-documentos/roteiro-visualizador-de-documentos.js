@@ -4,7 +4,7 @@
 
 
 
-const dadosvisualizadorDeDocumentos = {
+const dadosVisualizadorDeDocumentos = {
     solucao: null,
     partes: null,
     processo: null,
@@ -35,7 +35,7 @@ async function visualizador_de_documentos_aoAbrirDetalhesDoProcesso(){
     if (tarefaParam && !window.name.includes(tarefa)) window.name = window.name + '-' + tarefaParam + '-' + execucao
     if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
     if (execucao !== window.name.split('-').pop()) return
-    dadosvisualizadorDeDocumentos.execucaoAtual = execucao
+    dadosVisualizadorDeDocumentos.execucaoAtual = execucao
     browser.storage.onChanged.addListener(obedecer)
     await visualizador_de_documentos_janelaDetalhes(execucao)
 }
@@ -104,14 +104,13 @@ async function visualizador_de_documentos_enviarParaRoteiroAssistente(){
     if (!idBusca) return
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     
-    dadosvisualizadorDeDocumentos.solucao                  = solucao
-    dadosvisualizadorDeDocumentos.timeline                 = timeline
-    dadosvisualizadorDeDocumentos.partes                  = partes
-    dadosvisualizadorDeDocumentos.processo                = processo
-    dadosvisualizadorDeDocumentos.recursos                = recursos
-    
-    await armazenar({ rota_dadosvisualizadorDeDocumentos: dadosvisualizadorDeDocumentos })
-    await armazenar({ rota_dadosvisualizadorDeDocumentosNumero: processo.numero })
+    dadosVisualizadorDeDocumentos.solucao                  = solucao
+    dadosVisualizadorDeDocumentos.timeline                 = timeline
+    dadosVisualizadorDeDocumentos.partes                  = partes
+    dadosVisualizadorDeDocumentos.processo                = processo
+    dadosVisualizadorDeDocumentos.recursos                = recursos
+    await armazenar({ rota_dadosVisualizadorDeDocumentos: dadosVisualizadorDeDocumentos })
+    await armazenar({ rota_dadosVisualizadorDeDocumentosNumero: processo.numero })
     await armazenar({ rota_dadosProntos: true })
 }
 

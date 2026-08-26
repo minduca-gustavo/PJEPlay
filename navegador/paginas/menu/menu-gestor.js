@@ -398,7 +398,7 @@ async function gestao_inicializar() {
         // Dados
         for (let obj of _dadosGit) {
             let linha = _colunasAtivas.map(col => {
-                let v = obj[col.chave]
+                let v = obj[col.label]
                 return Array.isArray(v) ? v.join(',') : (v ?? '')
             })
             linhas.push(linha.join('\t'))
