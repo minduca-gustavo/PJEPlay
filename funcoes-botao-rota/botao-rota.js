@@ -160,59 +160,78 @@ function _rota_sincronizar(reg){
 		divTutorial.style.position = 'relative'
 		divTutorial.style.top = '2px'
 		// NÃO chame insertAdjacentElement — criaDiv já inseriu dentro do btn
+		let botoes = [
+			{
+				id: 			'rota_tutorial_botao',
+				textContent: 	'❓',
+				background:   	`linear-gradient(to bottom, ${ROTA_C.laranjaClr}, #e8920a)`,
+				color:        	'#2a3a00',
+				url: 			'https://drive.google.com/drive/u/0/folders/1kfZ6tCIIyv6RVeCG_S6eIoE9qF_oARn4',
+				tooltip:		'▶️ Clique para ver os vídeos tutoriais do ROTA.\nDeve estar logado na conta do TRT15 para obter acesso.'
+			},
+			{
+				id: 			'rota_gestao_botao',
+				textContent: 	'⚙️',
+				background:   	`linear-gradient(to bottom, ${ROTA_C.laranjaClr}, #e8920a)`,
+				color:        	'#2a3a00',
+				url: 			extensao_raiz('navegador/paginas/menu/menu-gestor.htm'),
+				tooltip:		'⚙️ Clique para ver informações de gestão -\nQuadro de juízes/perícias/tabela de assistentes/secretários, etc.'
+			},
+		]
+		for(botao of botoes){
+			let botaoInserir = document.createElement('button')
+			botaoInserir.id          = botao.id
+			botaoInserir.textContent = botao.textContent
+			Object.assign(botaoInserir.style, {
+				background:   	botao.background,
+				color:        	botao.color,
+				border:       	'1.5px solid #7a5000',
+				borderRadius: 	'50%',          // redondo
+				width:        	'22px',
+				height:       	'22px',
+				lineHeight:   	'22px',
+				padding:      	'0',
+				fontSize:     	'11px',
+				textAlign:    	'center',
+				cursor:       	'pointer',
+				zIndex:       	'9999999',
+				fontFamily:   	"system-ui, 'Arial Black', Arial, sans-serif",
+				fontWeight:   	'900',
+				boxShadow:    	'0 1px 4px rgba(0,0,0,0.22)',
+				display:      	'flex',
+				alignItems:   	'center',
+				justifyContent:	'center',
+			})
+			let tooltip = document.createElement('span')
+			tooltip.textContent = botao.tooltip
+			Object.assign(tooltip.style, {
+				position:       'absolute',
+				top:          	'calc(100% + 6px)',  // aparece acima do botão
+				left:           '50%',
+				transform:      'translateX(-50%)',
+				background:     ROTA_C.texto,
+				color:          ROTA_C.branco,
+				fontSize:       '11px',
+				fontFamily:     'system-ui, Arial, sans-serif',
+				padding:        '3px 8px',
+				borderRadius:   '4px',
+				whiteSpace:     'pre-line',
+				width:			'350px',
+				pointerEvents:  'none',
+				opacity:        '0',
+				transition:     'opacity 0.15s',
+				zIndex:         '9999999',
+			})
+			let url = botao.url
+			// O botão precisa de position:relative para o tooltip se ancorar nele
+			botaoInserir.style.position = 'relative'
+			botaoInserir.appendChild(tooltip)
 
-		let botaoTutorial = document.createElement('button')
-		botaoTutorial.id          = 'rota_rota_tutorial_botao'
-		botaoTutorial.textContent = '❓'
-		Object.assign(botaoTutorial.style, {
-			background:   	`linear-gradient(to bottom, ${ROTA_C.laranjaClr}, #e8920a)`,
-			color:        	'#2a3a00',
-			border:       	'1.5px solid #7a5000',
-			borderRadius: 	'50%',          // redondo
-			width:        	'22px',
-			height:       	'22px',
-			lineHeight:   	'22px',
-			padding:      	'0',
-			fontSize:     	'11px',
-			textAlign:    	'center',
-			cursor:       	'pointer',
-			zIndex:       	'9999999',
-			fontFamily:   	"system-ui, 'Arial Black', Arial, sans-serif",
-			fontWeight:   	'900',
-			boxShadow:    	'0 1px 4px rgba(0,0,0,0.22)',
-			display:      	'flex',
-			alignItems:   	'center',
-			justifyContent:	'center',
-		})
-		let tooltip = document.createElement('span')
-		tooltip.textContent = '▶️ Clique para ver os vídeos tutoriais do ROTA.\nDeve estar logado na conta do TRT15 para obter acesso.'
-		Object.assign(tooltip.style, {
-			position:       'absolute',
-			top:          	'calc(100% + 6px)',  // aparece acima do botão
-			left:           '50%',
-			transform:      'translateX(-50%)',
-			background:     ROTA_C.texto,
-			color:          ROTA_C.branco,
-			fontSize:       '11px',
-			fontFamily:     'system-ui, Arial, sans-serif',
-			padding:        '3px 8px',
-			borderRadius:   '4px',
-			whiteSpace:     'pre-line',
-			width:			'350px',
-			pointerEvents:  'none',
-			opacity:        '0',
-			transition:     'opacity 0.15s',
-			zIndex:         '9999999',
-		})
-
-		// O botão precisa de position:relative para o tooltip se ancorar nele
-		botaoTutorial.style.position = 'relative'
-		botaoTutorial.appendChild(tooltip)
-
-		botaoTutorial.addEventListener('mouseenter', () => tooltip.style.opacity = '1')
-		botaoTutorial.addEventListener('mouseleave', () => tooltip.style.opacity = '0')
-		botaoTutorial.addEventListener('click', () => window.open('https://drive.google.com/drive/u/0/folders/1kfZ6tCIIyv6RVeCG_S6eIoE9qF_oARn4', 'blank'))
-		divTutorial.appendChild(botaoTutorial)
+			botaoInserir.addEventListener('mouseenter', () => tooltip.style.opacity = '1')
+			botaoInserir.addEventListener('mouseleave', () => tooltip.style.opacity = '0')
+			botaoInserir.addEventListener('click', () => window.open(url))
+			divTutorial.appendChild(botaoInserir)
+		}
 		
 	}
 

@@ -210,23 +210,10 @@
     <!-- PÁGINA 4 — Para desenvolvedores (protegida por senha) -->
     <div class="pagina" id="pagina-4">
 
-      <!-- Tela de senha (visível quando não autenticado) -->
-      <div id="superfiltro-senha" class="bloco" style="display:none">
-        <label class="bloco-label">
-          Reservado para desenvolvedores
-          <span class="bloco-hint">digite a senha para continuar</span>
-        </label>
-        <div style="display:flex;gap:6px;margin-top:6px;">
-          <input id="input-senha-sf" class="input-texto" type="password"
-                 placeholder="Senha…" style="flex:1">
-          <button id="btn-senha-sf" class="btn-salvar">OK</button>
-        </div>
-        <span id="status-senha-sf" class="status-msg"
-              style="display:block;margin-top:6px;min-height:16px;opacity:1;color:var(--pje-erro-texto);"></span>
-      </div>
+      
 
       <!-- Conteúdo real (visível quando autenticado) -->
-      <div id="superfiltro-conteudo" style="display:none">
+      <div id="superfiltro-conteudo" style="display:block">
 
         <div class="bloco">
           <div class="bloco-row">
