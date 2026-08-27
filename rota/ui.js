@@ -1791,11 +1791,10 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         let idDocs = docs.map(b => {
             if (normalizar(b.titulo).toLowerCase().includes(d) 
                 || normalizar(b.tipo).toLowerCase().includes(d)
-            ) return {id: b.idUnicoDocumento, titulo: b.titulo}
+            ) return {id: b.idUnicoDocumento, titulo: b.titulo, data: b.data}
             else {
                 let anexos = b.anexos.filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d)).map(a => ({id: a.idUnicoDocumento, titulo: a.titulo, data: a.data}))
-                let anexosId = anexos.map(f => ({id: f.idUnicoDocumento, titulo: f.titulo, data: f.data}))
-                return {id: b.idUnicoDocumento, anexos: anexosId}
+                return {id: b.idUnicoDocumento, anexos: anexos}
             }
         })
         return {termo:d , documentos: idDocs}
@@ -1856,21 +1855,36 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         let idTabela = id + '_' + termo.replace(/\s/g,'_') + '_tabela'
         let tabela = document.getElementById(idTabela)
         if(tabela) tabela.remove()
-        let documentos = termosIds.find(d => d.termo === termo)?.documentos ?? []
+        let documentosTermos = termosIds.find(d => d.termo === termo)?.documentos ?? []
+        let documentos = []
+        for (let d of documentosTermos){
+            if(d.titulo) documentos.push({id: d.id, titulo: d.titulo, data: d.data})
+            else if(d.anexos) documentos.push(...d.anexos.map(a => ({id: a.id, titulo: a.titulo, data: a.data, idPai: d.id})))
+        }
+        
+        /*
+termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidão - inexistência de depósitos"}]},{"termo":"manifestacao","documentos":[{"id":"717f22f","titulo":"Manifestação (comprovação dos recolhimentos previdenciários)"},{"id":"b5961a0","titulo":"Manifestação  MARKA"},{"id":"ac8415c","titulo":"Aud Conciliação CEJUSC"},{"id":"8a9f67d","titulo":"Manifestação (cálculos reclamada)"}]},{"termo":"documento diverso","documentos":[{"id":"717f22f","anexos":[{"titulo":"guia","data":"2025-07-07T09:28:52.211898"},{"titulo":"comprovante de pagamento","data":"2025-07-07T09:28:52.213078"}]},{"id":"b5961a0","anexos":[{"titulo":"Informa desistencia no TST","data":"2025-06-23T16:25:47.511422"}]},{"id":"8a9f67d","anexos":[{"titulo":"Luis Haroldo Ferreira - atualização de cálculo","data":"2025-03-28T19:05:18.583445"}]}]},{"termo":"peticao inicial","documentos":[{"id":"3cf565d","titulo":"Petição Inicial"}]},{"termo":"despacho","documentos":[{"id":"8993d43","titulo":"Despacho"},{"id":"ed385b7","titulo":"Despacho"},{"id":"f4322f6","titulo":"Despacho"},{"id":"8e1c338","titulo":"Despacho"},{"id":"c57e157","titulo":"Despacho"},{"id":"f72f487","titulo":"Despacho"}]}]
+        */
+        console.log('%c[Rota PJE]%c documentos' + JSON.stringify(documentos), LOG.info, 'color:inherit')
         let grade = criaGrade({
             id: idTabela,
             ancestral: id,
-            numeroColunas: 1
+            numeroColunas: 3
         })
         grade.style.padding = '0px 4px 0px 4px'
         for(let doc of documentos){
-            let textoBotao = doc.titulo ?? doc.anexos[0]?.titulo ?? 'Documento sem título'
-            let idBotao = id + '_' + (doc.titulo ?? doc.anexos[0]?.titulo ?? 'sem_titulo').replace(/\s/g,'_') + '_botao'
+            let textoBotao = 'Id ' + doc?.id + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
+            let idBotao = id + '_' + (doc?.titulo).replace(/\s/g,'_') + '_botao'
             criaBotaoAzul({
                 id: idBotao,
                 ancestral: idTabela,
                 texto: textoBotao,
                 acao: () => abrir(doc.id)
+            })
+            criaTooltip({
+                id: idBotao + '_tooltip',
+                texto: doc?.titulo,
+                elemento: idBotao
             })
         }
     }
