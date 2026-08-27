@@ -313,6 +313,16 @@ async function buscarAudienciasMarcadas(id) {
 }
 //pje-comum-api/api/processos/id/4696341/audiencias?status=M
 
+async function buscarHistoricoDeslocamentos(id) {
+	
+	let dados = await rota_fetch(
+		location.origin + '/pje-comum-api/api/processos/id/' + id + '/historicodeslocamentos'
+	)
+	//if (Array.isArray(dados)) dados = dados[0] || {}
+	return dados
+}
+//pje-comum-api/api/processos/id/4696341/audiencias?status=M
+
 // ── BUSCA MOVIMENTOS ─────────────────────────────────────────
 
 async function buscarMovimentos(i) {

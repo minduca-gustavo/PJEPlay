@@ -442,6 +442,26 @@ const SF_BOTOES = [
 		}
 	},
 	{
+		nome: 'Lista Vara de origem do processo a partir do ID do processo.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			let d = []
+			for (let id of ids){
+				let historico = await buscarHistoricoDeslocamentos(id) || []
+				let varaOrigem = historico.find(h => h?.orgaoJulgadorOrigem?.descricao.includes('Vara do Trabalho'))?.orgaoJulgadorOrigem?.descricao || ''
+				d.push({
+					Id:			id,
+					Vara_de_Origem: varaOrigem
+				})
+			}
+			
+
+			return d.length ? d : 'Não encontrada Vara de Origem.'
+			
+		}
+	},
+	{
 		nome: 'Lista audiências a partir do ID do processo.',
 		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
 		funcao: async (contexto) => {

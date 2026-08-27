@@ -1004,6 +1004,36 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 10. Audiências por ID — por Lista ─────────────────
             {
+                id: id(secao, 'botao', 'historico_deslocamentos'),
+                texto: 'Lista Vara de Origem a partir do ID do processo — por Lista',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'historico_deslocamentos_ids'),
+                        textoEmCima: 'IDs dos processos (um por linha)',
+                        placeholder: '123456',
+                        tipoInput: 'criaInputAnotacao',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let idsRaw = valores[0] || ''
+                    let ids = idsRaw.split('\n').map(s => s.trim()).filter(Boolean)
+                    if (!ids.length) return 'Nenhum ID informado.'
+                    let d = []
+                    for (let i = 0; i < ids.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + ids.length)
+                        let idProcesso = ids[i]
+                        let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+                        let varaOrigem = historico.find(h => h?.orgaoJulgadorOrigem?.descricao.includes('Vara do Trabalho'))?.orgaoJulgadorOrigem?.descricao || ''
+                        d.push({
+                            Id:                idProcesso,
+                            Vara_de_Origem:   varaOrigem
+                        })
+                    }
+                    return d.length ? d : 'Nenhuma vara de origem encontrada.'
+                }
+            },
+            // ── 10. Audiências por ID — por Lista ─────────────────
+            {
                 id: id(secao, 'botao', 'audiencias_lista'),
                 texto: 'Lista audiências a partir do ID do processo — por Lista',
                 inputs: [
