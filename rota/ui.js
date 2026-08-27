@@ -1791,10 +1791,10 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         let idDocs = docs.map(b => {
             if (normalizar(b.titulo).toLowerCase().includes(d) 
                 || normalizar(b.tipo).toLowerCase().includes(d)
-            ) return {id: b.idUnicoDocumento, titulo: b.titulo, data: b.data}
+            ) return {id: b.id, idUnicoDocumento: b.idUnicoDocumento, titulo: b.titulo, data: b.data}
             else {
-                let anexos = b.anexos.filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d)).map(a => ({id: a.idUnicoDocumento, titulo: a.titulo, data: a.data}))
-                return {id: b.idUnicoDocumento, anexos: anexos}
+                let anexos = b.anexos.filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d)).map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idDocumentoPai: a.idDocumentoPai}))
+                return {id: b.id, idUnicoDocumento: b.idUnicoDocumento, anexos: anexos}
             }
         })
         return {termo:d , documentos: idDocs}
@@ -1865,8 +1865,8 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         let documentosTermos = termosIds.find(d => d.termo === termo)?.documentos ?? []
         let documentos = []
         for (let d of documentosTermos){
-            if(d.titulo) documentos.push({id: d.id, titulo: d.titulo, data: d.data})
-            else if(d.anexos) documentos.push(...d.anexos.map(a => ({id: a.id, titulo: a.titulo, data: a.data, idPai: d.id})))
+            if(d.titulo) documentos.push({id: d.id, idUnicoDocumento: d.idUnicoDocumento, titulo: d.titulo, data: d.data})
+            else if(d.anexos) documentos.push(...d.anexos.map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idPai: d.id})))
         }
         
         /*
@@ -1887,7 +1887,7 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
             })
         }
         for(let doc of documentos){
-            let textoBotao = defineTextoBotaoTermo(termo, 0, 0, false) + '\n' + 'Id ' + doc?.id + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
+            let textoBotao = defineTextoBotaoTermo(termo, 0, 0, false) + '\n' + 'Id ' + doc?.idUnicoDocumento + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
             let idBotao = id + '_' + (doc?.titulo).replace(/\s/g,'_') + '_botao'
             criaBotaoAzul({
                 id: idBotao,
