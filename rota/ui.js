@@ -1812,49 +1812,56 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         acao: () => inverteOrdem(idBotaoOrdem),
         ancestral: id
     })
-    let tabelaTermos = criaTabelaTermos(timeline, id, arrayTermos)
+    let tabelaTermos = criaTabelaTermos(timeline, id, termosIds)
     function inverteOrdem(id){
         maisAntigo = !maisAntigo
         let botao = document.getElementById(id)
         botao.textContent = maisAntigo ? 'Do mais antigo para o mais novo' : 'Do mais novo para o mais antigo'
     }
-    function criaTabelaTermos(timeline, ancestral, termos, quantidade = 20){
+    function criaTabelaTermos(timeline, ancestral, termosIds, quantidade = 20){
         let idGrade = id + '_gradeTipos'
         let grade = criaGrade({
             id: id + '_gradeTipos',
             ancestral: id,
-            numeroColunas: 3
         })
+        grade.style.gridTemplateColumns = 'repeat(auto-fit, minmax(130px, 1fr))'
         grade.style.padding = '0px 4px 0px 4px'
-        for(let termo of termos){
-            contadores[termo] = 0
-            let texto = termo.charAt(0).toUpperCase() + termo.slice(1, )
-            let idBotao = id + '_' + termo.replace(/\s/g,'_')
+        for(let termo of termosIds){
+            contadores[termo?.termo] = 0
+            let texto = termo?.termo.charAt(0).toUpperCase() + termo?.termo.slice(1, )
+            let idBotao = id + '_' + termo?.termo.replace(/\s/g,'_')
+            let quantidade = termo?.documentos.length
             criaBotaoTermos({
                 id: idBotao,
-                texto: defineTextoBotaoTermo(texto, 0, quantidade),
+                texto: defineTextoBotaoTermo(termo?.termo, 0, quantidade),
                 tooltip: texto,
                 ancestral: idGrade,
-                acaoPrincipal: () => buscaProximoDocumento(termo, idBotao, maisAntigo),
-                acaoSecundaria: () => criaTabelaDocumentos(termo)
+                acaoPrincipal: () => buscaProximoDocumento(termo, idBotao, maisAntigo, quantidade),
+                acaoSecundaria: () => criaTabelaDocumentos(termo?.termo)
             })
         }
         
     }
-    function defineTextoBotaoTermo(texto, posicao, quantidade){
-        return !texto.split(' ')[1] && texto.split(' ')[0].length > 8 ? texto.split(' ')[0].slice(0, 8) + '... ' + posicao + '/' + quantidade : texto.split(' ')[0] + ' ' + posicao + '/' + quantidade
+    function defineTextoBotaoTermo(texto, posicao, quantidade, comPosicao = true){
+        if (comPosicao) return !texto.split(' ')[1] && texto.split(' ')[0].length > 8 ? (texto.charAt(0).toUpperCase() + texto.slice(1, )).split(' ')[0].slice(0, 8) + '... ' + posicao + '/' + quantidade : (texto.charAt(0).toUpperCase() + texto.slice(1, )).split(' ')[0] + ' ' + posicao + '/' + quantidade
+        return !texto.split(' ')[1] && texto.split(' ')[0].length > 8 ? (texto.charAt(0).toUpperCase() + texto.slice(1, )).split(' ')[0].slice(0, 8) + '...' : (texto.charAt(0).toUpperCase() + texto.slice(1, )).split(' ')[0]
     }
-    function buscaProximoDocumento(termo, idBotao, maisAntigo){
+    function buscaProximoDocumento(termo, idBotao, maisAntigo, quantidade){
         let objeto = (arr, chave) => arr.find(d => chave in d)?.[chave] ?? []
         let soma = maisAntigo ? -1 : 1
-        let contadorAtualizar = contadores[termo] + soma
-        contadores[termo] = contadorAtualizar
-        console.log('%c[Rota PJE]%c soma: ' + JSON.stringify(contadores[termo]), LOG.aviso, 'color:inherit')
+        let contador = contadores[termo?.termo]
+        let corretor = contador === 0 && soma === -1 ? 0 : 1
+        contadores[termo?.termo] = ((contador + soma + quantidade - corretor) % quantidade) + 1
+        let botao = document.getElementById(idBotao + '_botaoPrincipal')
+        botao.textContent = defineTextoBotaoTermo(termo?.termo, quantidade + 1 - contadores[termo?.termo], quantidade)
+        console.log('%c[Rota PJE]%c soma: ' + JSON.stringify(contadores[termo?.termo]), LOG.aviso, 'color:inherit')
     }
     function criaTabelaDocumentos(termo){
-        let idTabela = id + '_' + termo.replace(/\s/g,'_') + '_tabela'
-        let tabela = document.getElementById(idTabela)
+        let idTabela = id + '_tabelaDocumentos_' + termo.replace(/\s/g,'_')
+        console.log('%c[Rota PJE]%c idTabela: ' + JSON.stringify(idTabela), LOG.info, 'color:inherit')
+        let tabela = document.querySelector('[id^="' + id + '_tabelaDocumentos_' + '"]')
         if(tabela) tabela.remove()
+        if(tabela && tabela.id.includes(termo.replace(/\s/g,'_'))) return
         let documentosTermos = termosIds.find(d => d.termo === termo)?.documentos ?? []
         let documentos = []
         for (let d of documentosTermos){
@@ -1869,11 +1876,18 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
         let grade = criaGrade({
             id: idTabela,
             ancestral: id,
-            numeroColunas: 3
         })
+        grade.style.gridTemplateColumns = 'repeat(auto-fit, minmax(130px, 1fr))'        
         grade.style.padding = '0px 4px 0px 4px'
+        if (!documentos.length){
+            criaTexto({
+                id: id + '_naoHaDocumentos',
+                texto: 'Não há documentos do tipo ' + termo.charAt(0).toUpperCase() + termo.slice(1, ),
+                ancestral: idTabela
+            })
+        }
         for(let doc of documentos){
-            let textoBotao = 'Id ' + doc?.id + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
+            let textoBotao = defineTextoBotaoTermo(termo, 0, 0, false) + '\n' + 'Id ' + doc?.id + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
             let idBotao = id + '_' + (doc?.titulo).replace(/\s/g,'_') + '_botao'
             criaBotaoAzul({
                 id: idBotao,
