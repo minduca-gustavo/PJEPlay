@@ -1788,15 +1788,16 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
             || c?.anexos?.some(a => normalizar(a?.titulo).toLowerCase().includes(d)) 
             || c?.anexos?.some(a => normalizar(a?.tipo).toLowerCase().includes(d))
         )
-        let idDocs = docs.map(b => {
+        let idDocs = docs.flatMap(b => {
             if (normalizar(b.titulo).toLowerCase().includes(d) 
                 || normalizar(b.tipo).toLowerCase().includes(d)
-            ) return {id: b.id, idUnicoDocumento: b.idUnicoDocumento, titulo: b.titulo, data: b.data}
-            else {
-                let anexos = b.anexos.filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d)).map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idDocumentoPai: a.idDocumentoPai}))
-                return {id: b.id, idUnicoDocumento: b.idUnicoDocumento, anexos: anexos}
-            }
+            ) return [{id: b.id, idUnicoDocumento: b.idUnicoDocumento, titulo: b.titulo, data: b.data}]
+            
+            return b.anexos
+                .filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d))
+                .map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idDocumentoPai: a.idDocumentoPai}))
         })
+        console.log('%c[Rota PJE]%c idDocs.flatmap()' + JSON.stringify(idDocs), LOG.aviso, 'color:inherit')
         return {termo:d , documentos: idDocs}
     })
     let contadores = {}
@@ -1868,11 +1869,7 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         if(tabela) tabela.remove()
         if(tabela && tabela.id.includes(termo.replace(/\s/g,'_'))) return
         let documentosTermos = termosIds.find(d => d.termo === termo)?.documentos ?? []
-        let documentos = []
-        for (let d of documentosTermos){
-            if(d.titulo) documentos.push({id: d.id, idUnicoDocumento: d.idUnicoDocumento, titulo: d.titulo, data: d.data})
-            else if(d.anexos) documentos.push(...d.anexos.map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idPai: d.id})))
-        }
+        let documentos = documentosTermos.map(d => d)
         
         /*
 termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidão - inexistência de depósitos"}]},{"termo":"manifestacao","documentos":[{"id":"717f22f","titulo":"Manifestação (comprovação dos recolhimentos previdenciários)"},{"id":"b5961a0","titulo":"Manifestação  MARKA"},{"id":"ac8415c","titulo":"Aud Conciliação CEJUSC"},{"id":"8a9f67d","titulo":"Manifestação (cálculos reclamada)"}]},{"termo":"documento diverso","documentos":[{"id":"717f22f","anexos":[{"titulo":"guia","data":"2025-07-07T09:28:52.211898"},{"titulo":"comprovante de pagamento","data":"2025-07-07T09:28:52.213078"}]},{"id":"b5961a0","anexos":[{"titulo":"Informa desistencia no TST","data":"2025-06-23T16:25:47.511422"}]},{"id":"8a9f67d","anexos":[{"titulo":"Luis Haroldo Ferreira - atualização de cálculo","data":"2025-03-28T19:05:18.583445"}]}]},{"termo":"peticao inicial","documentos":[{"id":"3cf565d","titulo":"Petição Inicial"}]},{"termo":"despacho","documentos":[{"id":"8993d43","titulo":"Despacho"},{"id":"ed385b7","titulo":"Despacho"},{"id":"f4322f6","titulo":"Despacho"},{"id":"8e1c338","titulo":"Despacho"},{"id":"c57e157","titulo":"Despacho"},{"id":"f72f487","titulo":"Despacho"}]}]
@@ -1898,7 +1895,7 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
                 id: idBotao,
                 ancestral: idTabela,
                 texto: textoBotao,
-                acao: abrir
+                acao: () => abrir(doc)
             })
             criaTooltip({
                 id: idBotao + '_tooltip',
