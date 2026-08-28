@@ -13,9 +13,11 @@
 const QJ_URL_DADOS = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rota_pje_finais.json'
 
 const QJ_AJUSTE_TOPO = [
-    { trecho: 'minutar',        topo: 25 },
-    { trecho: 'conclusao',      topo: 36 },
-    { trecho: 'pjekz/processo', topo: 36 },
+    { trecho: 'minutar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
+    { trecho: 'assinar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
+    { trecho: 'tarefa',         topo: 0,  banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
+    { trecho: 'detalhe',        topo: -7, banner: '.resumo-processo', quebra: true},
+    { trecho: 'pjekz/processo', topo: 36, banner: 'pje-cabecalho div[role="banner"]', quebra: true},
 ]
 
 const QJ_ESTILO_COMPACTO = {
@@ -38,9 +40,11 @@ function qjEstiloPlaquinha() {
     }
 }
 
-function qjAjusteTopo() {
-    return QJ_AJUSTE_TOPO.find(d => location.href.includes(d.trecho))?.topo ?? 0
+function qjAjuste() {
+    return QJ_AJUSTE_TOPO.find(d => location.href.includes(d.trecho)) ?? 0
 }
+
+
 
 // ------------------------------------------------------------
 // Entrada
@@ -49,7 +53,7 @@ function qjAjusteTopo() {
 async function visualizaQuadroDeJuizes() {
     if (!location.href.includes('trt15.jus.br/pjekz')) return
 
-    let banner = await aguardarElemento('pje-cabecalho div[role="banner"]')
+    let banner = await aguardarElemento(qjAjuste()?.banner || 'pje-cabecalho div[role="banner"]')
 
     await criaVisualizador(banner)
 
@@ -101,10 +105,10 @@ function ancorarEm(elemento, referencia, { ajuste = 0, alinhaEsquerda = true } =
 async function criaVisualizador(banner) {
     let idPlaquinha = id('visualizadorJuizes', 'plaquinha')
     document.querySelectorAll('#' + idPlaquinha).forEach(d => d.remove())
-
+    let quebra = qjAjuste()?.quebra ? ' ' : '\n'
     let plaquinha = criaPlaquinha({
         id: idPlaquinha,
-        texto: 'Quadro de\nJuízes',
+        texto: 'Quadro de' + quebra + 'Juízes',
     })
     Object.assign(plaquinha.style, qjEstiloPlaquinha(), {
         position:      'fixed',
@@ -112,7 +116,7 @@ async function criaVisualizador(banner) {
     })
     document.body.appendChild(plaquinha)
 
-    ancorarEm(plaquinha, banner, { ajuste: qjAjusteTopo() })
+    ancorarEm(plaquinha, banner, { ajuste: qjAjuste()?.topo  })
 
     // O quadro é filho da plaquinha, então mouseleave só dispara quando o
     // ponteiro deixa os dois. A plaquinha de origem não é mais filha daqui.
@@ -127,6 +131,7 @@ async function criaVisualizador(banner) {
 // ------------------------------------------------------------
 
 async function mostraVaraDeOrigem(banner) {
+    console.log('%c[Rota PJE]%c banner: ' + JSON.stringify(banner), LOG.info, 'color:inherit')
     let idProcesso = location.href.match(/pjekz\/processo\/(\d+)/)?.[1]
     if (!idProcesso) return
 
@@ -150,7 +155,7 @@ async function mostraVaraDeOrigem(banner) {
 
     // Fica no body, fora da plaquinha do quadro — por isso o hover não propaga.
     // O topo vem da mesma âncora, para manter o alinhamento de antes.
-    ancorarEm(plaquinha, banner, { ajuste: qjAjusteTopo(), alinhaEsquerda: false })
+    ancorarEm(plaquinha, banner, { ajuste: qjAjuste()?.topo, alinhaEsquerda: false })
 
     console.log('%c[Rota PJE]%c vara de origem: ' + JSON.stringify(vara), LOG.info, 'color:inherit')
 

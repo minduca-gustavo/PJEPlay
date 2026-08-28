@@ -48,119 +48,169 @@ async function visualizador_de_documentos_assistente_iniciar() {
     console.log('%c[Rota PJE]%c dados?.rota_dadosVisualizadorDeDocumentos' + JSON.stringify(dados?.rota_dadosVisualizadorDeDocumentos), LOG.rosa, 'color:inherit')
     let bloco = 'inicial'
     console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Visualizador de Documentos', ancestral: id(tarefaNome, bloco) })
+    let idDiv = id(tarefaNome)
+    let idInput = id(tarefaNome, 'tipos')
+    criaDiv({ id: idDiv, ancestral: 'rota_corpo' })
+    criaTitulo({ id: id(tarefaNome, 'titulo'), texto: 'Visualizador de Documentos', ancestral: idDiv })
     criaTextoQueAbrePassandoOMouse({
-        id: id(tarefaNome, bloco, 'instrucao_longa'),
+        id: id(tarefaNome, 'instrucao_longa'),
         texto: `Passe o mouse para ver como utilizar este assistente.
 Clique para fixar/desafixar.`,
         textoBox: `No input abaixo, digite os termos que você deseja buscar no tipo do documento ou no título. Os tipos selecionados serão mostrados abaixo, em formato de tabela.
 Clicando em cada botão de documento, o próximo será aberto. Escolha a ordem - do mais novo para o mais antigo ou do mais antigo para o mais novo.
-Abaixo da tabela de documentos, o menu suspenso permite escolher, entre os tipos, aquele que vai mostrar detalhadamente cada documento. Clique para abrir.`,
-        ancestral: id(tarefaNome, bloco)
+Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela criada.`,
+        ancestral: idDiv
     })
-    criaInputAnotacao({ id: id(tarefaNome, bloco, 'tipos'), placeholder: 'Digite os termos a buscar no título e tipo do documento e pressione o botão laranja.', ancestral: id(tarefaNome, bloco) })
-    criaBotaoLaranja({id: id(tarefaNome, bloco, 'botao_tipos'), texto: 'Seleciona Tipos', ancestral: id(tarefaNome, bloco)})
-    criaVisualizadorDeDocumentos({
-        id: id(tarefaNome, bloco, 'visualizador'),
-        ancestral: id(tarefaNome, bloco),
-        timeline: dados?.rota_dadosVisualizadorDeDocumentos?.timeline,
-        termos: 'certidao, manifestacao, documento diverso, peticao inicial, despacho, certidao, Manifestacao',
-        abrir: (documento) => comandar(['visualizador_de_documentos_abrir_documentos'], [documento])
+    criaSubTitulo({
+        id: idDiv + '_subTitulo',
+        texto: 'Configurações salvas',
+        ancestral: idDiv
     })
-    // ── Bloco: autuacao ───────────────────────────────────────
-    
-    bloco = 'solucao'
+    criaDiv({
+        id: idDiv + '_divMenu',
+        ancestral: idDiv
+    })
+    let armazenamento = await obterArmazenamento(idDiv)
+    let conjuntoTermos = armazenamento[idDiv] || {}
+    let opcaoSelecionada = conjuntoTermos?.opcaoSelecionada || 'inicial'
+    let opcoes = [{valor: 'inicial', texto: 'Selecione uma opção'}]
+    let opcoesArmazenadas = conjuntoTermos?.opcoesSalvas?.map(d => {d?.texto, d?.valor}) || []
+    opcoes.push(...opcoesArmazenadas)
+    await criarMenu()
+    async function criarMenu() {
+        // Limpa o container antes de recriar
+        document.getElementById(idDiv + '_divMenu').innerHTML = ''
 
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: id(tarefaNome, bloco) })
-    let i = 0
-    
-    let solucoes = dados?.rota_dadosVisualizadorDeDocumentos?.solucao || []
-    console.log('%c[Rota PJE]%c solucoes.length: ' + JSON.stringify(solucoes.length), LOG.rosa, 'color:inherit')
-    if (solucoes.length) {
-        criaTabelaDeSolucoes(solucoes)
-    } else {
-        criaTexto({
-            id: id(tarefaNome, bloco, 'sem_solucao'),
-            texto: 'Não foram encontradas sentenças.',
-            ancestral: id(tarefaNome, bloco),
+        let armazenamento = await obterArmazenamento(idDiv)
+        let conjuntoTermos = armazenamento[idDiv] || {}
+        let opcaoSelecionada = conjuntoTermos?.opcaoSelecionada || 'inicial'
+        let opcoes = [{ valor: 'inicial', texto: 'Selecione uma opção' }]
+        let opcoesArmazenadas = conjuntoTermos?.opcoesSalvas?.map(d => ({ texto: d?.texto, valor: d?.valor, termos: d?.termos })) || []
+        opcoes.push(...opcoesArmazenadas)
+
+        criaMenuSuspenso({
+            id: idDiv + '_menuSuspenso',
+            opcoes: opcoes,
+            valorInicial: opcaoSelecionada,
+            ancestral: idDiv + '_divMenu',
+            acao: async (valorAtual) => {
+                if (valorAtual === 'inicial') return
+                let opcaoEscolhida = opcoesArmazenadas.find(op => op.valor === valorAtual)
+                document.getElementById(idInput).value = opcaoEscolhida?.termos || ''
+                atualizaArmazenamento({ chave: 'opcaoSelecionada' }, valorAtual)
+                criaVisualizador(idInput)
+            }
         })
     }
-
-    function criaTabelaDeSolucoes(solucoes){
-        let nomeTabela = 'tabelaSolucoes'
-        let divTabela = criaDiv({
-            id: id(tarefaNome, bloco, nomeTabela),
-            ancestral: id(tarefaNome, bloco),
-            rowColumn: 'column'
-        })
-        let colunas = solucoes.length == 1 ? 1 : 2
-        let linhas = solucoes.length == 1 ? 1: Math.ceil(solucoes.length / 2)
-        console.log('%c[Rota PJE]%c linhas: ' + JSON.stringify(linhas), LOG.erro, 'color:inherit')
-        for (let i = 0; i < linhas; i++){
-            let div = criaDiv({
-                id: id(tarefaNome, bloco, nomeTabela, 'linha' + i),
-                ancestral: id(tarefaNome, bloco, nomeTabela),
-                rowColumn: 'row'
-            })
-        }
-        let i = 0
-        for (s of solucoes){
-            let linha = Math.floor(i / 2)
-            let celula = criaDiv({
-                id: id(tarefaNome, bloco, nomeTabela, 'celula' + i),
-                ancestral: id(tarefaNome, bloco, nomeTabela, 'linha' + linha),
-            })
-            celula.style.width = '100%'
-            
-            let plaquinha = criaPlaquinhaComTooltip({
-                id: id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i),
-                texto: s.split('-', 2)[0].trim(),
-                cor: corDaSolucao(s),
-                tooltip: s,
-                ancestral: id(tarefaNome, bloco, nomeTabela, 'celula' + i)
-            })
-            let pl = document.querySelector('#' + id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i))
-            pl.style.width = '100%'
-            pl.style.textAlign = 'center'
-            i++
-
-        }
-
-        function corDaSolucao(solucao) {
-            if (solucao.includes('IMPROCEDENTES') || solucao.includes('EXTINTO')) return 'vermelho'
-            if (solucao.includes('EM PARTE'))    return 'amarelo'
-            if (solucao.includes('PROCEDENTES')) return 'verde'
-            return ''
-        }
-
-    }
-
-    bloco = 'documentos'
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Documentos do Processo', ancestral: id(tarefaNome, bloco) })
-    
-    let tiposDocumentos = [
-        { chave: 'sentenca',         label: 'Sentença' },
-        { chave: 'recurso',          label: 'Recurso' },
-        { chave: 'deposito',         label: 'Depósito' },
-        { chave: 'custas',           label: 'Custas' },
-        { chave: 'seguro',           label: 'Seguro/Fiança', opcoes: ['fianca', 'seguro'] },
-        { chave: 'procuracao',       label: 'Procuração' },
-        { chave: 'substabelecimento',label: 'Substabelecimento' },
-    ]
-    let documentosTimeline = dados?.rota_dadosVisualizadorDeDocumentos?.timeline || []
-    
-    await criaWidgetDocumentos({
-        ancestral:  id(tarefaNome, bloco),
-        documentos: documentosTimeline,
-        tipos:      tiposDocumentos,
-        idPrefixo:  id(tarefaNome, bloco, 'widget'),
-        onAbrir:    (documento) => comandar(['visualizador_de_documentos_abrir_documentos'],[documento]),
-        modo:       'tipo',
+    let salvarId = idDiv + '_salvar'
+    let divInputSalvar = criaDiv({
+        id: salvarId,
+        ancestral: idDiv,
+        rowColumn: 'row'
     })
+    let inputSalvar = criaInput({
+        id: salvarId + 'input',
+        ancestral: salvarId,
+        placeholder: 'Digite o nome da configuração'
+    })
+    let botaoSalvar = criaBotaoLaranja({
+        id: salvarId + 'botao',
+        texto: '💾',
+        ancestral: salvarId,
+        acao: async () => {
+            let nome = document.getElementById(salvarId + 'input')?.value || null
+            if(!nome) {
+                document.getElementById(salvarId + 'input').value = 'Digite um nome.'
+                await suspender (3000)
+                document.getElementById(salvarId + 'input').value = ''
+                return
+            }
+            let valores = document.getElementById(idInput)?.value
+            if(!valores){
+                let nome = document.getElementById(salvarId + 'input')?.value
+                document.getElementById(salvarId + 'input').value = 'Não há termos a salvar.'
+                await suspender (3000)
+                document.getElementById(salvarId + 'input').value = nome
+                return
+            }
+            await criarMenu()
+            await atualizaArmazenamento({chave: 'opcoesSalvas', modo: 'incluir'}, {valor: nome.replace(/\s/g, '_'), texto: nome, termos: valores})
+        }
+    })
+    async function atualizaArmazenamento({ chave, modo }, valor) {
+        let armazenamento = await obterArmazenamento(idDiv)
+        let armazena = armazenamento[idDiv] || {
+            opcaoSelecionada: '',
+            opcoesSalvas: []
+        }
 
+        if (chave === 'opcoesSalvas' && modo === 'incluir') {
+            armazena.opcoesSalvas.push(valor)
+        } else if (chave === 'opcoesSalvas' && modo === 'excluir') {
+            armazena.opcoesSalvas = armazena.opcoesSalvas.filter(op => op.valor !== valor)
+        } else {
+            armazena[chave] = valor
+        }
+
+        armazenar({ [idDiv]: armazena })
+    }
+    /*
+        armazena:{
+            opcaoSelecionada: '',
+            opcoesSalvas: [{valor: '', texto: '', termos: ''}]
+        }
+    */
+    document.getElementById(salvarId + 'botao').style.width = 'fit-content'
+    document.getElementById(salvarId + 'input').container.style.width = '100%'
+    document.getElementById(salvarId + 'input').container.style.margin = '0px 0px 0px 4px'
+    criaTooltip({
+        id: salvarId + 'tooltip',
+        texto: 'Salva a configuração atual.',
+        elemento: botaoSalvar
+    })
+    criaInputAnotacao({ 
+        id: idInput,
+        placeholder: 'Digite os termos a buscar no título e tipo do documento e pressione o botão laranja.', 
+        ancestral: idDiv
+    })
+    criaBotaoLaranja({
+        id: id(tarefaNome, 'botao_tipos'), 
+        texto: 'Seleciona Tipos', 
+        ancestral: idDiv,
+        acao: () => criaVisualizador(idInput)
+    })
+    let valoresSalvos = ''
+    function criaVisualizador(input){
+        let idVisualizador = id(tarefaNome, 'visualizador')
+        let valores = document.getElementById(input)?.value
+        if (!valores){
+            if (!!document.getElementById(idVisualizador) && document.getElementById(idVisualizador).textContent === 'Não há termos a buscar.') {
+                console.log('%c[Rota PJE]%c 1: ' + JSON.stringify(1), LOG.teste, 'color:inherit', document.getElementById(idVisualizador))
+                document.getElementById(idVisualizador)?.remove()
+                return
+            }
+            document.getElementById(idVisualizador)?.remove()
+            criaTexto({
+                id: idVisualizador,
+                texto: 'Não há termos a buscar.',
+                ancestral: idDiv
+            })
+            return
+        }
+        if (valores === valoresSalvos && !!document.getElementById(idVisualizador)) {
+            document.getElementById(idVisualizador)?.remove()
+            return
+        }
+        valoresSalvos = valores
+        document.getElementById(idVisualizador)?.remove()
+        criaVisualizadorDeDocumentos({
+            id: idVisualizador,
+            ancestral: idDiv,
+            timeline: dados?.rota_dadosVisualizadorDeDocumentos?.timeline,
+            termos: valores,
+            abrir: (documento) => comandar(['visualizador_de_documentos_abrir_documentos'], [documento])
+        })
+    }
 }
 
 
