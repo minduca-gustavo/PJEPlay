@@ -1836,7 +1836,10 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
                 texto: defineTextoBotaoTermo(termo?.termo, 0, quantidade),
                 tooltip: texto,
                 ancestral: idGrade,
-                acaoPrincipal: () => buscaProximoDocumento(termo, idBotao, maisAntigo, quantidade),
+                acaoPrincipal: () => {
+                    let documento = buscaProximoDocumento(termo, idBotao, maisAntigo, quantidade)
+                    abrir(documento)
+                },
                 acaoSecundaria: () => criaTabelaDocumentos(termo?.termo)
             })
         }
@@ -1854,6 +1857,7 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         contadores[termo?.termo] = ((contador + soma + quantidade - corretor) % quantidade) + 1
         let botao = document.getElementById(idBotao + '_botaoPrincipal')
         botao.textContent = defineTextoBotaoTermo(termo?.termo, quantidade + 1 - contadores[termo?.termo], quantidade)
+        return termo[contadores[termo?.termo]]
         console.log('%c[Rota PJE]%c soma: ' + JSON.stringify(contadores[termo?.termo]), LOG.aviso, 'color:inherit')
     }
     function criaTabelaDocumentos(termo){
@@ -1893,7 +1897,7 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
                 id: idBotao,
                 ancestral: idTabela,
                 texto: textoBotao,
-                acao: () => abrir(doc.id)
+                acao: abrir
             })
             criaTooltip({
                 id: idBotao + '_tooltip',
