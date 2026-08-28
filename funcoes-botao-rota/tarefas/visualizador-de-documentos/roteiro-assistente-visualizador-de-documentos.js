@@ -91,9 +91,14 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
             valorInicial: opcaoSelecionada,
             ancestral: idDiv + '_divMenu',
             acao: async (valorAtual) => {
-                if (valorAtual === 'inicial') return
+                if (valorAtual === 'inicial') {
+                    document.getElementById(salvarId + 'input').value = ''
+                    atualizaArmazenamento({ chave: 'opcaoSelecionada' }, valorAtual)
+                    return
+                }
                 let opcaoEscolhida = opcoesArmazenamento.find(op => op.valor === valorAtual)
                 if (!carregamento) document.getElementById(idInput).value = opcaoEscolhida?.termos || ''
+                document.getElementById(salvarId + 'input').value = opcaoEscolhida?.texto || ''
                 atualizaArmazenamento({ chave: 'opcaoSelecionada' }, valorAtual)
             }
         })
@@ -133,6 +138,29 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
             await criarMenu()
         }
     })
+    let botaoExcluir = criaBotaoLaranja({
+        id: salvarId + 'botaoExcluir',
+        texto: '🗑️',
+        ancestral: salvarId,
+        acao: async () => {
+            let menuSuspenso = document.getElementById(idDiv + '_menuSuspenso')
+            let valorAtual = menuSuspenso?.value
+            if (!valorAtual || valorAtual === 'inicial') {
+                let inputEl = document.getElementById(salvarId + 'input')
+                let anterior = inputEl.value
+                inputEl.value = 'Selecione uma configuração para excluir.'
+                await suspender(3000)
+                inputEl.value = anterior
+                return
+            }
+            await atualizaArmazenamento({ chave: 'opcoesSalvas', modo: 'excluir' }, valorAtual)
+            await atualizaArmazenamento({ chave: 'opcaoSelecionada' }, 'inicial')
+            document.getElementById(salvarId + 'input').value = ''
+            document.getElementById(idInput).value = ''
+            await criarMenu()
+            criaVisualizador(idInput)
+        }
+    })
     async function atualizaArmazenamento({ chave, modo }, valor) {
         let armazenamento = await obterArmazenamento(idDiv)
         let armazena = armazenamento[idDiv] || {
@@ -141,7 +169,12 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         }
 
         if (chave === 'opcoesSalvas' && modo === 'incluir') {
-            armazena.opcoesSalvas.push(valor)
+            let indiceExistente = armazena.opcoesSalvas.findIndex(op => op.valor === valor.valor)
+            if (indiceExistente !== -1) {
+                armazena.opcoesSalvas[indiceExistente] = valor
+            } else {
+                armazena.opcoesSalvas.push(valor)
+            }
         } else if (chave === 'opcoesSalvas' && modo === 'excluir') {
             armazena.opcoesSalvas = armazena.opcoesSalvas.filter(op => op.valor !== valor)
         } else {
@@ -161,8 +194,14 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
     document.getElementById(salvarId + 'input').container.style.margin = '0px 0px 0px 4px'
     criaTooltip({
         id: salvarId + 'tooltip',
-        texto: 'Salva a configuração atual.',
+        texto: 'Salva a configuração atual (sobrescreve se o nome já existir).',
         elemento: botaoSalvar
+    })
+    document.getElementById(salvarId + 'botaoExcluir').style.width = 'fit-content'
+    criaTooltip({
+        id: salvarId + 'tooltipExcluir',
+        texto: 'Exclui a configuração selecionada no menu acima.',
+        elemento: botaoExcluir
     })
     criaInputAnotacao({ 
         id: idInput,
@@ -180,27 +219,19 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         let opcaoSelecionada = document.getElementById(idDiv + '_menuSuspenso').value
         let opcaoEscolhida = opcoesArmazenadas.find(op => op.valor === opcaoSelecionada)
         document.getElementById(idInput).value = opcaoEscolhida?.termos || ''
+        document.getElementById(salvarId + 'input').value = opcaoEscolhida?.texto.replace(/\s/g, '_') || ''
         criaVisualizador(idInput)
     }
     function criaVisualizador(input){
         let idVisualizador = id(tarefaNome, 'visualizador')
         let valores = document.getElementById(input)?.value
         if (!valores){
-            if (!!document.getElementById(idVisualizador) && document.getElementById(idVisualizador).textContent === 'Não há termos a buscar.') {
-                console.log('%c[Rota PJE]%c 1: ' + JSON.stringify(1), LOG.teste, 'color:inherit', document.getElementById(idVisualizador))
-                document.getElementById(idVisualizador)?.remove()
-                return
-            }
             document.getElementById(idVisualizador)?.remove()
             criaTexto({
                 id: idVisualizador,
                 texto: 'Não há termos a buscar.',
                 ancestral: idDiv
             })
-            return
-        }
-        if (valores === valoresSalvos && !!document.getElementById(idVisualizador)) {
-            document.getElementById(idVisualizador)?.remove()
             return
         }
         valoresSalvos = valores
