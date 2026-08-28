@@ -1890,7 +1890,7 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
         }
         for(let doc of documentos){
             let textoBotao = defineTextoBotaoTermo(termo, 0, 0, false) + '\n' + 'Id ' + doc?.idUnicoDocumento + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
-            let idBotao = id + '_' + (doc?.titulo).replace(/\s/g,'_') + '_botao'
+            let idBotao = id + '_' + (doc?.idUnicoDocumento) + '_botao'
             criaBotaoAzul({
                 id: idBotao,
                 ancestral: idTabela,
