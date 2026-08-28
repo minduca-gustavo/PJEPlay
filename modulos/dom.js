@@ -142,7 +142,7 @@ function confereJanelaNome(nome) {
 async function aguardarElemento(seletor = '', timeout = 0){
 	return new Promise(resolver => {
 		let el = selecionar(seletor)
-		if(el){ resolver(el); return }
+		if(el){ resolver(el); return el }
 
 		let timer = null
 		let obs = new MutationObserver(() => {
