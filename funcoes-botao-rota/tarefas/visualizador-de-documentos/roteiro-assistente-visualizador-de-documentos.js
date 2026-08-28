@@ -70,14 +70,10 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         id: idDiv + '_divMenu',
         ancestral: idDiv
     })
-    let armazenamento = await obterArmazenamento(idDiv)
-    let conjuntoTermos = armazenamento[idDiv] || {}
-    let opcaoSelecionada = conjuntoTermos?.opcaoSelecionada || 'inicial'
-    let opcoes = [{valor: 'inicial', texto: 'Selecione uma opção'}]
-    let opcoesArmazenadas = conjuntoTermos?.opcoesSalvas?.map(d => {d?.texto, d?.valor}) || []
-    opcoes.push(...opcoesArmazenadas)
-    await criarMenu()
-    async function criarMenu() {
+    let carregamento = true
+    let opcoesArmazenadas = {}
+    await criarMenu(carregamento)
+    async function criarMenu(carregamento = false) {
         // Limpa o container antes de recriar
         document.getElementById(idDiv + '_divMenu').innerHTML = ''
 
@@ -85,8 +81,9 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         let conjuntoTermos = armazenamento[idDiv] || {}
         let opcaoSelecionada = conjuntoTermos?.opcaoSelecionada || 'inicial'
         let opcoes = [{ valor: 'inicial', texto: 'Selecione uma opção' }]
-        let opcoesArmazenadas = conjuntoTermos?.opcoesSalvas?.map(d => ({ texto: d?.texto, valor: d?.valor, termos: d?.termos })) || []
-        opcoes.push(...opcoesArmazenadas)
+        let opcoesArmazenamento = conjuntoTermos?.opcoesSalvas?.map(d => ({ texto: d?.texto, valor: d?.valor, termos: d?.termos })) || []
+        opcoes.push(...opcoesArmazenamento)
+        opcoesArmazenadas = opcoesArmazenamento
 
         criaMenuSuspenso({
             id: idDiv + '_menuSuspenso',
@@ -95,10 +92,9 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
             ancestral: idDiv + '_divMenu',
             acao: async (valorAtual) => {
                 if (valorAtual === 'inicial') return
-                let opcaoEscolhida = opcoesArmazenadas.find(op => op.valor === valorAtual)
-                document.getElementById(idInput).value = opcaoEscolhida?.termos || ''
+                let opcaoEscolhida = opcoesArmazenamento.find(op => op.valor === valorAtual)
+                if (!carregamento) document.getElementById(idInput).value = opcaoEscolhida?.termos || ''
                 atualizaArmazenamento({ chave: 'opcaoSelecionada' }, valorAtual)
-                criaVisualizador(idInput)
             }
         })
     }
@@ -133,8 +129,8 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
                 document.getElementById(salvarId + 'input').value = nome
                 return
             }
-            await criarMenu()
             await atualizaArmazenamento({chave: 'opcoesSalvas', modo: 'incluir'}, {valor: nome.replace(/\s/g, '_'), texto: nome, termos: valores})
+            await criarMenu()
         }
     })
     async function atualizaArmazenamento({ chave, modo }, valor) {
@@ -180,6 +176,12 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         acao: () => criaVisualizador(idInput)
     })
     let valoresSalvos = ''
+    if (carregamento || document.getElementById(idDiv + '_menuSuspenso').value !== 'inicial'){
+        let opcaoSelecionada = document.getElementById(idDiv + '_menuSuspenso').value
+        let opcaoEscolhida = opcoesArmazenadas.find(op => op.valor === opcaoSelecionada)
+        document.getElementById(idInput).value = opcaoEscolhida?.termos || ''
+        criaVisualizador(idInput)
+    }
     function criaVisualizador(input){
         let idVisualizador = id(tarefaNome, 'visualizador')
         let valores = document.getElementById(input)?.value

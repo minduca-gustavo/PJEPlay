@@ -1860,7 +1860,6 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         botao.textContent = defineTextoBotaoTermo(termo?.termo, quantidade + 1 - contadores[termo?.termo], quantidade)
         console.log('%c[Rota PJE]%c termo' + JSON.stringify(termo), LOG.aviso, 'color:inherit')
         return termo?.documentos[contadores[termo?.termo] - 1]
-        console.log('%c[Rota PJE]%c soma: ' + JSON.stringify(contadores[termo?.termo]), LOG.aviso, 'color:inherit')
     }
     function criaTabelaDocumentos(termo){
         let idTabela = id + '_tabelaDocumentos_' + termo.replace(/\s/g,'_')
