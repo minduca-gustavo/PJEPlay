@@ -341,6 +341,10 @@ async function criaWidgetLeituraDinamica(ancestral) {
             }
             navigator.clipboard.writeText(resultado.join('\n'))
             rota_leituraDinamica_avisoTemporario('Conteúdo copiado com sucesso', 3000)
+        } else {
+            let linhas = dados.filter(d=> d?.cor === cor?.toLowerCase())
+            navigator.clipboard.writeText(linhas.map(d=> d.processo + '\t' + d?.cor + ': ' + d?.termos.join(', ')).join('\n'))
+            rota_leituraDinamica_avisoTemporario('Conteúdo copiado com sucesso', 3000)
         }
         
         console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
