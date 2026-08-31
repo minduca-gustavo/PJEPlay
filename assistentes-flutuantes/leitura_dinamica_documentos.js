@@ -202,11 +202,16 @@ async function criaWidgetLeituraDinamica(ancestral) {
         ancestral: 'rota_leituraDinamica_divLinhaConfiguracoes',
     })
     divBotaoRemoverConfig.style.marginBottom = '0'
-    criaBotaoLaranja({
+    let botaoExcluir = criaBotaoLaranja({
         id: 'rota_leituraDinamica_botaoRemoverConfig',
         texto: '🗑',
         ancestral: 'rota_leituraDinamica_divBotaoRemoverConfig',
         acao: () => _removerConfiguracaoAtual()
+    })
+    criaTooltip({
+        id: 'rota_leituraDinamica_tooltipRemoverConfig',
+        texto: 'Excluir configuração salva.',
+        elemento: botaoExcluir
     })
 
     let cores = [
@@ -246,6 +251,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
     function defineCor(cor) {
         return (CORES.find(d => d?.nome == cor))?.hex
     }
+    let processosCopiar = []
     for (let j of cores){
         let cor = defineCor(j?.nome)
         let idDivCores = 'rota_leituraDinamica_divCores' + j?.nome.toLowerCase()
@@ -283,12 +289,79 @@ async function criaWidgetLeituraDinamica(ancestral) {
                 input.container.style.width = '75%'
                 input.style.height = k?.pixels
                 input.dataset.cor = cor
-                
+                input.dataset.nome = j?.nome.toLowerCase()
+                let copiarNome = 'rota_leituraDinamica_divCores_copiar_' + j?.nome.toLowerCase()
+                let botao = criaBotaoLaranja({
+                    id: copiarNome,
+                    texto: '📋',
+                    ancestral: idDivCores,
+                    acao: () => copiarDadosCores(j?.nome)
+                })
+                botao.style.padding = '6px 6px 6px 6px'
+                botao.style.height = '30px'
+
+                let tooltip = criaTooltip({
+                    id: 'rota_leituraDinamica_divCores_tooltipCopiar_' + j?.nome.toLowerCase(),
+                    texto: 'Copiar processos desta cor.',
+                    elemento: botao
+                })
+
             }
         }
         
     }
+    console.log('%c[Rota PJE]%c processosCopiar: ' + JSON.stringify(processosCopiar), LOG.teste, 'color:inherit')
     
+    function copiarDadosCores(cor){
+        let dados = processosCopiar
+        let copia = []
+        if (cor === 'processo'){
+            let variaveis = []
+            for (let i = 0; i < dados.length; i++){
+                if (dados[i+1] && dados[i]?.processo === dados[i+1]?.processo){
+                    variaveis.push({cor: dados[i]?.cor, termos: dados[i]?.termos})
+                } else {
+                    variaveis.push({cor: dados[i]?.cor, termos: dados[i]?.termos})
+                    let resultado = dados[i]?.processo + '\t' + variaveis.map(d => d?.cor + ': ' + d?.termos.join(', ')).join('\t')
+                    variaveis = []
+                    copia.push(resultado)
+                }
+                
+            }
+            navigator.clipboard.writeText(copia.join('\n'))
+            rota_leituraDinamica_avisoTemporario('Conteúdo copiado com sucesso', 3000)
+        } else if(cor === 'cor'){
+            for (let cor of cores){
+                
+            }
+        }
+        console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+    }
+    let idGrade = id('leituraDinamica', 'botoesCopia')
+    let gradeCopias = criaGrade({
+        id: idGrade,
+        ancestral: 'rota_leituraDinamica',
+        numeroColunas: 2
+    })
+    let botoes = [
+        {
+            id: 'cor',
+            texto: 'Copia todos ordenados por cor.'
+        },
+        {
+            id: 'processo',
+            texto: 'Copia todos ordenados por processo.'
+        },
+    ]
+    for (let botao of botoes){
+        criaBotaoLaranja({
+            id: idGrade + botao?.id,
+            texto: botao?.texto,
+            ancestral: idGrade,
+            acao: () => copiarDadosCores(botao.id)
+        })
+    }
+
     let botao = criaBotaoAzul({
         id: 'rota_leituraDinamica_botaoAcao',
         texto: 'Colorir',
@@ -393,7 +466,8 @@ async function criaWidgetLeituraDinamica(ancestral) {
             if (valor !== ''){
                 let conteudo = valor.split(',').map(d=> d.trim()) || []
                 let cor = e?.dataset.cor
-                regras.push({palavras: conteudo, cor: cor})
+                let nome = e?.dataset.nome
+                regras.push({palavras: conteudo, cor: cor, nome: nome})
             }
         }
         let algumTermoValido = regras.some(r => (r?.palavras || []).some(p => p !== ''))
@@ -416,91 +490,135 @@ async function criaWidgetLeituraDinamica(ancestral) {
             )
             if (tdProcesso) elementos.push(tdProcesso)
         }
+
         let processosResultado = []
-        let i = 0
-        for (el of elementos){
+        let mapaCopiar = new Map()      // chave: `${processo}|${nomeRegra}`
+        let cacheProcesso = new Map()   // chave: número CNJ -> análise já feita
+        let contadorBadge = 0
+
+        for (let el of elementos){
             let p = el.textContent.match(ROTA_REGEX_CNJ)?.[0]
             if (!p) continue
-            let id = await buscarIdPeloNumeroCNJ(p).then(d=> d?.id) || null
-            if (!id) continue
-            let documentosTimeline = await buscaDocumentosNaoApreciados(id)
-            let documentos = []
-            let corBadge = ''
-            let textoBadge = ''
-            let tooltipBadge = ''
-            let complemento = ''
-            for (d of documentosTimeline){
-                let teor = await extrairTexto(id, d?.id)
-                let i=0
-                let resultado = []
-                
-                    
-                for (r of regras){
-                    let encontrado = r?.palavras.map(d=> {
-                        let valor = d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null
-                        
-                        if (valor && textoBadge !== ''){
-                            if (!textoBadge.includes('➕')) textoBadge = textoBadge + '➕'
+
+            let analise = cacheProcesso.get(p)
+
+            if (!analise){
+                let id = await buscarIdPeloNumeroCNJ(p).then(d => d?.id) || null
+                if (!id) continue
+
+                let documentosTimeline = await buscaDocumentosNaoApreciados(id)
+                let documentos = []
+                let corBadge = ''
+                let textoBadge = ''
+                let tooltipBadge = ''
+                let complemento = ''
+
+                for (let doc of documentosTimeline){
+                    let teor = await extrairTexto(id, doc?.id)
+                    let resultado = []
+
+                    for (let r of regras){
+                        let encontrado = r?.palavras.map(palavra => {
+                            let valor = palavra !== ''
+                                ? buscaEmTextoMalFormatado(teor, palavra, 100, 100)
+                                : null
+                            if (!valor) return null
+
+                            // acumula por par processo-regra
+                            let chave = p + '|' + r?.nome
+                            if (!mapaCopiar.has(chave)){
+                                mapaCopiar.set(chave, {
+                                    processo: p,
+                                    cor: r?.nome,
+                                    corHex: r?.cor,
+                                    termos: new Set()
+                                })
+                            }
+                            mapaCopiar.get(chave).termos.add(palavra)
+
+                            // badge: primeiro termo define texto/cor/tooltip;
+                            // os demais viram ➕ e entram no complemento
+                            if (textoBadge === ''){
+                                textoBadge = palavra
+                                corBadge = r?.cor
+                                tooltipBadge = valor?.trechos
+                            } else {
+                                if (!textoBadge.includes('➕')) textoBadge += '➕'
+                                let termoMaiusculo = palavra.toUpperCase()
+                                if (complemento === ''){
+                                    complemento = '...\n\nOutros termos encontrados:\n\n-' + termoMaiusculo + '\n'
+                                } else if (!complemento.includes(termoMaiusculo)){
+                                    complemento += '-' + termoMaiusculo + '\n'
+                                }
+                            }
+
+                            return valor
+                        })
+
+                        if (encontrado?.some(d => d !== null)){
+                            resultado.push({
+                                busca: encontrado.filter(d => d !== null),
+                                cor: r?.cor
+                            })
                         }
-                        if (valor && complemento != '' && !complemento.includes(d.toUpperCase())) complemento += '-' + d.toUpperCase() + '\n'
-                        if (valor && complemento == ''){
-                            complemento = '...\n\nOutros termos encontrados:\n\n' + '-' + d.toUpperCase() + '\n'
-                        }
-                        if (valor && textoBadge == ''){
-                            textoBadge = d
-                            corBadge = r?.cor
-                            tooltipBadge = valor?.trechos
-                        }
-                        return valor
-                    })
-                    if (encontrado && encontrado?.some(d=> d !== null)){
-                        let dado = {}
-                        let dados = encontrado?.filter(d => d !== null)
-                        dado.busca = dados
-                        dado.cor = r?.cor
-                        //corBadge = r?.cor
-                        resultado.push(dado)
                     }
-                    i++
+
+                    // 'data' é um placeholder — o nome real do campo de data no
+                    // objeto retornado por buscaDocumentosNaoApreciados ainda
+                    // precisa ser conferido; deixe pronto pra troca.
+                    documentos.push({
+                        idUnicoDocumento: doc?.idUnicoDocumento,
+                        dados: resultado,
+                        teor: teor,
+                        data: doc?.data
+                    })
                 }
-                
-                // 'data' é um placeholder — o nome real do campo de data no
-                // objeto retornado por buscaDocumentosNaoApreciados ainda
-                // precisa ser conferido; deixe pronto pra troca.
-                let documento = {idUnicoDocumento: d?.idUnicoDocumento, dados: resultado, teor: teor, data: d?.data}
-                documentos.push( documento)
+
+                tooltipBadge += complemento
+
+                analise = {
+                    processo: {processo: p, documentos: documentos},
+                    textoBadge: textoBadge,
+                    corBadge: corBadge,
+                    tooltipBadge: tooltipBadge
+                }
+
+                cacheProcesso.set(p, analise)
+                processosResultado.push(analise.processo)
             }
-            tooltipBadge += complemento
-            let processo = {}
-            processo.processo = p
-            processo.documentos = documentos
-            processosResultado.push(processo)
-            i++
-            let badgeId = 'rota_leituraDinamica_pintura' + i
-            let encontrouAlgo = textoBadge !== ''
-            let textoBadgeFinal = encontrouAlgo ? textoBadge.toUpperCase() : 'NÃO ENCONTRADO'
-            let corBadgeFinal = encontrouAlgo ? corBadge : '#6b7c93'
+
+            contadorBadge++
+            let badgeId = 'rota_leituraDinamica_pintura' + contadorBadge
+            let encontrouAlgo = analise.textoBadge !== ''
+            let textoBadgeFinal = encontrouAlgo ? analise.textoBadge.toUpperCase() : 'NÃO ENCONTRADO'
+            let corBadgeFinal = encontrouAlgo ? analise.corBadge : '#6b7c93'
+
             let badge = criaPlaquinhaComTooltip({
                 id: badgeId,
                 texto: textoBadgeFinal,
                 cor: corBadgeFinal,
-                tooltip: tooltipBadge,
-                
+                tooltip: analise.tooltipBadge
             })
             el.appendChild(badge)
-            let badgeEdita = document.querySelector('#rota_leituraDinamica_pintura' + i)
+
+            let badgeEdita = document.querySelector('#' + badgeId)
             badgeEdita.style.backgroundColor = corBadgeFinal
             badgeEdita.style.border = '1px solid ' + corBadgeFinal
-            badgeEdita.style.borderRadius = "2px"
+            badgeEdita.style.borderRadius = '2px'
             badgeEdita.style.padding = '2px 2px'
             badgeEdita.style.cursor = 'pointer'
             badgeEdita.addEventListener('click', (e) => {
                 e.stopPropagation()
                 e.preventDefault()
-                rota_leituraDinamica_abrirCompiladoProcesso(processo)
+                rota_leituraDinamica_abrirCompiladoProcesso(analise.processo)
             })
-            
         }
+
+        processosCopiar = [...mapaCopiar.values()].map(x => ({
+            processo: x.processo,
+            cor: x.cor,
+            termos: [...x.termos]
+        }))
         
     }
 

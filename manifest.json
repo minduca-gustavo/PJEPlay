@@ -120,6 +120,7 @@
         "pje/funcoes-fita-superior-janela-detalhes.js",
         "pje/sigeo-filtra-vt-final.js",
         "pje/gigs.js",
+        "pje/gig-copia-atendimento.js",
         "rota/acoes.js",
         "rota/formatadores.js",
         "rota/componentes.js",

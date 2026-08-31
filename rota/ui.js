@@ -1888,7 +1888,8 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
             })
         }
         for(let doc of documentos){
-            let textoBotao = defineTextoBotaoTermo(termo, 0, 0, false) + '\n' + 'Id ' + doc?.idUnicoDocumento + '\n' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4) + '\n'
+            let textoBotao = doc?.titulo.length > 20 ? doc?.titulo.slice(0, 20) + '...' : doc?.titulo
+            
             let idBotao = id + '_' + (doc?.idUnicoDocumento) + '_botao'
             criaBotaoAzul({
                 id: idBotao,
@@ -1898,7 +1899,7 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
             })
             criaTooltip({
                 id: idBotao + '_tooltip',
-                texto: doc?.titulo,
+                texto: doc?.titulo + '\n' + defineTextoBotaoTermo(termo, 0, 0, false) + ' - ' + 'Id ' + doc?.idUnicoDocumento + ' - ' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4),
                 elemento: idBotao
             })
         }

@@ -2,7 +2,7 @@
 
 
 // ── Constantes ───────────────────────────────────────────────────────────────
-const DEVOLVER_GIG_URL_REGEX = /processo\/\d{7}\/detalhe/
+const DEVOLVER_GIG_URL_REGEX = /processo\/\d+\/detalhe/
 
 function devolverGig() {
     adicionarBotoesDevolverGig()
@@ -110,6 +110,7 @@ async function devolverGig_executarDevolucao(btnEditar, nome, descricao) {
 
 function adicionarBotoesDevolverGig() {
     if (!DEVOLVER_GIG_URL_REGEX.test(location.pathname)) return
+    console.log('%c[Rota PJE]%c aqui: ' + JSON.stringify(123), LOG.rosa, 'color:inherit')
 
     const tabela = document.getElementById('tabela-atividades')
     if (!tabela) return
@@ -130,6 +131,7 @@ function adicionarBotoesDevolverGig() {
 
         const btn = document.createElement('button')
         btn.type      = 'button'
+        btn.id = id('devolver_gig')
         btn.className = 'btn-devolver-gig mat-focus-indicator mat-tooltip-trigger icone-clicavel mat-icon-button mat-button-base'
         btn.setAttribute('mattooltip', 'Devolver para quem criou ou alterou o GIG')
         btn.setAttribute('aria-label', 'Devolver para quem criou ou alterou o GIG')
