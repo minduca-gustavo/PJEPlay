@@ -331,10 +331,18 @@ async function criaWidgetLeituraDinamica(ancestral) {
             navigator.clipboard.writeText(copia.join('\n'))
             rota_leituraDinamica_avisoTemporario('Conteúdo copiado com sucesso', 3000)
         } else if(cor === 'cor'){
-            for (let cor of cores){
-                
+            resultado = []
+            for (let c of cores){
+                console.log('%c[Rota PJE]%c c: ' + JSON.stringify(c), LOG.teste, 'color:inherit')
+                console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+                let linhas = dados.filter(d=> d?.cor === c?.nome?.toLowerCase())
+                console.log('%c[Rota PJE]%c linhas: ' + JSON.stringify(linhas), LOG.info, 'color:inherit')
+                resultado.push(linhas.map(d=> d.processo + '\t' + d?.cor + ': ' + d?.termos.join(', ')).join('\n'))
             }
+            navigator.clipboard.writeText(resultado.join('\n'))
+            rota_leituraDinamica_avisoTemporario('Conteúdo copiado com sucesso', 3000)
         }
+        
         console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
     }
     let idGrade = id('leituraDinamica', 'botoesCopia')
