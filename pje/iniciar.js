@@ -70,3 +70,42 @@ new MutationObserver(() => {
 		}
 	}
 }).observe(document.body, { childList:true, subtree:true })
+
+
+// registro_mutacoes.js
+let ROTA_MUTACOES = [];
+/*
+rotaRegistrarMutacao({
+  seletor: '.assistente-assinatura-alvo',
+  callback: (el) => montarAssistenteAssinatura(el)
+});
+*/
+
+function rotaRegistrarMutacao({ seletor, callback, umaVez = false }) {
+  ROTA_MUTACOES.push({ seletor, callback, umaVez });
+}
+
+function rotaIniciarObservadorCentral(raiz = document.body) {
+  let observer = new MutationObserver((mutations) => {
+	for (let mutation of mutations) {
+      for (let node of mutation.addedNodes) {
+        if (node.nodeType !== 1) continue; // só elementos
+        for (let regra of [...ROTA_MUTACOES]) {
+          let alvo = node.matches?.(regra.seletor)
+            ? node
+            : node.querySelector?.(regra.seletor);
+          if (alvo) {
+            regra.callback(alvo);
+            if (regra.umaVez) {
+              let i = ROTA_MUTACOES.indexOf(regra);
+              if (i > -1) ROTA_MUTACOES.splice(i, 1);
+            }
+          }
+        }
+      }
+    }
+  });
+  observer.observe(raiz, { childList: true, subtree: true });
+  return observer;
+}
+rotaIniciarObservadorCentral()

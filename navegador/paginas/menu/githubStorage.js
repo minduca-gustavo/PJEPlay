@@ -139,18 +139,14 @@ async function githubGetSenha() {
  * Retorna true/false — use no menu-gestor para feedback visual.
  */
 async function githubTestarSenha(senha) {
-  console.log('%c[Rota PJE]%c senha: ' + JSON.stringify(senha), LOG.teste, 'color:inherit')
   try {
     const url = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO_TOKEN}/${GITHUB_BRANCH}/${GITHUB_TOKEN_PATH}`;
     const resp = await fetch(url, { cache: 'no-store' });
-    console.log('%c[Rota PJE]%c url: ' + JSON.stringify(url), LOG.aviso, 'color:inherit')
-    console.log('%c[Rota PJE]%c resp: ' + JSON.stringify(resp), LOG.aviso, 'color:inherit')
     if (!resp.ok) throw new Error();
     const encJson = await resp.text();
     await _githubDecryptToken(encJson, senha);
     return true;
   } catch(e) {
-    console.log('%c[Rota PJE]%c catch: ' + JSON.stringify(e.message), LOG.aviso, 'color:inherit')
     return false;
   }
 }

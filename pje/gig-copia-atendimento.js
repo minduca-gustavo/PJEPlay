@@ -37,9 +37,13 @@ function copiaDadosAtendimento(botaoCopia){
     let textoFinal = `${ojElemento} - Processo: ${textoProcesso}: ${texto}`
     navigator.clipboard.writeText(textoFinal)
 }
-window.addEventListener('rota_pje:url-mudou', () => {
-    // fecha o painel de minutas antes de remontar o widget — o conteúdo
-    // é sempre da tela anterior e ficaria órfão
-    //document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
-    gig_copiaAtendimento()
-})
+
+rotaRegistrarMutacao({
+  seletor: '#gigs',
+  callback: (el) => gig_copiaAtendimento(el)
+});
+
+rotaRegistrarMutacao({
+  seletor: '.actions',
+  callback: (el) => gig_copiaAtendimento(el)
+});
