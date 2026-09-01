@@ -1,4 +1,4 @@
-
+/*
 
 
 // ── Constantes ───────────────────────────────────────────────────────────────
@@ -115,7 +115,13 @@ function adicionarBotoesDevolverGig() {
     const tabela = document.getElementById('tabela-atividades')
     if (!tabela) return
 
-    const linhas = tabela.querySelectorAll('tbody tr')
+    //const linhas = tabela.querySelectorAll('tbody tr')
+    const linhas = [...document.querySelectorAll('.actions')]
+    for (let linha of linhas){
+        let id = id('devolver_gig')
+        document.getElementById(id)?.remove()
+
+    }
     linhas.forEach(tr => {
         if (tr.querySelector('.btn-devolver-gig')) return
 
@@ -149,6 +155,8 @@ function adicionarBotoesDevolverGig() {
             devolverGig_executarDevolucao(btnEditar, nome, descricao)
         })
 
-        btnTrash.insertAdjacentElement('afterend', btn)
+        //btnTrash.insertAdjacentElement('afterend', btn)
+        tr.appendChild(btn)
     })
 }
+    */
