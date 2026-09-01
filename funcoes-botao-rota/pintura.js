@@ -76,10 +76,10 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
     cabecalho.style.backgroundColor = cor
     cabecalho.style.borderLeft      = `6px solid ${escurecerCor(cor)}`
 
-    remover('#pjerota-termo-badge')
+    remover('#rota_pje-termo-badge')
 
     let badge = document.createElement('span')
-    badge.id = 'pjerota-termo-badge'
+    badge.id = 'rota_pje-termo-badge'
     Object.assign(badge.style, {
         display:       'inline-block',
         marginLeft:    '12px',
@@ -135,7 +135,7 @@ function pintura_limpar(cabecalho){
     if(!cabecalho) return
     cabecalho.style.removeProperty('background-color')
     cabecalho.style.removeProperty('border-left')
-    remover('#pjerota-termo-badge')
+    remover('#rota_pje-termo-badge')
 }
 
 

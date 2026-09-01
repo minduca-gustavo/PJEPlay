@@ -32,7 +32,7 @@
     }
   })
 
-  window.addEventListener('pjerota:melhorleitura-atualizado', e => {
+  window.addEventListener('rota_pje:melhorleitura-atualizado', e => {
     _mlAtivo = e.detail?.ativo !== false
   })
 

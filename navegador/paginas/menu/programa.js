@@ -179,7 +179,7 @@ async function iniciar(){
 		tabs.forEach(tab => {
 			NAV.scripting.executeScript({
 				target: { tabId: tab.id },
-				func: (h) => { window._pjerota_habilitado = h },
+				func: (h) => { window._rota_pje_habilitado = h },
 				args: [habilitado],
 			}).catch(()=>{})
 		})
@@ -486,7 +486,7 @@ async function iniciar(){
 				target: { tabId: tab.id },
 				func: (ativo) => {
 					window._melhorLeitura_ativo = ativo
-					window.dispatchEvent(new CustomEvent('pjerota:melhorleitura-atualizado', { detail: { ativo } }))
+					window.dispatchEvent(new CustomEvent('rota_pje:melhorleitura-atualizado', { detail: { ativo } }))
 				},
 				args: [mlAtivo],
 			}).catch(() => {})

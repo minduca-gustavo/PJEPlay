@@ -3,14 +3,14 @@
 // ____________________________________
 
 async function criaFitaSuperior() {
-    let retira = await selecionar('#pjerota-busca-posicao-fila-div-barra')
+    let retira = await selecionar('#rota_pje-busca-posicao-fila-div-barra')
     if (retira) retira.remove()
     let barra = await aguardarElementoNovo('detalhesDoProcessoBarraSuperior')
     let corToolbar = barra
         ? getComputedStyle(barra).backgroundColor
         : '#1565C0'
     let div = await criaDiv({
-        id: 'pjerota-busca-posicao-fila-div-barra',
+        id: 'rota_pje-busca-posicao-fila-div-barra',
         ancestral: 'ffff'
     })
     console.log('%c[Rota PJE]%c cria a fita' + JSON.stringify(8 + ': fita'), LOG.rosa, 'color:inherit')
@@ -34,6 +34,7 @@ async function criaFitaSuperior() {
 
     await busca_filaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
+    await irParaAOJDesteProcessoCriaBotao()
 }
 
 function confereCriaFitaSuperior(){
@@ -42,8 +43,8 @@ function confereCriaFitaSuperior(){
     criaFitaSuperior()
 }
 
-window.addEventListener('pjerota:url-mudou', () => {
-    document.getElementById('pjerota-busca-posicao-fila-div-barra')?.remove()
+window.addEventListener('rota_pje:url-mudou', () => {
+    document.getElementById('rota_pje-busca-posicao-fila-div-barra')?.remove()
     confereCriaFitaSuperior()
 })
 
@@ -55,12 +56,22 @@ confereCriaFitaSuperior()
 // ___________________________________________________
 
 async function busca_filaCriaBotao(){
+    let id = 'rota_pje-busca-posicao-fila'
     let botao = await criaBotaoAzul({
-        id: 'pjerota-busca-posicao-fila-botao-busca',
-        ancestral: 'pjerota-busca-posicao-fila-div-barra',
+        id: id + '_botao',
+        ancestral: 'rota_pje-busca-posicao-fila-div-barra',
         acao: () => busca_posicao_filaConsultar(),
         texto: 'Busca posição do processo na fila.'
     })
+    criaTooltip({
+        id: id + '_tooltip',
+        texto: 'Busca a posição deste processo na fila da tarefa.',
+        elemento: botao
+    })
+    estiloBotaoFitaSuperior(botao)
+}
+
+function estiloBotaoFitaSuperior(botao){
     botao.style.width = 'fit-content'
     botao.style.fontSize = '9px'
     botao.style.height     = '14px'
@@ -78,12 +89,12 @@ function buscaPosicaoFilaPainelGlobal(){
 buscaPosicaoFilaPainelGlobal()
 
 async function busca_FilaPainelGlobal(){
-    let parametros = await rota_buscarParametros('pjerota_busca_posicao_fila')
+    let parametros = await rota_buscarParametros('rota_pje_busca_posicao_fila')
     if (!parametros) return
-    let processo = await rota_buscarParametros('pjerota_busca_posicao_fila_numero')
-    let armazenamento = await obterArmazenamento('pjerota_busca_posicao_fila')
+    let processo = await rota_buscarParametros('rota_pje_busca_posicao_fila_numero')
+    let armazenamento = await obterArmazenamento('rota_pje_busca_posicao_fila')
     if (!armazenamento) return
-    await removerArmazenamento('pjerota_busca_posicao_fila')
+    await removerArmazenamento('rota_pje_busca_posicao_fila')
     await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
     let contAtual = await interceptador_lerProcessosPainel()
     let conteudoAtual = contAtual.resultado
@@ -166,7 +177,7 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
 }
 
 async function busca_posicao_filaConsultar() {
-    const rodape = await selecionar('#pjerota-busca-posicao-fila-rodape')
+    const rodape = await selecionar('#rota_pje-busca-posicao-fila-rodape')
     const id = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)?.[1]
     const processo = ((await sel('detalhesDoProcessoNumeroProcessoComTipo'))?.textContent.split(' ')[2])
       ?? (await interceptador_lerProcesso()?.numero ?? await rota_fetch(`${location.origin}/pje-comum-api/api/processos/id/${id}`))?.numero
@@ -178,8 +189,8 @@ async function busca_posicao_filaConsultar() {
     let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/historico/' + id)
     let dataEntradaTarefa = new Date(tarefas[tarefas.length - 2]?.inicio).toLocaleDateString('pt-BR')
     rodape.textContent = 'O processo entrou na tarefa em ' + dataEntradaTarefa + '.'
-    await armazenar({pjerota_busca_posicao_fila: dataEntradaTarefa})
-    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?pjerota_busca_posicao_fila=' + encodeURI(dataEntradaTarefa) + '&pjerota_busca_posicao_fila_numero='+ processo
+    await armazenar({rota_pje_busca_posicao_fila: dataEntradaTarefa})
+    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?rota_pje_busca_posicao_fila=' + encodeURI(dataEntradaTarefa) + '&rota_pje_busca_posicao_fila_numero='+ processo
     window.open(url)
 }
 
@@ -193,19 +204,20 @@ function busca_posicao_filaNavegar(url) {
 // ___________________________________________________
 
 async function abre_tarefa_rotaCriaBotao() {
+    let id = 'rota_pje-abre-tarefa-rota'
     let nomeTarefaAtiva = await abre_tarefa_rotaNomeTarefaAtiva()
     let botaoTarefa = await criaBotaoLaranja({
-        id: 'pjerota-abre-tarefa-rota-botao',
-        ancestral: 'pjerota-busca-posicao-fila-div-barra',
+        id: id + '_botao',
+        ancestral: 'rota_pje-busca-posicao-fila-div-barra',
         acao: () => abre_tarefa_rotaAbrirEmModoJanelas(),
         texto: 'tarefa: ' + nomeTarefaAtiva
     })
-    botaoTarefa.style.width = 'fit-content'
-    botaoTarefa.style.fontSize = '9px'
-    botaoTarefa.style.height = '14px'
-    botaoTarefa.style.lineHeight = '14px'
-    botaoTarefa.style.padding = '0 8px'
-    botaoTarefa.style.zIndex = '9999999'
+    criaTooltip({
+        id: id + '_tooltip',
+        texto: 'Abre este processo no modo Janelas/Tarefa.',
+        elemento: botaoTarefa
+    })
+    estiloBotaoFitaSuperior(botaoTarefa)
 }
 
 async function abre_tarefa_rotaNomeTarefaAtiva(){
@@ -223,4 +235,58 @@ async function abre_tarefa_rotaAbrirEmModoJanelas(){
     }
     rota_avisoTemporario('▶ Abrindo no modo janelas…', 'info', 3000)
     rota_iniciarFluxo({ fila: [{ numProc: processo, id, dadosLinha: [], params: [] }] })
+}
+
+// ___________________________________________________
+// [3] IR PARA A OJ DESTE PROCESSO
+// ___________________________________________________
+
+async function irParaAOJDesteProcessoCriaBotao() {
+    let id = 'rota_pje-irParaAOJDesteProcesso' 
+    let botaoTarefa = await criaBotaoAzul({
+        id: id + '_botao',
+        ancestral: 'rota_pje-busca-posicao-fila-div-barra',
+        acao: () => irParaAOJDesteProcesso(),
+        texto: 'Ir para a OJ deste processo'
+    })
+    criaTooltip({
+        id: id + '_tooltip',
+        texto: 'Ir para a OJ atual deste processo',
+        elemento: botaoTarefa
+    })
+    estiloBotaoFitaSuperior(botaoTarefa)
+}
+
+async function irParaAOJDesteProcesso() {
+    let id = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)?.[1]
+    let dados = await buscarProcesso(id)
+    let oj = dados?.orgaoJulgador?.id || null
+    if(!oj) {
+        rota_avisoTemporario('Ocorreu um erro.', 'erro', 4000)
+        return
+    }
+    //if(document.querySelector('pje-cabecalho-processo').textContent.includes(dados?.orgaoJulgador?.descricao)) {
+    //    rota_avisoTemporario('Você já está na OJ deste processo.', 'info', 4000)
+    //    return
+    //}
+    let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
+    //console.log('%c[Rota PJE]%c perfis' + JSON.stringify(perfis), LOG.info, 'color:inherit')
+    //return
+    let perfil = perfis.find(el => el.idOrgaoJulgador === oj)
+    if (!perfil) {
+        rota_avisoTemporario('Ocorreu um erro.', 'erro', 4000)
+        return
+    }
+    await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/plain, */*',
+            'X-XSRF-TOKEN': rota_cookie('Xsrf-Token') || rota_cookie('XSRF-TOKEN'),
+        },
+        body: JSON.stringify({ id_perfil: perfil.idPerfil })
+    })
+    window.location.reload()
 }

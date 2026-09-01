@@ -115,7 +115,7 @@ async function compiladorDeAssistentes() {
     }
     
 }
-window.addEventListener('pjerota:url-mudou', () => {
+window.addEventListener('rota_pje:url-mudou', () => {
     // fecha o painel de minutas antes de remontar o widget — o conteúdo
     // é sempre da tela anterior e ficaria órfão
     //document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()

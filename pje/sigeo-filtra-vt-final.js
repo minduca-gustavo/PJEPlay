@@ -68,10 +68,10 @@ async function sigeoAjJtInserirElementos() {
     botaoFiltroEl.style.marginTop = '3px'  
     botaoFiltroEl.type = 'button'
     
-    let varaSalva = await obterArmazenamento('pjerota_sigeo_filtra_vt_finalVaraSalva')
+    let varaSalva = await obterArmazenamento('rota_pje_sigeo_filtra_vt_finalVaraSalva')
     console.log('%c[Rota PJE]%c varaSalva: ' + JSON.stringify(varaSalva), LOG.rosa, 'color:inherit')
-    if (varaSalva?.pjerota_sigeo_filtra_vt_finalVaraSalva) {
-        inputEl.value = varaSalva.pjerota_sigeo_filtra_vt_finalVaraSalva
+    if (varaSalva?.rota_pje_sigeo_filtra_vt_finalVaraSalva) {
+        inputEl.value = varaSalva.rota_pje_sigeo_filtra_vt_finalVaraSalva
     }
         
     
@@ -84,7 +84,7 @@ async function sigeoAjJtInserirElementos() {
 }
 
 async function sigeo_filtra_vt_finalfiltrarPorVara(vara) {
-    await armazenar({pjerota_sigeo_filtra_vt_finalVaraSalva: vara})
+    await armazenar({rota_pje_sigeo_filtra_vt_finalVaraSalva: vara})
     document.querySelectorAll(SELETORES_SIGEO.celulaDoProcessoNaTabela)
     .forEach(el => el.closest('tr').style.display = '')
     if (!vara){

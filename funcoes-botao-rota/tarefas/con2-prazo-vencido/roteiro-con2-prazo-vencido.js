@@ -1,6 +1,6 @@
 // dá problema quando o interceptador dá errado, ou seja, quando não tem gigs concluídos, por exemplo.
 // o domicilio eletronico é outra api.
-//     ?pjerota_tarefa=_
+//     ?rota_pje_tarefa=_
 
 
 
@@ -31,7 +31,7 @@ async function con2_prazo_vencido_aoAbrirDetalhesDoProcesso(){
     if (!armazenamento) return
     let execucao = String(armazenamento?.rotaExecucaoAtual || '')
     if (!execucao) return
-    let tarefaParam = rota_buscarParametros('pjerota_tarefa')
+    let tarefaParam = rota_buscarParametros('rota_pje_tarefa')
     if (tarefaParam && !window.name.includes(tarefa)) window.name = window.name + '-' + tarefaParam + '-' + execucao
     if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
     if (execucao !== window.name.split('-').pop()) return
@@ -58,7 +58,7 @@ async function con2_prazo_vencido_janelaDetalhes(sessao){
     await clicar(sentenca[0])
     sentenca[0].scrollIntoView({ block: 'nearest' })
     await armazenar({rota_con2_prazo_vencido_janelaDetalhes: sessao})
-    await removerArmazenamento('pjerota_tarefa')
+    await removerArmazenamento('rota_pje_tarefa')
 }
 
 //__________________________________________________

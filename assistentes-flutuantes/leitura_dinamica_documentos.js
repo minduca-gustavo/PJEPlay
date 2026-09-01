@@ -39,8 +39,8 @@ async function leituraDinamicaDocumentos(ancestral) {
 
 //leituraDinamicaDocumentos()
 //
-//window.addEventListener('pjerota:url-mudou', () => {
-//    document.getElementById('pjerota-consulta_qualquer_oj-widget')?.remove()
+//window.addEventListener('rota_pje:url-mudou', () => {
+//    document.getElementById('rota_pje-consulta_qualquer_oj-widget')?.remove()
 //    leituraDinamicaDocumentos()
 //})
 

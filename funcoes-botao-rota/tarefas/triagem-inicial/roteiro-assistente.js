@@ -3,7 +3,7 @@
 // Roteiro da janela assistente para a Triagem Inicial.
 //
 // Roda no contexto do assistente.html.
-// Filtra pelo parâmetro pjerota_tarefa da URL.
+// Filtra pelo parâmetro rota_pje_tarefa da URL.
 //
 // Por ora: aguarda os dados chegarem via storage e remove
 // o carregando. A interface será montada aqui futuramente.
@@ -15,7 +15,7 @@ async function triagem_assistente_iniciar() {
     let tarefaNome = 'triagem_inicial'
     
     // ── Filtra pelo parâmetro da URL ──────────────────────────
-    const tarefa = new URL(location.href).searchParams.get('pjerota_tarefa')
+    const tarefa = new URL(location.href).searchParams.get('rota_pje_tarefa')
     if (tarefa !== 'triagem_inicial') return
     console.log('%c[Rota PJE]%c 13', LOG.teste, 'color:inherit')
     // ── Aguarda sinal de dados prontos via storage ────────────
