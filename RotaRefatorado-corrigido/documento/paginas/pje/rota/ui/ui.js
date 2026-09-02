@@ -1847,15 +1847,26 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
                 .filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d))
                 .map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idDocumentoPai: a.idDocumentoPai}))
         })
-        console.log('%c[Rota PJE]%c idDocs.flatmap()' + JSON.stringify(idDocs), LOG.aviso, 'color:inherit')
         return {termo:d , documentos: idDocs}
     })
     let contadores = {}
-    console.log('%c[Rota PJE]%c termosIds: ' + JSON.stringify(termosIds), LOG.teste, 'color:inherit')
     criaDiv({
         id: id,
         ancestral: ancestral
     })
+
+    // NOVO: verifica se há algum documento em qualquer termo
+    let totalDocumentos = termosIds.reduce((soma, t) => soma + t.documentos.length, 0)
+
+    if (!totalDocumentos) {
+        criaTexto({
+            id: id + '_nenhumDocumentoEncontrado',
+            texto: 'Nenhum documento encontrado.',
+            ancestral: id
+        })
+        return
+    }
+
     let idBotaoOrdem = id + '_botaoOrdem'
     let botaoOrdem = criaBotaoLaranja({
         id: idBotaoOrdem,
@@ -1882,6 +1893,9 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
             let texto = termo?.termo.charAt(0).toUpperCase() + termo?.termo.slice(1, )
             let idBotao = id + '_' + termo?.termo.replace(/\s/g,'_')
             let quantidade = termo?.documentos.length
+            if (!quantidade) {
+                continue
+            }
             criaBotaoTermos({
                 id: idBotao,
                 texto: defineTextoBotaoTermo(termo?.termo, 0, quantidade),
@@ -1894,7 +1908,6 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
                 acaoSecundaria: () => criaTabelaDocumentos(termo?.termo)
             })
         }
-        
     }
     function defineTextoBotaoTermo(texto, posicao, quantidade, comPosicao = true){
         if (comPosicao) return !texto.split(' ')[1] && texto.split(' ')[0].length > 8 ? (texto.charAt(0).toUpperCase() + texto.slice(1, )).split(' ')[0].slice(0, 8) + '... ' + posicao + '/' + quantidade : (texto.charAt(0).toUpperCase() + texto.slice(1, )).split(' ')[0] + ' ' + posicao + '/' + quantidade
