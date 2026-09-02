@@ -10,7 +10,7 @@ function relatar(
 	tipo			= '',
 	ativada		= false
 ){
-	
+	return
 	let diagnosticar = CONFIGURACAO?.diagnostico || ativada
 	if(!diagnosticar)
 		return

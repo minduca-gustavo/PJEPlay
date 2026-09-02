@@ -173,12 +173,14 @@ async function mostraVaraDeOrigem(banner) {
     console.log('%c[Rota PJE]%c banner: ' + JSON.stringify(banner), LOG.info, 'color:inherit')
     let idProcesso = location.href.match(/pjekz\/processo\/(\d+)/)?.[1]
     if (!idProcesso) return
-
+    console.log('%c[Rota PJE]%c idProcesso: ' + JSON.stringify(idProcesso), LOG.teste, 'color:inherit')
     let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+    console.log('%c[Rota PJE]%c historico: ' + JSON.stringify(historico), LOG.teste, 'color:inherit')
     let vara = historico
         .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
         ?.orgaoJulgadorOrigem?.descricao || ''
 
+    console.log('%c[Rota PJE]%c vara: ' + JSON.stringify(vara), LOG.info, 'color:inherit')
     let idOrigem = id('origem', 'plaquinha')
     removerComLimpezaDeAncora(idOrigem)
 
