@@ -376,6 +376,57 @@ async function iniciar(){
 		window.open(url, '_blank'/*, 'width=800,height=600'*/)
 	})
 
+	// ── Checklist de diagnóstico — liga/desliga log por módulo ──
+	//
+	// Cada checkbox é um tipo aceito por relatar() (modulos/relatar.js).
+	// Grava CONFIGURACAO.diagnostico direto no storage e propaga pras
+	// abas do PJe já abertas, sem depender do botão único de modo dev.
+	const DIAGNOSTICO_TIPOS = [
+		['execucao',      'Execução'],
+		['dom',           'DOM'],
+		['mutacao',       'Mutação'],
+		['requisicao',    'Requisição'],
+		['resposta',      'Resposta'],
+		['armazenamento', 'Armazenamento'],
+		['navegador',     'Navegador'],
+		['configuracao',  'Configuração'],
+		['contexto',      'Contexto'],
+		['automacao',     'Automação'],
+		['texto',         'Texto'],
+		['xhr',           'XHR'],
+		['erro',          'Erro'],
+		['teste',         'Teste'],
+	]
+
+	let listaDiagnostico = document.getElementById('diagnostico-lista')
+	let storeDiagnostico = await NAV.storage.local.get(['diagnostico'])
+	let diagnosticoAtual = storeDiagnostico.diagnostico || {}
+
+	DIAGNOSTICO_TIPOS.forEach(([chave, rotulo]) => {
+		let label = document.createElement('label')
+		label.style.cssText = 'display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;'
+		let check = document.createElement('input')
+		check.type = 'checkbox'
+		check.checked = diagnosticoAtual[chave] === true
+		check.dataset.chave = chave
+		label.appendChild(check)
+		label.appendChild(document.createTextNode(rotulo))
+		listaDiagnostico.appendChild(label)
+
+		check.addEventListener('change', async () => {
+			diagnosticoAtual[chave] = check.checked
+			await NAV.storage.local.set({ diagnostico: diagnosticoAtual })
+			let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
+			tabs.forEach(tab => {
+				NAV.scripting.executeScript({
+					target: { tabId: tab.id },
+					func: (diag) => { if(typeof CONFIGURACAO !== 'undefined') CONFIGURACAO.diagnostico = diag },
+					args: [diagnosticoAtual],
+				}).catch(() => {})
+			})
+		})
+	})
+
 	const ML_KEY      = 'melhorLeitura_config'
 	const ML_DEFAULTS = { bgColor: '#000000', textColor: '#ffdd00', fontSize: 22, boxWidth: 480 }
 
