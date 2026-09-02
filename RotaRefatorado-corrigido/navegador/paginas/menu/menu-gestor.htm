@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão — Rota PJE</title>
+  <link rel="stylesheet" href="/estilos/rotapje-redefinir.css">
+  <link rel="stylesheet" href="/estilos/rotapje-cores.css">
+  <link rel="stylesheet" href="/estilos/rotapje-animacoes.css">
+  <link rel="stylesheet" href="/estilos/rotapje-sombras.css">
+  <link rel="stylesheet" href="/estilos/rotapje-botoes.css">
+  <link rel="stylesheet" href="/estilos/rotapje-widgets.css">
+  <link rel="stylesheet" href="/estilos/rotapje-assistente.css">
+</head>
+<body>
+
+<div class="assistente-shell">
+
+  <!-- CABEÇALHO: faixa 1 — marca + tarefa -->
+  <header class="assistente-header">
+    <span class="assistente-marca">ROTA PJE</span>
+    <span class="assistente-sep">·</span>
+    <span class="assistente-tarefa" id="gestao-tarefa">Assistente de Gestão</span>
+    <button class="assistente-btn-fechar" id="btn-fechar-gestao" title="Fechar">×</button>
+  </header>
+
+  <!-- CABEÇALHO: faixa 2 — processo + posição -->
+  <div class="assistente-subheader">
+    <span class="assistente-num-processo" id="gestao-processo">Cadastre/consulte aqui os dados de perito, tabela de Juízes em atividades, modelos de despachos, etc.</span>
+    <span class="assistente-posicao"      id="nav-posicao">Secretaria Conjunta de Bauru</span>
+  </div>
+
+  <!-- CORPO ROLÁVEL — preenchido pelo roteiro da tarefa -->
+  <div class="assistente-corpo" id="rota_corpo_gestao">
+    <!-- criarCarregando() é inserido aqui pelo assistente.js -->
+    <!-- removerCarregando() + cria*() são chamados pelo roteiro -->
+  </div>
+
+  <!-- RODAPÉ FIXO — preenchido pelo assistente.js -->
+  <!--<footer class="assistente-rodape" id="rota-rodape_gestao">-->
+    <!-- criaBotaoProximoEEncerrar() é inserido aqui pelo assistente.js -->
+  <!--</footer>-->
+
+</div>
+
+<!-- ── Módulos base ── -->
+<script src="/modulos/apis.js"></script>
+<script src="/modulos/datas.js"></script>
+<script src="/modulos/navegador.js"></script>
+<script src="/modulos/definicoes.js"></script>
+<script src="/modulos/expressoes.js"></script>
+<script src="/modulos/links.js"></script>
+<script src="/modulos/contexto.js"></script>
+<script src="/modulos/relatar.js"></script>
+<script src="/modulos/automacao.js"></script>
+<script src="/modulos/url.js"></script>
+<script src="/modulos/tempo.js"></script>
+<script src="/modulos/texto.js"></script>
+<script src="/modulos/dom.js"></script>
+<script src="/modulos/esforcos.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/rota-nucleo.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/configuracao.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/formatadores.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/estado.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/acoes.js"></script>
+<script src="/documento/paginas/pje/api/consultas.js"></script>
+<script src="/documento/paginas/pje/rota/ui/ui.js"></script>
+<!--<script src="/documento/paginas/pje/rota/botao/janelas.js"></script>-->
+<script src="githubStorage.js"></script>
+<script src="menu-gestor.js"></script>
+
+
+</body>
+</html>

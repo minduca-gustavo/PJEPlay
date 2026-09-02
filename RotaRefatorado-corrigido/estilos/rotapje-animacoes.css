@@ -1,0 +1,27 @@
+/* rotapje-animacoes.css — espelha estilos/sisejt-animacoes.css */
+
+@keyframes rotapje-girar{
+	from{ transform:rotate(0deg) }
+	to  { transform:rotate(360deg) }
+}
+
+@keyframes rotapje-surgir{
+	from{ opacity:0; transform:translateY(-4px) }
+	to  { opacity:1; transform:translateY(0) }
+}
+
+@keyframes rotapje-encolher-crescer{
+	0%  { transform:scale(1) }
+	50% { transform:scale(0.88) }
+	100%{ transform:scale(1) }
+}
+
+@keyframes rotapje-pulsar{
+	0%,100%{ opacity:1 }
+	50%    { opacity:0.45 }
+}
+
+.rotapje-girar             { animation:rotapje-girar 1s linear infinite }
+.rotapje-surgir            { animation:rotapje-surgir .15s ease-out }
+.rotapje-encolher-crescer  { animation:rotapje-encolher-crescer .3s ease }
+.rotapje-pulsar            { animation:rotapje-pulsar 1.2s ease-in-out infinite }

@@ -1,0 +1,18 @@
+/* rotapje-redefinir.css — normalização mínima, só dentro dos elementos da extensão.
+   Espelha estilos/sisejt-redefinir.css, mas escopado nas tags prefixadas do Rota
+   para nunca vazar sobre o CSS do PJe. */
+
+rotapje-extensao,
+rotapje-extensao *,
+rotapje-widget,
+rotapje-widget *{
+	box-sizing:border-box;
+	margin:0;
+	padding:0;
+	font-family:var(--extensao-rotapje-fonte);
+}
+
+rotapje-extensao,
+rotapje-widget{
+	display:block;
+}

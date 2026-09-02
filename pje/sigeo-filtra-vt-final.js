@@ -13,14 +13,14 @@ async function sigeoAjJtAoIniciar() {
 }
 
 async function sigeoAjJtInserirElementos() {
-    let retira = await selecionar('#rota-pje-sigeo-filtra-vt-final')
+    let retira = await selecionar('#rotapje-sigeo-filtra-vt-final')
     if (retira) retira.remove()
     console.log('%c[Rota PJE]%c 15:', LOG.teste, 'color:inherit')
     let botaoOk = await selecionar(SELETORES_SIGEO.botaoOk)
     //let height = botaoOk.height
     
     let div = criaDiv({ 
-        id: 'rota-pje-sigeo-filtra-vt-final', 
+        id: 'rotapje-sigeo-filtra-vt-final', 
         ancestral: SELETORES_SIGEO.barraDeBusca,
         
     })
@@ -30,15 +30,15 @@ async function sigeoAjJtInserirElementos() {
     div.style.marginTop = '3px'              // espaço entre input e botão
     
     let input = criaInput({ 
-        id: 'rota-pje-sigeo-filtra-vt-final-input-vara', 
-        ancestral: 'rota-pje-sigeo-filtra-vt-final',
+        id: 'rotapje-sigeo-filtra-vt-final-input-vara', 
+        ancestral: 'rotapje-sigeo-filtra-vt-final',
         placeholder: 'Digite o código da Vara. Ex.: 0091, 0049',
     })
     input.style.flexDirection = 'row'
     
     
     botaoOk.insertAdjacentElement('afterend', div)
-    let inputEl = document.querySelector('#rota-pje-sigeo-filtra-vt-final-input-vara')
+    let inputEl = document.querySelector('#rotapje-sigeo-filtra-vt-final-input-vara')
     inputEl.style.padding = '0px 4px'
     inputEl.style.fontSize = '10px'
     inputEl.style.marginLeft = '6px'
@@ -50,12 +50,12 @@ async function sigeoAjJtInserirElementos() {
     inputEl.value = ''
     
     let botaoFiltro = criaBotaoAzul({ 
-        id: 'rota-pje-sigeo-filtra-vt-final-botao-filtro', 
-        ancestral: 'rota-pje-sigeo-filtra-vt-final',
+        id: 'rotapje-sigeo-filtra-vt-final-botao-filtro', 
+        ancestral: 'rotapje-sigeo-filtra-vt-final',
         texto: 'Filtrar por Vara',
         acao: () => sigeo_filtra_vt_finalfiltrarPorVara(inputEl.value)
     })
-    let botaoFiltroEl = document.querySelector('#rota-pje-sigeo-filtra-vt-final-botao-filtro')
+    let botaoFiltroEl = document.querySelector('#rotapje-sigeo-filtra-vt-final-botao-filtro')
     botaoFiltroEl.style.display = 'inline-flex'
     botaoFiltroEl.style.width = '300px'
     botaoFiltroEl.style.height = 'fit-content'
@@ -68,10 +68,10 @@ async function sigeoAjJtInserirElementos() {
     botaoFiltroEl.style.marginTop = '3px'  
     botaoFiltroEl.type = 'button'
     
-    let varaSalva = await obterArmazenamento('rota_pje_sigeo_filtra_vt_finalVaraSalva')
+    let varaSalva = await obterArmazenamento('rotapje_sigeo_filtra_vt_finalVaraSalva')
     console.log('%c[Rota PJE]%c varaSalva: ' + JSON.stringify(varaSalva), LOG.rosa, 'color:inherit')
-    if (varaSalva?.rota_pje_sigeo_filtra_vt_finalVaraSalva) {
-        inputEl.value = varaSalva.rota_pje_sigeo_filtra_vt_finalVaraSalva
+    if (varaSalva?.rotapje_sigeo_filtra_vt_finalVaraSalva) {
+        inputEl.value = varaSalva.rotapje_sigeo_filtra_vt_finalVaraSalva
     }
         
     
@@ -84,7 +84,7 @@ async function sigeoAjJtInserirElementos() {
 }
 
 async function sigeo_filtra_vt_finalfiltrarPorVara(vara) {
-    await armazenar({rota_pje_sigeo_filtra_vt_finalVaraSalva: vara})
+    await armazenar({rotapje_sigeo_filtra_vt_finalVaraSalva: vara})
     document.querySelectorAll(SELETORES_SIGEO.celulaDoProcessoNaTabela)
     .forEach(el => el.closest('tr').style.display = '')
     if (!vara){

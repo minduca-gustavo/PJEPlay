@@ -1,227 +1,347 @@
-async function visualizaQuadroDeJuizes() {
-    let janela = location.href.includes('trt15.jus.br/pjekz')
-    if (!janela) return
-    await criaVisualizador()
-    if (location.href.includes('pjekz/processo')){
-        await mostraVaraDeOrigem()
+// ============================================================
+// Rota PJE — Quadro de Juízes
+// ============================================================
+// Duas alterações em relação à versão anterior:
+//   1. O banner do PJe não é mais tocado (position:relative removido).
+//      A plaquinha é fixed e ancorada por coordenada calculada do banner;
+//      o quadro passa a ser filho da plaquinha, que vira o bloco contentor.
+//   2. Hover controlado por mouseenter/mouseleave na plaquinha. Como o
+//      quadro é filho dela, o hover propaga; a plaquinha de origem saiu de
+//      dentro da plaquinha e vai direto no body, então não propaga.
+// ============================================================
+
+const QJ_URL_DADOS = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_finais.json'
+
+const QJ_AJUSTE_TOPO = [
+    { trecho: 'minutar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
+    { trecho: 'assinar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
+    { trecho: 'tarefa',         topo: 0,  banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
+    { trecho: 'detalhe',        topo: -7, banner: '.resumo-processo', quebra: true},
+    { trecho: 'pjekz/processo', topo: 36, banner: 'pje-cabecalho div[role="banner"]', quebra: true},
+]
+
+const QJ_ESTILO_COMPACTO = {
+    marginTop:    '0px',
+    marginBottom: '0px',
+    gap:          '0px',
+    lineHeight:   'fit-content',
+    padding:      '0px 0px 0px 0px'
+}
+
+function qjEstiloPlaquinha() {
+    return {
+        zIndex:     '999999999',
+        textAlign:  'center',
+        color:      '#ffffff',
+        background: '#0078aa',
+        border:     '1px solid ' + UI_CORES.texto,
+        padding:    '1px 2px 1px 2px',
+        fontSize:   '9px'
     }
 }
 
-async function mostraVaraDeOrigem() {
-    let idProcesso = location.href.match(/pjekz\/processo\/(\d+)/)[1]
-    let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
-    let vara = historico.find(h => h?.orgaoJulgadorOrigem?.descricao.includes('Vara do Trabalho'))?.orgaoJulgadorOrigem?.descricao || ''
-    let idPlaquinha = id('visualizadorJuizes', 'plaquinha')
-    let idOrigem = id('origem', 'plaquinha')
-    document.querySelectorAll('#' + idOrigem).forEach(d => d.remove())
-    let plaquinha = criaPlaquinha({
-        id: idOrigem,
-        texto: 'Vara de Origem: ' + vara,
-        ancestral: idPlaquinha
-    })
-    Object.assign(plaquinha.style, {
-        position: 'fixed',
-        right: '0px',
-        zIndex: '999999999',
-        textAlign: 'center',
-        color: '#ffffff',
-        background: '#0078aa',
-        border: '1px solid ' + UI_CORES.texto,
-        textAlign: 'center',
-        padding: '1px 2px 1px 2px',
-        fontSize: '9px'
-    })
-
-
-
-    console.log('%c[Rota PJE]%c id: ' + JSON.stringify(id), LOG.info, 'color:inherit')
+function qjAjuste() {
+    return QJ_AJUSTE_TOPO.find(d => location.href.includes(d.trecho)) ?? 0
 }
 
-async function criaVisualizador() {
-    let banner = await aguardarElemento('pje-cabecalho div[role="banner"]')
-    banner.style.position = 'relative'
-    let AJUSTE_TOPO = [
-        { trecho: 'minutar', topo: 25},
-        { trecho: 'conclusao', topo: 25},
-        { trecho: 'pjekz/processo', topo: 36 },
-    ]
-    let ajuste = AJUSTE_TOPO.find(d => location.href.includes(d.trecho))?.topo ?? 0
 
-    let idPlaquinha = id('visualizadorJuizes', 'plaquinha')
-    document.querySelectorAll('#' + idPlaquinha).forEach(d => d.remove())
-    
-    let plaquinha = criaPlaquinha({
-        id: idPlaquinha,
-        texto: 'Quadro de\nJuízes',
-    })
-    Object.assign(plaquinha.style, {
-        position: 'absolute',
-        left: '0px',
-        top: `calc(100% + ${ajuste}px)`,
-        zIndex: '999999999',
-        whiteSpace: 'pre-line',
-        textAlign: 'center',
-        color: '#ffffff',
-        background: '#0078aa',
-        border: '1px solid ' + UI_CORES.texto,
-        textAlign: 'center',
-        padding: '1px 2px 1px 2px',
-        fontSize: '9px'
-    })
-    banner.appendChild(plaquinha)
-    plaquinha.addEventListener('mouseover', (e) => {
-        if (e.target !== e.currentTarget) return  // ← ignora se veio de filho
-        mostraQuadroDeJuizes('mostrar', plaquinha)
-    })
-    plaquinha.addEventListener('mouseout', (e) => {
-        if (e.target !== e.currentTarget) return
-        mostraQuadroDeJuizes('remover', plaquinha)
-    })
-    return plaquinha
+
+// ------------------------------------------------------------
+// Entrada
+// ------------------------------------------------------------
+
+async function visualizaQuadroDeJuizes() {
+    if (!location.href.includes('trt15.jus.br/pjekz')) return
+
+    let banner = await aguardarElemento(qjAjuste()?.banner || 'pje-cabecalho div[role="banner"]')
+
+    await criaVisualizador(banner)
+
+    if (location.href.includes('pjekz/processo')) {
+        await mostraVaraDeOrigem(banner)
+    }
 }
 
 visualizaQuadroDeJuizes()
 
-async function mostraQuadroDeJuizes(parametro, banner){
-    console.log('%c[Rota PJE]%c parametro: ' + JSON.stringify(parametro), LOG.teste, 'color:inherit')
-    let divId = id('visualizadorJuizes', 'quadro')
-    if (parametro === 'mostrar'){
-        let elementoPresente = document.getElementById(divId)
-        if (elementoPresente){
-            elementoPresente.style.display = 'flex'
-            return
-        }
-        let div = criaDiv({
-            id: divId,
-            ancestral: 'ffff'
-        })
-        
-        Object.assign(div.style,{
-            position:       'absolute',
-            top:            '0%',
-            left:           '100%',
-            width:          (window.screen.availWidth - 100)* 0.28 +'px',
-            height:         (window.screen.availHeight)* 0.4 +'px',
-            background:     UI_CORES.branco,
-            border:         '1px solid ' + UI_CORES.azul,
-            borderRadius:   '8px',
-            boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
-            //zIndex:         String(ROTA_Z.flutuante ?? 9000),
-            display:        'flex',
-            padding:        '4px 4px 4px 4px'
-        })
-        await conteudoQuadro(divId)
-        banner.appendChild(div)
-    } else {
-        let todos = [...document.querySelectorAll('#' + divId)].map(d=> d.style.display = 'none')
+// ------------------------------------------------------------
+// Ancoragem — substitui o position:relative no banner
+// ------------------------------------------------------------
+// O banner do PJe não pode receber position:relative (quebra função nativa).
+// Em vez de posicionar por absolute dentro dele, o elemento é fixed e recebe
+// coordenadas calculadas a partir do getBoundingClientRect do banner.
+// Devolve uma função de limpeza; os listeners também se removem sozinhos
+// assim que o elemento sai do DOM.
+
+function ancorarEm(elemento, referencia, { ajuste = 0, alinhaEsquerda = true } = {}) {
+    let controle = new AbortController()
+    let observador = null
+
+    let posicionar = () => {
+        if (!elemento.isConnected) return limpar()
+        let r = referencia.getBoundingClientRect()
+        elemento.style.top = (r.bottom + ajuste) + 'px'
+        if (alinhaEsquerda) elemento.style.left = r.left + 'px'
     }
-    async function conteudoQuadro(elemento){
-        let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rota_pje_finais.json'
+
+    let limpar = () => {
+        controle.abort()
+        observador?.disconnect()
+    }
+
+    observador = new ResizeObserver(posicionar)
+    observador.observe(referencia)
+    window.addEventListener('resize', posicionar, { signal: controle.signal })
+    window.addEventListener('scroll', posicionar, { capture: true, signal: controle.signal })
+
+    posicionar()
+    return limpar
+}
+
+// ------------------------------------------------------------
+// Plaquinha "Quadro de Juízes"
+// ------------------------------------------------------------
+
+async function criaVisualizador(banner) {
+    let idPlaquinha = id('visualizadorJuizes', 'plaquinha')
+    document.querySelectorAll('#' + idPlaquinha).forEach(d => d.remove())
+    let quebra = qjAjuste()?.quebra ? ' ' : '\n'
+    let plaquinha = criaPlaquinha({
+        id: idPlaquinha,
+        texto: 'Quadro de' + quebra + 'Juízes',
+    })
+    Object.assign(plaquinha.style, qjEstiloPlaquinha(), {
+        position:      'fixed',
+        whiteSpace:    'pre-line'
+    })
+    document.body.appendChild(plaquinha)
+
+    ancorarEm(plaquinha, banner, { ajuste: qjAjuste()?.topo  })
+
+    // O quadro é filho da plaquinha, então mouseleave só dispara quando o
+    // ponteiro deixa os dois. A plaquinha de origem não é mais filha daqui.
+    plaquinha.addEventListener('mouseenter', () => mostraQuadroDeJuizes('mostrar', plaquinha))
+    plaquinha.addEventListener('mouseleave', () => mostraQuadroDeJuizes('remover', plaquinha))
+
+    return plaquinha
+}
+
+// ------------------------------------------------------------
+// Plaquinha "Vara de Origem"
+// ------------------------------------------------------------
+
+async function mostraVaraDeOrigem(banner) {
+    console.log('%c[Rota PJE]%c banner: ' + JSON.stringify(banner), LOG.info, 'color:inherit')
+    let idProcesso = location.href.match(/pjekz\/processo\/(\d+)/)?.[1]
+    if (!idProcesso) return
+
+    let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+    let vara = historico
+        .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
+        ?.orgaoJulgadorOrigem?.descricao || ''
+
+    let idOrigem = id('origem', 'plaquinha')
+    document.querySelectorAll('#' + idOrigem).forEach(d => d.remove())
+
+    let plaquinha = criaPlaquinha({
+        id: idOrigem,
+        texto: 'Vara de Origem: ' + vara
+    })
+    Object.assign(plaquinha.style, qjEstiloPlaquinha(), {
+        position: 'fixed',
+        right:    '0px'
+    })
+    document.body.appendChild(plaquinha)
+
+    // Fica no body, fora da plaquinha do quadro — por isso o hover não propaga.
+    // O topo vem da mesma âncora, para manter o alinhamento de antes.
+    ancorarEm(plaquinha, banner, { ajuste: qjAjuste()?.topo, alinhaEsquerda: false })
+
+    console.log('%c[Rota PJE]%c vara de origem: ' + JSON.stringify(vara), LOG.info, 'color:inherit')
+
+    return plaquinha
+}
+
+// ------------------------------------------------------------
+// Quadro
+// ------------------------------------------------------------
+
+async function mostraQuadroDeJuizes(acao, plaquinha) {
+    let idQuadro = id('visualizadorJuizes', 'quadro')
+
+    if (acao !== 'mostrar') {
+        document.querySelectorAll('#' + idQuadro).forEach(d => d.style.display = 'none')
+        return
+    }
+
+    let existente = document.getElementById(idQuadro)
+    if (existente) {
+        existente.style.display = 'flex'
+        return
+    }
+    
+
+    let quadro = criaDiv({
+        id: idQuadro,
+        ancestral: plaquinha.id
+    })
+    Object.assign(quadro.style, {
+        position:     'absolute',   // resolve contra a plaquinha, que é fixed
+        top:          '0%',
+        left:         '100%',
+        width:        (window.screen.availWidth - 100) * 0.28 + 'px',
+        height:       window.screen.availHeight * 0.4 + 'px',
+        background:   UI_CORES.branco,
+        border:       '1px solid ' + UI_CORES.azul,
+        borderRadius: '8px',
+        boxShadow:    '0 4px 16px rgba(0,0,0,0.15)',
+        display:      'flex',
+        padding:      '4px 4px 4px 4px'
+    })
+
+    await preencheQuadro(idQuadro)
+}
+
+async function preencheQuadro(idQuadro, dados = []) {
+    
+    
+    
+    let idDivBotoes = id('visualizadorJuizes', 'quadro', 'botoes')
+    //let remove = [...document.querySelectorAll('#' + idDivBotoes)].map(d => d.remove())
+    let divBotoes = criaDiv({
+        id: idDivBotoes,
+        ancestral: idQuadro,
+        rowColumn: 'row-reverse'
+    })
+    divBotoes.style.gap = '0px'
+    divBotoes.style.padding = '0px'
+    divBotoes.style.marginBottom = '0px'
+    divBotoes.style.heigth = '14px'
+    divBotoes.style.zIndex = '9999999'
+    divBotoes.style.display = 'flex'
+    let botoes = [
+        {
+            id: 'assistentes',
+            texto: 'Secretários/Assistentes',
+            acao: async () => await tabelaAssistentesSecretarios()
+        },
+        {
+            id: 'juizes',
+            texto: 'Quadro de Juízes',
+            acao: async () => await preencheQuadro(idQuadro)
+        }
+    ]
+
+    for (botao of botoes){
+        let id = botao?.id
+        let remove = [...document.querySelectorAll('#' + id)].map(d=> d.remove())
+        let b = criaBotaoAzul({
+            id: id,
+            texto: botao?.texto,
+            ancestral: idDivBotoes,
+            acao: botao?.acao
+        })
+        estiloBotaoFitaSuperior(b)
+        b.style.position = 'relative'
+        b.style.right = '0px'
+    }
+    if (dados.length === 0 ){
+        let resposta = await fetch(QJ_URL_DADOS, { cache: 'no-store', referrerPolicy: 'no-referrer' })
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`)
+        console.log('%c[Rota PJE]%c resposta: ' + JSON.stringify(resposta), LOG.info, 'color:inherit')
+        let armazenamento = await resposta.json()
+        let varas = [...new Set(armazenamento.map(d => d?.Vara))]
+        let colunas = Object.keys(armazenamento[0] ?? {})
+        let idBase = id('visualizadorJuizes', 'linha', 'finais')
+        let remover = [...document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']')].map(d => d.remove())
+        montaCabecalho(idQuadro, idBase, colunas)
+        
+        let idRolante = idBase + '_divRolante'
+        let divRolante = criaDiv({ id: idRolante, ancestral: idQuadro })
+        divRolante.style.overflowY = 'auto'
+
+        varas.forEach((vara, i) => {
+            let dados = armazenamento.filter(d => d?.Vara === vara) || []
+            montaGrupo(idRolante, idBase + i, dados, colunas)
+        })
+    }
+
+    async function tabelaAssistentesSecretarios(){
+        let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_juizes.json'
         let resposta = await fetch(url, { cache: 'no-store', referrerPolicy: 'no-referrer' })
         if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`)
         let armazenamento = await resposta.json()
-        console.log('%c[Rota PJE]%c armazenamento:', LOG.info, 'color:inherit', armazenamento)
-        let varas = [...new Set(armazenamento.map(d=> d?.Vara))]
-        console.log('%c[Rota PJE]%c varas: ' + JSON.stringify(varas), LOG.info, 'color:inherit')
-        for (let i = 0; i < varas.length; i++){
-            let dados = armazenamento.filter(d => d?.Vara === varas[i]) || []
-            divId = id('visualizadorJuizes', 'linha')
-            // CABEÇALHO
-            if (i === 0){
-                let div = criaDiv({
-                    id: divId + '_cabecalho',
-                    ancestral: elemento,
-                    rowColumn: 'row'
-                })
-                div.style.marginBottom = '0px'
-                div.style.marginTop = '0px'
-                div.style.gap = '0px'
-                div.style.lineHeight = 'fit-content'
-                div.style.padding = '0px 0px 0px 0px'
+        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.teste, 'color:inherit')
+        let juizes = [...new Set(armazenamento.map(d => d?.JUIZ))]
+        let colunas = Object.keys(armazenamento[0] ?? {})
+        let idBase = id('visualizadorJuizes', 'linha', 'assistente')
+        let remover = [...document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']')].map(d => {
+            if (!d.id.includes(idBase)){
+                d.style.display = 'none'
             }
-            if (i === 0){
-                let k = 0
-                for (let [chave, valor] of Object.entries(dados[i])){
-                    k++
-                    let texto = Object.keys(dados[i])
-                    let celula = criaDiv({
-                        id: divId + '_cabecalho' + '_celula' + k,
-                        ancestral: divId + '_cabecalho'
-                    })
-                    celula.style.marginBottom = '0px'
-                    celula.style.marginTop = '0px'
-                    celula.style.gap = '0px'
-                    celula.style.lineHeight = 'fit-content'
-                    celula.style.padding = '0px 0px 0px 0px'
-                    celula.style.width = '33%'
-                    criaTitulo({
-                        id: divId + '_titulo',
-                        texto: chave,
-                        ancestral: divId + '_cabecalho' + '_celula' + k
-                    })
-                }
-            }
-            // DIV ROLANTE
-            let idRolante = divId + '_divRolante'
-            if (i === 0){
-                let divRolante = criaDiv({
-                    id: idRolante,
-                    ancestral: elemento
-                })
-                divRolante.style.overflowY = 'auto'
-            }
-            let linha = divId + i
-            let div = criaDiv({
-                id: linha,
-                ancestral: idRolante
-            })
-            div.style.marginBottom = '0px'
-            div.style.marginTop = '0px'
-            div.style.gap = '0px'
-            div.style.lineHeight = 'fit-content'
-            div.style.padding = '0px 0px 0px 0px'
-            for (let j = 0; j < dados.length; j++){
-                let div = criaDiv({
-                    id: linha + '_sub_' + j,
-                    ancestral: linha,
-                    rowColumn: 'row'
-                })
-                if (j % 2 ===0){
-                    div.style.background = '#add8e6'
-                }
-                div.style.marginBottom = '0px'
-                div.style.marginTop = '0px'
-                div.style.gap = '0px'
-                div.style.lineHeight = 'fit-content'
-                div.style.padding = '0px 0px 0px 0px'
-                let k = 0
-                for (let [chave, valor] of Object.entries(dados[j])){
-                    k++
-                    let texto = ''
-                    let par = '0,2,4,6,8'
-                    let impar = '1,3,5,7,9'
-                    if (valor === par) {texto = 'PAR'}
-                    else if (valor === impar) {texto = 'ÍMPAR'}
-                    else if (valor.includes('Vara do Trabalho')) {texto = valor.split('Vara do Trabalho de ').pop() + (/\d/.test(valor) ? ' - ' + valor.split(' ')[0] : '')}
-                    else { texto = valor.split(' ')[0] + ' ' + valor.split(' ').pop()}
-                    let celula = criaDiv({
-                        id: linha + j + '_celula_' + k,
-                        ancestral: linha + '_sub_' +j,
-                        
-                    })
-                    celula.style.marginBottom = '0px'
-                    celula.style.marginTop = '0px'
-                    celula.style.gap = '0px'
-                    celula.style.lineHeight = 'fit-content'
-                    celula.style.padding = '0px 0px 0px 0px'
-                    celula.style.width = '33%'
-                    criaTexto({
-                        id: divId + '_texto',
-                        texto: texto,
-                        ancestral: linha + j + '_celula_' + k
-                    })
-                }
-            }
-        }
+        })
+        //let remover = [...document.querySelectorAll('[id^=' + idBase + ']')].map(d => d.remove())
+        montaCabecalho(idQuadro, idBase, colunas)
+        
+        let idRolante = idBase + '_divRolante'
+        let divRolante = criaDiv({ id: idRolante, ancestral: idQuadro })
+        divRolante.style.overflowY = 'auto'
+
+        juizes.forEach((juiz, i) => {
+            let dados = armazenamento.filter(d => d?.JUIZ === juiz) || []
+            montaGrupo(idRolante, idBase + i, dados, colunas)
+        })
+        
     }
+
+}
+
+function montaCabecalho(idQuadro, idBase, colunas) {
+    let idLinha = idBase + '_cabecalho'
+    let linha = criaDiv({ id: idLinha, ancestral: idQuadro, rowColumn: 'row' })
+    Object.assign(linha.style, QJ_ESTILO_COMPACTO)
+
+    colunas.forEach((chave, k) => {
+        let idCelula = idLinha + '_celula' + (k + 1)
+        let celula = criaDiv({ id: idCelula, ancestral: idLinha })
+        Object.assign(celula.style, QJ_ESTILO_COMPACTO, { width: '33%' })
+        criaTitulo({ id: idCelula + '_titulo', texto: chave, ancestral: idCelula })
+    })
+}
+
+function montaGrupo(idRolante, idGrupo, dados, colunas) {
+    let grupo = criaDiv({ id: idGrupo, ancestral: idRolante })
+    Object.assign(grupo.style, QJ_ESTILO_COMPACTO)
+
+    dados.forEach((registro, j) => {
+        let idLinha = idGrupo + '_sub_' + j
+        let linha = criaDiv({ id: idLinha, ancestral: idGrupo, rowColumn: 'row' })
+        Object.assign(linha.style, QJ_ESTILO_COMPACTO)
+        if (j % 2 === 0) linha.style.background = '#add8e6'
+
+        colunas.forEach((chave, k) => {
+            let idCelula = idLinha + '_celula_' + (k + 1)
+            let celula = criaDiv({ id: idCelula, ancestral: idLinha })
+            Object.assign(celula.style, QJ_ESTILO_COMPACTO, { width: '33%' })
+            criaTexto({
+                id: idCelula + '_texto',
+                texto: formataValor(registro[chave]),
+                ancestral: idCelula
+            })
+        })
+    })
+}
+
+function formataValor(valor) {
+    const PAR = '0,2,4,6,8'
+    const IMPAR = '1,3,5,7,9'
+
+    let texto = String(valor ?? '')
+    if (texto === PAR) return 'PAR'
+    if (texto === IMPAR) return 'ÍMPAR'
+    if (texto.includes('Vara do Trabalho')) {
+        return texto.split('Vara do Trabalho de ').pop()
+            + (/\d/.test(texto) ? ' - ' + texto.split(' ')[0] : '')
+    }
+    return texto.split(' ')[0] + ' ' + texto.split(' ').pop()
 }

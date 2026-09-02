@@ -1,0 +1,225 @@
+{
+	"version":					"2.2.0",
+	"short_name":				"RotaPJE",
+	"name":							"Rota PJE",
+	"description":			"Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
+	"author":						"Rota PJE",
+	"manifest_version":	3,
+
+	"browser_specific_settings":{
+		"gecko":{
+			"id":										"pje-play@extensao.local",
+			"strict_min_version":		"140.0",
+			"data_collection_permissions":{
+				"required":	["none"],
+				"optional":	[]
+			}
+		}
+	},
+
+	"options_ui":{
+		"page":					"navegador/paginas/configuracoes/pagina.htm",
+		"open_in_tab":	true
+	},
+
+	"action":{
+		"default_popup":	"navegador/paginas/menu/pagina.htm",
+		"default_icon":		"imagens/1-32.png"
+	},
+
+	"permissions":[
+		"activeTab",
+		"clipboardRead",
+		"clipboardWrite",
+		"downloads",
+		"notifications",
+		"scripting",
+		"storage",
+		"tabs",
+		"unlimitedStorage"
+	],
+
+	"host_permissions":[
+		"*://*.jus.br/*"
+	],
+
+	"web_accessible_resources":[
+		{
+			"matches":[
+				"*://*.jus.br/*"
+			],
+			"resources":[
+				"estilos/*.css",
+				"imagens/*.png",
+				"imagens/*.svg",
+				"utils/pdfjs.mjs",
+				"utils/pdfjs.worker.mjs",
+				"modulos/*.js",
+				"documento/paginas/pje/api/consultas.js",
+				"documento/paginas/pje/rota/nucleo/*.js",
+				"documento/paginas/pje/rota/ui/ui.js",
+				"documento/paginas/pje/rota/botao/janelas.js",
+				"documento/paginas/pje/rota/nucleo/configuracao.js",
+				"documento/paginas/pje/rota/tarefas/index.js",
+				"documento/paginas/pje/rota/tarefas/balcao-virtual/roteiro.js",
+				"documento/paginas/pje/rota/tarefas/triagem-inicial/roteiro.js",
+				"documento/paginas/pje/rota/tarefas/triagem-inicial/roteiro-assistente.js",
+				"documento/paginas/pje/rota/tarefas/con2-prazo-vencido/roteiro-con2-prazo-vencido.js",
+				"documento/paginas/pje/rota/tarefas/con2-prazo-vencido/roteiro-assistente-con2-prazo-vencido.js",
+				"documento/paginas/pje/rota/tarefas/visualizador-de-documentos/roteiro-visualizador-de-documentos.js",
+				"documento/paginas/pje/rota/tarefas/visualizador-de-documentos/roteiro-assistente-visualizador-de-documentos.js",
+				"documento/paginas/pje/rota/tarefas/pos-triagem/roteiro.js",
+				"documento/paginas/pje/rota/assistente-janela/pagina.htm",
+				"documento/paginas/pje/rota/assistente-janela/assistente.js",
+				"documento/paginas/pje/rota/assistente-janela/conector.js",
+				"navegador/paginas/menu/menu-gestor.htm"
+			]
+		}
+	],
+
+	"content_scripts":[
+		{
+			"matches":[
+				"*://*.jus.br/pjekz/*"
+			],
+			"js":[
+				"documento/paginas/pje/requisicoes/xhr.js"
+			],
+			"all_frames":	true,
+			"world":			"MAIN",
+			"run_at":			"document_start"
+		},
+		{
+			"matches":[
+				"<all_urls>"
+			],
+			"js":[
+				"documento/paginas/melhor-leitura/melhor-leitura.js"
+			],
+			"run_at":	"document_idle"
+		},
+		{
+			"matches":[
+				"*://*.jus.br/*"
+			],
+			"css":[
+				"estilos/rotapje-redefinir.css",
+				"estilos/rotapje-animacoes.css",
+				"estilos/rotapje-cores.css",
+				"estilos/rotapje-sombras.css",
+				"estilos/rotapje-extensao.css",
+				"estilos/rotapje-botoes.css",
+				"estilos/rotapje-janela.css",
+				"estilos/rotapje-funcionalidades.css",
+				"estilos/rotapje-widgets.css",
+				"estilos/rotapje-pje.css"
+			],
+			"js":[
+
+				"modulos/apis.js",
+				"modulos/datas.js",
+				"modulos/navegador.js",
+				"modulos/definicoes.js",
+				"modulos/contexto.js",
+				"modulos/expressoes.js",
+				"modulos/links.js",
+				"modulos/relatar.js",
+				"modulos/automacao.js",
+				"modulos/url.js",
+				"modulos/extenso.js",
+				"modulos/imagem.js",
+				"modulos/janela.js",
+				"modulos/matematica.js",
+				"modulos/tempo.js",
+				"modulos/texto.js",
+				"modulos/totp.js",
+				"modulos/whatsapp.js",
+				"modulos/dom.js",
+				"modulos/esforcos.js",
+				"modulos/assistente-de-contexto.js",
+
+				"documento/paginas/pje/rota/nucleo/rota-nucleo.js",
+				"documento/paginas/pje/rota/nucleo/configuracao.js",
+				"documento/paginas/pje/rota/nucleo/seletores.js",
+				"documento/paginas/pje/rota/nucleo/estado.js",
+				"documento/paginas/pje/rota/nucleo/cache.js",
+				"documento/paginas/pje/rota/nucleo/modelo.js",
+
+				"documento/paginas/pje/api/consultas.js",
+				"documento/paginas/pje/requisicoes/interceptador.js",
+				"documento/paginas/pje/requisicoes/documento.js",
+
+				"documento/paginas/pje/rota/nucleo/evita-queda.js",
+				"documento/paginas/pje/rota/ui/ui.js",
+				"documento/paginas/pje/rota/nucleo/movimentar.js",
+
+				"documento/paginas/pje/rota/botao/pintura.js",
+				"documento/paginas/pje/rota/botao/janelas.js",
+				"documento/paginas/pje/rota/botao/botao-rota.js",
+
+				"documento/paginas/pje/rota/planilha/funcoes-da-planilha.js",
+				"documento/paginas/pje/rota/assistentes/porta-de-entrada.js",
+				"documento/paginas/pje/rota/assistentes/sf-botoes.js",
+				"documento/paginas/pje/rota/assistentes/compilador-de-assistentes.js",
+				"documento/paginas/pje/rota/assistentes/consulta-qualquer-oj.js",
+				"documento/paginas/pje/rota/botao/fita-superior-detalhes.js",
+				"documento/paginas/pje/rota/nucleo/sigeo.js",
+				"documento/paginas/pje/rota/nucleo/gigs.js",
+
+				"documento/paginas/pje/rota/nucleo/acoes.js",
+				"documento/paginas/pje/rota/nucleo/formatadores.js",
+				"documento/paginas/pje/rota/nucleo/componentes.js",
+
+				"documento/paginas/pje/rota/assistentes/leitura_dinamica_documentos.js",
+				"documento/paginas/pje/rota/assistentes/filtros_novos.js",
+				"documento/paginas/pje/rota/assistentes/assistente-assinatura.js",
+				"documento/paginas/pje/rota/assistentes/pericias-aud.js",
+				"documento/paginas/pje/rota/assistentes/quadro-juizesSempreVisivel.js",
+				"documento/paginas/pje/rota/nucleo/teste.js",
+
+				"documento/paginas/pje/rota/tarefas/index.js",
+				"documento/paginas/pje/rota/tarefas/balcao-virtual/roteiro.js",
+				"documento/paginas/pje/rota/tarefas/triagem-inicial/roteiro.js",
+				"documento/paginas/pje/rota/tarefas/con2-prazo-vencido/roteiro-con2-prazo-vencido.js",
+				"documento/paginas/pje/rota/tarefas/visualizador-de-documentos/roteiro-visualizador-de-documentos.js",
+				"documento/paginas/pje/rota/tarefas/pos-triagem/roteiro.js",
+				"documento/paginas/pje/rota/tarefas/acordo-vencido/roteiro.js",
+
+				"documento/paginas/pje/pje.js",
+				"documento/documento.js"
+			],
+			"run_at":	"document_idle"
+		}
+	],
+
+	"background":{
+		"scripts":[
+			"modulos/apis.js",
+			"modulos/datas.js",
+			"modulos/definicoes.js",
+			"modulos/contexto.js",
+			"modulos/expressoes.js",
+			"modulos/janela.js",
+			"modulos/links.js",
+			"modulos/relatar.js",
+			"modulos/automacao.js",
+			"modulos/navegador.js",
+			"modulos/tempo.js",
+			"modulos/texto.js",
+			"modulos/esforcos.js",
+			"documento/paginas/pje/rota/nucleo/configuracao.js",
+			"documento/paginas/pje/rota/tarefas/index.js",
+			"navegador/segundo-plano.js"
+		],
+		"service_worker":	"navegador/compatibilizacao.js"
+	},
+
+	"icons":{
+		"16":		"imagens/1-16.png",
+		"24":		"imagens/1-24.png",
+		"32":		"imagens/1-32.png",
+		"48":		"imagens/1-48.png",
+		"128":	"imagens/1-128.png"
+	}
+
+}

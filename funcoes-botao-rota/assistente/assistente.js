@@ -24,8 +24,8 @@
 function _ass_params() {
     const p = new URL(location.href).searchParams
     return {
-        execucao: p.get('rota_pje_execucao') || '',
-        tarefa:   p.get('rota_pje_tarefa')   || '',
+        execucao: p.get('rotapje_execucao') || '',
+        tarefa:   p.get('rotapje_tarefa')   || '',
     }
 }
 
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
         if (mudancas['rotaExecucaoAtual']?.newValue) {
             const novoExecucao = String(mudancas['rotaExecucaoAtual'].newValue)
-            const meuExecucao  = new URL(location.href).searchParams.get('rota_pje_execucao')
+            const meuExecucao  = new URL(location.href).searchParams.get('rotapje_execucao')
             if (novoExecucao !== meuExecucao) {
                 browser.storage.onChanged.removeListener(ouvirExecucao)
                 window.close()
@@ -105,7 +105,7 @@ async function _ass_preencherCabecalho(idTarefa) {
 browser.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
     if (mudancas['rotaExecucaoAtual']?.newValue) {
         const novoExecucao = String(mudancas['rotaExecucaoAtual'].newValue)
-        const meuExecucao  = new URL(location.href).searchParams.get('rota_pje_execucao')
+        const meuExecucao  = new URL(location.href).searchParams.get('rotapje_execucao')
         if (novoExecucao !== meuExecucao) {
             browser.storage.onChanged.removeListener(ouvirExecucao)
             window.close()

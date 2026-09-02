@@ -76,10 +76,10 @@ function pintura_aplicar(cabecalho, cor, termo, extras = []){
     cabecalho.style.backgroundColor = cor
     cabecalho.style.borderLeft      = `6px solid ${escurecerCor(cor)}`
 
-    remover('#rota_pje-termo-badge')
+    remover('#rotapje-termo-badge')
 
     let badge = document.createElement('span')
-    badge.id = 'rota_pje-termo-badge'
+    badge.id = 'rotapje-termo-badge'
     Object.assign(badge.style, {
         display:       'inline-block',
         marginLeft:    '12px',
@@ -135,7 +135,7 @@ function pintura_limpar(cabecalho){
     if(!cabecalho) return
     cabecalho.style.removeProperty('background-color')
     cabecalho.style.removeProperty('border-left')
-    remover('#rota_pje-termo-badge')
+    remover('#rotapje-termo-badge')
 }
 
 

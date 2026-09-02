@@ -1,0 +1,111 @@
+/* ============================================================
+   rotapje-cores.css
+   Paleta institucional do Rota PJE.
+
+   Segue a convenção do SISE (estilos/sisejt-cores.css):
+   cada cor é declarada como TRIPLA HSL sem o wrapper hsl(),
+   para poder ser usada com opacidade variável via hsla(var(--x), a).
+
+   Esta é a ÚNICA fonte de verdade das cores do Rota.
+   O ui.js lê estes valores em tempo de execução
+   (ver rota_ui_lerPaleta() em documento/paginas/pje/rota/ui/ui.js).
+   ============================================================ */
+
+:root{
+
+/* ── Neutros ──────────────────────────────────────────────── */
+--extensao-rotapje-cor-branco:        0,0%,100%;
+--extensao-rotapje-cor-preto:         0,0%,0%;
+--extensao-rotapje-cor-cinza:         0,0%,50%;
+--extensao-rotapje-cor-fundo:         240,20%,98%;   /* #f9f9fa */
+--extensao-rotapje-cor-borda:         0,0%,86%;      /* #dcdcdc */
+--extensao-rotapje-cor-texto:         210,29%,24%;   /* #2c3e50 */
+--extensao-rotapje-cor-texto-suave:   214,16%,50%;   /* #6b7c93 */
+
+/* ── Identidade — azul + laranja ──────────────────────────── */
+--extensao-rotapje-cor-azul:          198,100%,33%;  /* #0078aa */
+--extensao-rotapje-cor-azul-hover:    198,100%,27%;  /* #005f8a */
+--extensao-rotapje-cor-azul-claro:    211,53%,36%;   /* #2a5a8c */
+--extensao-rotapje-cor-laranja:       36,100%,57%;   /* #ffa726 */
+--extensao-rotapje-cor-laranja-hover: 36,79%,51%;    /* #e6941f */
+--extensao-rotapje-cor-laranja-esc:   36,74%,48%;    /* #D68C20 */
+
+/* ── Logo (escudo rodoviário) ─────────────────────────────── */
+--extensao-rotapje-cor-logo-1:        211,80%,42%;   /* #1565C0 */
+--extensao-rotapje-cor-logo-2:        217,85%,34%;   /* #0D47A1 */
+--extensao-rotapje-cor-logo-faixa:    31,100%,48%;   /* #F57C00 */
+
+/* ── Informação ───────────────────────────────────────────── */
+--extensao-rotapje-cor-info-fundo:    212,68%,95%;   /* #eaf2fb */
+--extensao-rotapje-cor-info-borda:    195,53%,79%;   /* #add8e6 */
+--extensao-rotapje-cor-info-texto:    210,56%,23%;   /* #1a3a5c */
+
+/* ── Estado ───────────────────────────────────────────────── */
+--extensao-rotapje-cor-perigo:        0,66%,47%;     /* #c62828 */
+--extensao-rotapje-cor-sucesso:       123,46%,34%;   /* #2e7d32 */
+--extensao-rotapje-cor-aviso:         31,100%,48%;   /* #F57C00 */
+
+/* ── Gradação (mesma mecânica do SISE) ────────────────────── */
+--extensao-rotapje-cor-gradacao:      0.1;
+
+--extensao-rotapje-cor-clarear:
+	linear-gradient(
+		hsla(var(--extensao-rotapje-cor-branco),var(--extensao-rotapje-cor-gradacao))   0%,
+		hsla(var(--extensao-rotapje-cor-branco),var(--extensao-rotapje-cor-gradacao)) 100%
+	);
+
+--extensao-rotapje-cor-escurecer:
+	linear-gradient(
+		hsla(var(--extensao-rotapje-cor-preto),var(--extensao-rotapje-cor-gradacao))   0%,
+		hsla(var(--extensao-rotapje-cor-preto),var(--extensao-rotapje-cor-gradacao)) 100%
+	);
+
+--extensao-rotapje-gradiente-branco-preto:
+	linear-gradient(
+		hsla(var(--extensao-rotapje-cor-branco),0.15) 0%,
+		hsla(var(--extensao-rotapje-cor-branco),0.0)  50%,
+		hsla(var(--extensao-rotapje-cor-preto), 0.15) 100%
+	);
+
+/* ── Tipografia ───────────────────────────────────────────── */
+--extensao-rotapje-fonte: 'Segoe UI', system-ui, sans-serif;
+
+}
+
+
+/* ── Fundos utilitários (espelham .sisejt-fundo-*) ────────── */
+
+.rotapje-fundo-azul{
+	background:
+		var(--extensao-rotapje-gradiente-branco-preto),
+		hsla(var(--extensao-rotapje-cor-azul),1)
+	;
+}
+
+.rotapje-fundo-laranja{
+	background:
+		var(--extensao-rotapje-gradiente-branco-preto),
+		hsla(var(--extensao-rotapje-cor-laranja),1)
+	;
+}
+
+.rotapje-fundo-branco{
+	background:
+		var(--extensao-rotapje-gradiente-branco-preto),
+		hsla(var(--extensao-rotapje-cor-branco),1)
+	;
+}
+
+.rotapje-fundo-perigo{
+	background:
+		var(--extensao-rotapje-gradiente-branco-preto),
+		hsla(var(--extensao-rotapje-cor-perigo),1)
+	;
+}
+
+.rotapje-fundo-sucesso{
+	background:
+		var(--extensao-rotapje-gradiente-branco-preto),
+		hsla(var(--extensao-rotapje-cor-sucesso),1)
+	;
+}

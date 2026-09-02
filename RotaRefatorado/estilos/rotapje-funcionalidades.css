@@ -1,0 +1,163 @@
+/* ============================================================
+   rotapje-funcionalidades.css
+   Espelha estilos/sisejt-funcionalidades.css.
+
+   Estiliza os blocos <funcionalidades chave="..." titulo="...">
+   que alimentam obterConfiguracoesDaExtensao() e
+   salvarConfiguracoesDaExtensao() (modulos/navegador.js).
+   Usar esta marcação é o que dá salvar/carregar de graça.
+   ============================================================ */
+
+rotapje-extensao{
+
+funcionalidades{
+
+	background:hsla(var(--branco),1);
+	border:1px solid hsla(var(--borda),1);
+	border-radius:var(--rotapje-raio);
+	box-sizing:border-box;
+	display:flex;
+	flex-direction:column;
+	margin:10px auto;
+	overflow:clip;
+	padding:28px 8px 8px 8px;
+	position:relative;
+	width:100%;
+
+	&::before{
+		background:
+			var(--gradiente-bp),
+			hsla(var(--azul),1)
+		;
+		color:hsla(var(--branco),1);
+		content:attr(titulo);
+		font-size:13px;
+		font-weight:700;
+		height:24px;
+		left:0;
+		line-height:24px;
+		position:absolute;
+		text-align:center;
+		text-shadow:0 1px 2px hsla(var(--preto),0.25);
+		top:0;
+		width:100%;
+	}
+
+	/* Bloco de ação em destaque — laranja, identidade do Rota */
+	&[destaque]::before{
+		background:
+			var(--gradiente-bp),
+			hsla(var(--laranja),1)
+		;
+		color:hsla(var(--texto),1);
+		text-shadow:none;
+	}
+
+	& label{
+		align-items:center;
+		color:hsla(var(--texto),1);
+		display:flex;
+		font-size:12px;
+		gap:6px;
+		justify-content:space-between;
+		padding:4px 2px;
+		width:100%;
+	}
+
+	& label[titulo]{
+		cursor:help;
+	}
+
+	& input[type="text"],
+	& input[type="number"],
+	& input[type="date"],
+	& input[type="password"],
+	& input[type="email"],
+	& select,
+	& textarea{
+		background:hsla(var(--fundo),1);
+		border:1px solid hsla(var(--borda),1);
+		border-radius:4px;
+		color:hsla(var(--texto),1);
+		font-family:var(--extensao-rotapje-fonte);
+		font-size:12px;
+		max-width:60%;
+		padding:4px 6px;
+		text-overflow:ellipsis;
+	}
+
+	& input:focus,
+	& select:focus,
+	& textarea:focus{
+		border-color:hsla(var(--azul),1);
+		outline:2px solid hsla(var(--azul),0.2);
+	}
+
+	& textarea{
+		max-width:100%;
+		min-height:70px;
+		resize:vertical;
+		width:100%;
+	}
+
+	& input[type="checkbox"]{
+		accent-color:hsla(var(--azul),1);
+		cursor:pointer;
+		height:15px;
+		width:15px;
+	}
+
+	/* <guia> com os textos de estado, igual ao SISE */
+	& guia{
+		color:hsla(var(--texto-suave),1);
+		display:block;
+		font-size:10px;
+		padding:0 2px 4px 2px;
+		width:100%;
+	}
+	& label:has(input[type="checkbox"]:checked) + guia::before{ content:attr(ativada) }
+	& label:has(input[type="checkbox"]:not(:checked)) + guia::before{ content:attr(desativada) }
+
+	& h2{
+		background:
+			var(--gradiente-bp),
+			hsla(var(--azul),0.12)
+		;
+		border-radius:4px;
+		color:hsla(var(--info-texto),1);
+		font-size:12px;
+		margin:6px 0 2px 0;
+		padding:3px 6px;
+		width:100%;
+	}
+
+	& botao,
+	& button{
+		background:hsla(var(--azul),1);
+		border:none;
+		border-radius:var(--rotapje-raio);
+		color:hsla(var(--branco),1);
+		cursor:pointer;
+		font-family:var(--extensao-rotapje-fonte);
+		font-size:12px;
+		font-weight:700;
+		margin:4px 0;
+		padding:7px 12px;
+		text-align:center;
+		transition:background .15s;
+		width:100%;
+	}
+	& botao:hover,
+	& button:hover{ background:hsla(var(--azul-hover),1) }
+
+	& botao[destaque],
+	& button[destaque]{
+		background:hsla(var(--laranja),1);
+		color:hsla(var(--texto),1);
+	}
+	& botao[destaque]:hover,
+	& button[destaque]:hover{ background:hsla(var(--laranja-hover),1) }
+
+}
+
+}

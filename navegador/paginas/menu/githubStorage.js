@@ -21,7 +21,7 @@ const GITHUB_REPO_TOKEN    = 'rotaPJEt';   // repo público com token.enc
 const GITHUB_TOKEN_PATH    = 'token.enc';       // caminho do arquivo encriptado
 const GITHUB_REPO_DADOS    = 'rotaPJEd';   // repo público com os JSONs
 const GITHUB_BRANCH        = 'main';
-const GITHUB_SENHA_KEY     = 'rota_pje_senha_gestao';  // chave no armazenar
+const GITHUB_SENHA_KEY     = 'rotapje_senha_gestao';  // chave no armazenar
 const GITHUB_SENHA_TTL     = 7 * 24 * 60 * 60 * 1000; // 7 dias em ms
 
 // Cache em memória do token decriptado (válido por 1 hora)

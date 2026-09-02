@@ -1,0 +1,199 @@
+/* ============================================================
+   rotapje-widgets.css
+   Estilos dos componentes do ui.js (divs flutuantes, plaquinhas,
+   tooltips, tabelas, seções mostra/recolhe, carregando).
+
+   Nota de migração: o ui.js ainda aplica boa parte do estilo
+   inline (Object.assign(el.style, …)). Como estilo inline vence
+   classe, adicionar estas classes é seguro e não muda nada hoje —
+   elas existem para que cada componente possa largar o inline
+   incrementalmente, um de cada vez, sem regressão em bloco.
+   A paleta, essa sim, já saiu do JS: o ui.js lê as variáveis
+   declaradas em rotapje-cores.css.
+   ============================================================ */
+
+/* ── Div flutuante ────────────────────────────────────────── */
+
+.rotapje-widget{
+	background:hsla(var(--extensao-rotapje-cor-branco),1);
+	border:1px solid hsla(var(--extensao-rotapje-cor-borda),1);
+	border-radius:8px;
+	box-shadow:0 4px 16px hsla(var(--extensao-rotapje-cor-preto),0.28);
+	color:hsla(var(--extensao-rotapje-cor-texto),1);
+	font-family:var(--extensao-rotapje-fonte);
+	font-size:13px;
+	position:fixed;
+	z-index:2147483000;
+}
+
+.rotapje-widget-barra{
+	align-items:center;
+	background:
+		var(--extensao-rotapje-gradiente-branco-preto),
+		hsla(var(--extensao-rotapje-cor-azul),1)
+	;
+	border-radius:8px 8px 0 0;
+	color:hsla(var(--extensao-rotapje-cor-branco),1);
+	cursor:move;
+	display:flex;
+	font-size:12px;
+	font-weight:700;
+	gap:6px;
+	justify-content:space-between;
+	padding:7px 10px;
+	user-select:none;
+}
+
+.rotapje-widget-corpo{
+	max-height:70vh;
+	overflow-y:auto;
+	padding:10px;
+}
+
+.rotapje-widget.recolhido .rotapje-widget-corpo{ display:none }
+
+/* ── Textos ───────────────────────────────────────────────── */
+
+.rotapje-titulo{
+	color:hsla(var(--extensao-rotapje-cor-azul),1);
+	font-size:14px;
+	font-weight:700;
+	margin:2px 0 6px 0;
+}
+
+.rotapje-subtitulo{
+	color:hsla(var(--extensao-rotapje-cor-azul-claro),1);
+	font-size:12px;
+	font-weight:700;
+	margin:6px 0 3px 0;
+}
+
+.rotapje-texto{
+	color:hsla(var(--extensao-rotapje-cor-texto),1);
+	font-size:12px;
+	line-height:1.45;
+}
+
+.rotapje-texto-suave{
+	color:hsla(var(--extensao-rotapje-cor-texto-suave),1);
+	font-size:11px;
+}
+
+/* ── Campos ───────────────────────────────────────────────── */
+
+.rotapje-input{
+	background:hsla(var(--extensao-rotapje-cor-branco),1);
+	border:1px solid hsla(var(--extensao-rotapje-cor-borda),1);
+	border-radius:4px;
+	color:hsla(var(--extensao-rotapje-cor-texto),1);
+	font-family:var(--extensao-rotapje-fonte);
+	font-size:12px;
+	padding:5px 7px;
+	width:100%;
+}
+
+.rotapje-input:focus{
+	border-color:hsla(var(--extensao-rotapje-cor-azul),1);
+	outline:2px solid hsla(var(--extensao-rotapje-cor-azul),0.2);
+}
+
+.rotapje-checkbox{ accent-color:hsla(var(--extensao-rotapje-cor-azul),1) }
+
+/* ── Plaquinha ────────────────────────────────────────────── */
+
+.rotapje-plaquinha{
+	border-radius:4px;
+	color:hsla(var(--extensao-rotapje-cor-branco),1);
+	display:inline-block;
+	font-size:11px;
+	font-weight:700;
+	line-height:1.6;
+	padding:1px 7px;
+	white-space:nowrap;
+}
+
+.rotapje-plaquinha-azul     { background:hsla(var(--extensao-rotapje-cor-azul),1) }
+.rotapje-plaquinha-laranja  { background:hsla(var(--extensao-rotapje-cor-laranja),1); color:hsla(var(--extensao-rotapje-cor-texto),1) }
+.rotapje-plaquinha-neutra   { background:hsla(var(--extensao-rotapje-cor-cinza),1) }
+.rotapje-plaquinha-perigo   { background:hsla(var(--extensao-rotapje-cor-perigo),1) }
+.rotapje-plaquinha-sucesso  { background:hsla(var(--extensao-rotapje-cor-sucesso),1) }
+
+/* ── Tooltip ──────────────────────────────────────────────── */
+
+.rotapje-tooltip{
+	background:hsla(var(--extensao-rotapje-cor-info-fundo),1);
+	border:1px solid hsla(var(--extensao-rotapje-cor-info-borda),1);
+	border-radius:6px;
+	box-shadow:0 2px 8px hsla(var(--extensao-rotapje-cor-preto),0.18);
+	color:hsla(var(--extensao-rotapje-cor-info-texto),1);
+	font-size:11px;
+	line-height:1.45;
+	max-width:320px;
+	padding:7px 9px;
+	position:fixed;
+	z-index:2147483001;
+}
+
+/* ── Tabela ───────────────────────────────────────────────── */
+
+.rotapje-tabela{
+	border-collapse:collapse;
+	font-size:11px;
+	width:100%;
+}
+
+.rotapje-tabela th{
+	background:hsla(var(--extensao-rotapje-cor-azul),1);
+	color:hsla(var(--extensao-rotapje-cor-branco),1);
+	font-weight:700;
+	padding:4px 6px;
+	text-align:left;
+}
+
+.rotapje-tabela td{
+	border-bottom:1px solid hsla(var(--extensao-rotapje-cor-borda),1);
+	padding:3px 6px;
+}
+
+.rotapje-tabela tr:nth-child(even) td{
+	background:hsla(var(--extensao-rotapje-cor-fundo),1);
+}
+
+/* ── Seção mostra/recolhe ─────────────────────────────────── */
+
+.rotapje-secao-cabecalho{
+	align-items:center;
+	background:hsla(var(--extensao-rotapje-cor-azul),0.08);
+	border-radius:4px;
+	color:hsla(var(--extensao-rotapje-cor-azul),1);
+	cursor:pointer;
+	display:flex;
+	font-size:12px;
+	font-weight:700;
+	justify-content:space-between;
+	padding:5px 8px;
+	user-select:none;
+}
+
+/* ── Carregando ───────────────────────────────────────────── */
+
+.rotapje-carregando{
+	border:3px solid hsla(var(--extensao-rotapje-cor-borda),1);
+	border-radius:50%;
+	border-top-color:hsla(var(--extensao-rotapje-cor-azul),1);
+	height:22px;
+	margin:10px auto;
+	width:22px;
+	animation:rotapje-girar 1s linear infinite;
+}
+
+/* ── Aviso obrigatório ────────────────────────────────────── */
+
+.rotapje-aviso{
+	background:hsla(var(--extensao-rotapje-cor-info-fundo),1);
+	border:2px solid hsla(var(--extensao-rotapje-cor-aviso),1);
+	border-radius:8px;
+	color:hsla(var(--extensao-rotapje-cor-info-texto),1);
+	font-size:13px;
+	padding:12px 14px;
+}

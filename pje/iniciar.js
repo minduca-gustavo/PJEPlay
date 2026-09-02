@@ -10,14 +10,14 @@ obterArmazenamento().then(async armazenamento => {
 
 	let habilitado = CONFIGURACAO?.habilitado !== false  // padrão: habilitado
 
-	if(location.search.includes('rota_pje_sessao=')){
+	if(location.search.includes('rotapje_sessao=')){
 		// Janelas filhas sempre funcionam (já foram abertas pelo fluxo)
 		pinturaInicio().catch(e => relatar('Pintura: ' + e.message, '', 'erro'))
 		rota_injetarWidget().catch(e => relatar('Widget: ' + e.message, '', 'erro'))
 	} else {
 		// ── Verifica se esta aba é uma janela filha que recarregou ─
 		// sessionStorage sobrevive a recarregamentos mas morre ao fechar a aba.
-		const chaveJanela = sessionStorage.getItem('rota_pje_chave_janela')
+		const chaveJanela = sessionStorage.getItem('rotapje_chave_janela')
 		if(chaveJanela){
 			const ctx = await obterArmazenamento(chaveJanela)
 			const ctxSalvo = ctx?.[chaveJanela]
@@ -41,15 +41,15 @@ let _urlAnterior = location.href
 new MutationObserver(() => {
 	if(location.href !== _urlAnterior){
 		_urlAnterior = location.href
-		remover('#rota_pje-widget')
+		remover('#rotapje-widget')
 		pinturaInicio().catch(()=>{})
 
-		if(location.search.includes('rota_pje_sessao=')){
+		if(location.search.includes('rotapje_sessao=')){
 			// Janela filha — remonta o widget após navegação interna (URL ainda tem params)
 			rota_injetarWidget().catch(e => relatar('Widget (SPA): ' + e.message, '', 'erro'))
 		} else {
 			// ── Verifica se perdemos os params mas ainda somos janela filha ─
-			const chaveJanela = sessionStorage.getItem('rota_pje_chave_janela')
+			const chaveJanela = sessionStorage.getItem('rotapje_chave_janela')
 			if(chaveJanela){
 				obterArmazenamento(chaveJanela).then(ctx => {
 					const ctxSalvo = ctx?.[chaveJanela]
@@ -63,7 +63,7 @@ new MutationObserver(() => {
 					let habilitado = cfg?.habilitado !== false
 					if(habilitado){
 						botaoRota_atualizarUrl()
-						window.dispatchEvent(new CustomEvent('rota_pje:url-mudou'))
+						window.dispatchEvent(new CustomEvent('rotapje:url-mudou'))
 					}
 				})
 			}

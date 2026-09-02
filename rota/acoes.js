@@ -100,7 +100,7 @@ async function acao_navegacao_detalhes(idProcesso = '') {
     const id  = idProcesso || _acao_idProcesso()
     if (!id) return relatar('acao_navegacao_detalhes: ID não encontrado', '', 'erro')
     const url = `${location.origin}/pjekz/processo/${id}/detalhe`
-    window.open(url, 'rota-pje-detalhe' + id)
+    window.open(url, 'rotapje-detalhe' + id)
 }
 
 
@@ -110,7 +110,7 @@ async function acao_navegacao_audiencias(idProcesso = '') {
     const id  = idProcesso || _acao_idProcesso()
     if (!id) return
     const url = `${location.origin}/pjekz/processo/${id}/audiencias-sessoes`
-    window.open(url, 'rota-pje-janela')
+    window.open(url, 'rotapje-janela')
 }
 
 // Abre a tela de comunicações (intimações)
@@ -118,13 +118,13 @@ async function acao_navegacao_comunicacoes(idProcesso = '') {
     const id  = idProcesso || _acao_idProcesso()
     if (!id) return
     const url = `${location.origin}/pjekz/processo/${id}/comunicacoesprocessuais`
-    window.open(url, 'rota-pje-janela')
+    window.open(url, 'rotapje-janela')
 }
 
 // Abre a tela de modelos de documentos (para o usuário escolher o próprio modelo)
 function acao_navegacao_modelos() {
     const url = `${location.origin}/pjekz/configuracao/modelos-documentos`
-    window.open(url, 'rota-pje-modelos')
+    window.open(url, 'rotapje-modelos')
 }
 
 

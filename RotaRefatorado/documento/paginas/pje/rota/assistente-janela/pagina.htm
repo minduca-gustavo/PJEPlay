@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistente — Rota PJE</title>
+  <link rel="stylesheet" href="/estilos/rotapje-redefinir.css">
+  <link rel="stylesheet" href="/estilos/rotapje-cores.css">
+  <link rel="stylesheet" href="/estilos/rotapje-animacoes.css">
+  <link rel="stylesheet" href="/estilos/rotapje-sombras.css">
+  <link rel="stylesheet" href="/estilos/rotapje-botoes.css">
+  <link rel="stylesheet" href="/estilos/rotapje-widgets.css">
+  <link rel="stylesheet" href="/estilos/rotapje-assistente.css">
+</head>
+<body>
+
+<div class="assistente-shell">
+
+  <!-- CABEÇALHO: faixa 1 — marca + tarefa -->
+  <header class="assistente-header">
+    <span class="assistente-marca">ROTA PJE</span>
+    <span class="assistente-sep">·</span>
+    <span class="assistente-tarefa" id="assistente-tarefa">—</span>
+    <button class="assistente-btn-fechar" id="btn-fechar-assistente" title="Fechar">×</button>
+  </header>
+
+  <!-- CABEÇALHO: faixa 2 — processo + posição -->
+  <div class="assistente-subheader">
+    <span class="assistente-num-processo" id="assistente-processo">—</span>
+    <span class="assistente-posicao"      id="nav-posicao">— / —</span>
+  </div>
+
+  <!-- CORPO ROLÁVEL — preenchido pelo roteiro da tarefa -->
+  <div class="assistente-corpo" id="rota_corpo">
+    <!-- criarCarregando() é inserido aqui pelo assistente.js -->
+    <!-- removerCarregando() + cria*() são chamados pelo roteiro -->
+  </div>
+
+  <!-- RODAPÉ FIXO — preenchido pelo assistente.js -->
+  <footer class="assistente-rodape" id="rota-rodape">
+    <!-- criaBotaoProximoEEncerrar() é inserido aqui pelo assistente.js -->
+  </footer>
+
+</div>
+
+<!-- ── Módulos base ── -->
+<!-- Módulos compartilhados (pasta modulos/, atualizada por git) -->
+<script src="/modulos/apis.js"></script>
+<script src="/modulos/datas.js"></script>
+<script src="/modulos/navegador.js"></script>
+<script src="/modulos/definicoes.js"></script>
+<script src="/modulos/expressoes.js"></script>
+<script src="/modulos/links.js"></script>
+<script src="/modulos/contexto.js"></script>
+<script src="/modulos/relatar.js"></script>
+<script src="/modulos/automacao.js"></script>
+<script src="/modulos/url.js"></script>
+<script src="/modulos/tempo.js"></script>
+<script src="/modulos/texto.js"></script>
+<script src="/modulos/dom.js"></script>
+<script src="/modulos/esforcos.js"></script>
+
+<!-- Núcleo do Rota -->
+<script src="/documento/paginas/pje/rota/nucleo/rota-nucleo.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/configuracao.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/formatadores.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/estado.js"></script>
+<script src="/documento/paginas/pje/rota/nucleo/acoes.js"></script>
+<script src="/documento/paginas/pje/api/consultas.js"></script>
+
+<!-- Componentes e roteiros -->
+<script src="/documento/paginas/pje/rota/ui/ui.js"></script>
+<script src="/documento/paginas/pje/rota/botao/janelas.js"></script>
+<script src="assistente.js"></script>
+<script src="/documento/paginas/pje/rota/tarefas/triagem-inicial/roteiro-assistente.js"></script>
+<script src="/documento/paginas/pje/rota/tarefas/con2-prazo-vencido/roteiro-assistente-con2-prazo-vencido.js"></script>
+<script src="/documento/paginas/pje/rota/tarefas/visualizador-de-documentos/roteiro-assistente-visualizador-de-documentos.js"></script>
+<!-- adicionar novos roteiros aqui -->
+
+</body>
+</html>

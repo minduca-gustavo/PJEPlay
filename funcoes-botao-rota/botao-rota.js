@@ -137,7 +137,7 @@ function _rota_sincronizar(reg){
 
 	// _rota_sincronizar — bloco de criação (linhas 138–160)
 	if(!reg.btn || !document.body.contains(reg.btn)){
-		document.getElementById('rota_pje-btn-rota')?.remove()
+		document.getElementById('rotapje-btn-rota')?.remove()
 		reg.posAnterior = null          // ← ADICIONAR AQUI
 		reg.btn = _rota_criarBotaoDOM()
 		document.body.appendChild(reg.btn)
@@ -154,7 +154,7 @@ function _rota_sincronizar(reg){
 		// divTutorial como FILHO do btn (não irmão)
 		let divTutorial = criaDiv({
 			id:        'rota_rota_tutorial_div',
-			ancestral: 'rota_pje-btn-rota'    // se criaDiv já appenda no ancestral, ok
+			ancestral: 'rotapje-btn-rota'    // se criaDiv já appenda no ancestral, ok
 		})
 		divTutorial.style.width = 'fit-content'
 		divTutorial.style.position = 'relative'
@@ -271,7 +271,7 @@ function _rota_posicionar(reg, ancoraEl, x, y){
 
 function _rota_criarBotaoDOM(){
 	let btn = document.createElement('div')
-	btn.id  = 'rota_pje-btn-rota'
+	btn.id  = 'rotapje-btn-rota'
 	Object.assign(btn.style, {
 		position:   'fixed',
 		zIndex:     '10000',
@@ -844,9 +844,9 @@ function _rota_aoClicarLista(btnRef){
 		if(checkbox.checked){
 			let mapaParams = {}
 			fila.forEach(item => { mapaParams[item.numProc] = item.params })
-			localStorage.setItem('rota_pje_params', JSON.stringify(mapaParams))
+			localStorage.setItem('rotapje_params', JSON.stringify(mapaParams))
 		} else {
-			localStorage.removeItem('rota_pje_params')
+			localStorage.removeItem('rotapje_params')
 		}
 
 		painel.remove()

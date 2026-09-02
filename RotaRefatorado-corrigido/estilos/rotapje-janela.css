@@ -1,0 +1,23 @@
+/* rotapje-janela.css — espelha estilos/sisejt-janela.css.
+   Botão de memorizar dimensões, herdado do modulos/janela.js. */
+
+#rotapje-extensao-botao-armazenar-dimensoes-da-janela{
+	position:fixed;
+	right:6px;
+	bottom:6px;
+	z-index:2147483000;
+}
+
+#rotapje-armazenar-dimensoes-da-janela{
+	width:22px;
+	height:22px;
+	border:none;
+	border-radius:4px;
+	cursor:pointer;
+	opacity:.35;
+	background:
+		hsla(var(--extensao-rotapje-cor-azul),1)
+		var(--extensao-sisejt-icone-dimensoes) center/14px no-repeat;
+}
+
+#rotapje-armazenar-dimensoes-da-janela:hover{ opacity:1 }

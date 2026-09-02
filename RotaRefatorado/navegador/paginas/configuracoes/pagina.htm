@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Configurações — Rota PJE</title>
+
+<link rel="stylesheet" href="../../../estilos/rotapje-redefinir.css" />
+<link rel="stylesheet" href="../../../estilos/rotapje-cores.css" />
+<link rel="stylesheet" href="../../../estilos/rotapje-animacoes.css" />
+<link rel="stylesheet" href="../../../estilos/rotapje-sombras.css" />
+<link rel="stylesheet" href="../../../estilos/rotapje-extensao.css" />
+<link rel="stylesheet" href="../../../estilos/rotapje-botoes.css" />
+<link rel="stylesheet" href="../../../estilos/rotapje-funcionalidades.css" />
+<link rel="stylesheet" href="estilo.css" />
+
+<script defer src="../../../modulos/apis.js"></script>
+<script defer src="../../../modulos/datas.js"></script>
+<script defer src="../../../modulos/navegador.js"></script>
+<script defer src="../../../modulos/definicoes.js"></script>
+<script defer src="../../../modulos/expressoes.js"></script>
+<script defer src="../../../modulos/links.js"></script>
+<script defer src="../../../modulos/contexto.js"></script>
+<script defer src="../../../modulos/relatar.js"></script>
+<script defer src="../../../modulos/dom.js"></script>
+<script defer src="../../../modulos/esforcos.js"></script>
+<script defer src="../../../modulos/automacao.js"></script>
+<script defer src="../../../modulos/tempo.js"></script>
+<script defer src="../../../modulos/texto.js"></script>
+<script defer src="programa.js"></script>
+</head>
+
+<body>
+
+<rotapje-extensao>
+
+<header>
+	<h1>Rota PJE — Configurações</h1>
+	<p class="rotapje-fonte-suave">
+		Cada bloco abaixo é um &lt;funcionalidades&gt;. O carregar e o salvar
+		são feitos por obterConfiguracoesDaExtensao() e
+		salvarConfiguracoesDaExtensao(), de modulos/navegador.js — nenhuma
+		linha de persistência foi escrita aqui.
+	</p>
+</header>
+
+<main>
+
+<funcionalidades chave="pessoa" titulo="IDENTIFICAÇÃO">
+
+	<label titulo="Usado no cabeçalho X-Grau-Instancia das chamadas à API do PJe.">Instância:
+		<select chave="instancia">
+			<option value="1">1º grau</option>
+			<option value="2">2º grau</option>
+		</select>
+	</label>
+
+	<label titulo="Região do TRT.">Tribunal (TRT):
+		<input chave="regiao" type="number" min="1" max="24" value="15">
+	</label>
+
+</funcionalidades>
+
+
+<funcionalidades chave="rota" titulo="COMPORTAMENTO DO ROTA">
+
+	<label>Mostrar o botão Rota nas telas de lista:
+		<input chave="botaoVisivel" type="checkbox">
+	</label>
+	<guia ativada="O botão aparece no painel e nas listas de processos."
+	      desativada="O botão fica oculto; as automações continuam disponíveis pelo menu."></guia>
+
+	<label titulo="Recarrega a página ao detectar Acesso Negado ou mudança de perfil.">Evitar queda de sessão:
+		<input chave="evitaQueda" type="checkbox">
+	</label>
+	<guia ativada="A página recarrega sozinha quando a sessão cai."
+	      desativada="A queda de sessão precisa ser resolvida manualmente."></guia>
+
+	<label titulo="Assistentes flutuantes: leitura dinâmica, filtros, assinatura, perícias, quadro de juízes.">Exibir os assistentes flutuantes:
+		<input chave="assistentesVisiveis" type="checkbox">
+	</label>
+	<guia ativada="Os widgets aparecem sobre a tela do PJe."
+	      desativada="Nenhum widget flutuante é montado."></guia>
+
+	<label titulo="Percentual da largura da tela reservado à janela do PJe no modo assistente.">Largura da janela do PJe (%):
+		<input chave="larguraPje" type="number" min="50" max="90" value="80">
+	</label>
+
+</funcionalidades>
+
+
+<funcionalidades chave="extensao" titulo="JANELAS">
+
+	<label titulo="Quando ligado, abrirURL() usa abas no lugar de janelas novas.">Abrir URLs em abas:
+		<input chave="abrirUrlsEmAbas" type="checkbox">
+	</label>
+	<guia ativada="Links da extensão abrem em abas."
+	      desativada="Links da extensão abrem em janelas próprias."></guia>
+
+</funcionalidades>
+
+
+<funcionalidades chave="diagnostico" titulo="DIAGNÓSTICO">
+
+	<h2>Substitui o antigo interruptor único &quot;modo dev&quot;</h2>
+
+	<label>Execução:      <input chave="execucao"      type="checkbox"></label>
+	<label>DOM:           <input chave="dom"           type="checkbox"></label>
+	<label>Mutação:       <input chave="mutacao"       type="checkbox"></label>
+	<label>Requisição:    <input chave="requisicao"    type="checkbox"></label>
+	<label>Resposta:      <input chave="resposta"      type="checkbox"></label>
+	<label>Armazenamento: <input chave="armazenamento" type="checkbox"></label>
+	<label>Navegador:     <input chave="navegador"     type="checkbox"></label>
+	<label>Configuração:  <input chave="configuracao"  type="checkbox"></label>
+	<label>Contexto:      <input chave="contexto"      type="checkbox"></label>
+	<label>Automação:     <input chave="automacao"     type="checkbox"></label>
+	<label>Texto:         <input chave="texto"         type="checkbox"></label>
+	<label>XHR:           <input chave="xhr"           type="checkbox"></label>
+	<label>Erro:          <input chave="erro"          type="checkbox"></label>
+	<label>Teste:         <input chave="teste"         type="checkbox"></label>
+
+</funcionalidades>
+
+</main>
+
+<footer>
+	<button id="rotapje-salvar" destaque>Salvar configurações</button>
+	<button id="rotapje-recarregar">Recarregar a extensão</button>
+	<p class="rotapje-fonte-suave" id="rotapje-versao"></p>
+</footer>
+
+</rotapje-extensao>
+
+</body>
+</html>

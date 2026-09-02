@@ -4,7 +4,7 @@ function consultaQualquerOJ(ancestral){
 
 async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
 
-    let WIDGET_ID   = 'rota_pje-consulta_qualquer_oj-widget'
+    let WIDGET_ID   = 'rotapje-consulta_qualquer_oj-widget'
     let STORAGE_POS = 'consulta_qualquer_oj_widget_pos'
 
     //if (document.getElementById(WIDGET_ID)) return
@@ -149,7 +149,7 @@ async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
     input.type          = 'text'
     input.placeholder   = 'Nº do processo…'
     input.autocomplete  = 'off'
-    input.id            = 'rota_pje-consulta_qualquer_oj-input'
+    input.id            = 'rotapje-consulta_qualquer_oj-input'
     _s(input, {
         flex:         '1',
         background:   C.branco,
@@ -175,7 +175,7 @@ async function consulta_qualquer_ojCriaCampoConsulta(ancestral) {
 
     let btnLupa = document.createElement('button')
     btnLupa.textContent = '🔍'
-    btnLupa.id          = 'rota_pje-consulta_qualquer_oj-lupa'
+    btnLupa.id          = 'rotapje-consulta_qualquer_oj-lupa'
     _s(btnLupa, {
         background:   C.azul,
         border:       'none',
@@ -300,18 +300,18 @@ async function consulta_qualquer_ojConsultar(numeroDoProcesso) {
             body: JSON.stringify({ id_perfil: perfil.idPerfil })
         })
     }
-    await armazenar({rota_pje_consulta_qualquer_oj: dadosBasicos?.id})
+    await armazenar({rotapje_consulta_qualquer_oj: dadosBasicos?.id})
     url = location.origin + '/pjekz/painel/global/todos/lista-processos/' + dadosBasicos?.numero
     await consulta_qualquer_ojNavegar(url)
 }
 
 async function consulta_qualquer_ojAbreDetalhes(){
-    let cfg = await obterArmazenamento('rota_pje_consulta_qualquer_oj')
-    let id = cfg?.rota_pje_consulta_qualquer_oj
+    let cfg = await obterArmazenamento('rotapje_consulta_qualquer_oj')
+    let id = cfg?.rotapje_consulta_qualquer_oj
     if (!id) return
-    await removerArmazenamento('rota_pje_consulta_qualquer_oj')
-    let confirmacao = await obterArmazenamento('rota_pje_consulta_qualquer_oj')
-    if (confirmacao?.rota_pje_consulta_qualquer_oj) return
+    await removerArmazenamento('rotapje_consulta_qualquer_oj')
+    let confirmacao = await obterArmazenamento('rotapje_consulta_qualquer_oj')
+    if (confirmacao?.rotapje_consulta_qualquer_oj) return
     await acao_navegacao_detalhes(id)
 }
 
@@ -332,10 +332,10 @@ async function consulta_qualquer_ojErroNumero(erro = '') {
         mensagem = 'Você não possui o perfil da OJ.'
     }
 
-    let campo = document.getElementById('rota_pje-consulta_qualquer_oj-input')
+    let campo = document.getElementById('rotapje-consulta_qualquer_oj-input')
     campo.placeholder = mensagem
     campo.value = ''
-    let lupa = document.getElementById('rota_pje-consulta_qualquer_oj-lupa')
+    let lupa = document.getElementById('rotapje-consulta_qualquer_oj-lupa')
     lupa.style.background = '#c0392b'
     await suspender(5000)
     lupa.style.background = '#0078aa'

@@ -1,6 +1,6 @@
 // dá problema quando o interceptador dá errado, ou seja, quando não tem gigs concluídos, por exemplo.
 // o domicilio eletronico é outra api.
-//     ?rota_pje_tarefa=_
+//     ?rotapje_tarefa=_
 
 
 
@@ -31,7 +31,7 @@ async function con2_prazo_vencido_aoAbrirDetalhesDoProcesso(){
     if (!armazenamento) return
     let execucao = String(armazenamento?.rotaExecucaoAtual || '')
     if (!execucao) return
-    let tarefaParam = rota_buscarParametros('rota_pje_tarefa')
+    let tarefaParam = rota_buscarParametros('rotapje_tarefa')
     if (tarefaParam && !window.name.includes(tarefa)) window.name = window.name + '-' + tarefaParam + '-' + execucao
     if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
     if (execucao !== window.name.split('-').pop()) return
@@ -58,7 +58,7 @@ async function con2_prazo_vencido_janelaDetalhes(sessao){
     await clicar(sentenca[0])
     sentenca[0].scrollIntoView({ block: 'nearest' })
     await armazenar({rota_con2_prazo_vencido_janelaDetalhes: sessao})
-    await removerArmazenamento('rota_pje_tarefa')
+    await removerArmazenamento('rotapje_tarefa')
 }
 
 //__________________________________________________
@@ -163,12 +163,12 @@ async function con2_prazo_vencido_abrirDocumentos(documento) {
 async function con2_prazo_vencido_retificarAutuacao(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_con2_prazo_vencido_retificar': dadosCon2PrazoVencido.execucaoAtual,
-        'rota_pje_con2_prazo_vencido_retificar_tipo': envio,
+        'rotapje_con2_prazo_vencido_retificar': dadosCon2PrazoVencido.execucaoAtual,
+        'rotapje_con2_prazo_vencido_retificar_tipo': envio,
     })
-    let parametros = '?rota_pje_con2_prazo_vencido_retificar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                    '&rota_pje_con2_prazo_vencido_retificar_tipo=' + envio
-    let nomeJanela = 'rota_pje_con2_prazo_vencido_retificar_' + dadosCon2PrazoVencido.execucaoAtual
+    let parametros = '?rotapje_con2_prazo_vencido_retificar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                    '&rotapje_con2_prazo_vencido_retificar_tipo=' + envio
+    let nomeJanela = 'rotapje_con2_prazo_vencido_retificar_' + dadosCon2PrazoVencido.execucaoAtual
     let id = dadosCon2PrazoVencido?.processo?.id
     let url = location.origin + '/pjekz/processo/' + id + '/retificar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
@@ -180,13 +180,13 @@ async function con2_prazo_vencido_retificarAutuacao(tipo) {
 async function con2_prazo_vencido_aoAbrirRetificar(){
     let janela = confereJanela(JANELA.retificar)
     if (!janela) return
-    let parametros = await rota_buscarParametros('rota_pje_con2_prazo_vencido_retificar')
+    let parametros = await rota_buscarParametros('rotapje_con2_prazo_vencido_retificar')
     if (!parametros) return
-    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_retificar')
+    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_retificar')
     if (!armazenamento) return
-    let execucao = armazenamento?.rota_pje_con2_prazo_vencido_retificar
+    let execucao = armazenamento?.rotapje_con2_prazo_vencido_retificar
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_retificar')) return
+    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_retificar')) return
     if(execucao !== parametros || execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesRetificar()
@@ -195,9 +195,9 @@ async function con2_prazo_vencido_aoAbrirRetificar(){
 // RETIFICAR PASSO 3 - executa as ações
 
 async function con2_prazo_vencido_acoesRetificar(){
-    let tipos = await obterArmazenamento(['rota_pje_con2_prazo_vencido_retificar_tipo']) || await rota_buscarParametros('rota_pje_con2_prazo_vencido_retificar_tipo')
+    let tipos = await obterArmazenamento(['rotapje_con2_prazo_vencido_retificar_tipo']) || await rota_buscarParametros('rotapje_con2_prazo_vencido_retificar_tipo')
     if (!tipos) return
-    let tipo = tipos?.rota_pje_con2_prazo_vencido_retificar_tipo ?? tipos
+    let tipo = tipos?.rotapje_con2_prazo_vencido_retificar_tipo ?? tipos
     let i = 0
     let elemento = null
     while (!elemento) {
@@ -222,12 +222,12 @@ con2_prazo_vencido_aoAbrirRetificar()
 async function con2_prazo_vencido_despachar(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_con2_prazo_vencido_despachar': dadosCon2PrazoVencido.execucaoAtual,
-        'rota_pje_con2_prazo_vencido_despachar_tipo': envio,
+        'rotapje_con2_prazo_vencido_despachar': dadosCon2PrazoVencido.execucaoAtual,
+        'rotapje_con2_prazo_vencido_despachar_tipo': envio,
     })
-    let parametros =    '?rota_pje_con2_prazo_vencido_despachar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rota_pje_con2_prazo_vencido_despachar_tipo=' + envio
-    let nomeJanela =    'rota_pje_con2_prazo_vencido_despachar_' + dadosCon2PrazoVencido.execucaoAtual
+    let parametros =    '?rotapje_con2_prazo_vencido_despachar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                        '&rotapje_con2_prazo_vencido_despachar_tipo=' + envio
+    let nomeJanela =    'rotapje_con2_prazo_vencido_despachar_' + dadosCon2PrazoVencido.execucaoAtual
     let id =            dadosCon2PrazoVencido?.processo?.id
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
@@ -254,11 +254,11 @@ async function con2_prazo_vencido_despachar(tipo) {
 async function con2_prazo_vencido_aoAbrirDespachar(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_despachar')
-    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_despachar || '')
+    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_despachar')
+    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_despachar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_despachar')) return
+    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_despachar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesDespachar()
@@ -268,7 +268,7 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
 
 async function con2_prazo_vencido_acoesDespachar(){
     let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
-        obterArmazenamento('rota_pje_con2_prazo_vencido_despachar_tipo').then(dados => dados?.rota_pje_con2_prazo_vencido_despachar_tipo || ''),
+        obterArmazenamento('rotapje_con2_prazo_vencido_despachar_tipo').then(dados => dados?.rotapje_con2_prazo_vencido_despachar_tipo || ''),
         obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig || ''),
         obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.processo?.numero || '')
     ])
@@ -343,11 +343,11 @@ async function con2_prazo_vencido_designarAudiencia(tipo) {
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
-        'rota_pje_con2_prazo_vencido_designa_audiencia_tipo': tipo,
-        'rota_pje_con2_prazo_vencido_designa_audiencia': dadosCon2PrazoVencido.execucaoAtual
+        'rotapje_con2_prazo_vencido_designa_audiencia_tipo': tipo,
+        'rotapje_con2_prazo_vencido_designa_audiencia': dadosCon2PrazoVencido.execucaoAtual
     })
-    let parametros =    '?rota_pje_con2_prazo_vencido_designa_audiencia=' + dadosCon2PrazoVencido.execucaoAtual
-    let nomeJanela =    'rota_pje_con2_prazo_vencido_designa_audiencia_' + dadosCon2PrazoVencido.execucaoAtual
+    let parametros =    '?rotapje_con2_prazo_vencido_designa_audiencia=' + dadosCon2PrazoVencido.execucaoAtual
+    let nomeJanela =    'rotapje_con2_prazo_vencido_designa_audiencia_' + dadosCon2PrazoVencido.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
@@ -376,11 +376,11 @@ async function con2_prazo_vencido_aoAbrirDesignarAudiencia(){
     
     let janela = confereJanela(JANELA.pautaAudiencias)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_designa_audiencia')
-    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_designa_audiencia || '')
+    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_designa_audiencia')
+    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_designa_audiencia || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_designa_audiencia')) return
+    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_designa_audiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesDesignarAudiencia()
@@ -389,16 +389,16 @@ async function con2_prazo_vencido_aoAbrirDesignarAudiencia(){
 // DESIGNAR AUDIÊNCIA PASSO 3 - executa as ações
 
 async function con2_prazo_vencido_acoesDesignarAudiencia(){
-    let dados = await obterArmazenamento('rota_pje_con2_prazo_vencido_designa_audiencia_tipo')
+    let dados = await obterArmazenamento('rotapje_con2_prazo_vencido_designa_audiencia_tipo')
     let buscaLink = await obterArmazenamento('rota_con2_prazo_vencido_linkDaAudiencia')
     let link = buscaLink?.rota_con2_prazo_vencido_linkDaAudiencia || ''
     
     //if (!dados) return
-    if (dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.tipo == 'manual'){
+    if (dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.tipo == 'manual'){
         await con2_prazo_vencido_acoesDesignarAudienciaManual('manual')
         return
     }
-    let horario = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario || ''
+    let horario = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario || ''
     if (!horario) {
         await con2_prazo_vencido_acoesDesignarAudienciaManual('erro')
         return
@@ -424,10 +424,10 @@ async function con2_prazo_vencido_acoesDesignarAudienciaManual(manualOuErro) {
         tipo  = 'info'
         aviso = 'Designe manualmente a audiência.'
     }
-    let dados = await obterArmazenamento('rota_pje_con2_prazo_vencido_designa_audiencia_tipo')
-    let processo = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.processo
-    let sala = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.sala
-    let link = dados?.rota_pje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.link
+    let dados = await obterArmazenamento('rotapje_con2_prazo_vencido_designa_audiencia_tipo')
+    let processo = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.processo
+    let sala = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.sala
+    let link = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.link
     let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_con2_prazo_vencido_em_andamento'])
     let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_con2_prazo_vencido_em_andamento === 'con2_prazo_vencido_designa_audiencia'
     if (chamadaPorAcaoConjunta) {
@@ -587,12 +587,12 @@ async function con2_prazo_vencido_colocarGigDeAcompanhamento() {
 async function con2_prazo_vencido_certificar(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_con2_prazo_vencido_certificar': dadosCon2PrazoVencido.execucaoAtual,
-        'rota_pje_con2_prazo_vencido_certificar_tipo': envio,
+        'rotapje_con2_prazo_vencido_certificar': dadosCon2PrazoVencido.execucaoAtual,
+        'rotapje_con2_prazo_vencido_certificar_tipo': envio,
     })
-    let parametros =    '?rota_pje_con2_prazo_vencido_certificar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rota_pje_con2_prazo_vencido_certificar_tipo=' + envio
-    let nomeJanela =    'rota_pje_con2_prazo_vencido_certificar_' + dadosCon2PrazoVencido.execucaoAtual
+    let parametros =    '?rotapje_con2_prazo_vencido_certificar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                        '&rotapje_con2_prazo_vencido_certificar_tipo=' + envio
+    let nomeJanela =    'rotapje_con2_prazo_vencido_certificar_' + dadosCon2PrazoVencido.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
@@ -607,11 +607,11 @@ async function con2_prazo_vencido_certificar(tipo) {
 async function con2_prazo_vencido_aoAbrirCertificar(){
     let janela = confereJanela(JANELA.certificar)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_certificar')
-    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_certificar || '')
+    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_certificar')
+    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_certificar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_certificar')) return
+    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_certificar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesCertificar()
@@ -664,13 +664,13 @@ async function con2_prazo_vencido_intimar(tipo) {
     let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_con2_prazo_vencido_intimar': dadosCon2PrazoVencido.execucaoAtual,
-        'rota_pje_con2_prazo_vencido_intimar_tipo': envio,
-        'rota_pje_con2_prazo_vencido_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
+        'rotapje_con2_prazo_vencido_intimar': dadosCon2PrazoVencido.execucaoAtual,
+        'rotapje_con2_prazo_vencido_intimar_tipo': envio,
+        'rotapje_con2_prazo_vencido_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
     })
-    let parametros =    '?rota_pje_con2_prazo_vencido_intimar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rota_pje_con2_prazo_vencido_intimar_tipo=' + envio
-    let nomeJanela =    'rota_pje_con2_prazo_vencido_intimar_' + dadosCon2PrazoVencido.execucaoAtual
+    let parametros =    '?rotapje_con2_prazo_vencido_intimar=' + dadosCon2PrazoVencido.execucaoAtual + 
+                        '&rotapje_con2_prazo_vencido_intimar_tipo=' + envio
+    let nomeJanela =    'rotapje_con2_prazo_vencido_intimar_' + dadosCon2PrazoVencido.execucaoAtual
     let url =           location.origin + '/pjekz/processo/' + id + '/comunicacoesprocessuais/minutas' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
@@ -681,11 +681,11 @@ async function con2_prazo_vencido_intimar(tipo) {
 async function con2_prazo_vencido_aoAbrirIntimar(){
     let janela = confereJanela(JANELA.pec)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_intimar')
-    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_intimar || '')
+    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_intimar')
+    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_intimar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_intimar')) return
+    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_intimar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesIntimar()
@@ -728,7 +728,7 @@ async function con2_prazo_vencido_acoesIntimar(){
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
     await suspender(200)
-    let tipoAudiencia = await obterArmazenamento('rota_pje_con2_prazo_vencido_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_con2_prazo_vencido_intimar_audienciaMarcadaTipo || '')
+    let tipoAudiencia = await obterArmazenamento('rotapje_con2_prazo_vencido_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_con2_prazo_vencido_intimar_audienciaMarcadaTipo || '')
     let tipos = [
         {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
         {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
@@ -809,9 +809,9 @@ async function con2_prazo_vencido_aguardandoAudiencia(tipo) {
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
     let recurso =       tarefa[0]?.nomeRecurso || ''
-    let parametros =    '?rota_pje_con2_prazo_vencido_aguardandoAudiencia=' + dadosCon2PrazoVencido.execucaoAtual
-    let nomeJanela =    'rota_pje_con2_prazo_vencido_aguardandoAudiencia_' + dadosCon2PrazoVencido.execucaoAtual
-    await armazenar({'rota_pje_con2_prazo_vencido_aguardandoAudiencia': dadosCon2PrazoVencido.execucaoAtual})
+    let parametros =    '?rotapje_con2_prazo_vencido_aguardandoAudiencia=' + dadosCon2PrazoVencido.execucaoAtual
+    let nomeJanela =    'rotapje_con2_prazo_vencido_aguardandoAudiencia_' + dadosCon2PrazoVencido.execucaoAtual
+    await armazenar({'rotapje_con2_prazo_vencido_aguardandoAudiencia': dadosCon2PrazoVencido.execucaoAtual})
     if (!recurso || !idTarefa){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
@@ -837,11 +837,11 @@ async function con2_prazo_vencido_aguardandoAudiencia(tipo) {
 async function con2_prazo_vencido_aoAbrirAguardandoAudiencia(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_con2_prazo_vencido_aguardandoAudiencia')
-    let execucao = String(armazenamento?.rota_pje_con2_prazo_vencido_aguardandoAudiencia || '')
+    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_aguardandoAudiencia')
+    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_aguardandoAudiencia || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_con2_prazo_vencido_aguardandoAudiencia')) return
+    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_aguardandoAudiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesEncaminharAguardandoAudiencia()

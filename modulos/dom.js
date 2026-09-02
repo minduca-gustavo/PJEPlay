@@ -161,9 +161,9 @@ function remover(seletor = ''){
 }
 
 function estilizar({ css = '', id = '' } = {}){
-	if(id) remover('#rota_pje-estilo-' + id)
+	if(id) remover('#rotapje-estilo-' + id)
 	let s = document.createElement('style')
-	if(id) s.id = 'rota_pje-estilo-' + id
+	if(id) s.id = 'rotapje-estilo-' + id
 	s.textContent = css
 	document.head.appendChild(s)
 	return s
@@ -181,12 +181,12 @@ async function conferenciaCompletaJanela(tarefaEsperada, tipoJanela = JANELA.det
 	console.log('%c[Rota PJE]%c atual: ' + atual, LOG.teste, 'color:inherit')
     if (execucao !== atual) return null  // execução antiga, ignora
 	console.log('%c[Rota PJE]%c EXECUCAO CONFERE', LOG.teste, 'color:inherit')
-    let tarefa = rota_buscarParametros('rota_pje_tarefa')
+    let tarefa = rota_buscarParametros('rotapje_tarefa')
     if (!tarefa) {
-        const salvo = await obterArmazenamento('rota_pje_tarefa')
-        tarefa = salvo?.rota_pje_tarefa
+        const salvo = await obterArmazenamento('rotapje_tarefa')
+        tarefa = salvo?.rotapje_tarefa
     } else {
-        await armazenar({ rota_pje_tarefa: tarefa })
+        await armazenar({ rotapje_tarefa: tarefa })
     }
 
     if (tarefa !== tarefaEsperada) return null
@@ -218,7 +218,7 @@ async function obedecer(mudancas) {
 
 
 function id(...partes) {
-    return ['rota_pje', ...partes].filter(Boolean).join('_')
+    return ['rotapje', ...partes].filter(Boolean).join('_')
 }
 
 // em dom.js ou utils.js

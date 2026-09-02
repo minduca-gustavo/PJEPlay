@@ -17,7 +17,7 @@ let _rota_relatorio    = []
 let _rota_janelasMundo = []
 
 // ── Chave de persistência do fluxo (sobrevive ao reload) ──
-const ROTA_KEY_FLUXO = 'rota_pje_fluxo_retomar'
+const ROTA_KEY_FLUXO = 'rotapje_fluxo_retomar'
 
 // Contexto do processarCursor em execução — acessível por _rota_garantirOJCorreta
 let _rota_slots_ativos        = []
@@ -446,8 +446,8 @@ function rota_abrirAssistente(idTarefa = '', execucao = '') {
     const geo = rota_geometriaModoAssistido()
 
     let url = extensao_raiz('funcoes-botao-rota/assistente/assistente.html')
-    url += '?rota_pje_execucao=' + encodeURIComponent(execucao)
-    url += '&rota_pje_tarefa='   + encodeURIComponent(idTarefa)
+    url += '?rotapje_execucao=' + encodeURIComponent(execucao)
+    url += '&rotapje_tarefa='   + encodeURIComponent(idTarefa)
 
     // Nome único por execucao — garante janela nova a cada processo
     const nome = 'rota-assistente-' + execucao
@@ -491,10 +491,10 @@ function abrirUrl(url, posicao = 'esquerdaAssistida', nomeJanela) {
 
 // ── Comunicação entre janelas ─────────────────────────────────
 
-const ROTA_KEY_BASE      = 'rota_pje_sinal_'
-const ROTA_KEY_FECHAR    = 'rota_pje_fechar_'
-const ROTA_KEY_INICIAR   = 'rota_pje_iniciar_'   // timestamp de início do timer (escrito só pelo slot 0)
-const ROTA_KEY_REINICIAR = 'rota_pje_reiniciar_'  // qualquer janela pede reinício ao slot 0
+const ROTA_KEY_BASE      = 'rotapje_sinal_'
+const ROTA_KEY_FECHAR    = 'rotapje_fechar_'
+const ROTA_KEY_INICIAR   = 'rotapje_iniciar_'   // timestamp de início do timer (escrito só pelo slot 0)
+const ROTA_KEY_REINICIAR = 'rotapje_reiniciar_'  // qualquer janela pede reinício ao slot 0
 
 function rota_sinalizar(sessao, acao){
 	localStorage.setItem(ROTA_KEY_BASE + sessao, acao)
@@ -724,22 +724,22 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 		let posSalva = widgetPosSlot?.[nomeAtivo]?.[slot.slotIndex] || null
 
 		// Recupera parâmetros salvos para este processo
-		let mapaParamsStr = localStorage.getItem('rota_pje_params') || '{}'
+		let mapaParamsStr = localStorage.getItem('rotapje_params') || '{}'
 		let mapaParams = {}
 		try { mapaParams = JSON.parse(mapaParamsStr) } catch(_) {}
 		let params = mapaParams[item.numProc] || []
 
 		let urlFinal = slot.url
 			+ (slot.url.includes('?') ? '&' : '?')
-			+ 'rota_pje_sessao='    + sessao
-			+ '&rota_pje_tarefaunica=' + encodeURIComponent(tarefaUnica)
-			+ '&rota_pje_num='      + encodeURIComponent(item.numProc)
-			+ '&rota_pje_slot='     + slot.slotIndex
-			+ '&rota_pje_tarefa='   + encodeURIComponent(nomeAtivo)
-			+ '&rota_pje_total='    + totalJanelas
-			+ (posSalva ? '&rota_pje_pos=' + encodeURIComponent(JSON.stringify(posSalva)) : '')
-			+ (params.length ? '&rota_pje_params=' + encodeURIComponent(JSON.stringify(params)) : '')
-			+ (tmrJson ? '&rota_pje_tmr=' + tmrJson : '')
+			+ 'rotapje_sessao='    + sessao
+			+ '&rotapje_tarefaunica=' + encodeURIComponent(tarefaUnica)
+			+ '&rotapje_num='      + encodeURIComponent(item.numProc)
+			+ '&rotapje_slot='     + slot.slotIndex
+			+ '&rotapje_tarefa='   + encodeURIComponent(nomeAtivo)
+			+ '&rotapje_total='    + totalJanelas
+			+ (posSalva ? '&rotapje_pos=' + encodeURIComponent(JSON.stringify(posSalva)) : '')
+			+ (params.length ? '&rotapje_params=' + encodeURIComponent(JSON.stringify(params)) : '')
+			+ (tmrJson ? '&rotapje_tmr=' + tmrJson : '')
 
 		let nomeW = /\/documento\/\d+\/conteudo/.test(slot.url)
 			? rota_nomeJanela(slot.slotIndex + '-' + i, execucao)
@@ -763,8 +763,8 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	localStorage.removeItem(ROTA_KEY_REINICIAR + sessao)
 	await suspender(400)
 
-	let nota = localStorage.getItem('rota_pje_nota_' + sessao) || ''
-	localStorage.removeItem('rota_pje_nota_' + sessao)
+	let nota = localStorage.getItem('rotapje_nota_' + sessao) || ''
+	localStorage.removeItem('rotapje_nota_' + sessao)
 
 	_rota_relatorio.push({
 		numProc:    item.numProc,
@@ -799,32 +799,32 @@ async function rota_injetarWidget(ctxSalvo = null){
 	} else {
 		// ── Contexto vindo da URL (primeira abertura da janela) ───
 		let params = new URL(location.href).searchParams
-		sessao     = params.get('rota_pje_sessao')
+		sessao     = params.get('rotapje_sessao')
 		if(!sessao) return
 
-		tarefaUnica  = decodeURIComponent(params.get('rota_pje_tarefaunica') || '')
-		numProc      = decodeURIComponent(params.get('rota_pje_num') || '')
-		slotIndex    = parseInt(params.get('rota_pje_slot') || '0')
-		nomeTarefa   = decodeURIComponent(params.get('rota_pje_tarefa') || '')
-		totalJanelas = parseInt(params.get('rota_pje_total') || '1')
+		tarefaUnica  = decodeURIComponent(params.get('rotapje_tarefaunica') || '')
+		numProc      = decodeURIComponent(params.get('rotapje_num') || '')
+		slotIndex    = parseInt(params.get('rotapje_slot') || '0')
+		nomeTarefa   = decodeURIComponent(params.get('rotapje_tarefa') || '')
+		totalJanelas = parseInt(params.get('rotapje_total') || '1')
 
 		// Parâmetros extras (botões de clipboard)
 		widgetParams = []
-		let paramsParam = params.get('rota_pje_params')
+		let paramsParam = params.get('rotapje_params')
 		if(paramsParam){
 			try{ widgetParams = JSON.parse(decodeURIComponent(paramsParam)) } catch(_){}
 		}
 
 		// Configuração do temporizador
 		temporizador = null
-		let tmrParam = params.get('rota_pje_tmr')
+		let tmrParam = params.get('rotapje_tmr')
 		if(tmrParam){
 			try{ temporizador = JSON.parse(decodeURIComponent(tmrParam)) } catch(_){}
 		}
 
 		// Recupera posição salva para este slot específico
 		posSalva = null
-		let posParam = params.get('rota_pje_pos')
+		let posParam = params.get('rotapje_pos')
 		if(posParam){
 			try{ posSalva = JSON.parse(decodeURIComponent(posParam)) } catch(_){}
 		}
@@ -838,7 +838,7 @@ async function rota_injetarWidget(ctxSalvo = null){
 			nomeTarefa, totalJanelas, widgetParams,
 			temporizador, posSalva,
 		}})
-		sessionStorage.setItem('rota_pje_chave_janela', chaveJanela)
+		sessionStorage.setItem('rotapje_chave_janela', chaveJanela)
 	}
 
 	rota_monitorarFechamento(sessao)
@@ -868,7 +868,7 @@ async function rota_injetarWidget(ctxSalvo = null){
 	// pausa o timer em todas as janelas e remonta no estado cancelado.
 	// O usuário vê o widget, entende que precisa clicar em Próximo.
 	let _obsWidget = new MutationObserver(() => {
-		if(document.getElementById('rota_pje-widget')) return
+		if(document.getElementById('rotapje-widget')) return
 		_obsWidget.disconnect()
 		// Pausa em todas as janelas via localStorage
 		rota_sinalizar(sessao, 'pausado')
@@ -994,10 +994,10 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	_rota_geracao++
 	let minhaGeracao = _rota_geracao  // capturada no closure
 	
-	remover('#rota_pje-widget')
+	remover('#rotapje-widget')
 
 	let widget = document.createElement('div')
-	widget.id  = 'rota_pje-widget'
+	widget.id  = 'rotapje-widget'
 	Object.assign(widget.style, {
 		position:     'fixed',
 		zIndex:       String(ROTA_Z.widget),
@@ -1063,7 +1063,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		if(contadorAtual <= 0 && !pausado){
 			if(minhaGeracao === _rota_geracao){
 				let nota = opcaoEscolhida || ''
-				localStorage.setItem('rota_pje_nota_' + sessao, nota)
+				localStorage.setItem('rotapje_nota_' + sessao, nota)
 				rota_sinalizar(sessao, 'proximo')
 			}
 			return
@@ -1126,7 +1126,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 					}
 					if(minhaGeracao !== _rota_geracao) return
 					let nota = opcaoEscolhida || ''
-					localStorage.setItem('rota_pje_nota_' + sessao, nota)
+					localStorage.setItem('rotapje_nota_' + sessao, nota)
 					rota_sinalizar(sessao, 'proximo')
 				}
 			}, 1000)
@@ -1194,7 +1194,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 				btn.addEventListener('click', () => {
 					clearInterval(intervalo)
 					opcaoEscolhida = opcao
-					localStorage.setItem('rota_pje_nota_' + sessao, opcao)
+					localStorage.setItem('rotapje_nota_' + sessao, opcao)
 					rota_sinalizar(sessao, 'proximo')
 				})
 
@@ -1217,13 +1217,13 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		btnProximo.addEventListener('click', () => {
 			clearInterval(intervalo)
 			let nota = opcaoEscolhida || ''
-			localStorage.setItem('rota_pje_nota_' + sessao, nota)
+			localStorage.setItem('rotapje_nota_' + sessao, nota)
 			rota_sinalizar(sessao, 'proximo')
 		})
 		btnEncerrar.addEventListener('click', () => {
 			clearInterval(intervalo)
 			let nota = opcaoEscolhida || ''
-			localStorage.setItem('rota_pje_nota_' + sessao, nota)
+			localStorage.setItem('rotapje_nota_' + sessao, nota)
 			rota_sinalizar(sessao, 'encerrar')
 		})
 
@@ -1259,9 +1259,9 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		outline:'none', marginBottom:'6px', boxSizing:'border-box',
 	})
 	input.addEventListener('input', () => {
-		localStorage.setItem('rota_pje_nota_' + sessao, input.value)
+		localStorage.setItem('rotapje_nota_' + sessao, input.value)
 	})
-	localStorage.setItem('rota_pje_nota_' + sessao, input.value)
+	localStorage.setItem('rotapje_nota_' + sessao, input.value)
 	widget.appendChild(input)
 
 	// ── Botões Encerrar / Próximo ─────────────────────────────
@@ -1476,10 +1476,10 @@ async function _rota_salvarOrientacaoWidget(orientacao, slotIndex, nomeTarefa){
 // ── Avisos visuais ────────────────────────────────────────────
 
 function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
-	let c = document.getElementById('rota_pje-avisos')
+	let c = document.getElementById('rotapje-avisos')
 	if(!c){
 		c = document.createElement('div')
-		c.id = 'rota_pje-avisos'
+		c.id = 'rotapje-avisos'
 		Object.assign(c.style, {
 			position:'fixed', top:'16px', left:'50%',
 			transform:'translateX(-50%)',
@@ -1515,10 +1515,10 @@ function rota_exibirRelatorio(){
         rota_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
         return
     }
-    remover('#rota_pje-relatorio')
+    remover('#rotapje-relatorio')
 
     let painel = document.createElement('div')
-    painel.id  = 'rota_pje-relatorio'
+    painel.id  = 'rotapje-relatorio'
     Object.assign(painel.style, {
         position:      'fixed',
         inset:         '0',

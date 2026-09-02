@@ -24,7 +24,7 @@
 
 // ── TRECHO 1 — Substituir rota_abrirAssistente() ─────────────
 //
-// Nova versão: passa rota_pje_execucao e rota_pje_tarefa na URL.
+// Nova versão: passa rotapje_execucao e rotapje_tarefa na URL.
 // O assistente.js usa esses parâmetros para validar e preencher
 // o cabeçalho.
 
@@ -32,12 +32,12 @@ function rota_abrirAssistente(idTarefa = '', execucao = '') {
     const geo = rota_geometriaModoAssistido()
 
     let url = extensao_raiz('rota/assistente/assistente.html')
-    url += '?rota_pje_execucao=' + encodeURIComponent(execucao)
-    url += '&rota_pje_tarefa='   + encodeURIComponent(idTarefa)
+    url += '?rotapje_execucao=' + encodeURIComponent(execucao)
+    url += '&rotapje_tarefa='   + encodeURIComponent(idTarefa)
 
     const assistente = window.open(
         url,
-        'rota-pje-assistente',
+        'rotapje-assistente',
         'width='   + geo.assistente.width  +
         ',height=' + geo.assistente.height +
         ',left='   + geo.assistente.left   +

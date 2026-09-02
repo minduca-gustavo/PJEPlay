@@ -1,0 +1,910 @@
+/*
+Filtro
+SUMARÍSSIMO COM ADVOGADOS EM TODAS AS PARTES
+SEM ÓRGÃO PÚBLICO
+SEM OBRIGAÇÃO DE FAZER DE IMPLANTAÇÃO
+SEM FALÊNCIA NEM RECUPERAÇÃO JUDICIAL
+
+folha
+implementacao
+vincenda
+obrigação de fazer
+habilita
+*/
+
+const STOP_MAX_PROCESSOS    = 5  
+const STOP_SALVAR_INDEXEDDB = false
+// ============================================================
+// sf-botoes.js
+// Define os botões que aparecem no widget Super Filtros.
+//
+// Cada botão tem:
+//   nome   → texto exibido no botão
+//   funcao → async (contexto) => resultado
+//
+// O objeto `contexto` contém:
+//   contexto.modo       → 'Tarefa' | 'Sala' | 'Lista'
+//   contexto.valor      → texto digitado no input do widget
+//   contexto.lista      → array de números CNJ (modo Lista)
+//   contexto.progresso  → callback(feitos, total) — atualiza o widget
+//
+// Funções disponíveis:
+//   filtrarPorTarefa(contexto) / filtrarPorSala / filtrarPorLista
+//     → { ids, t }  (t = objeto já buscado, paralelo a ids)
+//   sf_pool(itens, fn, { concorrencia, tentativas, pausaMs, onProgresso })
+//     → array de resultados na mesma ordem de itens
+//   buscarProcesso(id, path) / buscarDocumentos(id) / buscarMovimentos(id)
+//   buscarIdPeloNumeroCNJ(id) / buscarCalculos(id) / buscarChips(id) / buscarGigs(numProc)
+//
+// O retorno da funcao pode ser:
+//   string         → exibida diretamente
+//   array de strings/números → lista
+//   array de objetos → tabela (chaves viram colunas)
+//   null/undefined → "(sem resultado)"
+// ============================================================
+
+const SF_BOTOES = [
+
+	// ── Passivos da tarefa ────────────────────────────────────
+	// Para cada processo da tarefa, busca as partes passivas
+	// e retorna documento + número do processo.
+	{
+		nome: 'Lista processos por CNPJ/CPF',
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			if (contexto.modo !== 'Tarefa') return 'Este botão só funciona no modo Tarefa.'
+			let { ids, t } = await filtrarPorTarefa(contexto)
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			let resultados = await sf_pool(ids, async (id, idx) => {
+				return await buscarProcesso(id, '/partes')
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			for (let idx = 0; idx < ids.length; idx++) {
+				
+
+				let r      = resultados[idx]
+				let numero = t[idx]?.numero || ''
+				let autor  = t[idx]?.autor  || ''
+
+				for (let j of r?.PASSIVO || []) {
+					let maisReclamadas = r?.PASSIVO.length === 1 ? 'Não' : 'Sim'  // ← fora do if
+					d.push({
+						documento:        j?.documento || '',
+						processo:         numero,
+						reclamada:        j?.nome,
+						reclamante:       autor,
+						Outras_Reclamadas: maisReclamadas,  // ← agora acessível
+					})
+				}
+			}
+
+			return d
+		}
+	},
+	{
+		nome: 'Lista processos Tema 1389',
+		//Aguardando final do sobrestamento
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			if (contexto.modo !== 'Tarefa') return 'Este botão só funciona no modo Tarefa.'
+			let { ids, t } = await filtrarPorTarefa(contexto)
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			
+			for (let idx = 0; idx < ids.length; idx++) {
+				let sobrestamentos = await rota_fetch(location.origin + '/pje-comum-api/api/processos/id/' + ids[idx] + '/sobrestamentos') || []
+				let sobrestamento = sobrestamentos.find(s => !s.dataRevogacao) // undefined se não achar
+				let textoSobrestamento = sobrestamento?.textoFinalExternoSobrestamento || ''
+				let numero = 	t[idx]?.numero || ''
+				let autor = 	t[idx]?.autor  || ''
+				let reu = 		t[idx]?.reu  || ''
+				let autuacao = 	(new Date(t[idx]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				let gigs = []
+				if (new Date(t[idx]?.autuadoEm) >= new Date('2025-10-20') && (textoSobrestamento?.includes('1389') || textoSobrestamento?.includes('1.389'))){
+					gigs = await buscarGigs(numero)
+				}
+				let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
+				let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
+				let juizSimetria = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim().toUpperCase() || ''
+				d.push({
+					id: 				ids[idx] || '',
+					processo: 			numero || '',
+					autor:				autor || '',
+					reu:				reu || '',
+					sobrestamento:		textoSobrestamento || '',
+					autuacao:			autuacao || '',
+					juiz_simetria:		juizSimetria || '',
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
+		nome: 'Lista número, partes, autuação, tarefa. "TODAS" para buscar em todas as tarefas.',
+		modo: ['Tarefa', 'Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {idsx, tx} = { idsx: [], tx: [] }
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}	
+				for (let tarefa of tarefas) {
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
+						idsx.push(...ids)
+						tx.push(...t)
+						
+					}
+				}
+			} else if (contexto.modo === 'Lista') {
+				let { ids, t } = await filtrarPorLista(contexto)
+				idsx.push(...ids)
+				tx.push(...t)
+			}
+			if (!idsx.length) return 'Nenhum processo encontrado.'
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+
+			for (let i = 0; i < idsx.length; i++) {
+				
+
+				let numero 		= tx[i]?.numero || ''
+				let tipo		= tx[i]?.descricaoClasseJudicial || ''
+				let autor  		= tx[i]?.autor  || ''
+				let reu			= tx[i]?.reu || ''
+				let id 			= idsx[i] || ''
+				let autuacao	= (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || ''
+				d.push({
+					Id:					id,
+					Processo:         	numero,
+					Tipo:				tipo,
+					Reclamada:        	reu,
+					Reclamante:       	autor,
+					Autuado_em: 		autuacao,
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
+		nome: 'PJC único + Sentenças',
+		modo: ['Tarefa', 'Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {idsx, tx} = { idsx: [], tx: [] }
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin +'/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}	
+				for (let tarefa of tarefas) {
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome)
+						idsx.push(...ids)
+						tx.push(...t)
+						
+					}
+				}
+			} else if (contexto.modo === 'Lista') {
+				let ids = [], t = []
+				;({ ids, t } = await filtrarPorLista(contexto))
+				idsx.push(...ids)
+				tx.push(...t)
+				//console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
+				//console.log('%c[Rota PJE]%c tx' + JSON.stringify(tx), LOG.aviso, 'color:inherit')
+			}
+			//console.log('%c[Rota PJE]%c idsx' + JSON.stringify(idsx), LOG.aviso, 'color:inherit')
+			if (!idsx.length) return 'Nenhum processo encontrado.'
+			
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+			let maximo = 0
+// https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/processo?pagina=1&tamanhoPagina=10&ordenacaoCrescente=true&idProcesso=1853658&incluirCalculosHomologados=true
+// https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/112833/pjc
+			for (let i = 0; i < idsx.length; i++) {
+				let id = idsx[i]
+				let calculos = await buscarCalculos(id) || {}
+				//console.log('%c[Rota PJE]%c calculos 218:' + JSON.stringify(calculos), LOG.aviso, 'color:inherit')
+				let calculo = [...new Set((calculos?.resultado || []).map(d => d?.idPjeCalc))];
+				//console.log('%c[Rota PJE]%c calculo 218:' + JSON.stringify(calculo), LOG.aviso, 'color:inherit')
+				//console.log('%c[Rota PJE]%c calculo.length 218:' + JSON.stringify(calculo.length), LOG.aviso, 'color:inherit')
+				
+				if (calculo.length === 1){
+					
+					let idCalculo = (calculos?.resultado.find(d => d?.idPjeCalc == calculo[0]))?.idPJeCalcImportacao || null
+					//console.log('%c[Rota PJE]%c idCalculo 218: ' + JSON.stringify(idCalculo), LOG.aviso, 'color:inherit')
+					let pjc = ''
+					let idsDocs = []
+					let conteudos = []
+					let conteudoString = ''
+					if (idCalculo){
+						pjc = await rota_download('https://pje-web-hm.trt15.jus.br/pje-comum-api/api/calculos/' + idCalculo + '/pjc')
+						//console.log('%c[Rota PJE]%c pjc 221: ' + JSON.stringify(pjc), LOG.erro, 'color:inherit')
+						let acordo = await rota_buscarDocumentoHomologatorio(id) || null
+						//console.log('%c[Rota PJE]%c acordo 219: ' + JSON.stringify(acordo), LOG.aviso, 'color:inherit')
+						if (acordo) {
+							idsDocs.push(acordo)
+						} else {
+							let timeline = await buscarDocumentos(id) || []
+							let valor = ['Sentença', 'Acórdão']
+							let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
+							let sentencas = timeline.filter(d =>
+								[].concat(valor).includes(d?.tipo) ||
+								(tituloRegex && tituloRegex.test(d?.titulo || '')))
+								.map(d=> d?.id) || []
+							idsDocs.push(...sentencas)
+						}
+						
+					}
+					let encontrado = false
+					if (idsDocs.length > 0){
+						for (idDoc of idsDocs){
+							let conteudo = await rota_extrairTeorDocumento(id, idDoc) || ''
+							//console.log('%c[Rota PJE]%c conteudo 220: ' + JSON.stringify(conteudo), LOG.aviso, 'color:inherit')
+							let horasExtras = buscaEmTextoMalFormatado(conteudo, 'horas extras', 0, 0)
+							console.log('%c[Rota PJE]%c conteudo' + JSON.stringify(conteudo), LOG.aviso, 'color:inherit')
+							console.log('%c[Rota PJE]%c horasExtras?.trechos' + JSON.stringify(horasExtras), LOG.aviso, 'color:inherit')
+							if (horasExtras?.trechos) encontrado = true
+							conteudos.push(idDoc + ': ' + conteudo)
+						}
+					}
+					if (pjc && encontrado) {
+						maximo++
+						d.push({
+							Id: id || '' ,
+							Numero: tx[i]?.numero || '',
+							PJC: await blobParaBase64(pjc),
+							Conteudo: conteudos.join('')
+						})
+					}
+					if (maximo === 50){
+						let json = JSON.stringify(d)
+						const blob = new Blob([json], {type: 'application/json'})
+						const a = document.createElement('a')
+						a.href = URL.createObjectURL(blob)
+						a.download = 'calculos.json'
+						a.click()
+						let f = d.map(t=> {t?.Id, t?.Numero})
+						return f
+					}
+					
+				}
+			}
+			let json = JSON.stringify(d)
+			const blob = new Blob([json], {type: 'application/json'})
+			const a = document.createElement('a')
+			a.href = URL.createObjectURL(blob)
+			a.download = 'calculos.json'
+			a.click()
+			let f = d.map(t=> {t?.Id, t?.Numero})
+			return f
+		}
+
+	},
+	{
+		nome: 'Compila sentenças.',
+		modo: [],
+		funcao: async (contexto) => {
+			let { idsx, tx } = { idsx: [], tx: [] }
+			console.log('%c[Rota PJE]%c contexto' + JSON.stringify(contexto), LOG.rosa, 'color:inherit')
+	
+			if (contexto.modo === 'Tarefa') {
+				let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true')
+				if (contexto.valor !== 'TODAS') {
+					tarefas = [tarefas.find(t => t.nome.toLowerCase() === contexto.valor.toLowerCase())]
+				}
+				for (let tarefa of tarefas) {
+					if (!tarefa?.nome?.toLowerCase().includes('arquiv' || 'cartas devolvidas')) {
+						let opcoes = {
+							concorrencia: contexto.concorrencia || 1,
+							tentativas:   contexto.tentativas || 2,
+							pausaMs:      contexto.pausaMs || 1000,
+						}
+						let { ids, t } = await buscarProcessosPorTarefa(tarefa.nome, '', opcoes)
+						idsx.push(...ids)
+						tx.push(...t)
+					}
+					if (idsx.length > 0) break
+				}
+			}
+			
+			// ---------- STOP: limita quantos processos entram no lote de teste ----------
+			if (STOP_MAX_PROCESSOS > 0) {
+				idsx = idsx.slice(0, STOP_MAX_PROCESSOS)
+				tx   = tx.slice(0, STOP_MAX_PROCESSOS)
+			}
+			console.log(`%c[Rota PJE]%c processando ${idsx.length} processo(s) — STOP_MAX_PROCESSOS=${STOP_MAX_PROCESSOS}`, LOG.rosa, 'color:inherit')
+	
+			if (!idsx.length) return 'Nenhum processo encontrado.'
+			let d = []
+	
+			await sf_pool(idsx, async (id, idx) => {
+				console.log('%c[Rota PJE]%c id' + JSON.stringify(id), LOG.rosa, 'color:inherit')
+				let timeline = await buscarDocumentos(id) || []
+				let sentencas = timeline.filter(doc => doc.tipo == 'Sentença') || []
+	
+				// ---------- STOP: limita quantas sentenças do processo são consideradas ----------
+				//if (STOP_MAX_SENTENCAS > 0) sentencas = sentencas.slice(-STOP_MAX_SENTENCAS)
+	
+				let documento = sentencas[sentencas.length - 1]
+				console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(documento), LOG.rosa, 'color:inherit')
+				//if (!documento) continue
+	
+				let html = await extrairHtml(id, documento.id)
+				let markdown = htmlParaMarkdown(html)
+	
+				let registro = {
+					id:          documento.id,
+					processo:    tx[idx]?.numero || '',
+					juiz:        nomeSignatario,
+					autuadoEm:   tx[idx]?.autuadoEm || '',
+					markdown:    markdown,
+					capturadoEm: new Date().toISOString(),
+				}
+	
+				if (STOP_SALVAR_INDEXEDDB) {
+					await salvarSentenca(registro)
+				} else {
+					console.log('%c[Rota PJE]%c [dry-run] não gravou no IndexedDB:', LOG.rosa, 'color:inherit', registro)
+				}
+				console.log('%c[Rota PJE]%c registro: ', LOG.erro, 'color:inherit', registro)
+				//await suspender(30000)
+				return registro
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+	
+			for (let i = 0; i < idsx.length; i++) {
+				d.push({
+					Id:         idsx[i] || '',
+					Processo:   tx[i]?.numero || '',
+					Tipo:       tx[i]?.descricaoClasseJudicial || '',
+					Reclamada:  tx[i]?.reu || '',
+					Reclamante: tx[i]?.autor || '',
+					Autuado_em: (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || '',
+				})
+			}
+	
+			return d
+		},
+
+	},
+	{
+		nome: 'Lista informações dos processos pelo GIG.',
+		modo: ['Tarefa'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let {ids, t} = await buscarProcessosPorGig(contexto.valor)
+			console.log('%c[Rota PJE]%c ids' + JSON.stringify(ids), LOG.rosa, 'color:inherit')
+			console.log('%c[Rota PJE]%c t[0]' + JSON.stringify(t[0]), LOG.rosa, 'color:inherit')
+			let d = []
+
+			//let resultados = await sf_pool(ids, async (id, idx) => {
+			//	return await buscarProcesso(id, '/partes')
+			//}, {
+			//	concorrencia: contexto.concorrencia,
+			//	tentativas:   contexto.tentativas,
+			//	pausaMs:      contexto.pausaMs,
+			//	onProgresso:  contexto.progresso,
+			//})
+
+			for (let i = 0; i < ids.length; i++) {
+				
+
+				let numero 		= t[i]?.processo?.numero || ''
+				let autor  		= t[i]?.processo?.nomeParteAutora || ''
+				let reu			= t[i]?.processo?.nomeParteRe || ''
+				let tarefa		= t[i]?.processo?.nomeTarefa || ''
+				let id 			= t[i]?.processo?.id || ''
+				d.push({
+					Id:			id,
+					Processo:   numero,
+					Reclamada:  reu,
+					Reclamante: autor,
+					Tarefa: 	tarefa,
+				})
+				
+			}
+
+			return d
+		}
+	},
+	{
+		nome: 'Lista audiências a partir do ID do processo.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			let d = []
+			await sf_pool(ids, async (ids, i) => {
+				let audienciasMarcadas = await buscarAudienciasMarcadas(ids)
+				let dataInicio 	= '-'
+				let sala		= '-'
+				let processo	= '-'
+				let autuacao	= '-'
+				let tipo	= '-'
+				if (audienciasMarcadas?.dataInicio){
+					dataInicio	= new Date(audienciasMarcadas?.dataInicio).toLocaleDateString('pt-BR')
+					sala		= audienciasMarcadas?.salaFisica?.nome
+					processo	= audienciasMarcadas?.processo?.numero
+					autuacao	= new Date(audienciasMarcadas?.processo?.autuadoEm).toLocaleDateString('pt-BR')
+					tipo		= audienciasMarcadas?.tipo?.descricao
+				}
+
+				d.push({
+					Id					: ids,
+					Processo			: processo,
+					Sala				: sala,
+					Data_da_Audiencia	: dataInicio,
+					Tipo				: tipo,
+					Data_de_Autuacao	: autuacao,
+				})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhuma audiência encontrada.'
+			
+		}
+	},
+	{
+		nome: 'Lista dados do processo a partir do ID.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			let d = []
+			await sf_pool(ids, async (ids, i) => {
+				let dados = await buscarProcesso(ids)
+				//let dataInicio 	= '-'
+				//let sala		= '-'
+				console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
+				let processo	= '-'
+				let autuacao	= '-'
+				//let tipo	= '-'
+				//if (dados?.dataInicio){
+					//dataInicio	= new Date(dados?.dataInicio).toLocaleDateString('pt-BR')
+					//sala		= dados?.salaFisica?.nome
+					processo	= dados?.numero
+					autuacao	= new Date(dados?.autuadoEm).toLocaleDateString('pt-BR')
+					//tipo		= dados?.tipo?.descricao
+				//}
+
+				d.push({
+					Id					: ids,
+					Processo			: processo,
+					//Sala				: sala,
+					//Data_da_Audiencia	: dataInicio,
+					//Tipo				: tipo,
+					Data_de_Autuacao	: autuacao,
+				})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhuma audiência encontrada.'
+			
+		}
+	},
+	{
+		nome: 'Lista data da sentença a partir do ID do processo.',
+		modo: ['Lista'],  // ← este botão só aparece no modo Tarefa
+		funcao: async (contexto) => {
+			console.log('%c[Rota PJE]%c contexto.valorBruto: ' + JSON.stringify(contexto.valorBruto), LOG.rosa, 'color:inherit')
+			let ids = contexto.valorBruto.split('\n').filter(Boolean).map(linha => linha.trim())
+			console.log('%c[Rota PJE]%c ids: ')
+			let d = []
+			await sf_pool(ids, async (ids, i) => {
+				let documentos = await buscarDocumentos(ids)
+				console.log('%c[Rota PJE]%c documentos: ' + JSON.stringify(documentos), LOG.rosa, 'color:inherit')
+				let sentenca = documentos?.find(d => d?.tipo?.toLowerCase().includes('sentença'));
+				let dataSentenca = sentenca ? new Date(sentenca.data).toLocaleDateString('pt-BR') : '-';
+				
+
+				d.push({
+					id				: ids,
+					Sentenca_data	: dataSentenca,
+				})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhuma sentença encontrada.'
+			
+		}
+	},
+	{
+    nome: 'Simetria sem GIG Gabinete',
+	modo: ['Tarefa', 'Lista'],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+			if (contexto.modo === 'Tarefa') {
+				;({ ids, t } = await filtrarPorTarefa(contexto, '&idEtiqueta=316'))
+			} else if (contexto.modo === 'Lista') {
+				;({ ids, t } = await filtrarPorLista(contexto))	
+			}		
+			//let { ids, t } = await filtrarPorTarefa(contexto, '&idEtiqueta=316')
+			if (!ids.length) return 'Nenhum processo encontrado.'
+/*
+modo: ['Tarefa', 'Sala', 'Lista'],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+
+			if (contexto.modo === 'Tarefa') {
+				;({ ids, t } = await filtrarPorTarefa(contexto))
+			} else if (contexto.modo === 'Sala') {
+				;({ ids, t } = await filtrarPorSala(contexto))
+			} else if (contexto.modo === 'Lista') {
+				;({ ids, t } = await filtrarPorLista(contexto))
+			}
+*/
+			let d = []
+			let numeros = t.map(tt => tt.numero)  // extrai os números dos processos para usar na nova API
+			
+			await sf_pool(numeros, async (numero, idx) => {
+// ESTOU AQUI. a função nova do gig não está pronta. tem que conferir se t.numProcesso é a variável certa.
+				
+				let gigs = await buscarGigs(numero)  // nova API que traz tudo junto
+				let ativos     = gigs.filter(gig => gig.statusAtividade !== 'Concluído')
+				let concluidos = gigs.filter(gig => gig.statusAtividade === 'Concluído')
+
+				let temAtivoGab = ativos.some(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
+				if (temAtivoGab) return  // tem ativo — não interessa
+
+				// Não tem ativo — procura no concluído
+				let gigConcluido = concluidos
+					.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
+					?.tipoAtividade?.descricao ?? 'Não foi encontrado GIG de Gabinete concluído.'
+				
+				d.push({
+					processo: numero,
+					gig_concluido_encontrado:      gigConcluido,
+					
+				})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhum processo encontrado sem GIG de Gabinete ativo.'
+		}
+	},
+	// PROCESSOS SEM .PJC NA TAREFA
+	{
+    nome: 'Processos sem .pjc na tarefa',
+	modo: ['Tarefa', 'Lista'],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+
+			if (contexto.modo === 'Tarefa') {
+				;({ ids, t } = await filtrarPorTarefa(contexto))
+			} else if (contexto.modo === 'Lista') {
+				;({ ids, t } = await filtrarPorLista(contexto))
+			}
+			
+			console.log('%c[Rota PJE]%c ids: ' + t, LOG.teste, 'color:inherit')
+			//await suspender (5*60*1000)
+
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			await sf_pool(ids, async (id, idx) => {
+				// ... seu código aqui, com ids e t acessíveis
+			
+// ESTOU AQUI. a função nova do gig não está pronta. tem que conferir se t.numProcesso é a variável certa.
+				relatar('ids: ' + JSON.stringify(ids), '', 'teste')
+				let calculos = await buscarCalculos(id)  // nova API que traz tudo junto
+				relatar('calculos: ' + JSON.stringify(calculos), '', 'teste')
+				if (calculos?.totalRegistros === 0) {
+					d.push({
+						processo: 	t[idx]?.numero || '',
+						autor:    	t[idx]?.autor  || '',
+						reu:		t[idx]?.reu    || '',
+						oj:			t[idx]?.descricaoOrgaoJulgador || '',
+						tarefa:		t[idx]?.nomeTarefa || '',
+
+						//pode adicionar mais campos aqui se quiser
+					})
+				}
+				//await suspender(5*60*1000)  // pausa para ler os relatos
+				//let temAtivoGab = ativos.some(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
+				//if (temAtivoGab) return  // tem ativo — não interessa
+
+				// Não tem ativo — procura no concluído
+				//let gigConcluido = concluidos
+				//	.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || ''))
+				//	?.tipoAtividade?.descricao ?? 'Não foi encontrado GIG de Gabinete concluído.'
+				
+				//d.push({
+				//	processo: numero,
+				//	gig_concluido_encontrado:      gigConcluido,
+				//	
+				//})
+				
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhum processo encontrado sem PJC.'
+		}
+	},
+	// RECEBIMENTO DO TRT - Acordo, Sentença Anulada, Improcedência mantida
+	{
+    nome: 'Recebimento do TRT - Acordo, Sentença Anulada, Improcedência mantida',
+	modo: [],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+
+			if (contexto.modo === 'Tarefa') {
+				;({ ids, t } = await filtrarPorTarefa(contexto))
+			} else if (contexto.modo === 'Lista') {
+				;({ ids, t } = await filtrarPorLista(contexto))
+			}
+			relatar('ids', t, 'teste')
+			//await suspender (5*60*1000)
+
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			await sf_pool(ids, async (id, idx) => {
+
+				let acordo_ou_improcedencia = ''  // ← declaração no topo
+
+				let documentosemovimentos = await buscarDocumentosEMovimentos(id)
+
+				// Improcedência
+				if (documentosemovimentos.some(doc => /julgado\(s\) improcedente/i.test(doc.titulo))) {
+					acordo_ou_improcedencia = 'Improcedência'
+				}
+
+				// Acordo
+				if (!acordo_ou_improcedencia) {
+					if (documentosemovimentos.some(doc =>
+						/acordo(?!\s*coletivo)/i.test(doc.titulo) ||
+						/acordo(?!\s*coletivo)/i.test(doc.tipo)
+					)) {
+						acordo_ou_improcedencia = 'Acordo'
+					}
+				}
+
+				// Anulação via acórdão
+				if (!acordo_ou_improcedencia) {
+					let processaRecurso = documentosemovimentos.find(d => /para processar /i.test(d.titulo))
+					if (processaRecurso) {
+						let acordaos = documentosemovimentos.filter(d =>
+							(/acórdão/i.test(d.tipo) || /decisão/i.test(d.tipo)) &&
+							d.data >= processaRecurso.data &&
+							d.documento === true
+						)
+						if (acordaos.length) {
+							let termos = [
+								'anular a sentenca',
+								'anular a decisao',
+								'tornar sem efeito a sentenca',
+								'tornar sem efeito a decisao',
+								'declarar a nulidade da sentenca',
+								'declarar a nulidade da decisao',
+								'tornar nula a sentenca',
+								'tornar nula a decisao',
+								'determinar a reabertura da instrucao',
+								'reconheco a nulidade',
+							]
+							let regexAnulacao = new RegExp(termos.join('|'), 'i')
+							let resultados = []
+							for (let a of acordaos.slice(0, 3)) {
+								resultados.push(await rota_extrairTeorDocumento(id, a.id))
+								await suspender(1000)
+							}
+							if (resultados.some(texto => regexAnulacao.test(normalizar(texto)))) {
+								acordo_ou_improcedencia = 'Possível anulação da sentença'
+							}
+						}
+					}
+				}
+
+				if (acordo_ou_improcedencia !== '') {
+					d.push({
+						processo: t[idx]?.numero || '',
+						autor:    t[idx]?.autor  || '',
+						reu:      t[idx]?.reu    || '',
+						oj:       t[idx]?.descricaoOrgaoJulgador || '',
+						tarefa:   t[idx]?.nomeTarefa || '',
+						encontrado: acordo_ou_improcedencia
+					})
+				}
+
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhum processo encontrado.'
+		}
+	},
+	{
+		nome: 'Recebimento do TRT - Acordo, Improcedência.',
+		modo: ['Tarefa', 'Lista'],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+
+			if (contexto.modo === 'Tarefa') {
+				;({ ids, t } = await filtrarPorTarefa(contexto))
+			} else if (contexto.modo === 'Lista') {
+				;({ ids, t } = await filtrarPorLista(contexto))
+			}
+			relatar('ids', t, 'teste')
+			//await suspender (5*60*1000)
+
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+
+			await sf_pool(ids, async (id, idx) => {
+
+				let acordo_ou_improcedencia = ''  // ← declaração no topo
+
+				let documentosemovimentos = await buscarDocumentosEMovimentos(id)
+
+				// Improcedência
+				if (documentosemovimentos.some(doc => /julgado\(s\) improcedente/i.test(doc.titulo))) {
+					acordo_ou_improcedencia = 'Improcedência'
+				}
+
+				// Acordo
+				if (!acordo_ou_improcedencia) {
+					if (documentosemovimentos.some(doc =>
+						/acordo(?!\s*coletivo)/i.test(doc.titulo) ||
+						/acordo(?!\s*coletivo)/i.test(doc.tipo)
+					)) {
+						acordo_ou_improcedencia = 'Acordo'
+					}
+				}
+
+				if (!acordo_ou_improcedencia) acordo_ou_improcedencia = 'Não'
+
+				// Anulação via acórdão
+				
+
+				if (acordo_ou_improcedencia !== '') {
+					d.push({
+						processo: t[idx]?.numero || '',
+						autor:    t[idx]?.autor  || '',
+						reu:      t[idx]?.reu    || '',
+						oj:       t[idx]?.descricaoOrgaoJulgador || '',
+						tarefa:   t[idx]?.nomeTarefa || '',
+						encontrado: acordo_ou_improcedencia
+					})
+				}
+
+			}, {
+				concorrencia: contexto.concorrencia,
+				tentativas:   contexto.tentativas,
+				pausaMs:      contexto.pausaMs,
+				onProgresso:  contexto.progresso,
+			})
+
+			return d.length ? d : 'Nenhum processo encontrado.'
+		}
+	},
+	{
+		nome: 'Listar audiências na sala até a data escolhida. Exemplo: "NOME DA SALA, 31/12/2024".',
+		modo: ['Sala'],
+		funcao: async (contexto) => {
+			let ids = [], t = []
+			let juiz = contexto.valor.split(',')[0]?.trim() || ''
+			let data = contexto.valor.split(',')[1]?.trim() || ''
+			let dataTransformada = sf_botoesDataPraJS(data)
+			console.log('%c[Rota PJE]%c Data transformada: ' + dataTransformada, LOG.teste, 'color:inherit')
+			let hoje = new Date()
+			let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
+			console.log('%c[Rota PJE]%c Dias até a data: ' + dias, LOG.teste, 'color:inherit')
+			if (!juiz || !data || !dataTransformada) return 'Por favor, insira o nome do juiz e a data, separados por vírgula. Exemplo: "FULANO DE TAL, 31/12/2024".'
+			if (contexto.modo === 'Sala') {
+				;({ ids, t } = await buscarProcessosPorSala(juiz, dias))
+			}
+			console.log('%c[Rota PJE]%c ids: ' + t, LOG.teste, 'color:inherit')
+			//return
+			//await suspender (5*60*1000)
+
+			if (!ids.length) return 'Nenhum processo encontrado.'
+
+			let d = []
+			
+			const formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : '';
+			const formatarData = d => d ? d.slice(0, 10).split('-').reverse().join('/') : '';
+			const limiteSimet = new Date('2025-10-19');
+
+			for (let id in t) {
+				const horarioRaw = t[id]?.pautaAudienciaHorario?.horaInicial || '';
+				const dataRaw = t[id]?.data || '';
+				const autuacaoRaw = t[id]?.processo?.autuadoEm || '';
+				const autuacaoDate = new Date(autuacaoRaw.slice(0, 10));
+				const processo = t[id]?.nrProcesso || '';
+
+				d.push({
+					processo: processo,
+					horario: formatarHora(horarioRaw),
+					data: formatarData(dataRaw),
+					autuacao: formatarData(autuacaoRaw),
+					simetriaOuLegado: processo === '' ? '' : autuacaoDate > limiteSimet ? 'SIMETRIA' : 'LEGADO',				});
+			}
+
+			return d.length ? d : 'Nenhum processo encontrado.'
+		}
+	},
+	// ── Adicione seus botões abaixo ───────────────────────────
+	// {
+	// 	nome: 'Nome do botão',
+	// 	funcao: async (contexto) => {
+	// 		let { ids, t } = await filtrarPorTarefa(contexto)
+	// 		if (!ids.length) return 'Nenhum processo encontrado.'
+	//
+	// 		let resultados = await sf_pool(ids, async (id, idx) => {
+	// 			return await buscarProcesso(id, '/partes')  // ou qualquer outra função
+	// 		}, {
+	// 			concorrencia: 5,
+	// 			onProgresso:  contexto.progresso,
+	// 		})
+	//
+	// 		// monte e retorne o array de resultados
+	// 	}
+	// },
+
+]
+
+function sf_botoesDataPraJS(str) {
+  const [d, m, a] = str.split('/');
+  return new Date(a, m - 1, d);
+}

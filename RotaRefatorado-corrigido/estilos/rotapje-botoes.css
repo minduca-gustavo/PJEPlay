@@ -1,0 +1,38 @@
+/* rotapje-botoes.css — espelha estilos/sisejt-botoes.css.
+   Base declarativa dos botões do Rota. O ui.js continua podendo
+   aplicar estilo inline; estas classes existem para que componentes
+   novos não precisem mais fazer isso. */
+
+rotapje-botao,
+.rotapje-botao{
+	display:block;
+	width:100%;
+	border:none;
+	border-radius:6px;
+	padding:8px 12px;
+	margin:0 3px;
+	font-family:var(--extensao-rotapje-fonte);
+	font-size:12px;
+	font-weight:700;
+	text-align:center;
+	cursor:pointer;
+	box-sizing:border-box;
+	transition:background .15s;
+	color:hsla(var(--extensao-rotapje-cor-branco),1);
+	background:hsla(var(--extensao-rotapje-cor-azul),1);
+}
+
+.rotapje-botao-azul            { background:hsla(var(--extensao-rotapje-cor-azul),1) }
+.rotapje-botao-azul:hover      { background:hsla(var(--extensao-rotapje-cor-azul-hover),1) }
+
+.rotapje-botao-laranja         { background:hsla(var(--extensao-rotapje-cor-laranja),1); color:hsla(var(--extensao-rotapje-cor-texto),1) }
+.rotapje-botao-laranja:hover   { background:hsla(var(--extensao-rotapje-cor-laranja-hover),1) }
+
+.rotapje-botao-perigo          { background:hsla(var(--extensao-rotapje-cor-perigo),1) }
+.rotapje-botao-sucesso         { background:hsla(var(--extensao-rotapje-cor-sucesso),1) }
+
+.rotapje-botao[disabled],
+.rotapje-botao.desativado{
+	opacity:.5;
+	cursor:not-allowed;
+}

@@ -1,0 +1,55 @@
+/* Layout da página de configurações. As cores vêm de
+   estilos/rotapje-cores.css; aqui só há posicionamento. */
+
+body{
+	background:hsla(var(--extensao-rotapje-cor-fundo),1);
+	margin:0;
+	padding:0;
+}
+
+rotapje-extensao{
+	margin:0 auto;
+	max-width:720px;
+	padding:16px;
+}
+
+rotapje-extensao > header h1{
+	color:hsla(var(--extensao-rotapje-cor-azul),1);
+	font-size:20px;
+	margin:0 0 4px 0;
+}
+
+rotapje-extensao > header p{
+	font-size:11px;
+	line-height:1.5;
+	margin:0 0 12px 0;
+}
+
+rotapje-extensao > footer{
+	display:flex;
+	flex-direction:column;
+	gap:6px;
+	margin-top:16px;
+}
+
+rotapje-extensao > footer button{
+	background:hsla(var(--extensao-rotapje-cor-azul),1);
+	border:none;
+	border-radius:6px;
+	color:hsla(var(--extensao-rotapje-cor-branco),1);
+	cursor:pointer;
+	font-family:var(--extensao-rotapje-fonte);
+	font-size:13px;
+	font-weight:700;
+	padding:9px 14px;
+}
+
+rotapje-extensao > footer button[destaque]{
+	background:hsla(var(--extensao-rotapje-cor-laranja),1);
+	color:hsla(var(--extensao-rotapje-cor-texto),1);
+}
+
+rotapje-extensao > footer p{
+	font-size:10px;
+	text-align:center;
+}

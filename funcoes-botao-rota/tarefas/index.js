@@ -17,7 +17,7 @@
 //            'direitaAssistente' | 'telaCheia'
 //
 // A janela 'assistente' é aberta pelo fluxo antes das
-// demais, recebendo rota_pje_execucao e rota_pje_tarefa na URL.
+// demais, recebendo rotapje_execucao e rotapje_tarefa na URL.
 // As demais janelas seguem a ordem do array.
 //
 // As tarefas do usuário (👤) vêm do storage.local (tarefas

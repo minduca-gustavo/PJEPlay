@@ -3,14 +3,14 @@
 // ____________________________________
 
 async function criaFitaSuperior() {
-    let retira = await selecionar('#rota_pje-busca-posicao-fila-div-barra')
+    let retira = await selecionar('#rotapje-busca-posicao-fila-div-barra')
     if (retira) retira.remove()
     let barra = await aguardarElementoNovo('detalhesDoProcessoBarraSuperior')
     let corToolbar = barra
         ? getComputedStyle(barra).backgroundColor
         : '#1565C0'
     let div = await criaDiv({
-        id: 'rota_pje-busca-posicao-fila-div-barra',
+        id: 'rotapje-busca-posicao-fila-div-barra',
         ancestral: 'ffff'
     })
     console.log('%c[Rota PJE]%c cria a fita' + JSON.stringify(8 + ': fita'), LOG.rosa, 'color:inherit')
@@ -43,8 +43,8 @@ function confereCriaFitaSuperior(){
     criaFitaSuperior()
 }
 
-window.addEventListener('rota_pje:url-mudou', () => {
-    document.getElementById('rota_pje-busca-posicao-fila-div-barra')?.remove()
+window.addEventListener('rotapje:url-mudou', () => {
+    document.getElementById('rotapje-busca-posicao-fila-div-barra')?.remove()
     confereCriaFitaSuperior()
 })
 
@@ -56,10 +56,10 @@ confereCriaFitaSuperior()
 // ___________________________________________________
 
 async function busca_filaCriaBotao(){
-    let id = 'rota_pje-busca-posicao-fila'
+    let id = 'rotapje-busca-posicao-fila'
     let botao = await criaBotaoAzul({
         id: id + '_botao',
-        ancestral: 'rota_pje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje-busca-posicao-fila-div-barra',
         acao: () => busca_posicao_filaConsultar(),
         texto: 'Busca posição do processo na fila.'
     })
@@ -89,12 +89,12 @@ function buscaPosicaoFilaPainelGlobal(){
 buscaPosicaoFilaPainelGlobal()
 
 async function busca_FilaPainelGlobal(){
-    let parametros = await rota_buscarParametros('rota_pje_busca_posicao_fila')
+    let parametros = await rota_buscarParametros('rotapje_busca_posicao_fila')
     if (!parametros) return
-    let processo = await rota_buscarParametros('rota_pje_busca_posicao_fila_numero')
-    let armazenamento = await obterArmazenamento('rota_pje_busca_posicao_fila')
+    let processo = await rota_buscarParametros('rotapje_busca_posicao_fila_numero')
+    let armazenamento = await obterArmazenamento('rotapje_busca_posicao_fila')
     if (!armazenamento) return
-    await removerArmazenamento('rota_pje_busca_posicao_fila')
+    await removerArmazenamento('rotapje_busca_posicao_fila')
     await busca_posicao_filaAguardaCarregamentoDoBodyComProcesso()
     let contAtual = await interceptador_lerProcessosPainel()
     let conteudoAtual = contAtual.resultado
@@ -119,7 +119,7 @@ async function busca_FilaPainelGlobal(){
     busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAtual)
     relatar(dataPrioridade + ' - ' + dataDesconsiderar, '', 'teste')
     await aguardarElementoNovo('painelGlobalTabelaDeProcessos')
-    let aviso = criaDiv({id: 'rota-pje-busca-posicao-fila-div', ancestral: '#ffff'})
+    let aviso = criaDiv({id: 'rotapje-busca-posicao-fila-div', ancestral: '#ffff'})
     aviso.style.width = '300px'
     aviso.style.position = 'fixed'
     aviso.style.top = '50%'
@@ -127,8 +127,8 @@ async function busca_FilaPainelGlobal(){
     aviso.style.transform = 'translate(-50%, -50%)'
     aviso.style.zIndex = '9999999'
     let botao = criaBotaoAzul({
-        id: 'rota-pje-busca-posicao-fila-botao',
-        ancestral: 'rota-pje-busca-posicao-fila-div',
+        id: 'rotapje-busca-posicao-fila-botao',
+        ancestral: 'rotapje-busca-posicao-fila-div',
         texto: 'O processo ' + processo + ' entrou na tarefa em ' + decodeURI(parametros) + '. O processo prioritário mais antigo entrou na tarefa em ' + dataPrioridade + '. O processo mais antigo, desconsiderando os prioritários, entrou na tarefa em ' + dataDesconsiderar + '. Clique para fechar.',
         acao: () => aviso.remove()
     })
@@ -177,7 +177,7 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
 }
 
 async function busca_posicao_filaConsultar() {
-    const rodape = await selecionar('#rota_pje-busca-posicao-fila-rodape')
+    const rodape = await selecionar('#rotapje-busca-posicao-fila-rodape')
     const id = location.href.match(/\/pjekz\/processo\/(\d+)\/detalhe/)?.[1]
     const processo = ((await sel('detalhesDoProcessoNumeroProcessoComTipo'))?.textContent.split(' ')[2])
       ?? (await interceptador_lerProcesso()?.numero ?? await rota_fetch(`${location.origin}/pje-comum-api/api/processos/id/${id}`))?.numero
@@ -189,8 +189,8 @@ async function busca_posicao_filaConsultar() {
     let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/historico/' + id)
     let dataEntradaTarefa = new Date(tarefas[tarefas.length - 2]?.inicio).toLocaleDateString('pt-BR')
     rodape.textContent = 'O processo entrou na tarefa em ' + dataEntradaTarefa + '.'
-    await armazenar({rota_pje_busca_posicao_fila: dataEntradaTarefa})
-    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?rota_pje_busca_posicao_fila=' + encodeURI(dataEntradaTarefa) + '&rota_pje_busca_posicao_fila_numero='+ processo
+    await armazenar({rotapje_busca_posicao_fila: dataEntradaTarefa})
+    let url = location.origin + '/pjekz/painel/global/' + idTarefa[0].idAgrupamentoProcesso + '/lista-processos?rotapje_busca_posicao_fila=' + encodeURI(dataEntradaTarefa) + '&rotapje_busca_posicao_fila_numero='+ processo
     window.open(url)
 }
 
@@ -204,11 +204,11 @@ function busca_posicao_filaNavegar(url) {
 // ___________________________________________________
 
 async function abre_tarefa_rotaCriaBotao() {
-    let id = 'rota_pje-abre-tarefa-rota'
+    let id = 'rotapje-abre-tarefa-rota'
     let nomeTarefaAtiva = await abre_tarefa_rotaNomeTarefaAtiva()
     let botaoTarefa = await criaBotaoLaranja({
         id: id + '_botao',
-        ancestral: 'rota_pje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje-busca-posicao-fila-div-barra',
         acao: () => abre_tarefa_rotaAbrirEmModoJanelas(),
         texto: 'tarefa: ' + nomeTarefaAtiva
     })
@@ -242,10 +242,10 @@ async function abre_tarefa_rotaAbrirEmModoJanelas(){
 // ___________________________________________________
 
 async function irParaAOJDesteProcessoCriaBotao() {
-    let id = 'rota_pje-irParaAOJDesteProcesso' 
+    let id = 'rotapje-irParaAOJDesteProcesso' 
     let botaoTarefa = await criaBotaoAzul({
         id: id + '_botao',
-        ancestral: 'rota_pje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje-busca-posicao-fila-div-barra',
         acao: () => irParaAOJDesteProcesso(),
         texto: 'Ir para a OJ deste processo'
     })

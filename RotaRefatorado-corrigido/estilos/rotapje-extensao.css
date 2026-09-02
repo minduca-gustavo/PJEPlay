@@ -1,0 +1,65 @@
+/* ============================================================
+   rotapje-extensao.css
+   Espelha estilos/sisejt-extensao.css.
+
+   <rotapje-extensao> é a tag raiz que o criar() do modulos/dom.js
+   gera quando nenhuma tag é informada (tag = 'extensao' → prefixada).
+   Aqui os nomes longos da paleta viram aliases curtos, exatamente
+   como o SISE faz, para que as regras filhas fiquem legíveis.
+   ============================================================ */
+
+rotapje-extensao{
+
+	--azul:            var(--extensao-rotapje-cor-azul);
+	--azul-hover:      var(--extensao-rotapje-cor-azul-hover);
+	--azul-claro:      var(--extensao-rotapje-cor-azul-claro);
+	--laranja:         var(--extensao-rotapje-cor-laranja);
+	--laranja-hover:   var(--extensao-rotapje-cor-laranja-hover);
+	--laranja-esc:     var(--extensao-rotapje-cor-laranja-esc);
+	--branco:          var(--extensao-rotapje-cor-branco);
+	--preto:           var(--extensao-rotapje-cor-preto);
+	--cinza:           var(--extensao-rotapje-cor-cinza);
+	--fundo:           var(--extensao-rotapje-cor-fundo);
+	--borda:           var(--extensao-rotapje-cor-borda);
+	--texto:           var(--extensao-rotapje-cor-texto);
+	--texto-suave:     var(--extensao-rotapje-cor-texto-suave);
+	--info-fundo:      var(--extensao-rotapje-cor-info-fundo);
+	--info-borda:      var(--extensao-rotapje-cor-info-borda);
+	--info-texto:      var(--extensao-rotapje-cor-info-texto);
+	--perigo:          var(--extensao-rotapje-cor-perigo);
+	--sucesso:         var(--extensao-rotapje-cor-sucesso);
+	--aviso:           var(--extensao-rotapje-cor-aviso);
+	--clarear:         var(--extensao-rotapje-cor-clarear);
+	--escurecer:       var(--extensao-rotapje-cor-escurecer);
+	--gradiente-bp:    var(--extensao-rotapje-gradiente-branco-preto);
+
+	--rotapje-unidade-padrao:8px;
+	--rotapje-raio:6px;
+
+	scrollbar-color:
+		hsla(var(--extensao-rotapje-cor-cinza),0.6)
+		hsla(var(--extensao-rotapje-cor-fundo),1)
+	;
+
+	color:hsla(var(--texto),1);
+	font-family:var(--extensao-rotapje-fonte);
+	font-size:13px;
+	display:block;
+
+	.rotapje-fonte-10  { font-size:10px !important }
+	.rotapje-fonte-11  { font-size:11px !important }
+	.rotapje-fonte-suave{ color:hsla(var(--texto-suave),1) }
+
+	& a{
+		color:hsla(var(--azul),1);
+		text-decoration:none;
+	}
+	& a:hover{ text-decoration:underline }
+
+	& hr{
+		border:none;
+		border-top:1px solid hsla(var(--borda),1);
+		margin:6px 0;
+	}
+
+}

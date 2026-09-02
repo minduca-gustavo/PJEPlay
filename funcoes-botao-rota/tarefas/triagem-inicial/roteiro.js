@@ -1,6 +1,6 @@
 // dá problema quando o interceptador dá errado, ou seja, quando não tem gigs concluídos, por exemplo.
 // o domicilio eletronico é outra api.
-//     ?rota_pje_tarefa=_
+//     ?rotapje_tarefa=_
 
 
 
@@ -30,7 +30,7 @@ async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     if (!armazenamento) return
     let execucao = String(armazenamento?.rotaExecucaoAtual || '')
     if (!execucao) return
-    let tarefaParam = rota_buscarParametros('rota_pje_tarefa')
+    let tarefaParam = rota_buscarParametros('rotapje_tarefa')
     if (tarefaParam && !window.name.includes(tarefa)) window.name = window.name + '-' + tarefaParam + '-' + execucao
     if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
     if (execucao !== window.name.split('-').pop()) return
@@ -74,7 +74,7 @@ async function triagem_inicial_janelaDetalhes(sessao){
     let ultimoDoc = await selecionar('.tl-documento', '', true) || []
     ultimoDoc[ultimoDoc.length - 1]?.scrollIntoView({ block: 'nearest' })
     await armazenar({rota_triagem_inicial_janelaDetalhes: sessao})
-    await removerArmazenamento('rota_pje_tarefa')
+    await removerArmazenamento('rotapje_tarefa')
 }
 
 //__________________________________________________
@@ -158,12 +158,12 @@ async function triagem_inicial_atualizaHorariosVagos(p){
 async function triagem_inicial_retificarAutuacao(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_retificar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_retificar_tipo': envio,
+        'rotapje_triagem_inicial_retificar': dadosTriagemInicial.execucaoAtual,
+        'rotapje_triagem_inicial_retificar_tipo': envio,
     })
-    let parametros = '?rota_pje_triagem_inicial_retificar=' + dadosTriagemInicial.execucaoAtual + 
-                    '&rota_pje_triagem_inicial_retificar_tipo=' + envio
-    let nomeJanela = 'rota_pje_triagem_inicial_retificar_' + dadosTriagemInicial.execucaoAtual
+    let parametros = '?rotapje_triagem_inicial_retificar=' + dadosTriagemInicial.execucaoAtual + 
+                    '&rotapje_triagem_inicial_retificar_tipo=' + envio
+    let nomeJanela = 'rotapje_triagem_inicial_retificar_' + dadosTriagemInicial.execucaoAtual
     let id = dadosTriagemInicial?.processo?.id
     let url = location.origin + '/pjekz/processo/' + id + '/retificar' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
@@ -175,13 +175,13 @@ async function triagem_inicial_retificarAutuacao(tipo) {
 async function triagem_inicial_aoAbrirRetificar(){
     let janela = confereJanela(JANELA.retificar)
     if (!janela) return
-    let parametros = await rota_buscarParametros('rota_pje_triagem_inicial_retificar')
+    let parametros = await rota_buscarParametros('rotapje_triagem_inicial_retificar')
     if (!parametros) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_retificar')
+    let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_retificar')
     if (!armazenamento) return
-    let execucao = armazenamento?.rota_pje_triagem_inicial_retificar
+    let execucao = armazenamento?.rotapje_triagem_inicial_retificar
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_retificar')) return
+    if (!nomeJanela.includes('rotapje_triagem_inicial_retificar')) return
     if(execucao !== parametros || execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesRetificar()
@@ -190,9 +190,9 @@ async function triagem_inicial_aoAbrirRetificar(){
 // RETIFICAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesRetificar(){
-    let tipos = await obterArmazenamento(['rota_pje_triagem_inicial_retificar_tipo']) || await rota_buscarParametros('rota_pje_triagem_inicial_retificar_tipo')
+    let tipos = await obterArmazenamento(['rotapje_triagem_inicial_retificar_tipo']) || await rota_buscarParametros('rotapje_triagem_inicial_retificar_tipo')
     if (!tipos) return
-    let tipo = tipos?.rota_pje_triagem_inicial_retificar_tipo ?? tipos
+    let tipo = tipos?.rotapje_triagem_inicial_retificar_tipo ?? tipos
     let i = 0
     let elemento = null
     let seletor = null
@@ -259,12 +259,12 @@ triagem_inicial_aoAbrirRetificar()
 async function triagem_inicial_despachar(tipo) {
     let envio = tipo.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_despachar_tipo': envio,
+        'rotapje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
+        'rotapje_triagem_inicial_despachar_tipo': envio,
     })
-    let parametros =    '?rota_pje_triagem_inicial_despachar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rota_pje_triagem_inicial_despachar_tipo=' + envio
-    let nomeJanela =    'rota_pje_triagem_inicial_despachar_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rotapje_triagem_inicial_despachar=' + dadosTriagemInicial.execucaoAtual + 
+                        '&rotapje_triagem_inicial_despachar_tipo=' + envio
+    let nomeJanela =    'rotapje_triagem_inicial_despachar_' + dadosTriagemInicial.execucaoAtual
     let id =            dadosTriagemInicial?.processo?.id
     let audienciasMarcadas = await buscarAudienciasMarcadas(id) || null
     if (!audienciasMarcadas?.tipo && envio == 'triagem_inicial_despachar_designacao'){
@@ -296,11 +296,11 @@ async function triagem_inicial_despachar(tipo) {
 async function triagem_inicial_aoAbrirDespachar(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_despachar')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_despachar || '')
+    let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_despachar')
+    let execucao = String(armazenamento?.rotapje_triagem_inicial_despachar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_despachar')) return
+    if (!nomeJanela.includes('rotapje_triagem_inicial_despachar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesDespachar()
@@ -310,7 +310,7 @@ async function triagem_inicial_aoAbrirDespachar(){
 
 async function triagem_inicial_acoesDespachar(){
     let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
-        obterArmazenamento('rota_pje_triagem_inicial_despachar_tipo').then(dados => dados?.rota_pje_triagem_inicial_despachar_tipo || ''),
+        obterArmazenamento('rotapje_triagem_inicial_despachar_tipo').then(dados => dados?.rotapje_triagem_inicial_despachar_tipo || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.sala?.nome || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
     ])
@@ -390,11 +390,11 @@ async function triagem_inicial_designarAudiencia(tipo) {
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
-        'rota_pje_triagem_inicial_designa_audiencia_tipo': tipo,
-        'rota_pje_triagem_inicial_designa_audiencia': dadosTriagemInicial.execucaoAtual
+        'rotapje_triagem_inicial_designa_audiencia_tipo': tipo,
+        'rotapje_triagem_inicial_designa_audiencia': dadosTriagemInicial.execucaoAtual
     })
-    let parametros =    '?rota_pje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
-    let nomeJanela =    'rota_pje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rotapje_triagem_inicial_designa_audiencia=' + dadosTriagemInicial.execucaoAtual
+    let nomeJanela =    'rotapje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
@@ -423,11 +423,11 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
     
     let janela = confereJanela(JANELA.pautaAudiencias)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_designa_audiencia || '')
+    let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_designa_audiencia')
+    let execucao = String(armazenamento?.rotapje_triagem_inicial_designa_audiencia || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_designa_audiencia')) return
+    if (!nomeJanela.includes('rotapje_triagem_inicial_designa_audiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesDesignarAudiencia()
@@ -436,16 +436,16 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
 // DESIGNAR AUDIÊNCIA PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesDesignarAudiencia(){
-    let dados = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo')
+    let dados = await obterArmazenamento('rotapje_triagem_inicial_designa_audiencia_tipo')
     let buscaLink = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
     let link = buscaLink?.rota_triagem_inicial_linkDaAudiencia || ''
     
     //if (!dados) return
-    if (dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.tipo == 'manual'){
+    if (dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.tipo == 'manual'){
         await triagem_inicial_acoesDesignarAudienciaManual('manual')
         return
     }
-    let horario = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario || ''
+    let horario = dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario || ''
     if (!horario) {
         await triagem_inicial_acoesDesignarAudienciaManual('erro')
         return
@@ -471,10 +471,10 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
         tipo  = 'info'
         aviso = 'Designe manualmente a audiência.'
     }
-    let dados = await obterArmazenamento('rota_pje_triagem_inicial_designa_audiencia_tipo')
-    let processo = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.processo
-    let sala = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.sala
-    let link = dados?.rota_pje_triagem_inicial_designa_audiencia_tipo?.horario?.link
+    let dados = await obterArmazenamento('rotapje_triagem_inicial_designa_audiencia_tipo')
+    let processo = dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.processo
+    let sala = dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.sala
+    let link = dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.link
     let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_triagem_inicial_em_andamento'])
     let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_triagem_inicial_em_andamento === 'triagem_inicial_designa_audiencia'
     if (chamadaPorAcaoConjunta) {
@@ -654,12 +654,12 @@ async function triagem_inicial_certificar(tipo) {
         return
     }
     await armazenar({
-        'rota_pje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_certificar_tipo': tipo,
+        'rotapje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
+        'rotapje_triagem_inicial_certificar_tipo': tipo,
     })
-    let parametros =    '?rota_pje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rota_pje_triagem_inicial_certificar_tipo=' + envio
-    let nomeJanela =    'rota_pje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rotapje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
+                        '&rotapje_triagem_inicial_certificar_tipo=' + envio
+    let nomeJanela =    'rotapje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
         await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
@@ -673,11 +673,11 @@ async function triagem_inicial_certificar(tipo) {
 async function triagem_inicial_aoAbrirCertificar(){
     let janela = confereJanela(JANELA.certificar)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_certificar')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_certificar || '')
+    let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_certificar')
+    let execucao = String(armazenamento?.rotapje_triagem_inicial_certificar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_certificar')) return
+    if (!nomeJanela.includes('rotapje_triagem_inicial_certificar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesCertificar()
@@ -686,9 +686,9 @@ async function triagem_inicial_aoAbrirCertificar(){
 // CERTIFICAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesCertificar(){
-    let tipos = await obterArmazenamento('rota_pje_triagem_inicial_certificar_tipo')
-    let tipoCertidao = tipos?.rota_pje_triagem_inicial_certificar_tipo?.tipo
-    let link = tipos?.rota_pje_triagem_inicial_certificar_tipo?.link
+    let tipos = await obterArmazenamento('rotapje_triagem_inicial_certificar_tipo')
+    let tipoCertidao = tipos?.rotapje_triagem_inicial_certificar_tipo?.tipo
+    let link = tipos?.rotapje_triagem_inicial_certificar_tipo?.link
     console.log('%c[Rota PJE]%c tipoCertidao: ' + JSON.stringify(tipoCertidao), LOG.rosa, 'color:inherit')
     let elementos = await aguardarElementoNovo(
         [
@@ -761,13 +761,13 @@ async function triagem_inicial_intimar(tipo) {
     let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
     let envio = tipo?.dados?.tipo
     await armazenar({
-        'rota_pje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
-        'rota_pje_triagem_inicial_intimar_tipo': tipo?.dados,
-        'rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
+        'rotapje_triagem_inicial_intimar': dadosTriagemInicial.execucaoAtual,
+        'rotapje_triagem_inicial_intimar_tipo': tipo?.dados,
+        'rotapje_triagem_inicial_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
     })
-    let parametros =    '?rota_pje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rota_pje_triagem_inicial_intimar_tipo=' + envio
-    let nomeJanela =    'rota_pje_triagem_inicial_intimar_' + dadosTriagemInicial.execucaoAtual
+    let parametros =    '?rotapje_triagem_inicial_intimar=' + dadosTriagemInicial.execucaoAtual + 
+                        '&rotapje_triagem_inicial_intimar_tipo=' + envio
+    let nomeJanela =    'rotapje_triagem_inicial_intimar_' + dadosTriagemInicial.execucaoAtual
     let url =           location.origin + '/pjekz/processo/' + id + '/comunicacoesprocessuais/minutas' + parametros
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
@@ -778,11 +778,11 @@ async function triagem_inicial_intimar(tipo) {
 async function triagem_inicial_aoAbrirIntimar(){
     let janela = confereJanela(JANELA.pec)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_intimar')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_intimar || '')
+    let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_intimar')
+    let execucao = String(armazenamento?.rotapje_triagem_inicial_intimar || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_intimar')) return
+    if (!nomeJanela.includes('rotapje_triagem_inicial_intimar')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesIntimar()
@@ -791,9 +791,9 @@ async function triagem_inicial_aoAbrirIntimar(){
 // INTIMAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesIntimar(){
-    let tiposIntimar = await obterArmazenamento('rota_pje_triagem_inicial_intimar_tipo')
-    let tipoIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.tipo
-    let linkIntimar = tiposIntimar?.rota_pje_triagem_inicial_intimar_tipo?.link
+    let tiposIntimar = await obterArmazenamento('rotapje_triagem_inicial_intimar_tipo')
+    let tipoIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.tipo
+    let linkIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.link
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tiposIntimar), LOG.rosa, 'color:inherit', tiposIntimar)
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tipoIntimar), LOG.rosa, 'color:inherit', tipoIntimar)
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit', linkIntimar)
@@ -869,7 +869,7 @@ async function triagem_inicial_acoesIntimar(){
     if (linkIntimar){
         await preencherCKEditorExecCommand(conteudoPrincipal, dados.texto)
     } else {
-        let tipoAudiencia = await obterArmazenamento('rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rota_pje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
+        let tipoAudiencia = await obterArmazenamento('rotapje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
         let modelo = dados.tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
         await digitarNoInput(inputModelo, modelo)
         await selecionarOpcaoDeModelo(modelo)
@@ -932,9 +932,9 @@ async function triagem_inicial_aguardandoAudiencia(tipo) {
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
     let recurso =       tarefa[0]?.nomeRecurso || ''
-    let parametros =    '?rota_pje_triagem_inicial_aguardandoAudiencia=' + dadosTriagemInicial.execucaoAtual
-    let nomeJanela =    'rota_pje_triagem_inicial_aguardandoAudiencia_' + dadosTriagemInicial.execucaoAtual
-    await armazenar({'rota_pje_triagem_inicial_aguardandoAudiencia': dadosTriagemInicial.execucaoAtual})
+    let parametros =    '?rotapje_triagem_inicial_aguardandoAudiencia=' + dadosTriagemInicial.execucaoAtual
+    let nomeJanela =    'rotapje_triagem_inicial_aguardandoAudiencia_' + dadosTriagemInicial.execucaoAtual
+    await armazenar({'rotapje_triagem_inicial_aguardandoAudiencia': dadosTriagemInicial.execucaoAtual})
     if (!recurso || !idTarefa){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
@@ -960,11 +960,11 @@ async function triagem_inicial_aguardandoAudiencia(tipo) {
 async function triagem_inicial_aoAbrirAguardandoAudiencia(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rota_pje_triagem_inicial_aguardandoAudiencia')
-    let execucao = String(armazenamento?.rota_pje_triagem_inicial_aguardandoAudiencia || '')
+    let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_aguardandoAudiencia')
+    let execucao = String(armazenamento?.rotapje_triagem_inicial_aguardandoAudiencia || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rota_pje_triagem_inicial_aguardandoAudiencia')) return
+    if (!nomeJanela.includes('rotapje_triagem_inicial_aguardandoAudiencia')) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await triagem_inicial_acoesEncaminharAguardandoAudiencia()
