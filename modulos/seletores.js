@@ -358,6 +358,14 @@ const VERSOES = [
       // },
     },
   },
+  {
+    versao: '2.22',
+    seletores: {
+      elaborarAtoCampoAssinaturaOpcional:{
+        seletor: '[aria-label*="Editor de Texto Valioso. Área de edição: main"]',
+      },
+    },
+  },
 ]
 
 
