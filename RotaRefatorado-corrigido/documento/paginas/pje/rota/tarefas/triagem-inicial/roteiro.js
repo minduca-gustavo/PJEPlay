@@ -224,7 +224,7 @@ async function triagem_inicial_acoesRetificar(){
     let segundos = 30
     for (let i = 0; i < segundos * 2; i++){
         console.log('%c[Rota PJE]%c i' + JSON.stringify(i), LOG.rosa, 'color:inherit')
-        await suspender(500)
+        await suspender(1000)
         let botoesConfirmaJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalBotoes', quadroJuizoDigital, true)
         quadroJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
         if (!quadroJuizoDigital) await atualizaJanelaDetalhes(4000)
@@ -352,7 +352,7 @@ async function triagem_inicial_acoesDespachar(){
             if (assinar.textContent.includes('Assinar despacho')){
                 break
             }
-            await suspender(500)
+            await suspender(1000)
         }
         await suspender(2000)
         if (audienciasMarcadas?.dataInicio) {
@@ -584,19 +584,24 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         return
     }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
-    await preencherRota(inputNumeroProcesso, horario.processo)
+    await suspender(1000)
+    await preencher(inputNumeroProcesso, horario.processo)
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
-    await preencherRota(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
+    await suspender(1000)
+    await preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
+    await suspender(1000)
     let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
+    await suspender(1000)
+    await preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
     let pautaDeAudienciaInputTipoDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputTipoDesignarAudiencia')
-    await suspender(1000)
+    await clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
     await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
-    await suspender(1000)
     await clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
-    await preencherRota(inputLinkAudiencia, horario.link)
+    await suspender(1000)
+    await preencher(inputLinkAudiencia, horario.link)
     
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
 
@@ -746,6 +751,7 @@ async function triagem_inicial_acoesCertificar(){
         await esperarEClicar('elaborarDespachoInserirModelo')
     } else if (dados.texto){
         let campoTexto = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
+        await suspender(1000)
         await preencherCKEditorExecCommand(campoTexto, dados.texto)
     } else {
         rota_avisoObrigatorio('Prossiga manualmente.', 5)
@@ -865,14 +871,15 @@ async function triagem_inicial_acoesIntimar(){
     )
     let descricao = await sel('elaborarAtoInputDescricao')
     let inputModelo = await sel('elaborarDespachoBuscarModelos')
+    await suspender(1000)
     await preencherRota(descricao, dados.descricao)
-    await suspender(200)
+    await suspender(1000)
     let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
     await preencherCKEditorExecCommand(areaAssinatura, '.')
-    await suspender(200)
+    await suspender(1000)
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
-    await suspender(200)
+    await suspender(1000)
     console.log('%c[Rota PJE]%c dados.modelo: ' + JSON.stringify(dados.modelo), LOG.rosa, 'color:inherit')
     console.log('%c[Rota PJE]%c linkIntimar: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit')
     console.log('%c[Rota PJE]%c dados.texto: ' + JSON.stringify(dados.texto), LOG.rosa, 'color:inherit')
@@ -886,16 +893,17 @@ async function triagem_inicial_acoesIntimar(){
         return
     }
     if (linkIntimar){
+        await suspender(1000)
         await preencherCKEditorExecCommand(conteudoPrincipal, dados.texto)
     } else {
         let tipoAudiencia = await obterArmazenamento('rotapje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
         let modelo = dados.tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
         await digitarNoInput(inputModelo, modelo)
         await selecionarOpcaoDeModelo(modelo)
-        await suspender(200)
+        await suspender(1000)
         await esperarEClicar('elaborarDespachoInserirModelo')
     }
-    await suspender(200)
+    await suspender(1000)
     let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
     await suspender(1000)
     await clicar(botaoFinalizarMinuta)
@@ -903,7 +911,7 @@ async function triagem_inicial_acoesIntimar(){
     console.log('%c[Rota PJE]%c 839: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let i = 0
     while (await sel('prepararExpedientesMensagemModeloInserido')){
-        await suspender(500)
+        await suspender(1000)
         if (i++ > 3 * 2) break
     }
     console.log('%c[Rota PJE]%c 839 845: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
@@ -915,10 +923,10 @@ async function triagem_inicial_acoesIntimar(){
     let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto: dados.textoConfirmacaoPolo})
     i = 0
     while (verificarCarregamentoDestinatario.isConnected){
-        await suspender(500)
+        await suspender(1000)
         if (i++ > 3 * 2) break
     }
-    //await suspender(500)
+    //await suspender(1000)
     let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')
     let botaoAssinar = (await aguardarElementoNovo('prepararExpedientesBotaoAssinar'))
     
@@ -926,7 +934,7 @@ async function triagem_inicial_acoesIntimar(){
     await clicar(botaoSalvar)
     let verificarCarregamentoSalvar = await aguardarElementoNovo('prepararExpedientesRodinhaGirando')
     while (verificarCarregamentoSalvar.isConnected){
-        await suspender(500)
+        await suspender(1000)
     }
     await suspender(1000)
     await clicar(botaoAssinar)
