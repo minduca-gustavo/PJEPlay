@@ -874,11 +874,27 @@ async function triagem_inicial_acoesIntimar(){
     await suspender(1000)
     await preencherRota(descricao, dados.descricao)
     await suspender(1000)
-    let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
-    await preencherCKEditorExecCommand(areaAssinatura, '.')
+    let placeholders = {assinatura: ['Assinatura (opcional)'], conteudo: ['Conteúdo principal']}
+    let editor = [...selecionar('.editor-container', '', true)]
+    let editorAssinatura = editor
+        .find(e => {
+            const texto = e.querySelector('.placeholder-conteudo')?.textContent ?? ''
+            return placeholders.assinatura.some(p => texto.includes(p))
+        })
+        ?.querySelector('[contenteditable]')
+    let editorConteudo = editor
+        .find(e => {
+            const texto = e.querySelector('.placeholder-conteudo')?.textContent ?? ''
+            return placeholders.conteudo.some(p => texto.includes(p))
+        })
+        ?.querySelector('[contenteditable]')
+    //let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
+    await preencherCKEditorExecCommand(editorAssinatura, '.')
     await suspender(1000)
-    let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
-    await focar(conteudoPrincipal)
+    //let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
+    console.log('%c[Rota PJE]%c editorConteudo' + JSON.stringify(editorConteudo), LOG.aviso, 'color:inherit', editorConteudo)
+    await focar(editorConteudo)
+    await clicar(editorConteudo)
     await suspender(1000)
     console.log('%c[Rota PJE]%c dados.modelo: ' + JSON.stringify(dados.modelo), LOG.rosa, 'color:inherit')
     console.log('%c[Rota PJE]%c linkIntimar: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit')
@@ -894,7 +910,7 @@ async function triagem_inicial_acoesIntimar(){
     }
     if (linkIntimar){
         await suspender(1000)
-        await preencherCKEditorExecCommand(conteudoPrincipal, dados.texto)
+        await preencherCKEditorExecCommand(editorConteudo, dados.texto)
     } else {
         let tipoAudiencia = await obterArmazenamento('rotapje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
         let modelo = dados.tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null

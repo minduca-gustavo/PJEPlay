@@ -56,7 +56,6 @@ async function triagem_inicial_janelaDetalhes(sessao){
     let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
     let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))
     if (!peticaoInicial) return
-    await suspender(1000)
     await clicar(peticaoInicial)
     let encontrouCabecalho = false
     for (let i = 0; i < 100; i++) {
@@ -69,7 +68,6 @@ async function triagem_inicial_janelaDetalhes(sessao){
     }
     if (!encontrouCabecalho) return
     if (botaoAnexos[botaoAnexos.length - 1]){
-        await suspender(1000)
         await clicar(botaoAnexos[botaoAnexos.length - 1])
     }
     await aguardarElemento('[aria-label*="Anexos"]')
@@ -211,27 +209,24 @@ async function triagem_inicial_acoesRetificar(){
         if (!elemento) await suspender(1000)
     }
     if (!elemento) return
-    await suspender(1000)
     await clicar(elemento)
     if (!seletorNome) return
     seletor = await aguardarElementoNovo(seletorNome)
     let seletorClique = await sel('retificacaoAutuacaoSeletorJuizoDigitalSlide', seletor)
     if (!seletorClique) return
-    await suspender(1000)
     await clicar(seletorClique)
     let quadroJuizoDigital = await aguardarElementoNovo('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
     let botoesContagem = 0
     let segundos = 30
     for (let i = 0; i < segundos * 2; i++){
         console.log('%c[Rota PJE]%c i' + JSON.stringify(i), LOG.rosa, 'color:inherit')
-        await suspender(1000)
+        await suspender(500)
         let botoesConfirmaJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalBotoes', quadroJuizoDigital, true)
         quadroJuizoDigital = await sel('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
         if (!quadroJuizoDigital) await atualizaJanelaDetalhes(4000)
         for(let botao of botoesConfirmaJuizoDigital){
             if (botao.textContent ==='Sim'){
                 botoesContagem++
-                await suspender(1000)
                 await clicar(botao)
                 if (botoesContagem == 2){
                     await atualizaJanelaDetalhes(4000)
@@ -345,14 +340,13 @@ async function triagem_inicial_acoesDespachar(){
     })
     if (modeloDespacho !== ''){
         let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
-        await suspender(1000)
         await clicar(elaborarDespachoBotaoEnviarParaAssinatura)
         for(let i = 0; i < 30 * 2; i++){
             let assinar = await sel('tarefaDoProcessoTituloDaTarefa')
             if (assinar.textContent.includes('Assinar despacho')){
                 break
             }
-            await suspender(1000)
+            await suspender(500)
         }
         await suspender(2000)
         if (audienciasMarcadas?.dataInicio) {
@@ -501,7 +495,6 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     let seletorJuiz = await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
     if (seletorJuiz.textContent != sala){
-        await suspender(1000)
         await clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
@@ -511,7 +504,6 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
             return
         }
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        await suspender(1000)
         await clicar(juizSelecionado)
     }
     await suspender(1000)
@@ -533,7 +525,6 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     let bodyTeste = false
     if (seletorJuiz.textContent != horario.nomeDaSala){
         bodyTeste = true
-        await suspender(1000)
         await clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
@@ -545,7 +536,6 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         
         monitorarBody(6000, 100)
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        await suspender(1000)
         await clicar(juizSelecionado)
     }
     if (metaQuadroDeHorarios){
@@ -569,7 +559,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
         return
     }
-    await suspender(1000)
+    await suspender(500)
     await clicar(celula)
 
     // clicar no botao de designar
@@ -591,7 +581,6 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
     await suspender(1000)
     await preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
-    await suspender(1000)
     let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
     await suspender(1000)
     await preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
@@ -611,8 +600,8 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
         return
     }
-    //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await suspender(1000)
+    //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     await clicar(botaoConfirmar)
     await aguardarElementoNovo('pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia')
     await suspender(2000)
@@ -648,10 +637,7 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
     let usuarioObter = await obterArmazenamento('rota_usuario')
     let usuario = usuarioObter?.rota_usuario.nome || ''
     let mostrarOuEsconder = await aguardarElementoNovo('detalhesDoProcessoMostrarOuEsconderGigs')
-    if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') {
-        await suspender(1000)
-        await clicar(mostrarOuEsconder)
-    }
+    if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') await clicar(mostrarOuEsconder)
     await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
     await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
     //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
@@ -758,7 +744,6 @@ async function triagem_inicial_acoesCertificar(){
         return
     }
     let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
-    await suspender(1000)
     await clicar(botaoAssinar)
     monitorarBody(6000, 100)
     if (dados.intimar){
@@ -853,14 +838,11 @@ async function triagem_inicial_acoesIntimar(){
     }
     let dados = opcoesIntimar[tipoIntimar]
     let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
-    await suspender(1000)
     await clicar(seletor)
     await aguardarElementoNovo('prepararExpedientesSeletorTipoDeExpedienteAberto')
     let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes(dados.tipoExpediente))
-    await suspender(1000)
     await clicar(opcao)
     let botaoConfeccionar = await aguardarElementoNovo('prepararExpedientesBotaoConfeccionarAtoAgrupado')
-    await suspender(1000)
     await clicar(botaoConfeccionar)
     await aguardarElementoNovo(
         [
@@ -900,43 +882,39 @@ async function triagem_inicial_acoesIntimar(){
         let modelo = dados.tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
         await digitarNoInput(inputModelo, modelo)
         await selecionarOpcaoDeModelo(modelo)
-        await suspender(1000)
+        await suspender(200)
         await esperarEClicar('elaborarDespachoInserirModelo')
     }
-    await suspender(1000)
+    await suspender(200)
     let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
-    await suspender(1000)
     await clicar(botaoFinalizarMinuta)
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto: dados.textoConfirmacaoAto})
     console.log('%c[Rota PJE]%c 839: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let i = 0
     while (await sel('prepararExpedientesMensagemModeloInserido')){
-        await suspender(1000)
+        await suspender(500)
         if (i++ > 3 * 2) break
     }
     console.log('%c[Rota PJE]%c 839 845: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let botaoPolo = await aguardarElementoNovo(dados.seletorBotaoPolo)
     console.log('%c[Rota PJE]%c 839 847: ' + JSON.stringify(839), LOG.rosa, 'color:inherit')
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    await suspender(1000)
     await clicar(botaoPolo)
     let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto: dados.textoConfirmacaoPolo})
     i = 0
     while (verificarCarregamentoDestinatario.isConnected){
-        await suspender(1000)
+        await suspender(500)
         if (i++ > 3 * 2) break
     }
-    //await suspender(1000)
+    //await suspender(500)
     let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')
     let botaoAssinar = (await aguardarElementoNovo('prepararExpedientesBotaoAssinar'))
     
-    await suspender(1000)
     await clicar(botaoSalvar)
     let verificarCarregamentoSalvar = await aguardarElementoNovo('prepararExpedientesRodinhaGirando')
     while (verificarCarregamentoSalvar.isConnected){
-        await suspender(1000)
+        await suspender(500)
     }
-    await suspender(1000)
     await clicar(botaoAssinar)
     window.addEventListener('beforeunload', () => {
         if (dados.proximoPasso) {

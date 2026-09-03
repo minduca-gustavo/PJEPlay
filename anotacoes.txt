@@ -1,3 +1,7 @@
+let editor = [...selecionar('.editor-container', '', true)]
+let placeholders = ['Data']
+
+
 TRIAGEM INICIAL
 CONSULTA PROCESSO NO BALCÃO VIRTUAL
 GIG NO BALCÃO VIRTUAL
