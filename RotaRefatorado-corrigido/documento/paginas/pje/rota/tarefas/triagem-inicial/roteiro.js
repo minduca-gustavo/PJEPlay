@@ -518,8 +518,10 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     rota_avisoObrigatorio(aviso, 15)
     await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
+    await suspender(1000)
     await preencherRota(inputNumeroProcesso, processo)
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
+    await suspender(1000)
     await preencherRota(inputLinkAudiencia, link)
     return
 }

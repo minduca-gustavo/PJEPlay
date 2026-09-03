@@ -56,6 +56,7 @@ async function triagem_inicial_janelaDetalhes(sessao){
     let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
     let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))
     if (!peticaoInicial) return
+    await suspender(1000)
     await clicar(peticaoInicial)
     let encontrouCabecalho = false
     for (let i = 0; i < 100; i++) {
@@ -68,6 +69,7 @@ async function triagem_inicial_janelaDetalhes(sessao){
     }
     if (!encontrouCabecalho) return
     if (botaoAnexos[botaoAnexos.length - 1]){
+        await suspender(1000)
         await clicar(botaoAnexos[botaoAnexos.length - 1])
     }
     await aguardarElemento('[aria-label*="Anexos"]')
@@ -209,11 +211,13 @@ async function triagem_inicial_acoesRetificar(){
         if (!elemento) await suspender(1000)
     }
     if (!elemento) return
+    await suspender(1000)
     await clicar(elemento)
     if (!seletorNome) return
     seletor = await aguardarElementoNovo(seletorNome)
     let seletorClique = await sel('retificacaoAutuacaoSeletorJuizoDigitalSlide', seletor)
     if (!seletorClique) return
+    await suspender(1000)
     await clicar(seletorClique)
     let quadroJuizoDigital = await aguardarElementoNovo('retificacaoAutuacaoSeletorJuizoDigitalQuadro')
     let botoesContagem = 0
@@ -227,6 +231,7 @@ async function triagem_inicial_acoesRetificar(){
         for(let botao of botoesConfirmaJuizoDigital){
             if (botao.textContent ==='Sim'){
                 botoesContagem++
+                await suspender(1000)
                 await clicar(botao)
                 if (botoesContagem == 2){
                     await atualizaJanelaDetalhes(4000)
@@ -340,6 +345,7 @@ async function triagem_inicial_acoesDespachar(){
     })
     if (modeloDespacho !== ''){
         let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
+        await suspender(1000)
         await clicar(elaborarDespachoBotaoEnviarParaAssinatura)
         for(let i = 0; i < 30 * 2; i++){
             let assinar = await sel('tarefaDoProcessoTituloDaTarefa')
@@ -495,6 +501,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     let seletorJuiz = await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
     if (seletorJuiz.textContent != sala){
+        await suspender(1000)
         await clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
@@ -504,6 +511,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
             return
         }
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
+        await suspender(1000)
         await clicar(juizSelecionado)
     }
     await suspender(1000)
