@@ -564,7 +564,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     //await aguardarElementoNovo(['pautaDeAudienciaCelulaDaTabela', 'pautaDeAudienciaMetaQuadroHorariosVagos'], {modo: 'e'})
     //return
     let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
-    let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
+    let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil' || 'pauta'))
     if (!celula){
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
         return
