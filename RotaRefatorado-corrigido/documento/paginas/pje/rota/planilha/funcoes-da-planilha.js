@@ -300,11 +300,9 @@ async function buscarGigs(numProc) {
 }
 
 async function buscarHistoricoDeslocamentos(id) {
-	console.log('%c[Rota PJE]%c id: ' + JSON.stringify(id), LOG.info, 'color:inherit')
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + id + '/historicodeslocamentos'
 	)
-	console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.aviso, 'color:inherit')
 	//if (Array.isArray(dados)) dados = dados[0] || {}
 	return dados
 }

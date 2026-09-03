@@ -831,6 +831,7 @@ async function triagem_inicial_acoesIntimar(){
     }
     let dados = opcoesIntimar[tipoIntimar]
     let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
+    await suspender(300)
     await clicar(seletor)
     await aguardarElementoNovo('prepararExpedientesSeletorTipoDeExpedienteAberto')
     let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes(dados.tipoExpediente))
