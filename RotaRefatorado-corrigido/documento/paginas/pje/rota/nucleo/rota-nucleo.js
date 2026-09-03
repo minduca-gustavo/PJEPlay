@@ -243,7 +243,7 @@ function escurecerCor(hex = ''){
 	return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('')
 }
 
-function preencherObservacaoGig(campo = '', texto = '', eventos = ['input','change']){
+function preencherRota(campo = '', texto = '', eventos = ['input','change']){
   if(typeof campo === 'string') campo = selecionar(campo)
   if(!campo) return
   focar(campo)

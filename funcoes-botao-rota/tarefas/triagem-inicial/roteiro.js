@@ -510,8 +510,10 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     rota_avisoObrigatorio(aviso, 15)
     await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
+    await suspender(1000)
     await preencher(inputNumeroProcesso, processo)
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
+    await suspender(1000)
     await preencher(inputLinkAudiencia, link)
     return
 }
@@ -572,18 +574,22 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         return
     }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
+    await suspender(1000)
     await preencher(inputNumeroProcesso, horario.processo)
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
+    await suspender(1000)
     await preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
     let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
+    await suspender(1000)
     await preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
     let pautaDeAudienciaInputTipoDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputTipoDesignarAudiencia')
     await clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
     await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
     await clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
+    await suspender(1000)
     await preencher(inputLinkAudiencia, horario.link)
     
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
@@ -731,6 +737,7 @@ async function triagem_inicial_acoesCertificar(){
         await esperarEClicar('elaborarDespachoInserirModelo')
     } else if (dados.texto){
         let campoTexto = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
+        await suspender(1000)
         await preencherCKEditorExecCommand(campoTexto, dados.texto)
     } else {
         rota_avisoObrigatorio('Prossiga manualmente.', 5)
@@ -846,14 +853,15 @@ async function triagem_inicial_acoesIntimar(){
     )
     let descricao = await sel('elaborarAtoInputDescricao')
     let inputModelo = await sel('elaborarDespachoBuscarModelos')
+    await suspender(1000)
     await preencher(descricao, dados.descricao)
-    await suspender(200)
+    await suspender(1000)
     let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
     await preencherCKEditorExecCommand(areaAssinatura, '.')
-    await suspender(200)
+    await suspender(1000)
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
-    await suspender(200)
+    await suspender(1000)
     console.log('%c[Rota PJE]%c dados.modelo: ' + JSON.stringify(dados.modelo), LOG.rosa, 'color:inherit')
     console.log('%c[Rota PJE]%c linkIntimar: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit')
     console.log('%c[Rota PJE]%c dados.texto: ' + JSON.stringify(dados.texto), LOG.rosa, 'color:inherit')
@@ -867,6 +875,7 @@ async function triagem_inicial_acoesIntimar(){
         return
     }
     if (linkIntimar){
+        await suspender(1000)
         await preencherCKEditorExecCommand(conteudoPrincipal, dados.texto)
     } else {
         let tipoAudiencia = await obterArmazenamento('rotapje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_triagem_inicial_intimar_audienciaMarcadaTipo || '')

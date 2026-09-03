@@ -43,7 +43,7 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso(tipoAtividade = 'Prazo', da
     if (observacao){
         let inputObservacao = await aguardarElementoNovo('detalhesDoProcessoInputObservacaoGigs')
         await suspender (200)
-        await preencherObservacaoGig(inputObservacao, observacao)
+        await preencherRota(inputObservacao, observacao)
     }
     if (salvar === 'sim'){
         let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
