@@ -148,11 +148,12 @@
 				"documento/paginas/pje/api/consultas.js",
 				"documento/paginas/pje/requisicoes/interceptador.js",
 				"documento/paginas/pje/requisicoes/documento.js",
-
+				
 				"documento/paginas/pje/rota/nucleo/evita-queda.js",
 				"documento/paginas/pje/rota/ui/ui.js",
 				"documento/paginas/pje/rota/nucleo/movimentar.js",
-
+				
+				"documento/paginas/pje/gim/assina-tudo.js",
 				"documento/paginas/pje/rota/botao/pintura.js",
 				"documento/paginas/pje/rota/botao/janelas.js",
 				"documento/paginas/pje/rota/botao/botao-rota.js",

@@ -1,3 +1,24 @@
+async function rotaAssinaTudo() {
+    let janela = confereJanela(JANELA.gim)
+    if (!janela) return
+    let ancestral = '.centralizado-botoes'
+    let elemento = aguardarElemento('.centralizado-botoes')
+    if (!elemento) return
+    let idBotao = id('assinaTudo', 'botao')
+    let botao = criaBotaoLaranja({
+        id: idBotao,
+        ancestral: ancestral,
+        texto: 'Assinar todos em todas as OJs',
+        acao: () => assinaTudo()
+    })
+    async function assinaTudo(params) {
+        
+    }
+}
+
+rotaAssinaTudo()
+
+
 
 //https://pje-web-hm.trt15.jus.br/pje-comum-api/api/gim/orgaosjulgadores
 

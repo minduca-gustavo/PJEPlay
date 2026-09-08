@@ -87,7 +87,8 @@ var JANELA = {
 	processoTarefa:         /\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	pautaAudiencias:        /\/pjekz\/pauta-audiencias/,
 	atasAudiencias:         /\/pjekz\/atas-audiencias/,
-	aud:                    /\/aud\/#\/audiencia/
+	aud:                    /\/aud\/#\/audiencia/,
+	gim:					/\/pjekz\/painel\/gim/,
 }
 
 const ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/g
