@@ -36,7 +36,7 @@ async function visualizador_de_documentos_aoAbrirDetalhesDoProcesso(){
     if (!window.name.includes('rota') || !window.name.includes(tarefa)) return
     if (execucao !== window.name.split('-').pop()) return
     dadosVisualizadorDeDocumentos.execucaoAtual = execucao
-    browser.storage.onChanged.addListener(obedecer)
+    NAVEGADOR.storage.onChanged.addListener(obedecer)
     await visualizador_de_documentos_janelaDetalhes(execucao)
 }
 

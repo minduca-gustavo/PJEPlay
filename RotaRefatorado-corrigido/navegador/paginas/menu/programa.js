@@ -345,27 +345,16 @@ async function iniciar(){
 		devAtivo = !devAtivo
 		await NAV.storage.local.set({ [DEV_KEY]: devAtivo })
 		_aplicarEstadoModoDev(devAtivo)
-		// Propaga para as abas abertas do PJE
+		// Propaga para as abas abertas do PJE.
+		// Mexe SÓ em MODO_DEV (geometria da janela assistente).
+		// O que aparece no console é decidido apenas pelo checklist
+		// "Log por módulo" abaixo — os dois são independentes.
 		let tabs = await NAV.tabs.query({ url: '*://*.jus.br/*' })
 		tabs.forEach(tab => {
 			NAV.scripting.executeScript({
 				target: { tabId: tab.id },
 				func: (ativo) => { window.MODO_DEV = ativo },
 				args: [devAtivo],
-			}).catch(() => {})
-		})
-		// Mesmo botão também liga/desliga o log do relatar() —
-		// grava CONFIGURACAO.diagnostico.*, lido no próximo carregamento
-		// e por rota_nucleo_definirModoDev() em cada aba já aberta.
-		let diagnostico = {}
-		let chaves = ['execucao','dom','mutacao','requisicao','resposta','armazenamento','navegador','configuracao','contexto','automacao','texto','xhr','erro','teste']
-		chaves.forEach(chave => diagnostico[chave] = devAtivo)
-		await NAV.storage.local.set({ diagnostico, modoDev: devAtivo })
-		tabs.forEach(tab => {
-			NAV.scripting.executeScript({
-				target: { tabId: tab.id },
-				func: (diag) => { if(typeof CONFIGURACAO !== 'undefined') CONFIGURACAO.diagnostico = diag },
-				args: [diagnostico],
 			}).catch(() => {})
 		})
 	})

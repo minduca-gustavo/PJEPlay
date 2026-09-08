@@ -48,14 +48,21 @@ var MODO_DEV = false
  *
  * Chamada por rota() depois de definicoesGlobais().
  */
+/**
+ * Define apenas MODO_DEV — o booleano que janelas.js usa para a
+ * geometria da janela assistente.
+ *
+ * NÃO mexe em CONFIGURACAO.diagnostico. Quem manda no que o
+ * relatar() imprime é exclusivamente o checklist "Log por módulo"
+ * do popup, que grava CONFIGURACAO.diagnostico direto no storage.
+ *
+ * Amarrar os dois foi o bug: como modoDev fica `true` no storage,
+ * esta função reescrevia todas as chaves de diagnostico como true
+ * a cada carregamento de página, apagando silenciosamente o que o
+ * usuário tinha desmarcado no checklist.
+ */
 function rota_nucleo_definirModoDev(ligado = false){
 	MODO_DEV = ligado === true
-	let diagnostico = CONFIGURACAO?.diagnostico || {}
-	let chaves = Object.keys(diagnostico).length
-		? Object.keys(diagnostico)
-		: ['execucao','dom','mutacao','requisicao','resposta','armazenamento','navegador','configuracao','contexto','automacao','texto','xhr','erro','teste']
-	chaves.forEach(chave => diagnostico[chave] = MODO_DEV)
-	CONFIGURACAO.diagnostico = diagnostico
 }
 
 
@@ -243,7 +250,7 @@ function escurecerCor(hex = ''){
 	return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('')
 }
 
-function preencherRota(campo = '', texto = '', eventos = ['input','change']){
+function preencherObservacaoGig(campo = '', texto = '', eventos = ['input','change']){
   if(typeof campo === 'string') campo = selecionar(campo)
   if(!campo) return
   focar(campo)

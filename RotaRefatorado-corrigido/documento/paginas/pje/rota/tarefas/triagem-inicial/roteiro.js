@@ -545,11 +545,13 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         
         monitorarBody(6000, 100)
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        await suspender(1000)
+        console.log('%c[Rota PJE]%c metaQuadroDeHorarios: ' + JSON.stringify(metaQuadroDeHorarios), LOG.info, 'color:inherit', metaQuadroDeHorarios)
+        //await suspender(1000)
         await clicar(juizSelecionado)
     }
     if (metaQuadroDeHorarios){
         await aguardarElementoMudar(metaQuadroDeHorarios,'content')
+        console.log('%c[Rota PJE]%c metaQuadroDeHorarios: ' + JSON.stringify(metaQuadroDeHorarios), LOG.teste, 'color:inherit', metaQuadroDeHorarios)
     } else {
         await aguardarElementoNovo('pautaDeAudienciaMetaQuadroHorariosVagos')
     }

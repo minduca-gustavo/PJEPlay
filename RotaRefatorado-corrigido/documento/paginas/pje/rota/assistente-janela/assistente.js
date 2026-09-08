@@ -45,19 +45,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             return
         }
     }
-
-    // Ouve fechamento por nova execução
-    NAVEGADOR.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
-        if (mudancas['rotaExecucaoAtual']?.newValue) {
-            const novoExecucao = String(mudancas['rotaExecucaoAtual'].newValue)
-            const meuExecucao  = new URL(location.href).searchParams.get('rotapje_execucao')
-            if (novoExecucao !== meuExecucao) {
-                NAVEGADOR.storage.onChanged.removeListener(ouvirExecucao)
-                window.close()
-            }
-        }
-    })
-
+//
+//    // Ouve fechamento por nova execução
+//    NAVEGADOR.storage.onChanged.addListener(function ouvirExecucao(mudancas) {
+//        if (mudancas['rotaExecucaoAtual']?.newValue) {
+//            const novoExecucao = String(mudancas['rotaExecucaoAtual'].newValue)
+//            const meuExecucao  = new URL(location.href).searchParams.get('rotapje_execucao')
+//            if (novoExecucao !== meuExecucao) {
+//                NAVEGADOR.storage.onChanged.removeListener(ouvirExecucao)
+//                window.close()
+//            }
+//        }
+//    })
+//
     // Cria rodapé imediatamente
     const rodape = document.querySelector('.assistente-rodape')
     if (rodape) {

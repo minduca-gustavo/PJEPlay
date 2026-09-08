@@ -684,10 +684,11 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	let sessao   = novoExecucao   // ← adiciona isso
 	await armazenar({
 		rotaExecucaoAtual:    novoExecucao,
-		rotaProcessoAtual:    item.numProc,   // ← número do processo
+		rotaProcessoAtual:    item.numProc,
 		rotaPosicaoAtual:     _rota_cursor + 1,
 		rotaTotalProcessos:   _rota_fila.length,
-		rota_dadosProntos:    false,          // ← reseta o sinal
+		rota_dadosProntos:    false,
+		rotaSinalAssistente:  null,      // ← adicionar
 	})
 
 	// Reabre assistente se for tarefa do sistema
