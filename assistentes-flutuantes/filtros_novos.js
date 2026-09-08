@@ -1501,6 +1501,9 @@ function arrayParaTsv(array){
     return linhas.join('\n')
 }
 
+// 'application/json'
+// 'text/plain'
+
 function _baixarArquivo(conteudo, nomeArquivo, tipo){
     const blob = new Blob([conteudo], { type: tipo })
     const a = document.createElement('a')

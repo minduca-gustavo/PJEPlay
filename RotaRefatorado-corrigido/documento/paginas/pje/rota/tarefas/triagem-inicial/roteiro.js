@@ -357,6 +357,7 @@ async function triagem_inicial_acoesDespachar(){
         await suspender(2000)
         if (audienciasMarcadas?.dataInicio) {
             await armazenar({rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar'})
+            return
             window.close()
             return
         } else{ 
@@ -531,40 +532,39 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
     let bodyTeste = false
+    // se o juiz já é o que abriu, não faz nada
     if (seletorJuiz.textContent != horario.nomeDaSala){
         bodyTeste = true
         await suspender(1000)
+        // clica no menu
         await clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
+        // procura o juiz
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
         if (!juizSelecionado){
             await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
             return
         }
-        
-        monitorarBody(6000, 100)
+        // verifica se a sala que estava selecionada tem quadro
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        console.log('%c[Rota PJE]%c metaQuadroDeHorarios: ' + JSON.stringify(metaQuadroDeHorarios), LOG.info, 'color:inherit', metaQuadroDeHorarios)
-        //await suspender(1000)
-        await clicar(juizSelecionado)
-    }
-    if (metaQuadroDeHorarios){
-        await aguardarElementoMudar(metaQuadroDeHorarios,'content')
-        console.log('%c[Rota PJE]%c metaQuadroDeHorarios: ' + JSON.stringify(metaQuadroDeHorarios), LOG.teste, 'color:inherit', metaQuadroDeHorarios)
-    } else {
-        await aguardarElementoNovo('pautaDeAudienciaMetaQuadroHorariosVagos')
+        // se ela tem quadro, registra a espera pro quadro mudar
+        if (metaQuadroDeHorarios){
+            let espera = aguardarMetaAtualizar('horarios_vagos')
+            await clicar(juizSelecionado)
+            let horarios = await espera
+        } else { // se não tem, clica e só aguarda o quadro aparecer
+            await clicar(juizSelecionado)
+            await aguardarElementoNovo('pautaDeAudienciaMetaQuadroHorariosVagos')
+        }
     }
     let body = document.body.textContent
     console.log('%c[Rota PJE]%c body: ' + JSON.stringify(body), LOG.rosa, 'color:inherit')
+    // espera o nome da sala aparecer no body.
     if (body.includes(seletorJuiz.textContent) && bodyTeste) {
         console.log('%c[Rota PJE]%c body 547: ' + JSON.stringify(body), LOG.rosa, 'color:inherit')
         await suspender(2000)
     }
-    //return
-    //// clicar no botao do primeiro dia
-    //await aguardarElementoNovo(['pautaDeAudienciaCelulaDaTabela', 'pautaDeAudienciaMetaQuadroHorariosVagos'], {modo: 'e'})
-    //return
     let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil' || 'pauta'))
     if (!celula){
@@ -620,7 +620,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     await suspender(2000)
     await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_designa_audiencia' })
     window.close()
-    return
+    
 }
 
 triagem_inicial_aoAbrirDesignarAudiencia()
@@ -894,13 +894,9 @@ async function triagem_inicial_acoesIntimar(){
     await preencherCKEditorExecCommand(editorAssinatura, '.')
     await suspender(1000)
     //let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
-    console.log('%c[Rota PJE]%c editorConteudo' + JSON.stringify(editorConteudo), LOG.aviso, 'color:inherit', editorConteudo)
     await focar(editorConteudo)
     await clicar(editorConteudo)
     await suspender(1000)
-    console.log('%c[Rota PJE]%c dados.modelo: ' + JSON.stringify(dados.modelo), LOG.rosa, 'color:inherit')
-    console.log('%c[Rota PJE]%c linkIntimar: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit')
-    console.log('%c[Rota PJE]%c dados.texto: ' + JSON.stringify(dados.texto), LOG.rosa, 'color:inherit')
     if (!dados.tipos && !linkIntimar){
         await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
         window.addEventListener('beforeunload', () => {

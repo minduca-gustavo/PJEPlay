@@ -138,19 +138,35 @@ async function rota_aguardarElemento(
 	return await Promise.race([busca, desistencia])
 }
 
+function aguardarMetaAtualizar(rotulo, timeout = 8000){
+    return new Promise(resolver => {
+        const handler = evento => {
+            if(evento.detail.rotulo !== rotulo) return
+            document.removeEventListener('RotaMetaTagAtualizada', handler)
+            clearTimeout(timer)
+            resolver(interceptador_ler(rotulo))
+        }
+        document.addEventListener('RotaMetaTagAtualizada', handler)
+        const timer = setTimeout(() => {
+            document.removeEventListener('RotaMetaTagAtualizada', handler)
+            resolver(null)
+        }, timeout)
+    })
+}
 
 function aguardarElementoMudar(elemento, atributo){
-	return new Promise(resolver => {
-		const obs = new MutationObserver(mutacoes => {
-			for(const m of mutacoes){
-				if(m.attributeName === atributo){
-					obs.disconnect()
-					resolver(elemento.getAttribute(atributo))
-				}
-			}
-		})
-		obs.observe(elemento, { attributes: true, attributeFilter: [atributo] })
-	})
+    const seletor = '#' + elemento.id
+    const valorAnterior = elemento.getAttribute(atributo)
+    return new Promise(resolver => {
+        const obs = new MutationObserver(() => {
+            const atual = document.querySelector(seletor)
+            if(atual && (atual !== elemento || atual.getAttribute(atributo) !== valorAnterior)){
+                obs.disconnect()
+                resolver(atual.getAttribute(atributo))
+            }
+        })
+        obs.observe(document.head, { childList: true, subtree: true, attributes: true, attributeFilter: [atributo] })
+    })
 }
 
 
@@ -250,7 +266,7 @@ function escurecerCor(hex = ''){
 	return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('')
 }
 
-function preencherObservacaoGig(campo = '', texto = '', eventos = ['input','change']){
+function preencherRota(campo = '', texto = '', eventos = ['input','change']){
   if(typeof campo === 'string') campo = selecionar(campo)
   if(!campo) return
   focar(campo)

@@ -254,7 +254,6 @@ async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
       .map(t => t.closest('button'))
       .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
     if (botoes){
-      console.log('%c[Rota PJE]%c 254: ' + JSON.stringify(botoes), LOG.teste, 'color:inherit')
     }
     const encontrado = [...botoes, ...textos].find(b =>
       b.querySelector('.texto-botao-app')?.textContent?.trim() === label
@@ -315,12 +314,15 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   if (!parametros) return
   let elemento = await aguardarElementoNovo(['elaborarDespachoCorpoDoDocumentoFundamentacao', 'elaborarDespachoBuscarModelos'], {modo: 'e', timeout: 60000})
   if (!elemento) return
-  let campoTexto = await sel('elaborarDespachoCorpoDoDocumentoFundamentacaoFocar')
-  if (!campoTexto) return
-  await focar(campoTexto)
+  let campoTexto = [...selecionar('.editor-container', '', true)]
+  if (!campoTexto) return null
+  let campoFundamentacao = campoTexto
+    .find(e => e.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamentação'))
+    ?.querySelector('[contenteditable]')
+  await focar(campoFundamentacao)
   await suspender(3000)
   if (!parametros.modelo) return
-  await digitarNoInput(campo = elemento, valor = parametros.modelo)
+  await digitarNoInput(await sel('elaborarDespachoBuscarModelos'), parametros.modelo)
   let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
   if (!opcaoModelo) return
 
