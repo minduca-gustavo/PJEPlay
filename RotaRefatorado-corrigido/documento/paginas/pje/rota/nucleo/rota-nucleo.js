@@ -266,6 +266,14 @@ function escurecerCor(hex = ''){
 	return '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('')
 }
 
+async function lerGit(arquivo) {
+	let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/' + arquivo
+	let resultado = await fetch(url, { cache: 'no-store', referrerPolicy: 'no-referrer' })
+	if (!resultado.ok) throw new Error(`HTTP ${resposta.status}`)
+    let dados = await resultado.json()
+	return dados
+}
+
 function preencherRota(campo = '', texto = '', eventos = ['input','change']){
   if(typeof campo === 'string') campo = selecionar(campo)
   if(!campo) return

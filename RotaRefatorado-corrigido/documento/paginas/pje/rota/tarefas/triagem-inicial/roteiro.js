@@ -319,6 +319,8 @@ async function triagem_inicial_acoesDespachar(){
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.sala?.nome || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
     ])
+    //let modelos = await lerGit('rotapje_modelos_triagem.json') || []
+    //let modelo = modelos?.find(d => d?.sala == juizEnvio) || {}
     if(!juizEnvio) {
         juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
     }
@@ -331,8 +333,12 @@ async function triagem_inicial_acoesDespachar(){
         'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
         'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
     }
-    let modeloDespacho = ''
-    if (tipo !== 'triagem_inicial_emendar'){
+    let modelosDespacho = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
+    let modeloDespacho = modelosDespacho?.despacho || ''
+    console.log('%c[Rota PJE]%c modeloDespacho: ' + JSON.stringify(modeloDespacho), LOG.teste, 'color:inherit')
+    //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo), LOG.info, 'color:inherit')
+    //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo[tipoAudiencia]), LOG.info, 'color:inherit')
+    if (!modeloDespacho && tipo !== 'triagem_inicial_emendar'){
         if (tipo == 'triagem_inicial_despachar_redesignacao'){
             modeloDespacho = 'SCBAU_TI_REDESIGNA'
         } else {
@@ -384,6 +390,15 @@ async function triagem_inicial_acoesDespachar(){
 
 }
 
+async function buscaModeloTriagem(sala, modo) {
+    console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala), LOG.info, 'color:inherit')
+    console.log('%c[Rota PJE]%c modo: ' + JSON.stringify(modo), LOG.teste, 'color:inherit')
+    let modelos = await lerGit('rotapje_modelos_triagem.json') || []
+    console.log('%c[Rota PJE]%c modelos: ' + JSON.stringify(modelos), LOG.aviso, 'color:inherit')
+    let modelo = modelos?.find(d => d?.sala == sala)
+    console.log('%c[Rota PJE]%c modelo[modo]: ' + JSON.stringify(modelo[modo]), LOG.info, 'color:inherit')
+    return modelo[modo] ?? null
+}
 
 triagem_inicial_aoAbrirDespachar()
 
