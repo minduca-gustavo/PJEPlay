@@ -178,7 +178,7 @@ function _rota_sincronizar(reg){
 				tooltip:		'⚙️ Clique para ver informações de gestão -\nQuadro de juízes/perícias/tabela de assistentes/secretários, etc.'
 			},
 		]
-		for(botao of botoes){
+		for(let botao of botoes){
 			let botaoInserir = document.createElement('button')
 			botaoInserir.id          = botao.id
 			botaoInserir.textContent = botao.textContent

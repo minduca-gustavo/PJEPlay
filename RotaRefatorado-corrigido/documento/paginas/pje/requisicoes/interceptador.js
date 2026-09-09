@@ -10,27 +10,28 @@
 // ============================================================
 
 const INTERCEPTADOR_URL = {
+    agrupamentoTarefasProcessos:    /\/pje-comum-api\/api\/agrupamentotarefas\/\d+\/processos*/i,
+    audiencias:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
+    dadosBasicos:                   /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
+    documentos:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
+    expedientesMateria:             /\/pje-comum-api\/api\/expedientesmateria\/\d+.*/i,
     gigs:                           /\/pje-gigs-api\/api\/atividade\/processo\/\d+$/i,
     gigsConcluidos:                 /\/pje-gigs-api\/api\/atividade\/processo\/\d+\/concluida/i,
+    gimOrgaosJulgadores:            /\/pje-comum-api\/api\/gim\/orgaosjulgadores/i,
+    modelosDocumentos:              /\/pje-comum-api\/api\/modelosdocumentos\/pastas\/raiz/i,
+    horariosVagos:                  /\/pje-comum-api\/api\/pautasaudiencias\/horariosvagos.*/i,
+    pauta:                          /\/pje-comum-api\/api\/pautasaudiencias/i,
+    perfis:                         /\/api\/token\/perfis$/,
     processo:                       /\/pje-comum-api\/api\/processos\/id\/\d+$/i,
     processoPartes:                 /\/pje-comum-api\/api\/processos\/id\/\d+\/partes/i,
     processoTarefaMaisRecente:      /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas\?maisRecente=true/i,
-    agrupamentoTarefasProcessos:    /\/pje-comum-api\/api\/agrupamentotarefas\/\d+\/processos*/i,
-    tarefasProcesso:                /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas*/i,
-    tarefasAtivas:                  /\/pje-comum-api\/api\/tarefas\/ativas/i,
-    perfis:                         /\/api\/token\/perfis\/trocar/i,
-    recursos:                       /\/api\/token\/permissoes\/recursos/i,
     recursosPage:                   /\/api\/token\/permissoes\/recursos\/*/i,
-    horariosVagos:                  /\/pje-comum-api\/api\/pautasaudiencias\/horariosvagos.*/i,
-    pauta:                          /\/pje-comum-api\/api\/pautasaudiencias/i,
-    audiencias:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
+    recursos:                       /\/api\/token\/permissoes\/recursos/i,
     responsaveis:                   /\/pje-comum-api\/api\/usuarios\/internos\/pororgaojulgador/i,
-    dadosBasicos:                   /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
-    documentos:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,
-    modelosDocumentos:              /\/pje-comum-api\/api\/modelosdocumentos\/pastas\/raiz/i,
     orgaosJulgadores:               /\/pje-comum-api\/api\/orgaosjulgadores/i,
+    tarefasAtivas:                  /\/pje-comum-api\/api\/tarefas\/ativas/i,
+    tarefasProcesso:                /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas*/i,
     timeline:                       /\/pje-comum-api\/api\/processos\/id\/\d+\/timeline/i,
-    expedientesMateria:             /\/pje-comum-api\/api\/expedientesmateria\/\d+.*/i,
     
 }
 //https://pje.trt15.jus.br/pje-comum-api/api/expedientesmateria/13?idTarefa=0
@@ -40,6 +41,7 @@ const INTERCEPTADOR_URL = {
 const INTERCEPTADOR_ROTULO = {
     gigs:                           'gigs',
     gigsConcluidos:                 'gigs_concluidos',
+    gimOrgaosJulgadores:            'gim_orgaos_julgadores',
     processo:                       'processo',
     processoPartes:                 'processo_partes',
     processoTarefaMaisRecente:      'processo_tarefa_mais_recente',
@@ -166,7 +168,7 @@ function interceptador_lerPerfis()              { return interceptador_ler('perf
 function interceptador_lerAudiencias()          { return interceptador_ler('audiencias')                    }
 function interceptador_lerResponsaveis()        { return interceptador_ler('responsaveis')                  }
 function interceptador_lerDocumentos()          { return interceptador_ler('documentos')                    }
-function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaosJulgadores')              }
+function interceptador_lerOrgaosJulgadores()    { return interceptador_ler('orgaos_julgadores')              }
 function interceptador_lerTimeline()            { return interceptador_ler('timeline')                      }
 function interceptador_lerGigs()                { return interceptador_ler('gigs')                          }
 function interceptador_lerGigsConcluidos()      { return interceptador_ler('gigs_concluidos')               }

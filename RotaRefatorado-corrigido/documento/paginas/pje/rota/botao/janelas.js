@@ -1474,38 +1474,7 @@ async function _rota_salvarOrientacaoWidget(orientacao, slotIndex, nomeTarefa){
 }
 
 
-// ── Avisos visuais ────────────────────────────────────────────
 
-function rota_avisoTemporario(msg = '', tipo = 'info', ms = 3000){
-	let c = document.getElementById('rotapje-avisos')
-	if(!c){
-		c = document.createElement('div')
-		c.id = 'rotapje-avisos'
-		Object.assign(c.style, {
-			position:'fixed', top:'16px', left:'50%',
-			transform:'translateX(-50%)',
-			zIndex: String(ROTA_Z.aviso),
-			display:'flex', flexDirection:'column', gap:'6px',
-			maxWidth:'420px', width:'max-content',
-			fontFamily:"'Segoe UI', system-ui, sans-serif",
-			pointerEvents:'none',
-		})
-		document.body.appendChild(c)
-	}
-	let el = document.createElement('div')
-	Object.assign(el.style, {
-		background: tipo==='erro'?'#fdecea': tipo==='sucesso'?'#e8f5e9':'#ffffff',
-		color:'#2c3e50',
-		borderLeft: '4px solid ' + (tipo==='erro'?'#c62828':tipo==='sucesso'?'#2e7d32':'#ffa726'),
-		borderRadius:'8px', padding:'10px 16px',
-		fontSize:'13px', lineHeight:'1.4',
-		boxShadow:'0 4px 16px rgba(0,0,0,0.08)',
-		opacity:'1', transition:'opacity 0.35s', whiteSpace:'pre-wrap',
-	})
-	el.textContent = msg
-	c.appendChild(el)
-	setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(), 380) }, ms)
-}
 
 
 // ── Relatório final ───────────────────────────────────────────

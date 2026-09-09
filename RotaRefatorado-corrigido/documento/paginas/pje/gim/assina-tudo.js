@@ -1,22 +1,130 @@
+let execucaoValendo = false
+
 async function rotaAssinaTudo() {
     let janela = confereJanela(JANELA.gim)
     if (!janela) return
+    console.log('%c[Rota PJE]%c assina Janela: ' + JSON.stringify(4), LOG.info, 'color:inherit')
     let ancestral = '.centralizado-botoes'
-    let elemento = aguardarElemento('.centralizado-botoes')
+    let elemento = await aguardarElemento('.centralizado-botoes')
     if (!elemento) return
-    let idBotao = id('assinaTudo', 'botao')
-    let botao = criaBotaoLaranja({
-        id: idBotao,
+    console.log('%c[Rota PJE]%c assina Elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit', elemento)
+    let idBotaoAssina = id('assinaTudo', 'botao', 'assina')
+    let idBotaoExibe = id('assinaTudo', 'botao', 'exibe')
+    document.getElementById(idBotaoAssina)?.remove()
+    document.getElementById(idBotaoExibe)?.remove()
+    let botaoAssina = criaBotaoLaranja({
+        id: idBotaoAssina,
         ancestral: ancestral,
         texto: 'Assinar todos em todas as OJs',
-        acao: () => assinaTudo()
+        acao: () => assinaTudo('assina')
     })
-    async function assinaTudo(params) {
-        
+    let botaoExibe = criaBotaoLaranja({
+        id: idBotaoExibe,
+        ancestral: ancestral,
+        texto: 'Exibir todos de todas as OJs',
+        acao: () => assinaTudo('exibe')
+    })
+    async function assinaTudo(parametro) {
+        let orgaos = interceptador_ler('gim_orgaos_julgadores') || null
+        if (!orgaos) {
+            rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
+            return
+        }
+        let data = Date.now()
+        let dados = []
+        let perfis = await interceptador_lerPerfis() || []
+        console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.info, 'color:inherit')
+        if (!perfis.length) {
+            perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
+            if (!perfis.length) {
+                rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
+                return
+            }
+        }
+        if (parametro === 'assina'){
+            let idPerfis = []
+            for (let orgao of orgaos){
+                let idPerfil = perfis.find(d => d?.idOrgaoJulgador === orgao?.idOrgaoJulgador) || {}
+                if (!idPerfil?.idPerfil) continue
+                idPerfis.push(idPerfil)
+            }
+            await armazenar({rotapje_assinaTudo:{idPerfis: idPerfis, execucao: data, perfilExecucao: idPerfis[0], inicio: true}})
+            await rotaAssinaTudo_trocarPerfilENavegar(idPerfis[0], data)
+            return
+        }
+        for (let orgao of orgaos){
+            let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=1&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador + '&assinarTodos=true'
+            let pesquisa = await rota_fetch(url) || {}
+            if (pesquisa?.qtdPaginas > 1) {
+                for (let i = 2; i <= pesquisa?.qtdPaginas; i++){
+                    let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=' + i + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador + '&assinarTodos=true'
+                    let pesquisa = await rota_fetch(url) || {}
+                    if (pesquisa?.resultado) dados.push(...pesquisa?.resultado)
+                }
+            }
+            if (pesquisa?.resultado) dados.push(...pesquisa?.resultado)
+        }
+        alert (JSON.stringify(dados))
     }
 }
 
 rotaAssinaTudo()
+
+async function rotaAssinaTudo_trocarPerfilENavegar(perfil, data){
+    await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/plain, */*',
+            'X-XSRF-TOKEN': cookie_obter('Xsrf-Token') || cookie_obter('XSRF-TOKEN'),
+        },
+        body: JSON.stringify({ id_perfil: perfil.idPerfil })
+    })
+    let url = location.origin + '/pjekz/painel/gim/todos/oj/' + perfil.idOrgaoJulgador + '/lista-processos?assinarTodos=true'
+    window.name = 'rotapje_assinaTudo_' + data
+    location.href = url
+}
+
+async function rotaCicloAssinatura(){
+    let janela = confereJanela(JANELA.gimAssinarTodos)
+    if (!janela) return
+    let execucao = await obterArmazenamento('rotapje_assinaTudo')
+    console.log('%c[Rota PJE]%c execucao: ' + JSON.stringify(execucao), LOG.info, 'color:inherit')
+    let timeStamp = execucao?.rotapje_assinaTudo?.execucao
+    console.log('%c[Rota PJE]%c timeStamp: ' + JSON.stringify(timeStamp), LOG.info, 'color:inherit')
+    let nomeJanela = window.name
+    console.log('%c[Rota PJE]%c nomeJanela: ' + JSON.stringify(nomeJanela), LOG.info, 'color:inherit')
+    if (!nomeJanela.includes(timeStamp) || !nomeJanela.includes('rotapje_assinaTudo')) return
+    let tabela = await aguardarElemento('table.t-class')
+    console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela), LOG.aviso, 'color:inherit', tabela)
+    let tabelaHead = tabela.querySelector('thead')
+    console.log('%c[Rota PJE]%c tabelaHead: ' + JSON.stringify(tabelaHead), LOG.mb, 'color:inherit', tabelaHead)
+    let tabelaCorpo = tabela.querySelector('tbody')
+    console.log('%c[Rota PJE]%c tabelaCorpo: ' + JSON.stringify(tabelaCorpo), LOG.mb, 'color:inherit', tabelaCorpo)
+    let linhasAssinaveis = [...tabelaCorpo.querySelectorAll('tr')].filter(d => !d.querySelector('button.botao-icone-tabela-assinar.mat-button-disabled'))
+    console.log('%c[Rota PJE]%c linhasAssinaveis: ' + JSON.stringify(linhasAssinaveis), LOG.aviso, 'color:inherit', linhasAssinaveis)
+    if (!linhasAssinaveis.length) defineCiclo(execucao)
+    for(let linha of linhasAssinaveis){
+        let botaoSeleciona = linha.querySelector('button.botao-icone-tabela-assinar')
+        await suspender(200)
+        await clicar(botaoSeleciona)
+    }
+    let botaoAssinarTudo = tabelaHead.querySelector('button.botao-icone-tabela-assinar')
+    await clicar(botaoAssinarTudo)
+    alert (JSON.stringify(linhasAssinaveis))
+    async function defineCiclo() {
+        let execucao = await obterArmazenamento('rotapje_assinaTudo')
+        alert (JSON.stringify(execucao))
+    }
+}
+
+rotaCicloAssinatura()
+
+window.addEventListener('rotapje:url-mudou', () => {
+    rotaAssinaTudo()
+})
 
 
 

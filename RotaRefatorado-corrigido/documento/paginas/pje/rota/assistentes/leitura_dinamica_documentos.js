@@ -71,7 +71,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
             label: 'Sentenças e Acórdãos',
         },
     ]
-    for(t of tipos){
+    for(let t of tipos){
         let checkBox = criaCheckBox({
             id: 'rota_leituraDinamica_check_' + t?.tipo, 
             textoAoLado: t?.label, 
