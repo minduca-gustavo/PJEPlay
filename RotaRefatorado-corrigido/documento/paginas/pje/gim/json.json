@@ -596,38 +596,6 @@
             "numero": 10246
         }
     ],
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     "teste": [
         {
             "id": 4736929,
@@ -890,5 +858,91 @@
             "codTipoMinuta": 7007,
             "numero": 10950
         }
-    ]
+    ],
+    "define": {
+        "rotapje_assinaTudo": {
+            "idPerfis": [
+                {
+                    "idPerfil": 475166,
+                    "papel": "Magistrado",
+                    "identificadorPapel": "MAGISTRADO",
+                    "identificadorPapelLegado": "MAGISTRADO",
+                    "localizacao": "CON1 - Bauru",
+                    "idOrgaoJulgador": 424,
+                    "orgaoJulgador": "CON1 - Bauru",
+                    "jurisdicao": "Bauru",
+                    "vara": 101,
+                    "acessoKz": true,
+                    "favorito": false
+                },
+                {
+                    "idPerfil": 366713,
+                    "papel": "Magistrado",
+                    "identificadorPapel": "MAGISTRADO",
+                    "identificadorPapelLegado": "MAGISTRADO",
+                    "localizacao": "CON2 - Bauru",
+                    "idOrgaoJulgador": 349,
+                    "orgaoJulgador": "CON2 - Bauru",
+                    "jurisdicao": "Bauru",
+                    "vara": 102,
+                    "acessoKz": true,
+                    "favorito": false
+                },
+                {
+                    "idPerfil": 436601,
+                    "papel": "Magistrado",
+                    "identificadorPapel": "MAGISTRADO",
+                    "identificadorPapelLegado": "MAGISTRADO",
+                    "localizacao": "DAM - Bauru",
+                    "idOrgaoJulgador": 392,
+                    "orgaoJulgador": "DAM - Bauru",
+                    "jurisdicao": "Bauru",
+                    "vara": 100,
+                    "acessoKz": true,
+                    "favorito": false
+                },
+                {
+                    "idPerfil": 475205,
+                    "papel": "Magistrado",
+                    "identificadorPapel": "MAGISTRADO",
+                    "identificadorPapelLegado": "MAGISTRADO",
+                    "localizacao": "LIQ1 - Bauru",
+                    "idOrgaoJulgador": 425,
+                    "orgaoJulgador": "LIQ1 - Bauru",
+                    "jurisdicao": "Bauru",
+                    "vara": 205,
+                    "acessoKz": true,
+                    "favorito": false
+                },
+                {
+                    "idPerfil": 612180,
+                    "papel": "Magistrado",
+                    "identificadorPapel": "MAGISTRADO",
+                    "identificadorPapelLegado": "MAGISTRADO",
+                    "localizacao": "4ª Vara do Trabalho de Bauru",
+                    "idOrgaoJulgador": 78,
+                    "orgaoJulgador": "4ª Vara do Trabalho de Bauru",
+                    "jurisdicao": "Bauru",
+                    "vara": 4,
+                    "acessoKz": true,
+                    "favorito": false
+                }
+            ],
+            "execucao": 1788971889765,
+            "perfilExecucao": {
+                "idPerfil": 475166,
+                "papel": "Magistrado",
+                "identificadorPapel": "MAGISTRADO",
+                "identificadorPapelLegado": "MAGISTRADO",
+                "localizacao": "CON1 - Bauru",
+                "idOrgaoJulgador": 424,
+                "orgaoJulgador": "CON1 - Bauru",
+                "jurisdicao": "Bauru",
+                "vara": 101,
+                "acessoKz": true,
+                "favorito": false
+            },
+            "inicio": true
+        }
+    }
 }

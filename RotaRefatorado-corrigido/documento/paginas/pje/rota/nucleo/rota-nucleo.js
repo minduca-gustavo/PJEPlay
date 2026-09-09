@@ -101,6 +101,17 @@ async function removerArmazenamento(chave){
 	await NAVEGADOR.storage.local.remove(chave)
 }
 
+function rota_normalizaHtml(valor) {
+    if (!valor) return ''
+    if (typeof valor === 'string') return valor
+    if (Array.isArray(valor)) return valor.map(rota_normalizaHtml).filter(Boolean).join('')
+    for (let chave of ['html', 'conteudo', 'texto', 'documento', 'teor', 'minuta', 'valor']){
+        let v = valor?.[chave]
+        if (typeof v === 'string' && v.trim() !== '') return v
+    }
+    return ''
+}
+
 
 // ── Espera com timeout ────────────────────────────────────────
 //

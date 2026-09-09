@@ -132,98 +132,6 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
         if (botaoAcao) botaoAcao.dataset.rodando = '0'
     }
 
-    // ── código antigo (badges por termo, vindo da leitura dinâmica) ─────
-    // mantido fora do fluxo até a busca por termos/cores voltar; depende
-    // de 'regras', que hoje está no bloco comentado acima.
-    async function _buscarTextosAAssinar_badges() {
-        let elementos = []
-        let processosResultado = []
-        let i = 0
-        for (let el of elementos){
-            let p = el.textContent.match(ROTA_REGEX_CNJ)?.[0]
-            if (!p) continue
-            let id = await buscarIdPeloNumeroCNJ(p).then(d=> d?.id) || null
-            if (!id) continue
-            let documentosTimeline = await buscaDocumentosNaoAssinados(id)
-            let documentos = []
-            let corBadge = ''
-            let textoBadge = ''
-            let tooltipBadge = ''
-            let complemento = ''
-            for (d of documentosTimeline){
-                let teor = await rota_extrairTeorDocumento(id, d?.id)
-                let i=0
-                let resultado = []
-                
-                    
-                for (r of regras){
-                    let encontrado = r?.palavras.map(d=> {
-                        let valor = d!== '' ? buscaEmTextoMalFormatado(teor, d, 100, 100) : null
-                        
-                        if (valor && textoBadge !== ''){
-                            if (!textoBadge.includes('➕')) textoBadge = textoBadge + '➕'
-                        }
-                        if (valor && complemento != '' && !complemento.includes(d.toUpperCase())) complemento += '-' + d.toUpperCase() + '\n'
-                        if (valor && complemento == ''){
-                            complemento = '...\n\nOutros termos encontrados:\n\n' + '-' + d.toUpperCase() + '\n'
-                        }
-                        if (valor && textoBadge == ''){
-                            textoBadge = d
-                            corBadge = r?.cor
-                            tooltipBadge = valor?.trechos
-                        }
-                        return valor
-                    })
-                    if (encontrado && encontrado?.some(d=> d !== null)){
-                        let dado = {}
-                        let dados = encontrado?.filter(d => d !== null)
-                        dado.busca = dados
-                        dado.cor = r?.cor
-                        //corBadge = r?.cor
-                        resultado.push(dado)
-                    }
-                    i++
-                }
-                
-                // 'data' é um placeholder — o nome real do campo de data no
-                // objeto retornado por buscaDocumentosNaoAssinados ainda
-                // precisa ser conferido; deixe pronto pra troca.
-                let documento = {idUnicoDocumento: d?.idUnicoDocumento, dados: resultado, teor: teor, data: d?.data}
-                documentos.push( documento)
-            }
-            tooltipBadge += complemento
-            let processo = {}
-            processo.processo = p
-            processo.documentos = documentos
-            processosResultado.push(processo)
-            i++
-            let badgeId = 'rota_assistenteAssinatura_pintura' + i
-            let encontrouAlgo = textoBadge !== ''
-            let textoBadgeFinal = encontrouAlgo ? textoBadge.toUpperCase() : 'NÃO ENCONTRADO'
-            let corBadgeFinal = encontrouAlgo ? corBadge : '#6b7c93'
-            let badge = criaPlaquinhaComTooltip({
-                id: badgeId,
-                texto: textoBadgeFinal,
-                cor: corBadgeFinal,
-                tooltip: tooltipBadge,
-                
-            })
-            el.appendChild(badge)
-            let badgeEdita = document.querySelector('#rota_assistenteAssinatura_pintura' + i)
-            badgeEdita.style.backgroundColor = corBadgeFinal
-            badgeEdita.style.border = '1px solid ' + corBadgeFinal
-            badgeEdita.style.borderRadius = "2px"
-            badgeEdita.style.padding = '2px 2px'
-            badgeEdita.style.cursor = 'pointer'
-            badgeEdita.addEventListener('click', (e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                rota_assistenteAssinatura_abrirCompiladoProcesso(processo)
-            })
-            
-        }
-        
-    }
 
     // Devolve sempre um array de {idDocumento, idUnicoDocumento, titulo, html},
     // vazio quando o processo não tem documento pendente de assinatura.
@@ -250,7 +158,7 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
 
             let html = ''
             try {
-                html = rota_assistenteAssinatura_normalizaHtml(await extrairHtml(id, idDocumento))
+                html = rota_normalizaHtml(await extrairHtml(id, idDocumento))
             } catch (e) {
                 console.error('[Rota PJE] erro ao extrair html do documento ' + idDocumento + ':', e)
                 continue
@@ -416,16 +324,7 @@ function rota_assistenteAssinatura_limparHtmlMinuta(html = '') {
 
 // extrairHtml pode devolver a string crua, um objeto com o HTML dentro
 // ou uma lista — normaliza os três num texto só
-function rota_assistenteAssinatura_normalizaHtml(valor) {
-    if (!valor) return ''
-    if (typeof valor === 'string') return valor
-    if (Array.isArray(valor)) return valor.map(rota_assistenteAssinatura_normalizaHtml).filter(Boolean).join('')
-    for (let chave of ['html', 'conteudo', 'texto', 'documento', 'teor', 'minuta', 'valor']){
-        let v = valor?.[chave]
-        if (typeof v === 'string' && v.trim() !== '') return v
-    }
-    return ''
-}
+
 
 
 // ── rota_assistenteAssinatura_abrirPainelMinutas ───────────────────
