@@ -34,6 +34,7 @@ async function rotaAssinaTudo() {
     })
     async function assinaTudo(parametro) {
         let orgaos = interceptador_ler('gim_orgaos_julgadores') || null
+        console.log('%c[Rota PJE]%c orgaos: ' + JSON.stringify(orgaos), LOG.info, 'color:inherit')
         if (!orgaos) {
             rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
             console.log('%c[Rota PJE]%c interceptador: erro 29', LOG.info, 'color:inherit')
@@ -50,13 +51,16 @@ async function rotaAssinaTudo() {
             }
         }
         if (parametro === 'assina'){
+            await separaPerfisEAssina(orgaos)
+        }
+        async function separaPerfisEAssina(orgaos, exclusoes = [], sinalizados = []){
             let idPerfis = []
             for (let orgao of orgaos){
                 let idPerfil = perfis.find(d => d?.idOrgaoJulgador === orgao?.idOrgaoJulgador) || {}
                 if (!idPerfil?.idPerfil) continue
                 idPerfis.push(idPerfil)
             }
-            await armazenar({rotapje_assinaTudo:{idPerfis: idPerfis, execucao: data, perfilExecucao: idPerfis[0].idPerfil}})
+            await armazenar({rotapje_assinaTudo:{idPerfis: idPerfis, execucao: data, perfilExecucao: idPerfis[0].idPerfil, exclusoes: exclusoes, sinalizados: sinalizados}})
             await rotaAssinaTudo_trocarPerfilENavegar(idPerfis[0], data)
             return
         }
@@ -95,6 +99,7 @@ async function rotaAssinaTudo() {
             ancestral: idCabecalho
         })
         titulo.style.width = '100%'
+        titulo.style.fontSize = '16px'
         // CRIA DIV ROLANTE PARA POSICIONAR OS DESPACHOS
         let idRolante = id('assinaTudo', 'rolante')
         let rolante = criaDiv({
@@ -103,14 +108,21 @@ async function rotaAssinaTudo() {
         })
         rolante.style.overflowY = 'auto'
         rolante.style.height = '100%'
-        // CRIA RODAPE PARA BOTÃO DE SELECIONAR TODOS E ASSINAR
+        let grade = criaGrade({
+            id: idRolante + '_grade',
+            ancestral: idRolante,
+            numeroColunas: 1
+        })
+        // CRIA RODAPE PARA BOTÃO DE SELECIONAR TODOS E ASSINAR - ATENÇÃO: O RODAPÉ É ROW-REVERSE, ou seja, os elementos inseridos primeiro ficam à direita
+        let sinalizados = [] // para reunir os sinalizados e apresentá-los depois.
         let idRodape = id('assinaTudo', 'rodape')
         let rodape = criaDiv({
             id: idRodape,
             ancestral: idDiv,
             rowColumn: 'row-reverse'
         })
-        let idCheckTodos = id('assinaTudo', 'check', 'selecionaTodos')
+        let idCheck = id('assinaTudo', 'check')
+        let idCheckTodos = idCheck + '_selecionaTodos'
         let checkTodos = criaCheckBox({
             id: idCheckTodos,
             ancestral: idRodape
@@ -124,16 +136,13 @@ async function rotaAssinaTudo() {
             console.log('%c[Rota PJE]%c 107' + JSON.stringify(107), LOG.aviso, 'color:inherit')
             clicar(checkTodos)
         }
-        checkTodos.addEventListener('change', () => selecionaTodos())
-        function selecionaTodos() {
-
-        }
-        let idAssinaSelecionadosESinalizados = id('assinaTudo', 'botao', 'assinaSelecionados')
+        checkTodos.addEventListener('click', () => selecionaTodos(checkTodos, idCheck))
+        let idAssinaSelecionadosESinalizados = id('assinaTudo', 'botao', 'assinaSelecionadosESinalizados')
         let AssinaSelecionadosESinalizados = criaBotaoLaranja({
             id: idAssinaSelecionadosESinalizados,
             texto: 'Assinar Selecionados e Sinalizados',
             ancestral: idRodape,
-            acao: async () => await assinaProcessosSelecionados(true)
+            acao: async () => await assinaProcessosSelecionados(idCheck, sinalizados)
         })
         criaTooltip({
             id: idAssinaSelecionadosESinalizados + 'tooltip',
@@ -145,99 +154,144 @@ async function rotaAssinaTudo() {
             id: idAssinaSelecionados,
             texto: 'Assinar Selecionados',
             ancestral: idRodape,
-            acao: async () => await assinaProcessosSelecionados(false)
+            acao: async () => await assinaProcessosSelecionados(idCheck)
         })
-
-        async function assinaProcessosSelecionados(mostraSinalizados = false) {
-
-        }
-
-        let dados = []
+        let idContador = id('assinaTudo', 'contador')
+        let contador = criaTexto({
+            id: idContador,
+            texto: '',
+            ancestral: idRodape
+        })
+        
+        
+        let i = 0
         for (let orgao of orgaos){
+            i++
+            atualizaContador(i, orgaos.length)
             let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=1&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador// + '&assinarTodos=true'
             let pesquisa = await rota_fetch(url) || {}
+            if (pesquisa?.resultado) {
+                apresentaDespachos(pesquisa?.resultado, idRolante, idCheck, sinalizados)
+            }
             if (pesquisa?.qtdPaginas > 1) {
                 for (let i = 2; i <= pesquisa?.qtdPaginas; i++){
                     let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=' + i + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador// + '&assinarTodos=true'
                     let pesquisa = await rota_fetch(url) || {}
-                    if (pesquisa?.resultado) dados.push(...pesquisa?.resultado)
+                    if (pesquisa?.resultado) apresentaDespachos(pesquisa?.resultado, idRolante, idCheck, sinalizados)
                 }
             }
-            if (pesquisa?.resultado) dados.push(...pesquisa?.resultado)
-            
-            // variável que indica se o processo pode ser assinado em lote ou não: minutaPendenteAnalise
+            if (i === orgaos.length) atualizaContador(i, orgaos.length, true)
+                // variável que indica se o processo pode ser assinado em lote ou não: minutaPendenteAnalise
             // "temOcorrenciaImpedimento": true, - quando tem impedimento
             // https://pje-web-hm.trt15.jus.br/pje-comum-api/api/processos/id/2193070/documentos/id/305490464/conteudo?incluirAssinatura=false
         }
-        let sinalizados = dados.filter(d => d?.minutaPendenteAnalise || !d?.temOcorrenciaImpedimento)
-        let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa.includes('Assinar'))
-        console.log('%c[Rota PJE]%c filtrados' + JSON.stringify(filtrados), LOG.teste, 'color:inherit')
+        async function assinaProcessosSelecionados(elemento, sinalizados = []) {
+            let checks = [...document.querySelectorAll('[id^=' + elemento + ']')]
+            let checksValidos = checks.filter(d =>
+                !['caixa', '_selecionaTodos', 'tooltip'].some(c => d?.id.includes(c))
+            )
+            let orgaos = [...new Set(checksValidos.map(d => d.dataset?.oj))]
+            let exclusoes = checksValidos.filter(d => d.dataset?.marcado == 0).map(c => c.dataset?.processo)
+            
+            await separaPerfisEAssina(orgaos, exclusoes, sinalizados)
 
-        let mostra = []
-        for (let processo of filtrados){
-            if (!processo.id || !processo.idMinutaKz) continue
-            let idDivProcesso = id('assinaTudo', 'processo', processo?.id)
-            let divProcesso = criaDiv({
-                id: idDivProcesso,
-                ancestral: idRolante
-            })
-            let idDivCabecalhoProcesso = id('assinaTudo', 'cabecalho', processo?.id)
-            let cabecalhoProcesso = criaDiv({
-                id: idDivCabecalhoProcesso,
-                ancestral: idDivProcesso,
-                rowColumn: 'row-reverse'
-            })
-            let idCheckBoxProcesso = id('assinaTudo', 'check', processo?.id)
-            let checkBoxProcesso = criaCheckBox({
-                id: idCheckBoxProcesso,
-                ancestral: idDivCabecalhoProcesso
-            })
-            document.getElementById(idCheckBoxProcesso).dataset.processo = processo?.numeroProcesso
-            clicar(checkBoxProcesso)
-            let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
-            let tituloProcesso = criaSubTitulo({
-                texto: processo?.numeroProcesso,
-                id: idTituloProcesso,
-                ancestral: idDivCabecalhoProcesso
-            })
-            tituloProcesso.style.width = '100%'
-            formataDiv(divProcesso, 'fundo', '95%', 'auto', 'relative')
-            let conteudo = ''
-            try {
-                conteudo = rota_normalizaHtml(await extrairHtml(processo.id, processo.idMinutaKz))
-            } catch (e) {
-                console.error('[Rota PJE] erro ao extrair html do documento ' + processo.idMinutaKz + ':', e)
-                continue
-            }
-            if (!conteudo) continue
-            mostra.push(conteudo)
         }
-        console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.aviso, 'color:inherit')
-        //_baixarArquivo(JSON.stringify(dados), 'assinaTudo.json', 'application/json')
-        //_baixarArquivo(mostra, 'mostra.html', 'text/html')
-        //alert (JSON.stringify(dados))
-    }
-    function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute') {
-        let bgCor = UI_CORES[cor] || UI_CORES.branco
-        Object.assign(div.style,{
-            position:       position,
-            top:            '50%',
-            left:           '50%',
-            transform:      'translate(-50%, -50%)',
-            width:          largura,
-            height:         altura,
-            background:     bgCor,
-            border:         '1px solid ' + UI_CORES.azul,
-            borderRadius:   '8px',
-            boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
-            zIndex:         String(ROTA_Z.flutuante ?? 9000),
-            display:        'flex',
-            padding:        '4px 4px 4px 4px'
-        })
+        function selecionaTodos(elemento, seletor) {
+            console.log('%c[Rota PJE]%c 137 seleciona todos: ' + JSON.stringify(137), LOG.teste, 'color:inherit')
+            let dataset = elemento.dataset.marcado
+            console.log('%c[Rota PJE]%c dataset: ' + JSON.stringify(dataset), LOG.teste, 'color:inherit')
+            let checks = [...document.querySelectorAll('[id^=' + seletor + ']')]
+            for (let check of checks){
+                if (check.id.includes('caixa')) continue
+                if (check.dataset.marcado !== dataset && check !== elemento){
+                    clicar(check)
+                }
+            }
+        }
+        function atualizaContador(atual, total, final = false){
+            let contador = document.getElementById(idContador)
+            contador.textContent = final ? 'Busca finalizada: ' + atual + ' de ' + total + ' OJs.' : 'Buscando ' + atual + '/' + total + ' OJs'
+        }
+        
     }
 }
 
 rotaAssinaTudo()
+
+function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute') {
+    let bgCor = UI_CORES[cor] || UI_CORES.branco
+    Object.assign(div.style,{
+        position:       position,
+        top:            '50%',
+        left:           '50%',
+        transform:      'translate(-50%, -50%)',
+        width:          largura,
+        height:         altura,
+        background:     bgCor,
+        border:         '1px solid ' + UI_CORES.azul,
+        borderRadius:   '8px',
+        boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
+        zIndex:         String(ROTA_Z.flutuante ?? 9000),
+        display:        'flex',
+        padding:        '4px 4px 4px 4px'
+    })
+}
+
+async function apresentaDespachos(dados, idRolante, idCheck, sinalizados){
+    let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa.includes('Assinar'))
+    console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados.length), LOG.teste, 'color:inherit')
+    let sinalizadosOJ = dados.filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa.includes('Assinar'))
+    sinalizados.push(...sinalizadosOJ)
+    for (let processo of filtrados){
+        console.log('%c[Rota PJE]%c processo: ' + JSON.stringify(processo), LOG.aviso, 'color:inherit')
+        if (!processo.id || !processo.idMinutaKz) continue
+        let idDivProcesso = id('assinaTudo', 'processo', processo?.id)
+        let divProcesso = criaDiv({
+            id: idDivProcesso,
+            ancestral: idRolante + '_grade'
+        })
+        let idDivCabecalhoProcesso = id('assinaTudo', 'cabecalho', processo?.id)
+        let cabecalhoProcesso = criaDiv({
+            id: idDivCabecalhoProcesso,
+            ancestral: idDivProcesso,
+            rowColumn: 'row-reverse'
+        })
+        let idCheckBoxProcesso = idCheck + '_' + processo?.id
+        let checkBoxProcesso = criaCheckBox({
+            id: idCheckBoxProcesso,
+            ancestral: idDivCabecalhoProcesso
+        })
+        checkBoxProcesso.dataset.processo = processo?.numeroProcesso
+        checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador
+        clicar(checkBoxProcesso)
+        let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
+        let tituloProcesso = criaSubTitulo({
+            texto: processo?.numeroProcesso,
+            id: idTituloProcesso,
+            ancestral: idDivCabecalhoProcesso
+        })
+        tituloProcesso.style.width      = '100%'
+        tituloProcesso.style.fontSize   = '16px'
+        formataDiv(divProcesso, 'fundo', 'auto', 'auto', 'relative')
+        
+        let conteudo = ''
+        try {
+            conteudo = rota_normalizaHtml(await extrairHtml(processo.id, processo.idMinutaKz))
+        } catch (e) {
+            console.error('[Rota PJE] erro ao extrair html do documento ' + processo.idMinutaKz + ':', e)
+            continue
+        }
+        if (!conteudo) continue
+        //conteudo.querySelector('img')?.remove()
+        let idDivConteudo = id('assinaTudo', 'conteudo', processo?.id)
+        let divConteudo = criaDiv({
+            id: idDivConteudo,
+            ancestral: idDivProcesso
+        })
+        divConteudo.innerHTML = conteudo
+
+    }
+}
 
 async function rotaAssinaTudo_trocarPerfilENavegar(perfil, data){
     await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
@@ -278,7 +332,9 @@ async function rotaCicloAssinatura(){
         return
     }
     console.log('%c[Rota PJE]%c linhasAssinaveis: ' + JSON.stringify(linhasAssinaveis), LOG.info, 'color:inherit')
+    let exclusoes = execucao?.rotapje_assinaTudo?.exclusoes || []
     for(let linha of linhasAssinaveis){
+        if (exclusoes.some(d => linha.textContent.includes(d))) continue
         let botaoSeleciona = linha.querySelector('button.botao-icone-tabela-assinar')
         await suspender(200)
         await clicar(botaoSeleciona)
