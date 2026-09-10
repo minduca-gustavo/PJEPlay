@@ -16,17 +16,27 @@ async function rotaAssinaTudo() {
         texto: 'Assinar todos em todas as OJs',
         acao: () => assinaTudo('assina')
     })
+    criaTooltip({
+        id: idBotaoAssina + 'tooltip', 
+        texto: 'Assina todos os documentos disponíveis para assinatura em todas as OJs (não abre para conferência).', 
+        elemento: idBotaoAssina
+    })
     let botaoExibe = criaBotaoLaranja({
         id: idBotaoExibe,
         ancestral: ancestral,
         texto: 'Exibir todos de todas as OJs',
         acao: () => assinaTudo('exibe')
     })
+    criaTooltip({
+        id: idBotaoExibe + 'tooltip', 
+        texto: 'Exibe todos os documentos disponíveis para assinatura em todas as OJs para leitura, seleção e assinatura.',
+        elemento: idBotaoExibe
+    })
     async function assinaTudo(parametro) {
         let orgaos = interceptador_ler('gim_orgaos_julgadores') || null
         if (!orgaos) {
             rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
-            console.log('%c[Rota PJE]%c interceptador: erro', LOG.info, 'color:inherit')
+            console.log('%c[Rota PJE]%c interceptador: erro 29', LOG.info, 'color:inherit')
             return
         }
         let data = Date.now()
@@ -35,6 +45,7 @@ async function rotaAssinaTudo() {
             perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
             if (!perfis.length) {
                 rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
+                console.log('%c[Rota PJE]%c interceptador: erro 38', LOG.info, 'color:inherit')
                 return
             }
         }
@@ -49,6 +60,7 @@ async function rotaAssinaTudo() {
             await rotaAssinaTudo_trocarPerfilENavegar(idPerfis[0], data)
             return
         }
+        // CRIA DIV CENTRALIZADA PARA MOSTRAR OS DESPACHOS
         let idDiv = id('assinaTudo', 'exibirTodos')
         document.getElementById(idDiv)?.remove()
         let div = criaDiv({
@@ -56,6 +68,90 @@ async function rotaAssinaTudo() {
             ancestral: 'ffff'
         })
         formataDiv(div)
+        // CRIA CABEÇALHO COM TÍTULO E BOTÃO FECHAR
+        let idCabecalho = id('assinaTudo', 'cabecalho')
+        let cabecalho = criaDiv({
+            id: idCabecalho,
+            ancestral: idDiv,
+            rowColumn: 'row-reverse'
+        })
+        let botaoFechar = criaBotaoAzul({
+            id: id('assinaTudo', 'botao', 'fechar'),
+            ancestral: idCabecalho,
+            texto: '✕',
+            acao: () => {
+                document.getElementById(idDiv)?.remove()
+                return
+            }
+        })
+        botaoFechar.style.height =          '18px'
+        botaoFechar.style.fontSize =        '13px'
+        botaoFechar.style.lineHeight =      '1px'
+        botaoFechar.style.padding =         '2px 5px'
+        botaoFechar.style.borderRadius =    '4px'
+        let titulo = criaTitulo({
+            id: id('assinaTudo', 'titulo'),
+            texto: 'Exibe todos os documentos para assinatura de todas as OJs',
+            ancestral: idCabecalho
+        })
+        titulo.style.width = '100%'
+        // CRIA DIV ROLANTE PARA POSICIONAR OS DESPACHOS
+        let idRolante = id('assinaTudo', 'rolante')
+        let rolante = criaDiv({
+            id: idRolante,
+            ancestral: idDiv
+        })
+        rolante.style.overflowY = 'auto'
+        rolante.style.height = '100%'
+        // CRIA RODAPE PARA BOTÃO DE SELECIONAR TODOS E ASSINAR
+        let idRodape = id('assinaTudo', 'rodape')
+        let rodape = criaDiv({
+            id: idRodape,
+            ancestral: idDiv,
+            rowColumn: 'row-reverse'
+        })
+        let idCheckTodos = id('assinaTudo', 'check', 'selecionaTodos')
+        let checkTodos = criaCheckBox({
+            id: idCheckTodos,
+            ancestral: idRodape
+        })
+        criaTooltip({
+            id: idCheckTodos + 'tooltip', 
+            texto: 'Seleciona todos.', 
+            elemento: idCheckTodos
+        })
+        if (document.getElementById(idCheckTodos).dataset.marcado == 0){
+            console.log('%c[Rota PJE]%c 107' + JSON.stringify(107), LOG.aviso, 'color:inherit')
+            clicar(checkTodos)
+        }
+        checkTodos.addEventListener('change', () => selecionaTodos())
+        function selecionaTodos() {
+
+        }
+        let idAssinaSelecionadosESinalizados = id('assinaTudo', 'botao', 'assinaSelecionados')
+        let AssinaSelecionadosESinalizados = criaBotaoLaranja({
+            id: idAssinaSelecionadosESinalizados,
+            texto: 'Assinar Selecionados e Sinalizados',
+            ancestral: idRodape,
+            acao: async () => await assinaProcessosSelecionados(true)
+        })
+        criaTooltip({
+            id: idAssinaSelecionadosESinalizados + 'tooltip',
+            texto: 'Assina todos os documentos selecionados e sinalizados (aqueles que não podem ser assinados em lote serão mostrados um a um ao final).',
+            elemento: idAssinaSelecionadosESinalizados
+        })
+        let idAssinaSelecionados = id('assinaTudo', 'botao', 'assinaSelecionados')
+        let assinaSelecionados = criaBotaoLaranja({
+            id: idAssinaSelecionados,
+            texto: 'Assinar Selecionados',
+            ancestral: idRodape,
+            acao: async () => await assinaProcessosSelecionados(false)
+        })
+
+        async function assinaProcessosSelecionados(mostraSinalizados = false) {
+
+        }
+
         let dados = []
         for (let orgao of orgaos){
             let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=1&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador// + '&assinarTodos=true'
@@ -75,10 +171,37 @@ async function rotaAssinaTudo() {
         }
         let sinalizados = dados.filter(d => d?.minutaPendenteAnalise || !d?.temOcorrenciaImpedimento)
         let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa.includes('Assinar'))
+        console.log('%c[Rota PJE]%c filtrados' + JSON.stringify(filtrados), LOG.teste, 'color:inherit')
 
         let mostra = []
         for (let processo of filtrados){
             if (!processo.id || !processo.idMinutaKz) continue
+            let idDivProcesso = id('assinaTudo', 'processo', processo?.id)
+            let divProcesso = criaDiv({
+                id: idDivProcesso,
+                ancestral: idRolante
+            })
+            let idDivCabecalhoProcesso = id('assinaTudo', 'cabecalho', processo?.id)
+            let cabecalhoProcesso = criaDiv({
+                id: idDivCabecalhoProcesso,
+                ancestral: idDivProcesso,
+                rowColumn: 'row-reverse'
+            })
+            let idCheckBoxProcesso = id('assinaTudo', 'check', processo?.id)
+            let checkBoxProcesso = criaCheckBox({
+                id: idCheckBoxProcesso,
+                ancestral: idDivCabecalhoProcesso
+            })
+            document.getElementById(idCheckBoxProcesso).dataset.processo = processo?.numeroProcesso
+            clicar(checkBoxProcesso)
+            let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
+            let tituloProcesso = criaSubTitulo({
+                texto: processo?.numeroProcesso,
+                id: idTituloProcesso,
+                ancestral: idDivCabecalhoProcesso
+            })
+            tituloProcesso.style.width = '100%'
+            formataDiv(divProcesso, 'fundo', '95%', 'auto', 'relative')
             let conteudo = ''
             try {
                 conteudo = rota_normalizaHtml(await extrairHtml(processo.id, processo.idMinutaKz))
@@ -90,19 +213,20 @@ async function rotaAssinaTudo() {
             mostra.push(conteudo)
         }
         console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.aviso, 'color:inherit')
-        _baixarArquivo(JSON.stringify(dados), 'assinaTudo.json', 'application/json')
-        _baixarArquivo(mostra, 'mostra.html', 'text/html')
+        //_baixarArquivo(JSON.stringify(dados), 'assinaTudo.json', 'application/json')
+        //_baixarArquivo(mostra, 'mostra.html', 'text/html')
         //alert (JSON.stringify(dados))
     }
-    function formataDiv(div){
+    function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute') {
+        let bgCor = UI_CORES[cor] || UI_CORES.branco
         Object.assign(div.style,{
-            position:       'absolute',
+            position:       position,
             top:            '50%',
             left:           '50%',
             transform:      'translate(-50%, -50%)',
-            width:          '80%',
-            height:         '80%',
-            background:     UI_CORES.branco,
+            width:          largura,
+            height:         altura,
+            background:     bgCor,
             border:         '1px solid ' + UI_CORES.azul,
             borderRadius:   '8px',
             boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',

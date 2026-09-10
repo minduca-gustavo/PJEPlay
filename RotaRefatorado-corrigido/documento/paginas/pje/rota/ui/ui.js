@@ -57,6 +57,7 @@ function rota_ui_lerPaleta(){
 		borda:        cor('borda',         '#dcdcdc'),
 		texto:        cor('texto',         '#2c3e50'),
 		suave:        cor('texto-suave',   '#6b7c93'),
+		cinza:        cor('cinza',         '#dddddd'),
 		branco:       cor('branco',        '#ffffff'),
 		erro:         cor('perigo',        '#c62828'),
 		sucesso:      cor('sucesso',       '#2e7d32'),
