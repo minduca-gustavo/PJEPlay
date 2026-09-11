@@ -363,7 +363,6 @@ async function triagem_inicial_acoesDespachar(){
         await suspender(2000)
         if (audienciasMarcadas?.dataInicio) {
             await armazenar({rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_despachar'})
-            return
             window.close()
             return
         } else{ 
@@ -891,6 +890,7 @@ async function triagem_inicial_acoesIntimar(){
     await suspender(1000)
     await preencherRota(descricao, dados.descricao)
     await suspender(1000)
+    let editorContainer = aguardarElemento('.editor-container')
     let placeholders = {assinatura: ['Assinatura (opcional)'], conteudo: ['Conteúdo principal']}
     let editor = [...selecionar('.editor-container', '', true)]
     let editorAssinatura = editor
