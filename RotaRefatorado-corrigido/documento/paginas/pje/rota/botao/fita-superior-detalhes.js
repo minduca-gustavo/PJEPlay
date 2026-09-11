@@ -9,7 +9,7 @@ async function criaFitaSuperior() {
     let corToolbar = barra
         ? getComputedStyle(barra).backgroundColor
         : '#1565C0'
-    let div = await criaDiv({
+    let div = criaDiv({
         id: 'rotapje-busca-posicao-fila-div-barra',
         ancestral: 'ffff'
     })
@@ -143,9 +143,9 @@ async function busca_posicao_filaAguardaCarregamentoDoBodyComProcesso(conteudoAt
     let match
     let contAtual
     let conteudo
+    let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
     if(!conteudoAtual){
         await aguardarElementoNovo('painelGlobalTabelaDeProcessos')
-        let ROTA_REGEX_CNJ = /\d{7}[-.]\d{2}[-.]\d{4}[-.]\d[-.]\d{2}[-.]\d{4}/
         for(let i = 0; i < 100; i++){
             contAtual = await sel('painelGlobalTabelaDeProcessos')
             conteudo = contAtual.innerText

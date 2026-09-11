@@ -836,7 +836,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         let dados = await buscarProcessosNaSalaPorData(sala.id, data)
                         console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit', dados)
                         if (!dados?.t) continue
-                        for (audiencia of dados?.t){
+                        for (let audiencia of dados?.t){
                             console.log('%c[Rota PJE]%c audiencia: ' + JSON.stringify(audiencia), LOG.teste, 'color:inherit')
                             if(
                                 tipoAudiencia.split(',').map(d => normalizar(d).toLowerCase().trim()).some(d=> (normalizar(audiencia?.tipo?.descricao.toLowerCase())).includes(d))
@@ -881,7 +881,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     if (!resultadoAudiencia.length) return 'Não foram encontradas audiências para o tipo informado.'
                     let resultadoProcesso = []
                     let k = 0
-                    for (dado of resultadoAudiencia){
+                    for (let dado of resultadoAudiencia){
                         atualizar_contador(ancestral, '2 / 2', k++ + '/' + resultadoAudiencia.length)
                     
                         let id = dado?.idProcesso

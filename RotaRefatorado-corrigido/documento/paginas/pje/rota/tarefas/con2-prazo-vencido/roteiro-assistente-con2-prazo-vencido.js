@@ -103,7 +103,7 @@ Clique para fixar/desafixar.`,
             })
         }
         let i = 0
-        for (s of solucoes){
+        for (let s of solucoes){
             let linha = Math.floor(i / 2)
             let celula = criaDiv({
                 id: id(tarefaNome, bloco, nomeTabela, 'celula' + i),
@@ -279,7 +279,7 @@ Clique para fixar/desafixar.`,
         ancestral: 'rota_corpo',
         rowColumn: 'column'
     })
-    for (secao of secoes){
+    for (let secao of secoes){
         let mostraRecolhe = await criaSecaoMostraRecolhe({
             id: id(tarefaNome, secao?.label, 'mostra_recolhe'),
             idSempreAMostra: id(tarefaNome, secao?.label, 'mostra'),
@@ -299,7 +299,7 @@ Clique para fixar/desafixar.`,
             textoBox: secao?.instrucaoLonga?.textoBox
         })
         
-        for (caso of secao?.casos){
+        for (let caso of secao?.casos){
             let ancestral = id(tarefaNome, secao?.label, 'recolhe')
             let checkBox = criaCheckBox({
                 id: id(tarefaNome, secao?.label, 'checkbox', caso?.id),
@@ -313,7 +313,7 @@ Clique para fixar/desafixar.`,
         async function con2_prazo_vencidoCriaAcoes(seletor, ancestral){
             let idTodos = seletor?.id.replace(seletor?.dataset?.caso,'')
             let botoes = [...document.querySelectorAll('[id^="' + idTodos + '"]')]
-            for (botao of botoes){
+            for (let botao of botoes){
                 if (botao?.id.includes('caixa')) continue
                 if (botao !== seletor && botao?.dataset?.marcado == 1 && seletor.dataset.marcado == 1){
                     clicar(botao)
@@ -387,7 +387,7 @@ Clique para fixar/desafixar.`,
             let emailsArmazenados = await obterArmazenamento(idDiv)
             if (emailsArmazenados[idDiv]){
                 console.log('%c[Rota PJE]%c emailsArmazenados: ' + JSON.stringify(emailsArmazenados), LOG.erro, 'color:inherit')
-                for (email of emailsArmazenados[idDiv]){
+                for (let email of emailsArmazenados[idDiv]){
                     let idCheckbox = id('checkEMail')
                     let checkBox = criaCheckBox({
                         id: idCheckbox,

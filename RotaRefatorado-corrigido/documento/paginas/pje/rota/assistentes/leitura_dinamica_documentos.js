@@ -48,7 +48,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
     let mapaFuncoes ={
         criaInput
     }
-    let div = await criaDiv({
+    let div = criaDiv({
         id: 'rota_leituraDinamica', 
         ancestral: ancestral,
     })
@@ -85,7 +85,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
     async function alternarCheckLeituraDinamica(el) {
         let todosChecks = [...document.querySelectorAll('[id*="rota_leituraDinamica_check_"]')]
         
-        for (t of tipos){
+        for (let t of tipos){
             let check = document.querySelector('#rota_leituraDinamica_check_' + t?.tipo)
             if (check !== el && el.dataset.marcado == 1 && check.dataset.marcado == 1){
                 check.click()
@@ -472,7 +472,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
 
         let inputs = [...selecionar('[id*="' + seletores + '"]', '', true)]
         let regras = []
-        for (e of inputs){
+        for (let e of inputs){
             if (e?.id.includes('container')) continue
             let valor = e?.value
             if (valor !== ''){
@@ -517,8 +517,10 @@ async function criaWidgetLeituraDinamica(ancestral) {
             if (!analise){
                 let id = await buscarIdPeloNumeroCNJ(p).then(d => d?.id) || null
                 if (!id) continue
+                console.log('%c[Rota PJE]%c id' + JSON.stringify(id), LOG.info, 'color:inherit')
 
                 let documentosTimeline = await buscaDocumentosNaoApreciados(id)
+                console.log('%c[Rota PJE]%c documentosTimeline' + JSON.stringify(documentosTimeline), LOG.info, 'color:inherit')
                 let documentos = []
                 let corBadge = ''
                 let textoBadge = ''
@@ -526,7 +528,8 @@ async function criaWidgetLeituraDinamica(ancestral) {
                 let complemento = ''
 
                 for (let doc of documentosTimeline){
-                    let teor = await extrairTexto(id, doc?.id)
+                    let teor = await rota_extrairTeorDocumento(id, doc?.id)
+                    console.log('%c[Rota PJE]%c teor' + JSON.stringify(teor), LOG.teste, 'color:inherit')
                     let resultado = []
 
                     for (let r of regras){

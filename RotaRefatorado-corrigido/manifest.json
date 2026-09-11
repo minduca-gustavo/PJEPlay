@@ -160,7 +160,6 @@
 
 				"documento/paginas/pje/rota/planilha/funcoes-da-planilha.js",
 				"documento/paginas/pje/rota/assistentes/porta-de-entrada.js",
-				"documento/paginas/pje/rota/assistentes/sf-botoes.js",
 				"documento/paginas/pje/rota/assistentes/compilador-de-assistentes.js",
 				"documento/paginas/pje/rota/assistentes/consulta-qualquer-oj.js",
 				"documento/paginas/pje/rota/botao/fita-superior-detalhes.js",

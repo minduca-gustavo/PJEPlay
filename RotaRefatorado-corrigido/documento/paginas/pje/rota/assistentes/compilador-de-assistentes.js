@@ -70,7 +70,7 @@ async function compiladorDeAssistentes() {
         assistentePrazosPericiais,
     }
     
-    for (assistente of assistentes){
+    for (let assistente of assistentes){
         if (assistente.inativo) continue
         let janela = confereJanela(...assistente?.janelas)
         if (!janela) continue
@@ -86,7 +86,7 @@ async function compiladorDeAssistentes() {
         mostraRecolhe.style.marginTop = '0px'
         mostraRecolhe.style.gap = '0px'
         mostraRecolhe.style.padding = '0px 0px 0px 0px'
-        let mostraRecolheCorpo = document.querySelector(id(assistente.id, 'recolhe'))
+        let mostraRecolheCorpo = document.getElementById(id(assistente.id, 'recolhe'))
         mostraRecolhe.corpo.style.padding = '0px 0px 0px 0px'
         if (!mostraRecolheCorpo && assistente?.id === 'consulta-qualquer-oj'){
             let chaveStorage = id(assistente.id, 'mostra-recolhe') + '-expandido'
@@ -107,10 +107,10 @@ async function compiladorDeAssistentes() {
         let funcaoChamar = assistente?.funcao
         console.log('%c[Rota PJE]%c mapaFuncoes[funcaoChamar]: ' + JSON.stringify(typeof mapaFuncoes[funcaoChamar]), LOG.mb, 'color:inherit')
         if (assistente.id !== 'filtros-novos'){
-            let funcaoConfere = mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+            let funcaoConfere = await mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
             console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
         } else {
-            mostraRecolhe.aoAlternar = mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+            mostraRecolhe.aoAlternar = () => mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
         }
     }
     

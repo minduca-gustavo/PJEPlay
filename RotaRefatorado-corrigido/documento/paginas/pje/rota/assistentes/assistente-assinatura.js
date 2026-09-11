@@ -50,7 +50,7 @@ async function criaWidgetAssistenteAssinatura(ancestral) {
     let mapaFuncoes ={
         criaInput
     }
-    let div = await criaDiv({
+    let div = criaDiv({
         id: 'rota_assistenteAssinatura', 
         ancestral: ancestral,
     })

@@ -142,7 +142,7 @@ async function assistentePrazosPericiais(ancestral) {
     const ID = 'rota_prazosPericiais'
     document.querySelector('#' + ID)?.remove()
 
-    const div = await criaDiv({ id: ID, ancestral })
+    const div = criaDiv({ id: ID, ancestral })
 
     // ── Subtítulo ────────────────────────────────────────────────
     criaSubTitulo({
@@ -517,7 +517,7 @@ async function assistentePeritos(ancestral) {
     const ID = 'rota_peritos'
     document.querySelector('#' + ID)?.remove()
 
-    await criaDiv({ id: ID, ancestral })
+    criaDiv({ id: ID, ancestral })
 
     // ── Subtítulo ────────────────────────────────────────────────
     criaSubTitulo({
