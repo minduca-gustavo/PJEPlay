@@ -10,16 +10,6 @@ function devolverGig() {
 
 
 
-// ── Observa mudanças no DOM (Angular renderiza async) ────────────────────────
-let _devolverGig_debounce = null
-const _devolverGig_observer = new MutationObserver(() => {
-    clearTimeout(_devolverGig_debounce)
-    _devolverGig_debounce = setTimeout(adicionarBotoesDevolverGig, 300)
-})
-_devolverGig_observer.observe(document.body, { childList: true, subtree: true })
-
-devolverGig()
-
 
 
 // ── Funções auxiliares ───────────────────────────────────────────────────────

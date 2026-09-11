@@ -549,8 +549,6 @@ async function detectarVersao() {
   }
 }
 
-detectarVersao()
-
 // Retorna o seletor CSS de uma chave para a versão atual (síncrono).
 // Usa a versão já armazenada em memória — não faz await.
 // Retorna '' se a chave não existir no mapa.

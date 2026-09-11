@@ -40,8 +40,6 @@ async function visualizador_de_documentos_aoAbrirDetalhesDoProcesso(){
     await visualizador_de_documentos_janelaDetalhes(execucao)
 }
 
-visualizador_de_documentos_aoAbrirDetalhesDoProcesso()
-
 //__________________________________________________
 //                      DETALHES DO PROCESSO 
 //__________________________________________________

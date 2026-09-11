@@ -5,8 +5,6 @@
 // prefixar('documentos_conteudo') no <head>.
 // ============================================================
 
-interceptador_documento_iniciar()
-
 function interceptador_documento_iniciar(){
     document.addEventListener('RotaDocumentoInterceptado', interceptador_documento_processar)
 }

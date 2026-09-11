@@ -216,7 +216,7 @@ async function rotaAssinaTudo() {
     }
 }
 
-rotaAssinaTudo()
+//rotaAssinaTudo()
 
 function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute') {
     let bgCor = UI_CORES[cor] || UI_CORES.branco
@@ -362,11 +362,11 @@ async function rotaCicloAssinatura(){
     }
 }
 
-rotaCicloAssinatura()
+//rotaCicloAssinatura()
 
-window.addEventListener('rotapje:url-mudou', () => {
-    rotaAssinaTudo()
-})
+//window.addEventListener('rotapje:url-mudou', () => {
+//    rotaAssinaTudo()
+//})
 
 
 

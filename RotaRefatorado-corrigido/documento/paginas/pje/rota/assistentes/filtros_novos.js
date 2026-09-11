@@ -40,8 +40,7 @@ function atualizar_contador(ancestral, etapa = 0, filtrando = 1) {
 }
 
 async function filtrosNovos(ancestral) {
-    let widget = document.querySelector('#rota_filtrosNovos')
-    if (widget) widget.remove()
+    document.querySelectorAll('#' + id('filtros')).forEach(el => el.remove())
     let janela = confereJanela(
         JANELA.meuPainel,
         JANELA.painelGlobal,
@@ -91,7 +90,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
     if (!autenticado) {
         await obterAutenticacao(id(div))
     } else {
-        await apresentaFiltros(ancestral)
+        await apresentaFiltros(id(div))
     }
     return
 
@@ -1127,7 +1126,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
             let divId = id(secao, botao?.id)
             let divBotao = criaDiv({ id: divId, ancestral: ancestral })
             criaBotaoAzul({
-                id: divId,
+                id: divId + '_botao',
                 texto: botao?.texto || 'OK',
                 ancestral: divId,
                 acao: () => criaFiltro(botao?.inputs, divId, botao?.funcao, mapaFuncoes)

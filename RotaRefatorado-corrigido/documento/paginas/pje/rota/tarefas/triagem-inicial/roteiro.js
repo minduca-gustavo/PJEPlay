@@ -39,8 +39,6 @@ async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
     await triagem_inicial_janelaDetalhes(execucao)
 }
 
-triagem_inicial_aoAbrirDetalhesDoProcesso()
-
 //__________________________________________________
 //                      DETALHES DO PROCESSO 
 //__________________________________________________
@@ -253,8 +251,6 @@ async function triagem_inicial_acoesRetificar(){
     }
 }
 
-triagem_inicial_aoAbrirRetificar()
-
 //__________________________________________________
 //                      DESPACHAR
 //__________________________________________________
@@ -398,8 +394,6 @@ async function buscaModeloTriagem(sala, modo) {
     console.log('%c[Rota PJE]%c modelo[modo]: ' + JSON.stringify(modelo[modo]), LOG.info, 'color:inherit')
     return modelo[modo] ?? null
 }
-
-triagem_inicial_aoAbrirDespachar()
 
 //__________________________________________________
 //                      DESIGNAR AUDIÊNCIA
@@ -637,8 +631,6 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     
 }
 
-triagem_inicial_aoAbrirDesignarAudiencia()
-
 //__________________________________________________
 //                      COLOCAR GIG DE ACOMPANHAMENTO
 //__________________________________________________
@@ -787,7 +779,6 @@ async function triagem_inicial_acoesCertificar(){
 }
 
 
-triagem_inicial_aoAbrirCertificar()
 //__________________________________________________
 //                      INTIMAR
 //__________________________________________________
@@ -980,7 +971,6 @@ async function triagem_inicial_acoesIntimar(){
 }
 
 
-triagem_inicial_aoAbrirIntimar()
 //__________________________________________________
 //                      ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA
 //__________________________________________________
@@ -1041,8 +1031,6 @@ async function triagem_inicial_acoesEncaminharAguardandoAudiencia(){
     
 }
 
-
-triagem_inicial_aoAbrirAguardandoAudiencia()
 
 
 //__________________________________________________

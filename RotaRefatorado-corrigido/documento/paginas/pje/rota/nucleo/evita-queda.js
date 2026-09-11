@@ -52,9 +52,3 @@ async function evitaQueda() {
     if (elemento.textContent.includes('Acesso Negado') || elemento.textContent.includes('mudança de perfil')) window.location.reload()
     return
 }
-
-window.addEventListener('focus', function() {
-    evitaQueda()
-});
-
-evitaQueda()

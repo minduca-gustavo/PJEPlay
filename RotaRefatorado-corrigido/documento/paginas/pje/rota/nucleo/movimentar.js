@@ -399,8 +399,6 @@ async function rota_movimentar_retomar() {
   await movimentar(destino.rota_movimentar_params, params.rota_movimentar_params)
 }
 
-rota_movimentar_retomar()
-
 // ------------------------------------------------------------
 // movimentar
 // ------------------------------------------------------------

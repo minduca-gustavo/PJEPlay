@@ -1,4 +1,13 @@
-async function compiladorDeAssistentes() {
+let _compiladorFila = Promise.resolve()
+
+function compiladorDeAssistentes() {
+    _compiladorFila = _compiladorFila.then(_compiladorMontar).catch(e => {
+        console.error('[Rota PJE] compilador falhou', e)
+    })
+    return _compiladorFila
+}
+
+async function _compiladorMontar() {
     
     let assistentes = [
         {
@@ -43,8 +52,7 @@ async function compiladorDeAssistentes() {
     let funcao = 'compiladorDeAssistentes'
     let elemento = 'divFlutuante'
     let idCompilador = id(funcao, elemento)
-    let compiladorAntigo = document.querySelector('#' + idCompilador)
-    if (compiladorAntigo) compiladorAntigo.remove()
+    document.querySelectorAll('#' + idCompilador).forEach(el => el.remove())
     let compilador = await criaDivFlutuante({
         id: idCompilador,
         titulo: 'Assistentes',
@@ -59,7 +67,7 @@ async function compiladorDeAssistentes() {
     compiladorCorpo.style.gap = '0px'
     compiladorCorpo.style.padding = '0px 0 0px 0'
     if (!temValorSalvo) {
-        compiladorCorpo.style.diplay = 'flex'
+        compiladorCorpo.style.display = 'flex'
     } 
     let mapaFuncoes = {
         assistenteAssinaturaDocumentos,
@@ -75,6 +83,7 @@ async function compiladorDeAssistentes() {
         let janela = confereJanela(...assistente?.janelas)
         if (!janela) continue
         let ancestral = id(funcao, elemento) + '-corpo'
+        let jaExistia = !!document.getElementById(id(assistente.id, 'recolhe'))
         let mostraRecolhe = await criaSecaoMostraRecolhe({
             id: id(assistente.id, 'mostra-recolhe'),
             idSempreAMostra: id(assistente.id, 'mostra'), 
@@ -86,17 +95,9 @@ async function compiladorDeAssistentes() {
         mostraRecolhe.style.marginTop = '0px'
         mostraRecolhe.style.gap = '0px'
         mostraRecolhe.style.padding = '0px 0px 0px 0px'
-        let mostraRecolheCorpo = document.getElementById(id(assistente.id, 'recolhe'))
         mostraRecolhe.corpo.style.padding = '0px 0px 0px 0px'
-        if (!mostraRecolheCorpo && assistente?.id === 'consulta-qualquer-oj'){
-            let chaveStorage = id(assistente.id, 'mostra-recolhe') + '-expandido'
-            let store = await obterArmazenamento([chaveStorage])
-            let temValorSalvo = store?.[chaveStorage] !== undefined
-            if (!temValorSalvo) {
-                let elemento = document.querySelector('#' + id(assistente.id, 'mostra'))
-                await clicar(elemento)
-                await armazenar({ [chaveStorage]: true })
-            } 
+        if (!jaExistia && assistente.id === 'consulta-qualquer-oj' && !mostraRecolhe.expandido) {
+            mostraRecolhe.expandir()
         }
         // depois que o mecanismo rodar, ele gerencia o overflow normalmente
         let titulo = criaTitulo({
@@ -107,19 +108,32 @@ async function compiladorDeAssistentes() {
         let funcaoChamar = assistente?.funcao
         console.log('%c[Rota PJE]%c mapaFuncoes[funcaoChamar]: ' + JSON.stringify(typeof mapaFuncoes[funcaoChamar]), LOG.mb, 'color:inherit')
         if (assistente.id !== 'filtros-novos'){
-            let funcaoConfere = await mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
-            console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
+            try {
+                let funcaoConfere = await mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+                console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
+            } catch (e) {
+                console.error('%c[Rota PJE]%c falhou ao montar ' + assistente.id, LOG.erro, 'color:inherit', e)
+            }
         } else {
-            mostraRecolhe.aoAlternar = () => mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+            mostraRecolhe.aoAlternar = (aberta) => {
+                if (!aberta) return
+                return mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+            }
+            if (mostraRecolhe.expandido) {
+                try {
+                    await mostraRecolhe.aoAlternar(true)
+                } catch (e) {
+                    console.error('%c[Rota PJE]%c falhou ao montar ' + assistente.id, LOG.erro, 'color:inherit', e)
+                }
+            }
         }
+        //if (assistente.id !== 'filtros-novos'){
+        //    let funcaoConfere = await mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+        //    console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
+        //} else {
+        //    mostraRecolhe.aoAlternar = () => mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+        //}
     }
     
 }
-window.addEventListener('rotapje:url-mudou', () => {
-    // fecha o painel de minutas antes de remontar o widget — o conteúdo
-    // é sempre da tela anterior e ficaria órfão
-    //document.querySelector('#rota_assistenteAssinatura_painelMinutas')?.remove()
-    compiladorDeAssistentes()
-})
-compiladorDeAssistentes()
 

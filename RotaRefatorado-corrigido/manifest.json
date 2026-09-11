@@ -1,5 +1,5 @@
 {
-	"version":					"2.2.0",
+	"version":					"2.2.1",
 	"short_name":				"RotaPJE",
 	"name":							"Rota PJE",
 	"description":			"Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -165,6 +165,7 @@
 				"documento/paginas/pje/rota/botao/fita-superior-detalhes.js",
 				"documento/paginas/pje/rota/nucleo/sigeo.js",
 				"documento/paginas/pje/rota/nucleo/gigs.js",
+				"documento/paginas/pje/rota/nucleo/gig-copia-atendimento.js",
 
 				"documento/paginas/pje/rota/nucleo/acoes.js",
 				"documento/paginas/pje/rota/nucleo/formatadores.js",

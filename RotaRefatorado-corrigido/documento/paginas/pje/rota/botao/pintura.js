@@ -15,8 +15,6 @@ function pinturaAoAbrir(){
     pinturaInicio()
 }
 
-pinturaAoAbrir()
-
 async function pinturaInicio(){
     let metaEl = await rota_aguardarElemento('meta[name="' + rota_metaTag_nome('documentos_conteudo') + '"]', 12000)
     if(!metaEl) return

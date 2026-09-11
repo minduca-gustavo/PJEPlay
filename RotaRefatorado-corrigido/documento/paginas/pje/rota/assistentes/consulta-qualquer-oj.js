@@ -315,8 +315,6 @@ async function consulta_qualquer_ojAbreDetalhes(){
     await acao_navegacao_detalhes(id)
 }
 
-consulta_qualquer_ojAbreDetalhes()
-
 async function consulta_qualquer_ojErroNumero(erro = '') {
     let mensagem = ''
     if (erro === 'fora do padrao'){

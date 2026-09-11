@@ -98,5 +98,3 @@ async function sigeo_filtra_vt_finalfiltrarPorVara(vara) {
     numeroFiltrado.forEach(el => el.closest('tr').style.display = 'none')
     //await alert (vara)
 }
-
-sigeoAjJtAoIniciar()

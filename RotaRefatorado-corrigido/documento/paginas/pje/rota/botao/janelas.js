@@ -1628,8 +1628,3 @@ function rota_exibirRelatorio(){
     painel.appendChild(caixa)
     document.body.appendChild(painel)
 }
-
-// ── Retomada automática após reload por troca de OJ ──────────
-// Executa assim que o script carrega. Se houver fluxo persistido
-// no storage (salvo antes do reload), retoma do ponto exato.
-rota_fluxo_retomar()

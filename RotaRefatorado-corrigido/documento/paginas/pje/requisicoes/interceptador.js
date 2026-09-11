@@ -63,8 +63,6 @@ const INTERCEPTADOR_ROTULO = {
 }
 
 
-interceptador_iniciar()
-
 function interceptador_iniciar(){
     relatar('Interceptador de requisições ativo.', '', 'execucao')
     document.addEventListener(

@@ -40,8 +40,6 @@ async function con2_prazo_vencido_aoAbrirDetalhesDoProcesso(){
     await con2_prazo_vencido_janelaDetalhes(execucao)
 }
 
-con2_prazo_vencido_aoAbrirDetalhesDoProcesso()
-
 //__________________________________________________
 //                      DETALHES DO PROCESSO 
 //__________________________________________________
@@ -211,8 +209,6 @@ async function con2_prazo_vencido_acoesRetificar(){
     await clicar(elemento)
 }
 
-con2_prazo_vencido_aoAbrirRetificar()
-
 //__________________________________________________
 //                      DESPACHAR
 //__________________________________________________
@@ -330,8 +326,6 @@ async function con2_prazo_vencido_acoesDespachar(){
 
 }
 
-
-con2_prazo_vencido_aoAbrirDespachar()
 
 //__________________________________________________
 //                      DESIGNAR AUDIÊNCIA
@@ -548,8 +542,6 @@ async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
     return
 }
 
-con2_prazo_vencido_aoAbrirDesignarAudiencia()
-
 //__________________________________________________
 //                      COLOCAR GIG DE ACOMPANHAMENTO
 //__________________________________________________
@@ -652,7 +644,6 @@ async function con2_prazo_vencido_acoesCertificar(){
 }
 
 
-con2_prazo_vencido_aoAbrirCertificar()
 //__________________________________________________
 //                      INTIMAR
 //__________________________________________________
@@ -797,7 +788,6 @@ async function con2_prazo_vencido_acoesIntimar(){
 }
 
 
-con2_prazo_vencido_aoAbrirIntimar()
 //__________________________________________________
 //                      ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA
 //__________________________________________________
@@ -858,8 +848,6 @@ async function con2_prazo_vencido_acoesEncaminharAguardandoAudiencia(){
     
 }
 
-
-con2_prazo_vencido_aoAbrirAguardandoAudiencia()
 
 
 //__________________________________________________

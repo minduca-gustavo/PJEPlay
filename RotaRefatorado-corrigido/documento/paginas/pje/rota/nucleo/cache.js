@@ -223,9 +223,3 @@ const CACHE_CHAVES = {
     modelo:         (id) => `modelo-${id}`, // modelo de documento por ID — TTL 7 dias
 }
 
-
-// ── Inicialização ─────────────────────────────────────────────
-//
-// Limpa registros expirados ao iniciar (não bloqueia execução).
-
-cache_limparExpirados()

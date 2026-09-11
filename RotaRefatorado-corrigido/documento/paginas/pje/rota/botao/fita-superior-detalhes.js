@@ -43,14 +43,6 @@ function confereCriaFitaSuperior(){
     criaFitaSuperior()
 }
 
-window.addEventListener('rotapje:url-mudou', () => {
-    document.getElementById('rotapje-busca-posicao-fila-div-barra')?.remove()
-    confereCriaFitaSuperior()
-})
-
-confereCriaFitaSuperior()
-
-
 // ___________________________________________________
 // [1] BUSCA POSIÇÃO FILA
 // ___________________________________________________
@@ -75,8 +67,6 @@ function buscaPosicaoFilaPainelGlobal(){
     if (!janela) return
     busca_FilaPainelGlobal()
 }
-
-buscaPosicaoFilaPainelGlobal()
 
 async function busca_FilaPainelGlobal(){
     let parametros = await rota_buscarParametros('rotapje_busca_posicao_fila')

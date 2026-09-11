@@ -1726,7 +1726,7 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
     let expandido = true
     if (armazenarExpandido){
         let label = id + 'estado'
-        expandido = await obterArmazenamento([label]).then(d=> d[label])
+        expandido = (await obterArmazenamento([label]))?.[label] ?? false
     }
     wrapper.expandido  = expandido
     wrapper.aoAlternar = null   // roteiro pode atribuir: (expandido) => { ... }
@@ -1752,9 +1752,14 @@ async function criaSecaoMostraRecolhe({ id, idSempreAMostra, idRecolhe, ancestra
     wrapper.expandir  = () => _aplicar(true)
     wrapper.recolher  = () => _aplicar(false)
 
-    cabecalho.addEventListener('click', () => {
+    cabecalho.addEventListener('click', async () => {
         _aplicar(!wrapper.expandido)
-        if (typeof wrapper.aoAlternar === 'function') wrapper.aoAlternar(wrapper.expandido)
+        if (typeof wrapper.aoAlternar !== 'function') return
+        try {
+            await wrapper.aoAlternar(wrapper.expandido)
+        } catch (e) {
+            console.error('[ui.js] aoAlternar falhou em ' + id, e)
+        }
     })
     // ─────────────────────────────────────────────────────────
 

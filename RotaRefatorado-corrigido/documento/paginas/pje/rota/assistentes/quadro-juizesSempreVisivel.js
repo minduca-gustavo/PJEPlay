@@ -79,8 +79,6 @@ async function visualizaQuadroDeJuizes() {
     }
 }
 
-visualizaQuadroDeJuizes()
-
 // ------------------------------------------------------------
 // Ancoragem — substitui o position:relative no banner
 // ------------------------------------------------------------
