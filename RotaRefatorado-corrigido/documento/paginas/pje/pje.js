@@ -328,6 +328,8 @@ function rota_interfacePorContexto(){
 
 	// nucleo/sigeo.js — só atua no sigeo.jt.jus.br, guarda interna
 	sigeoAjJtAoIniciar()
+	// documento/paginas/pje/gim/assina-tudo.js - só funciona no GIM - script para juízes assinarem tudo de uma vez.
+	rotaAssinaTudo()
 
 }
 

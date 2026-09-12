@@ -1,4 +1,10 @@
 async function rotaAssinaTudo() {
+    let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
+    if (janelaCiclo) {
+        rotaCicloAssinatura()
+        return
+    }
+
     let janela = confereJanela(JANELA.gim)
     if (!janela) return
     console.log('%c[Rota PJE]%c assina Janela: ' + JSON.stringify(4), LOG.info, 'color:inherit')
@@ -52,6 +58,7 @@ async function rotaAssinaTudo() {
         }
         if (parametro === 'assina'){
             await separaPerfisEAssina(orgaos)
+            return
         }
         async function separaPerfisEAssina(orgaos, exclusoes = [], sinalizados = []){
             let idPerfis = []
@@ -311,8 +318,8 @@ async function rotaAssinaTudo_trocarPerfilENavegar(perfil, data){
 }
 
 async function rotaCicloAssinatura(){
-    let janela = confereJanela(JANELA.gimAssinarTodos)
-    if (!janela) return
+    let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
+    if (!janelaCiclo) return
     let nomeJanela = window.name
     if (!nomeJanela.includes('rotapje_assinaTudo')) return
     let execucao = await obterArmazenamento('rotapje_assinaTudo')
@@ -322,29 +329,58 @@ async function rotaCicloAssinatura(){
     }
     let timeStamp = execucao?.rotapje_assinaTudo?.execucao
     if(!nomeJanela.includes(timeStamp)) return
-    await aguardarElemento('table.t-class tbody')
-    let tabela = selecionar('table.t-class')
-    let tabelaHead = tabela.querySelector('thead')
-    let tabelaCorpo = tabela.querySelector('tbody')
-    let linhasAssinaveis = [...tabelaCorpo.querySelectorAll('tr')].filter(d => !d.querySelector('button.botao-icone-tabela-assinar.mat-button-disabled'))
-    if (!linhasAssinaveis.length) {
+
+    async function assinarTudo(tentativa = 1) {
+        let MAX = 3
+
+        await aguardarElemento('table.t-class tbody')
+        await suspender(500 * tentativa)   // 500ms, 1s, 1,5s
+
+        let tabela = selecionar('table.t-class')
+        let tabelaCorpo = tabela?.querySelector('tbody')
+        if (!tabelaCorpo) return reciclar(tentativa, 'tbody ausente')
+
+        let linhasAssinaveis = [...tabelaCorpo.querySelectorAll('tr')]
+            .filter(d => !d.querySelector('button.botao-icone-tabela-assinar.mat-button-disabled'))
+
+        if (!linhasAssinaveis.length) {
+            defineCiclo(execucao?.rotapje_assinaTudo)
+            return
+        }
+
+        let exclusoes = execucao?.rotapje_assinaTudo?.exclusoes || []
+        let marcadas = 0
+
+        for (let linha of linhasAssinaveis) {
+            if (!linha.isConnected) return reciclar(tentativa, 'linha órfã')
+            if (exclusoes.some(d => linha.textContent.includes(d))) continue
+
+            let caixa = linha.querySelector('input.mat-checkbox-input')
+            if (caixa?.checked) continue          // idempotência: não desmarca o que já marcou
+
+            linha.querySelector('.mat-checkbox-inner-container')?.click()
+            await suspender(200)
+            if (caixa?.checked) marcadas++
+        }
+
+        if (!marcadas) return reciclar(tentativa, 'nenhuma marcada')
+
+        await clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
+        await suspender(10000)
         defineCiclo(execucao?.rotapje_assinaTudo)
-        return
     }
-    console.log('%c[Rota PJE]%c linhasAssinaveis: ' + JSON.stringify(linhasAssinaveis), LOG.info, 'color:inherit')
-    let exclusoes = execucao?.rotapje_assinaTudo?.exclusoes || []
-    for(let linha of linhasAssinaveis){
-        if (exclusoes.some(d => linha.textContent.includes(d))) continue
-        let botaoSeleciona = linha.querySelector('button.botao-icone-tabela-assinar')
-        await suspender(200)
-        await clicar(botaoSeleciona)
+
+    async function reciclar(tentativa, motivo) {
+        if (tentativa >= 3) {
+            console.log('%c[Rota PJE]%c desistiu após 3 tentativas:', LOG.info, 'color:inherit', motivo)
+            defineCiclo(execucao?.rotapje_assinaTudo)   // aí sim segue pra próxima OJ
+            return
+        }
+        console.log('%c[Rota PJE]%c retentando:', LOG.info, 'color:inherit', motivo, tentativa + 1)
+        return assinarTudo(tentativa + 1)
     }
-    let botaoAssinarTudo = tabelaHead.querySelector('button.botao-icone-tabela-assinar')
-    await clicar(botaoAssinarTudo)
-    // ver o elemento que aparece quando assina e chamar defineCiclo(execucao)
-    await suspender(5000)
-    defineCiclo(execucao?.rotapje_assinaTudo)
-    return
+
+    await assinarTudo()
     //alert (JSON.stringify(linhasAssinaveis))
     
     async function defineCiclo(execucao) {

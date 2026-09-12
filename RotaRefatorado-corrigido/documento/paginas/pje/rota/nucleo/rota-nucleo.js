@@ -88,7 +88,7 @@ var JANELA = {
 	pautaAudiencias:        /\/pjekz\/pauta-audiencias/,
 	atasAudiencias:         /\/pjekz\/atas-audiencias/,
 	aud:                    /\/aud\/#\/audiencia/,
-	gim:					/\/pjekz\/painel\/gim/,
+	gim:					/\/pjekz\/painel\/gim\/?$/i,
 	gimAssinarTodos: 		/\/pjekz\/painel\/gim\/todos\/oj\/\d*\/lista-processos\?assinarTodos=true/
 }
 
