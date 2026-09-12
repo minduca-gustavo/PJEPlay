@@ -477,27 +477,13 @@ const rota_acoes = {
 		if(sessao) rota_sinalizar(sessao, 'encerrar')
 	},
 
-	// Tradução chave-de-comandar → função real. A janela assistente
-	// manda a chave curta (comandar(['triagem_inicial_certidao'], ...))
-	// e quem executa é a função com nome completo, em
-	// tarefas/<tarefa>/roteiro.js. Sem esta tabela, obedecer() nunca
-	// encontra a função e desiste em silêncio.
-	'triagem_inicial_acoes_conjuntas':          async p => triagem_inicial_acoesConjuntas(p),
-	'triagem_inicial_atualiza_horarios_vagos':  async p => triagem_inicial_atualizaHorariosVagos(p),
-	'triagem_inicial_atualiza_janela_detalhes': async () => triagem_inicial_atualizaJanelaDetalhes(),
-	'triagem_inicial_certidao':                 async p => triagem_inicial_certificar(p?.tipo),
-	'triagem_inicial_designa_audiencia':        async p => triagem_inicial_designarAudiencia(p),
-	'triagem_inicial_despachar':                async p => triagem_inicial_despachar(p?.tipo),
-	'triagem_inicial_gig':                      async () => triagem_inicial_colocarGigDeAcompanhamento(),
-	'triagem_inicial_intimar':                  async p => triagem_inicial_intimar(p?.tipo),
-	'triagem_inicial_retificar':                async p => triagem_inicial_retificarAutuacao(p?.tipo),
+}
 
-	'visualizador_de_documentos_abrir_documentos': async p => visualizador_de_documentos_abrirDocumentos(p),
-
-	// ⚠️ 'triagem_inicial_bloquear_horarios' não tem função
-	// correspondente em lugar nenhum do projeto — já estava assim
-	// antes da refatoração, não é regressão nova. Falta escrever
-	// triagem_inicial_bloquearHorarios() em algum lugar.
+function rotaRegistrarAcoes(acoes){
+	for(let chave of Object.keys(acoes)){
+		if(rota_acoes[chave]) relatar('Ação registrada duas vezes: ' + chave, '', 'erro')
+		rota_acoes[chave] = acoes[chave]
+	}
 }
 
 function registrarListenerFechar(sessao){

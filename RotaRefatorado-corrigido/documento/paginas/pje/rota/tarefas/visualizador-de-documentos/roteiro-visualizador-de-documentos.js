@@ -151,7 +151,7 @@ async function visualizador_de_documentos_abrirDocumentos(documento) {
     rota_avisoTemporario(JSON.stringify(documento.idUnicoDocumento), '', 4000)
 }
 
-Object.assign(rota_acoes, {
+rotaRegistrarAcoes({
     'visualizador_de_documentos_abrir_documentos':  async (p) => await visualizador_de_documentos_abrirDocumentos(p),
 })
 

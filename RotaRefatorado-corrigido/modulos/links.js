@@ -296,7 +296,7 @@ function abrirPagina_pje_modelos(){
 		chave:	'pje.modelos',
 	})	
 }	
-
+/*
 async function abrirPagina_pje_processo_tarefa(
 	processoId 	= '',
 	parametros	= '',
@@ -314,7 +314,7 @@ async function abrirPagina_pje_processo_tarefa(
 		chave:	'pje.processo.tarefa',
 	})	
 }	
-
+*/
 function abrirPagina_siscondj(){
 	abrirURL({
 		url:		LINK.siscondj.raiz,

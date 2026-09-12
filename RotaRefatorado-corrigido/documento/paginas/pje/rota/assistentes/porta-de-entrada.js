@@ -236,21 +236,3 @@ async function filtrarPorLista(contexto) {
     return await buscarProcessosPorLista(contexto.lista)
 }
 
-
-// ── EXECUTAR COM PLANILHA ─────────────────────────────────────
-//
-// Recebe o contexto do superfiltro e um array de scripts (células B).
-// Passa tanto o id quanto o objeto t correspondente para cada script.
-// Retorna linhas TSV para exibição.
-
-async function entradaComPlanilha(contexto, scripts) {
-	let resultado = { ids: [], t: [] }
-
-	if (contexto.modo === 'Tarefa')      resultado = await filtrarPorTarefa(contexto)
-	else if (contexto.modo === 'Sala')   resultado = await filtrarPorSala(contexto)
-	else if (contexto.modo === 'Lista')  resultado = await filtrarPorLista(contexto)
-
-	if (!resultado.ids.length) return []
-
-	return await planilha_executar(scripts, resultado.ids, resultado.t)
-}

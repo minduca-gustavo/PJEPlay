@@ -389,10 +389,9 @@ async function buscaModeloTriagem(sala, modo) {
     console.log('%c[Rota PJE]%c sala: ' + JSON.stringify(sala), LOG.info, 'color:inherit')
     console.log('%c[Rota PJE]%c modo: ' + JSON.stringify(modo), LOG.teste, 'color:inherit')
     let modelos = await lerGit('rotapje_modelos_triagem.json') || []
-    console.log('%c[Rota PJE]%c modelos: ' + JSON.stringify(modelos), LOG.aviso, 'color:inherit')
     let modelo = modelos?.find(d => d?.sala == sala)
-    console.log('%c[Rota PJE]%c modelo[modo]: ' + JSON.stringify(modelo[modo]), LOG.info, 'color:inherit')
-    return modelo[modo] ?? null
+    console.log('%c[Rota PJE]%c modelo[modo]: ' + JSON.stringify(modelo?.[modo]), LOG.info, 'color:inherit')
+    return modelo?.[modo] ?? null
 }
 
 //__________________________________________________
@@ -717,6 +716,18 @@ async function triagem_inicial_acoesCertificar(){
     let tipos = await obterArmazenamento('rotapje_triagem_inicial_certificar_tipo')
     let tipoCertidao = tipos?.rotapje_triagem_inicial_certificar_tipo?.tipo
     let link = tipos?.rotapje_triagem_inicial_certificar_tipo?.link
+    let dadosTI          = await obterArmazenamento('rota_dadosTriagemInicial')
+    let juizEnvio        = dadosTI?.rota_dadosTriagemInicial?.sala?.nome || ''
+    let numeroProcesso   = dadosTI?.rota_dadosTriagemInicial?.processo?.numero || ''
+    let idProcesso       = dadosTI?.rota_dadosTriagemInicial?.processo?.id
+    if (!juizEnvio) {
+        juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
+    }
+    let audienciasMarcadas = await buscarAudienciasMarcadas(idProcesso) || {}
+    let tipoAudiencia      = audienciasMarcadas?.tipo?.descricao || ''
+    let modelosCertidao    = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
+    let modeloCertidao     = modelosCertidao?.certidao || ''
+    console.log('%c[Rota PJE]%c modeloCertidao: ' + JSON.stringify(modeloCertidao), LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c tipoCertidao: ' + JSON.stringify(tipoCertidao), LOG.rosa, 'color:inherit')
     let elementos = await aguardarElementoNovo(
         [
@@ -733,7 +744,7 @@ async function triagem_inicial_acoesCertificar(){
     let campoModelo = await sel('anexarDocumentosBuscarModelos')
     let certidoes = {
         'triagem_inicial_certificar_designacao': {
-            modelo: 'SCBAU_TI_CERT', 
+            modelo: modeloCertidao || 'SCBAU_TI_CERT', 
             tipo: 'Certidão', 
             descricao: 'Designação de audiência', 
             intimar: {tipo: 'triagem_inicial_intimar_designacao'}
@@ -823,6 +834,17 @@ async function triagem_inicial_acoesIntimar(){
     let tiposIntimar = await obterArmazenamento('rotapje_triagem_inicial_intimar_tipo')
     let tipoIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.tipo
     let linkIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.link
+    let dadosTI            = await obterArmazenamento('rota_dadosTriagemInicial')
+    let juizEnvio          = dadosTI?.rota_dadosTriagemInicial?.sala?.nome || ''
+    let numeroProcesso     = dadosTI?.rota_dadosTriagemInicial?.processo?.numero || ''
+    if (!juizEnvio) {
+        juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
+    }
+    let tipoAudienciaIntimar = await obterArmazenamento('rotapje_triagem_inicial_intimar_audienciaMarcadaTipo')
+        .then(d => d?.rotapje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
+    let modelosIntimacao   = await buscaModeloTriagem(juizEnvio, tipoAudienciaIntimar) || {}
+    let modeloIntimacao    = modelosIntimacao?.intimacao || ''
+    console.log('%c[Rota PJE]%c modeloIntimacao: ' + JSON.stringify(modeloIntimacao), LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tiposIntimar), LOG.rosa, 'color:inherit', tiposIntimar)
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(tipoIntimar), LOG.rosa, 'color:inherit', tipoIntimar)
     console.log('%c[Rota PJE]%c tipos: ' + JSON.stringify(linkIntimar), LOG.rosa, 'color:inherit', linkIntimar)
@@ -916,8 +938,9 @@ async function triagem_inicial_acoesIntimar(){
         await suspender(1000)
         await preencherCKEditorExecCommand(editorConteudo, dados.texto)
     } else {
-        let tipoAudiencia = await obterArmazenamento('rotapje_triagem_inicial_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_triagem_inicial_intimar_audienciaMarcadaTipo || '')
-        let modelo = dados.tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
+        let modelo = modeloIntimacao 
+                  || dados.tipos.find(t => tipoAudienciaIntimar.toLowerCase().includes(t.tipo))?.modelo 
+                  || null
         await digitarNoInput(inputModelo, modelo)
         await selecionarOpcaoDeModelo(modelo)
         await suspender(1000)
@@ -1079,7 +1102,7 @@ async function triagem_inicial_acoesConjuntas(p){
 //__________________________________________________
 
 
-Object.assign(rota_acoes, {
+rotaRegistrarAcoes({
     'triagem_inicial_designa_audiencia':        async (p) => await triagem_inicial_designarAudiencia(p),
     'triagem_inicial_despachar':                async (p) => await triagem_inicial_despachar(p),
     'triagem_inicial_atualiza_janela_detalhes': async (p) => await triagem_inicial_atualizaJanelaDetalhes(p),
@@ -1090,7 +1113,7 @@ Object.assign(rota_acoes, {
     'triagem_inicial_intimar':                  async (p) => await triagem_inicial_intimar(p),
     'triagem_inicial_acoes_conjuntas':          async (p) => await triagem_inicial_acoesConjuntas(p),
     'triagem_inicial_aguardando_audiencia':     async (p) => await triagem_inicial_aguardandoAudiencia(p),
-    'triagem_inicial_bloquear_horarios':        async (p) => await triagem_inicial_bloquearHorarios(p),
+    
 })
 
 
