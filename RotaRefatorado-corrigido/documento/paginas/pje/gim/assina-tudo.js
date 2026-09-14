@@ -5,7 +5,11 @@ async function rotaAssinaTudo() {
         rotaCicloAssinatura()
         return
     }
-
+    let janelaSinalizados = confereJanela(JANELA.tarefaAssinar)
+    if (janelaSinalizados){
+        rota_assinarTudo_sinalizadoAberto()        
+        return
+    }
     let janela = confereJanela(JANELA.gim)
     if (!janela) return
     console.log('%c[Rota PJE]%c assina Janela: ' + JSON.stringify(4), LOG.info, 'color:inherit')
@@ -302,17 +306,7 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados){
 }
 
 async function rotaAssinaTudo_trocarPerfilENavegar(perfil, data){
-    await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json, text/plain, */*',
-            'X-XSRF-TOKEN': cookie_obter('Xsrf-Token') || cookie_obter('XSRF-TOKEN'),
-        },
-        body: JSON.stringify({ id_perfil: perfil.idPerfil })
-    })
+    await rota_fetchPost(location.origin + '/pje-seguranca/api/token/perfis/trocar', JSON.stringify({ id_perfil: perfil.idPerfil }))
     let url = location.origin + '/pjekz/painel/gim/todos/oj/' + perfil.idOrgaoJulgador + '/lista-processos?assinarTodos=true'
     window.name = 'rotapje_assinaTudo_' + data
     location.href = url
@@ -420,7 +414,7 @@ async function rotaCicloAssinatura(){
     }
 
     async function tratarSinalizados(sinalizados) {
-        armazenar({rotapje_assinaTudo_tratarSinalizados: sinalizados})
+        armazenar({rotapje_assinaTudo_tratarSinalizados: {sinalizados: sinalizados, execucao: Date.now()}})
         await tratarSinalizadosAbrir()
         console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.teste, 'color:inherit')
         alert('Sinalizados.')
@@ -429,15 +423,30 @@ async function rotaCicloAssinatura(){
         let armazenamento = await obterArmazenamento('rotapje_assinaTudo_tratarSinalizados')
         let sinalizados = armazenamento?.rotapje_assinaTudo_tratarSinalizados
         let processo = sinalizados[0]
-        let id = await _rota_buscarIdProcesso(processo)
-        let idTarefa = await rota_buscarTarefa(id)
-        console.log('%c[Rota PJE]%c id + idTarefa + processo: ' + JSON.stringify(id + ' - ' + idTarefa + ' - ' + processo), LOG.teste, 'color:inherit')
-        
-
+        let dados = await buscarIdPeloNumeroCNJ(processo) || {}
+        if (!dados?.id) return
+        let idTarefa = await rota_buscarTarefa(dados?.id) || ''
+        if (!idTarefa) return
+        console.log('%c[Rota PJE]%c id + idTarefa + processo: ' + JSON.stringify(dados?.id + ' - ' + idTarefa + ' - ' + processo), LOG.teste, 'color:inherit', dados)
+        let url = location.origin + '/pjekz/processo/' + dados?.id + '/tarefa/' + idTarefa
+        sinalizadosTrocarPerfilENavegar(dados?.idOrgaoJulgador, url, Date.now())
         //[Rota PJE] id + idTarefa + processo: "4736929 - 559/assinar - 0010242-89.2026.5.15.0090"
         //[Rota PJE] id + idTarefa + processo: "4162527 - 561/assinar - 0011644-79.2024.5.15.0090"
         //[Rota PJE] id + idTarefa + processo: "2193070 - 559/assinar - 0010078-71.2019.5.15.0090"
     }
+
+}
+
+async function sinalizadosTrocarPerfilENavegar(oj, url, data) {
+    let perfis = await interceptador_lerPerfis()
+    let perfil = perfis.find(d => d?.idOrgaoJulgador === oj)
+    await rota_fetchPost(location.origin + '/pje-seguranca/api/token/perfis/trocar', JSON.stringify({ id_perfil: perfil.idPerfil }))
+    window.open(url, 'rotapje_assinaTudo_tratarSinalizados' + data)
+}
+
+async function rota_assinarTudo_sinalizadoAberto() {
+    let nomeJanela = window.name
+    //if (nomeJanela.includes)
 }
 
 

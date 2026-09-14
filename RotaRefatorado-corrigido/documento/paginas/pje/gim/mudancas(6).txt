@@ -1,0 +1,282 @@
+[
+  {
+    "ts": "+312ms",
+    "apareceram": [
+      {
+        "tag": "MAT-CHECKBOX",
+        "id": "mat-checkbox-3",
+        "name": "Marcar o documento 0010576-26.2026.5.15.0090",
+        "ariaLabel": "Marcar processo",
+        "classes": "mat-checkbox mat-tooltip-trigger icone-alinhado mat-accent ng-valid ng-star-inserted mat-checkbox-anim-unchecked-checked mat-checkbox-checked ng-dirty ng-touched cdk-focused cdk-program-focused"
+      },
+      {
+        "tag": "BUTTON",
+        "name": "Assinar documento",
+        "ariaLabel": "Assinar documento",
+        "classes": "mat-focus-indicator botao-icone-tabela-assinar mat-icon-button mat-button-base mat-button-disabled"
+      },
+      {
+        "tag": "MAT-PROGRESS-SPINNER",
+        "classes": "mat-progress-spinner progresso-assinatura icone-alinhado icone-assinatura mat-primary mat-progress-spinner-indeterminate-animation ng-star-inserted"
+      }
+    ],
+    "sumiram": [
+      {
+        "tag": "MAT-CHECKBOX",
+        "id": "mat-checkbox-3",
+        "name": "Marcar o documento 0010576-26.2026.5.15.0090",
+        "ariaLabel": "Marcar processo",
+        "classes": "mat-checkbox mat-tooltip-trigger icone-alinhado mat-accent ng-valid ng-star-inserted mat-checkbox-anim-unchecked-checked mat-checkbox-checked ng-dirty ng-touched"
+      },
+      {
+        "tag": "BUTTON",
+        "name": "Assinar documento",
+        "ariaLabel": "Assinar documento",
+        "classes": "mat-focus-indicator botao-icone-tabela-assinar mat-icon-button mat-button-base"
+      },
+      {
+        "tag": "DIV",
+        "classes": "cdk-overlay-backdrop cdk-overlay-dark-backdrop"
+      },
+      {
+        "tag": "DIV",
+        "classes": "cdk-global-overlay-wrapper",
+        "texto": "Verificando Impedimentos e Suspeições..."
+      },
+      {
+        "tag": "DIV",
+        "id": "cdk-overlay-0",
+        "classes": "cdk-overlay-pane",
+        "texto": "Verificando Impedimentos e Suspeições..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "cdk-visually-hidden cdk-focus-trap-anchor"
+      },
+      {
+        "tag": "MAT-DIALOG-CONTAINER",
+        "id": "mat-dialog-0",
+        "classes": "mat-dialog-container ng-tns-c66-29 ng-trigger ng-trigger-dialogContainer ng-star-inserted ng-animating",
+        "texto": "Verificando Impedimentos e Suspeições..."
+      },
+      {
+        "tag": "PJE-DIALOGO-STATUS-PROGRESSO",
+        "classes": "ng-star-inserted",
+        "texto": "Verificando Impedimentos e Suspeições..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "container-mensagem",
+        "texto": "Verificando Impedimentos e Suspeições..."
+      },
+      {
+        "tag": "P",
+        "classes": "fonte-titulo",
+        "texto": "Verificando Impedimentos e Suspeições..."
+      },
+      {
+        "tag": "P"
+      },
+      {
+        "tag": "DIV",
+        "classes": "div-animacao-progresso"
+      },
+      {
+        "tag": "MAT-PROGRESS-SPINNER",
+        "classes": "mat-progress-spinner progresso-status mat-primary mat-progress-spinner-indeterminate-animation"
+      }
+    ]
+  },
+  {
+    "ts": "+636ms",
+    "apareceram": [
+      {
+        "tag": "MAT-CHECKBOX",
+        "id": "mat-checkbox-3",
+        "name": "Marcar o documento 0010576-26.2026.5.15.0090",
+        "ariaLabel": "Marcar processo",
+        "classes": "mat-checkbox mat-tooltip-trigger icone-alinhado mat-accent ng-valid ng-star-inserted mat-checkbox-anim-unchecked-checked mat-checkbox-checked ng-dirty ng-touched"
+      },
+      {
+        "tag": "DIV",
+        "classes": "cdk-global-overlay-wrapper",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "DIV",
+        "id": "cdk-overlay-2",
+        "classes": "cdk-overlay-pane dialogo-compacto",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "cdk-visually-hidden cdk-focus-trap-anchor"
+      },
+      {
+        "tag": "MAT-DIALOG-CONTAINER",
+        "id": "mat-dialog-2",
+        "classes": "mat-dialog-container ng-tns-c66-31 ng-trigger ng-trigger-dialogContainer ng-star-inserted",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "PJE-ASSINATURA-PROCESSAMENTO",
+        "classes": "ng-star-inserted",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "mensagens",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "mensagem ng-star-inserted",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "MAT-PROGRESS-SPINNER",
+        "classes": "mat-progress-spinner margem mat-primary mat-progress-spinner-indeterminate-animation ng-star-inserted"
+      }
+    ],
+    "sumiram": [
+      {
+        "tag": "MAT-CHECKBOX",
+        "id": "mat-checkbox-3",
+        "name": "Marcar o documento 0010576-26.2026.5.15.0090",
+        "ariaLabel": "Marcar processo",
+        "classes": "mat-checkbox mat-tooltip-trigger icone-alinhado mat-accent ng-valid ng-star-inserted mat-checkbox-anim-unchecked-checked mat-checkbox-checked ng-dirty ng-touched cdk-focused cdk-program-focused"
+      }
+    ]
+  },
+  {
+    "ts": "+946ms",
+    "apareceram": [
+      {
+        "tag": "MAT-CHECKBOX",
+        "id": "mat-checkbox-3",
+        "name": "Marcar o documento 0010576-26.2026.5.15.0090",
+        "ariaLabel": "Marcar processo",
+        "classes": "mat-checkbox mat-tooltip-trigger icone-alinhado mat-accent ng-valid ng-star-inserted mat-checkbox-checked ng-dirty ng-touched"
+      }
+    ],
+    "sumiram": [
+      {
+        "tag": "MAT-CHECKBOX",
+        "id": "mat-checkbox-3",
+        "name": "Marcar o documento 0010576-26.2026.5.15.0090",
+        "ariaLabel": "Marcar processo",
+        "classes": "mat-checkbox mat-tooltip-trigger icone-alinhado mat-accent ng-valid ng-star-inserted mat-checkbox-anim-unchecked-checked mat-checkbox-checked ng-dirty ng-touched"
+      }
+    ]
+  },
+  {
+    "ts": "+3154ms",
+    "apareceram": [
+      {
+        "tag": "BUTTON",
+        "name": "Assinar documento",
+        "ariaLabel": "Assinar documento",
+        "classes": "mat-focus-indicator botao-icone-tabela-assinar mat-icon-button mat-button-base"
+      },
+      {
+        "tag": "DIV",
+        "classes": "cdk-overlay-backdrop cdk-overlay-dark-backdrop cdk-overlay-backdrop-showing"
+      },
+      {
+        "tag": "DIV",
+        "id": "cdk-overlay-5",
+        "classes": "cdk-overlay-pane",
+        "texto": "AssinaturaAssinaturas realizadas com sucesso.Fechar"
+      },
+      {
+        "tag": "MAT-DIALOG-CONTAINER",
+        "id": "mat-dialog-5",
+        "classes": "mat-dialog-container ng-tns-c66-34 ng-trigger ng-trigger-dialogContainer ng-star-inserted",
+        "texto": "AssinaturaAssinaturas realizadas com sucesso.Fechar"
+      },
+      {
+        "tag": "PJE-RESPOSTA-ASSINATURA",
+        "classes": "ng-star-inserted",
+        "texto": "AssinaturaAssinaturas realizadas com sucesso.Fechar"
+      },
+      {
+        "tag": "H1",
+        "id": "mat-dialog-title-0",
+        "classes": "mat-dialog-title flex-center",
+        "texto": "Assinatura"
+      },
+      {
+        "tag": "DIV",
+        "classes": "mat-dialog-content flex-column-center",
+        "texto": "Assinaturas realizadas com sucesso."
+      },
+      {
+        "tag": "DIV",
+        "classes": "flex-center",
+        "texto": "Assinaturas realizadas com sucesso."
+      },
+      {
+        "tag": "I",
+        "classes": "flex-center icone far fa-check-circle sucesso"
+      },
+      {
+        "tag": "DIV",
+        "classes": "mat-dialog-actions",
+        "texto": "Fechar"
+      },
+      {
+        "tag": "BUTTON",
+        "ariaLabel": "Fechar",
+        "classes": "mat-focus-indicator mat-button mat-button-base mat-primary cdk-focused cdk-program-focused",
+        "texto": "Fechar"
+      }
+    ],
+    "sumiram": [
+      {
+        "tag": "BUTTON",
+        "name": "Assinar documento",
+        "ariaLabel": "Assinar documento",
+        "classes": "mat-focus-indicator botao-icone-tabela-assinar mat-icon-button mat-button-base mat-button-disabled"
+      },
+      {
+        "tag": "MAT-PROGRESS-SPINNER",
+        "classes": "mat-progress-spinner progresso-assinatura icone-alinhado icone-assinatura mat-primary mat-progress-spinner-indeterminate-animation ng-star-inserted"
+      },
+      {
+        "tag": "circle",
+        "classes": {}
+      },
+      {
+        "tag": "DIV",
+        "id": "cdk-overlay-2",
+        "classes": "cdk-overlay-pane dialogo-compacto",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "MAT-DIALOG-CONTAINER",
+        "id": "mat-dialog-2",
+        "classes": "mat-dialog-container ng-tns-c66-31 ng-trigger ng-trigger-dialogContainer ng-star-inserted",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "PJE-ASSINATURA-PROCESSAMENTO",
+        "classes": "ng-star-inserted",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "mensagens",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "DIV",
+        "classes": "mensagem ng-star-inserted",
+        "texto": "Assinatura em andamento..."
+      },
+      {
+        "tag": "MAT-PROGRESS-SPINNER",
+        "classes": "mat-progress-spinner margem mat-primary mat-progress-spinner-indeterminate-animation ng-star-inserted"
+      }
+    ]
+  }
+]

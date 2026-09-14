@@ -78,6 +78,7 @@ var JANELA = {
 	analisarEAssinar:       /\/pjekz\/painel\/global\/2\/lista-processos/,
 	painelGlobalTodos:      /\/pjekz\/painel\/global\/todos\/lista-processos/,
 	detalhes:               /\/pjekz\/processo\/\d*\/detalhe/,
+	tarefaAssinar:                 /\/pjekz\/processo\/\d*\/tarefa\/\d*\/assinar/,
 	tarefa:                 /\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	documentosConteudo:     /\/pjekz\/processo\/\d*\/detalhe\/documento\/\d*\/conteudo*/,
 	escaninho:              /\/pjekz\/escaninho/,

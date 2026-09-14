@@ -56,12 +56,13 @@ async function rota_fetch(url = ''){
 }
 
 
-async function rota_fetchPost(url = ''){
+async function rota_fetchPost(url = '', body){
 	try{
 		relatar('POST ' + url, '', 'requisicao')
 		let r = await fetch(url, {
 			method: 'POST', mode: 'cors', credentials: 'include',
-			headers: rota_cabecalhos()
+			headers: rota_cabecalhos(),
+			body: body
 		})
 		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
 		let dados = await r.json()
