@@ -1,4 +1,5 @@
 async function rotaAssinaTudo() {
+    let sinalizados = [] // para reunir os sinalizados e apresentá-los depois.
     let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
     if (janelaCiclo) {
         rotaCicloAssinatura()
@@ -120,8 +121,8 @@ async function rotaAssinaTudo() {
             ancestral: idRolante,
             numeroColunas: 1
         })
+        
         // CRIA RODAPE PARA BOTÃO DE SELECIONAR TODOS E ASSINAR - ATENÇÃO: O RODAPÉ É ROW-REVERSE, ou seja, os elementos inseridos primeiro ficam à direita
-        let sinalizados = [] // para reunir os sinalizados e apresentá-los depois.
         let idRodape = id('assinaTudo', 'rodape')
         let rodape = criaDiv({
             id: idRodape,
@@ -247,7 +248,7 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
 async function apresentaDespachos(dados, idRolante, idCheck, sinalizados){
     let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa.includes('Assinar'))
     console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados.length), LOG.teste, 'color:inherit')
-    let sinalizadosOJ = dados.filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa.includes('Assinar'))
+    let sinalizadosOJ = dados.filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa.includes('Assinar')).map(d=> d?.numeroProcesso)
     sinalizados.push(...sinalizadosOJ)
     for (let processo of filtrados){
         console.log('%c[Rota PJE]%c processo: ' + JSON.stringify(processo), LOG.aviso, 'color:inherit')
@@ -340,8 +341,22 @@ async function rotaCicloAssinatura(){
         let tabelaCorpo = tabela?.querySelector('tbody')
         if (!tabelaCorpo) return reciclar(tentativa, 'tbody ausente')
 
-        let linhasAssinaveis = [...tabelaCorpo.querySelectorAll('tr')]
-            .filter(d => !d.querySelector('button.botao-icone-tabela-assinar.mat-button-disabled'))
+        let sinalizados = execucao?.rotapje_assinaTudo?.sinalizados || [];
+        let todasLinhas = [...tabelaCorpo.querySelectorAll('tr')];
+
+        let linhasAssinaveis = [];
+
+        for (let d of todasLinhas) {
+            let numero = d.textContent.match(ROTA_REGEX_CNJ)?.[0];
+            let botaoHabilitado = !d.querySelector('button.botao-icone-tabela-assinar.mat-button-disabled');
+            let semImpedimento = !d.querySelector('pje-impedimento-alerta button');
+            
+            if (botaoHabilitado && semImpedimento) {
+                linhasAssinaveis.push(d);
+            } else if (numero && !sinalizados.includes(numero)) {
+                sinalizados.push(numero);
+            }
+        }
 
         if (!linhasAssinaveis.length) {
             defineCiclo(execucao?.rotapje_assinaTudo)
@@ -350,11 +365,17 @@ async function rotaCicloAssinatura(){
 
         let exclusoes = execucao?.rotapje_assinaTudo?.exclusoes || []
         let marcadas = 0
+// Assinatura bloqueada. Documento sinalizado com pontos de atenção para o magistrado. Para remover a sinalização, desmarque-a na tela de "Visualizar minuta" ou na tela de edição da minuta.
+// Impedimento ou Suspeição
 
         for (let linha of linhasAssinaveis) {
             if (!linha.isConnected) return reciclar(tentativa, 'linha órfã')
             if (exclusoes.some(d => linha.textContent.includes(d))) continue
-
+            //let numero = linha.textContent.match(ROTA_REGEX_CNJ)?.[0]
+            //if ((linha.textContent.includes('Impedimento ou Suspeição') || linha.textContent.includes('Assinatura bloqueada')) && numero && !sinalizados.includes(numero)){
+            //    sinalizados.push(numero)
+            //}
+            
             let caixa = linha.querySelector('input.mat-checkbox-input')
             if (caixa?.checked) continue          // idempotência: não desmarca o que já marcou
 
@@ -362,9 +383,8 @@ async function rotaCicloAssinatura(){
             await suspender(200)
             if (caixa?.checked) marcadas++
         }
-
         if (!marcadas) return reciclar(tentativa, 'nenhuma marcada')
-
+        armazenar({rotapje_assinaTudo: execucao?.rotapje_assinaTudo})
         await clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
         await suspender(10000)
         defineCiclo(execucao?.rotapje_assinaTudo)
@@ -373,6 +393,7 @@ async function rotaCicloAssinatura(){
     async function reciclar(tentativa, motivo) {
         if (tentativa >= 3) {
             console.log('%c[Rota PJE]%c desistiu após 3 tentativas:', LOG.info, 'color:inherit', motivo)
+            await armazenar({rotapje_assinaTudo: execucao?.rotapje_assinaTudo})
             defineCiclo(execucao?.rotapje_assinaTudo)   // aí sim segue pra próxima OJ
             return
         }
@@ -387,6 +408,7 @@ async function rotaCicloAssinatura(){
         let index = execucao?.idPerfis.findIndex(d => d?.idPerfil === execucao?.perfilExecucao)
         if (index === execucao?.idPerfis?.length - 1) {
             window.name = ''
+            await tratarSinalizados(execucao?.sinalizados)
             await removerArmazenamento('rotapje_assinaTudo')
             return
         }
@@ -396,14 +418,27 @@ async function rotaCicloAssinatura(){
         
         
     }
+
+    async function tratarSinalizados(sinalizados) {
+        armazenar({rotapje_assinaTudo_tratarSinalizados: sinalizados})
+        await tratarSinalizadosAbrir()
+        console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.teste, 'color:inherit')
+        alert('Sinalizados.')
+    }
+    async function tratarSinalizadosAbrir() {
+        let armazenamento = await obterArmazenamento('rotapje_assinaTudo_tratarSinalizados')
+        let sinalizados = armazenamento?.rotapje_assinaTudo_tratarSinalizados
+        let processo = sinalizados[0]
+        let id = await _rota_buscarIdProcesso(processo)
+        let idTarefa = await rota_buscarTarefa(id)
+        console.log('%c[Rota PJE]%c id + idTarefa + processo: ' + JSON.stringify(id + ' - ' + idTarefa + ' - ' + processo), LOG.teste, 'color:inherit')
+        
+
+        //[Rota PJE] id + idTarefa + processo: "4736929 - 559/assinar - 0010242-89.2026.5.15.0090"
+        //[Rota PJE] id + idTarefa + processo: "4162527 - 561/assinar - 0011644-79.2024.5.15.0090"
+        //[Rota PJE] id + idTarefa + processo: "2193070 - 559/assinar - 0010078-71.2019.5.15.0090"
+    }
 }
-
-//rotaCicloAssinatura()
-
-//window.addEventListener('rotapje:url-mudou', () => {
-//    rotaAssinaTudo()
-//})
-
 
 
 //https://pje-web-hm.trt15.jus.br/pje-comum-api/api/gim/orgaosjulgadores
