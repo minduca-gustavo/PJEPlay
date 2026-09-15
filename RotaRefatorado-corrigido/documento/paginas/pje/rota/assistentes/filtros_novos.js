@@ -950,7 +950,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     {
                         id: id(secao, 'input', 'audiencias_sala_juiz'),
                         textoEmCima: 'Nome da sala / juiz',
-                        placeholder: 'Ex: FULANO DE TAL',
+                        placeholder: 'Ex: FULANO DE TAL - TODAS para todas',
                         tipoInput: 'criaInput',
                     },
                     {
@@ -968,31 +968,49 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         return 'Informe o nome da sala e a data no formato dd/mm/aaaa.'
                     }
                     let hoje = new Date()
-                    let dias = parseInt((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
-                    let sala = await resolverSala(juiz)
-                    if (!sala) return 'Sala não encontrada.'
-                    let ids = [], t = []
-                    let datas = listarDatasParaSala(dias)
-                    for (let i = 0; i < datas.length; i++) {
-                        atualizar_contador(ancestral, 0, (i + 1) + '/' + datas.length)
-                        let r = await buscarProcessosNaSalaPorData(sala.id, datas[i])
-                        ids.push(...r.ids); t.push(...r.t)
+                    console.log('%c[Rota PJE]%c hoje: ' + JSON.stringify(hoje), LOG.aviso, 'color:inherit')
+                    let dias = Math.ceil((dataTransformada - hoje) / (1000 * 60 * 60 * 24))
+                    let salas = await resolverSala(juiz)
+                    if (!salas) return 'Sala não encontrada.'
+                    if(!Array.isArray(salas)) salas = [salas]
+                    let ids = [], t = [], nomesSalas = []
+                    let datas = listarDatasParaSala(dias + 1)
+                    for (let j = 0; j < salas.length; j++) {
+                        let contagemSala = (j + 1) + '/' + salas.length
+                        atualizar_contador(ancestral, contagemSala, 0 )
+                        for (let i = 0; i < datas.length; i++) {
+                            console.log('%c[Rota PJE]%c datas[i]: ' + JSON.stringify(datas[i]), LOG.aviso, 'color:inherit')
+                            console.log('%c[Rota PJE]%c datas[i].getDay(): ' + JSON.stringify((new Date(datas[i] + 'T00:00:00')).getDay()), LOG.aviso, 'color:inherit')
+                            let testeData = (new Date(datas[i] + 'T00:00:00')).getDay()
+                            if (testeData == 0 || testeData == 6) continue
+                            atualizar_contador(ancestral, contagemSala, (i + 1) + '/' + datas.length)
+                            let r = await buscarProcessosNaSalaPorData(salas[j].id, datas[i])
+                            for (let dado of r.t){
+                                dado.nomeSala = salas[j].nome
+                            }
+                            ids.push(...r.ids); t.push(...r.t)
+                        }
                     }
                     if (!ids.length) return 'Nenhum processo encontrado.'
                     let d = []
-                    const formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : ''
-                    const formatarData = d => d ? d.slice(0, 10).split('-').reverse().join('/') : ''
-                    const limiteSimet = new Date('2025-10-19')
+                    let formatarHora = h => h ? h.slice(0, 5).replace(':', 'h') : ''
+                    let formatarData = d => d ? d.slice(0, 10).split('-').reverse().join('/') : ''
+                    let limiteSimet = new Date('2025-10-19')
                     for (let i in t) {
-                        const horarioRaw  = t[i]?.pautaAudienciaHorario?.horaInicial || ''
-                        const dataRaw     = t[i]?.data || ''
-                        const autuacaoRaw = t[i]?.processo?.autuadoEm || ''
-                        const autuacaoDate = new Date(autuacaoRaw.slice(0, 10))
-                        const processo    = t[i]?.nrProcesso || ''
+                        let horarioRaw  = t[i]?.pautaAudienciaHorario?.horaInicial || ''
+                        let dataRaw     = t[i]?.data || ''
+                        let autuacaoRaw = t[i]?.processo?.autuadoEm || ''
+                        let autuacaoDate = new Date(autuacaoRaw.slice(0, 10))
+                        let processo    = t[i]?.nrProcesso || ''
                         d.push({
+                            nomeSala:          t[i]?.nomeSala,
+                            id:                t[i]?.idProcesso,
                             processo:          processo,
                             horario:           formatarHora(horarioRaw),
                             data:              formatarData(dataRaw),
+                            tipo:              t[i]?.tipo?.descricao,
+                            poloAtivo:         t[i]?.poloAtivo?.nome,
+                            poloPassivo:       t[i]?.poloPassivo?.nome,
                             autuacao:          formatarData(autuacaoRaw),
                             simetriaOuLegado:  processo === '' ? '' : autuacaoDate > limiteSimet ? 'SIMETRIA' : 'LEGADO',
                         })
@@ -1070,6 +1088,38 @@ async function criaWidgetfiltrosNovos(ancestral) {
                             Id:              idProcesso,
                             Processo:        processo,
                             Data_de_Autuacao: autuacao,
+                        })
+                    }
+                    return d.length ? d : 'Nenhum processo encontrado.'
+                }
+            },
+            {
+                id: id(secao, 'botao', 'varaOrigem_lista'),
+                texto: 'Vara de Origem por Lista',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'varaOrigem_lista_ids'),
+                        textoEmCima: 'IDs dos processos (um por linha)',
+                        placeholder: '123456',
+                        tipoInput: 'criaInputAnotacao',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let idsRaw = valores[0] || ''
+                    let ids = idsRaw.split('\n').map(s => s.trim()).filter(Boolean)
+                    if (!ids.length) return 'Nenhum ID informado.'
+                    let d = []
+                    for (let i = 0; i < ids.length; i++) {
+                        atualizar_contador(ancestral, 0, (i + 1) + '/' + ids.length)
+                        let idProcesso = ids[i]
+                        let dados    = await buscarHistoricoDeslocamentos(idProcesso)
+                        let origem   = dados.find(d => d?.orgaoJulgadorOrigem?.descricao.includes('Vara do Trabalho')) || {}
+                        let origemNome = origem?.orgaoJulgadorOrigem?.descricao || '-'
+                        let processo =   origem?.numero || '-'
+                        d.push({
+                            Id:              idProcesso,
+                            Processo:        processo,
+                            Vara_de_Origem : origemNome,
                         })
                     }
                     return d.length ? d : 'Nenhum processo encontrado.'

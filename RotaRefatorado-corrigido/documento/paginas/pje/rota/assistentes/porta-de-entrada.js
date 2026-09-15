@@ -96,6 +96,9 @@ async function resolverSala(nomeSala) {
     let salasExistentes = await rota_fetch(
         location.origin + '/pje-comum-api/api/salasaudiencias?idOrgaoJulgador=' + orgaoJulgadorAtivo[0].id
     )
+    if (nomeSala == 'TODAS'){
+        return salasExistentes
+    }
     let salaRequerida = salasExistentes.filter(o => o.nome === nomeSala)
     if (!salaRequerida[0]) {
         relatar('Sala não encontrada: ' + nomeSala, '', 'erro')

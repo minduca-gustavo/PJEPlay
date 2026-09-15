@@ -60,15 +60,6 @@ async function _compiladorMontar() {
         ancestral: '#ffff',
         armazenarRecolhido: true
     })
-    let chaveStorage = id(idCompilador) + '-expandido'
-    let store = await obterArmazenamento([chaveStorage])
-    let temValorSalvo = store?.[chaveStorage] !== undefined
-    let compiladorCorpo = document.getElementById(idCompilador + '-corpo')
-    compiladorCorpo.style.gap = '0px'
-    compiladorCorpo.style.padding = '0px 0 0px 0'
-    if (!temValorSalvo) {
-        compiladorCorpo.style.display = 'flex'
-    } 
     let mapaFuncoes = {
         assistenteAssinaturaDocumentos,
         consultaQualquerOJ,

@@ -396,28 +396,28 @@ async function rotaCicloAssinatura(){
         
     }
 
-    async function tratarSinalizados(sinalizados) {
-        armazenar({rotapje_assinaTudo_tratarSinalizados: {sinalizados: sinalizados, execucao: Date.now()}})
-        await tratarSinalizadosAbrir()
-        console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.teste, 'color:inherit')
-        alert('Sinalizados.')
-    }
-    async function tratarSinalizadosAbrir() {
-        let armazenamento = await obterArmazenamento('rotapje_assinaTudo_tratarSinalizados')
-        let sinalizados = armazenamento?.rotapje_assinaTudo_tratarSinalizados
-        let processo = sinalizados[0]
-        let dados = await buscarIdPeloNumeroCNJ(processo) || {}
-        if (!dados?.id) return
-        let idTarefa = await rota_buscarTarefa(dados?.id) || ''
-        if (!idTarefa) return
-        console.log('%c[Rota PJE]%c id + idTarefa + processo: ' + JSON.stringify(dados?.id + ' - ' + idTarefa + ' - ' + processo), LOG.teste, 'color:inherit', dados)
-        let url = location.origin + '/pjekz/processo/' + dados?.id + '/tarefa/' + idTarefa
-        sinalizadosTrocarPerfilENavegar(dados?.idOrgaoJulgador, url, Date.now())
-        //[Rota PJE] id + idTarefa + processo: "4736929 - 559/assinar - 0010242-89.2026.5.15.0090"
-        //[Rota PJE] id + idTarefa + processo: "4162527 - 561/assinar - 0011644-79.2024.5.15.0090"
-        //[Rota PJE] id + idTarefa + processo: "2193070 - 559/assinar - 0010078-71.2019.5.15.0090"
-    }
-
+}
+async function tratarSinalizados(sinalizados, data = '') {
+    if(!data) data = Date.now()
+    armazenar({rotapje_assinaTudo_tratarSinalizados: {sinalizados: sinalizados, execucao: data, atual: sinalizados[0]}})
+    await tratarSinalizadosAbrir(data)
+    console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.teste, 'color:inherit')
+}
+async function tratarSinalizadosAbrir(data) {
+    let armazenamento = await obterArmazenamento('rotapje_assinaTudo_tratarSinalizados')
+    let sinalizados = armazenamento?.rotapje_assinaTudo_tratarSinalizados?.sinalizados || []
+    if (!sinalizados.length) return
+    let processo = sinalizados[0]
+    let dados = await buscarIdPeloNumeroCNJ(processo) || {}
+    if (!dados?.id) return
+    let idTarefa = await rota_buscarTarefa(dados?.id) || ''
+    if (!idTarefa) return
+    console.log('%c[Rota PJE]%c id + idTarefa + processo: ' + JSON.stringify(dados?.id + ' - ' + idTarefa + ' - ' + processo), LOG.teste, 'color:inherit', dados)
+    let url = location.origin + '/pjekz/processo/' + dados?.id + '/tarefa/' + idTarefa
+    sinalizadosTrocarPerfilENavegar(dados?.idOrgaoJulgador, url, data)
+    //[Rota PJE] id + idTarefa + processo: "4736929 - 559/assinar - 0010242-89.2026.5.15.0090"
+    //[Rota PJE] id + idTarefa + processo: "4162527 - 561/assinar - 0011644-79.2024.5.15.0090"
+    //[Rota PJE] id + idTarefa + processo: "2193070 - 559/assinar - 0010078-71.2019.5.15.0090"
 }
 
 async function sinalizadosTrocarPerfilENavegar(oj, url, data) {
@@ -428,10 +428,33 @@ async function sinalizadosTrocarPerfilENavegar(oj, url, data) {
 }
 
 async function rota_assinarTudo_sinalizadoAberto() {
+    let chave = 'rotapje_assinaTudo_tratarSinalizados'
     let nomeJanela = window.name
-    //if (nomeJanela.includes)
+    let armazenamento = await obterArmazenamento(chave) || {}
+    let execucao = armazenamento?.[chave] || {}
+    if (!execucao?.execucao) return
+    if (!nomeJanela.includes(chave) || !nomeJanela.includes(execucao?.execucao)) return
+    execucao.sinalizados = execucao?.sinalizados.filter(d => d != execucao?.atual)
+    execucao.atual = execucao?.sinalizados[0] || ''
+    await aguardarElemento('mat-tab-header .mat-tab-label-active')
+    let elementos   = [...document.querySelectorAll('mat-tab-header .mat-tab-label-active')]
+    let elemento    = elementos.find(d => d.textContent.includes('Comentários'))
+    clicar(elemento)
+    if (!execucao.atual) {
+        window.name = ''
+        return
+    }
+    armazenar({[chave]: execucao})
+    window.addEventListener('beforeunload', () => {
+        tratarSinalizados(execucao.sinalizados, execucao.execucao)
+    })
 }
 
+
+
+//window.addEventListener('beforeunload', () => {
+//    comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])
+//})
 
 //https://pje-web-hm.trt15.jus.br/pje-comum-api/api/gim/orgaosjulgadores
 
