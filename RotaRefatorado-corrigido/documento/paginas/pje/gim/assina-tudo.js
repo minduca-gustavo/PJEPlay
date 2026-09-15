@@ -17,33 +17,20 @@ async function rotaAssinaTudo() {
     let elemento = await aguardarElemento('.centralizado-botoes')
     if (!elemento) return
     console.log('%c[Rota PJE]%c assina Elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit', elemento)
-    let idBotaoAssina = id('assinaTudo', 'botao', 'assina')
     let idBotaoExibe = id('assinaTudo', 'botao', 'exibe')
-    document.getElementById(idBotaoAssina)?.remove()
     document.getElementById(idBotaoExibe)?.remove()
-    let botaoAssina = criaBotaoLaranja({
-        id: idBotaoAssina,
-        ancestral: ancestral,
-        texto: 'Assinar todos em todas as OJs',
-        acao: () => assinaTudo('assina')
-    })
-    criaTooltip({
-        id: idBotaoAssina + 'tooltip', 
-        texto: 'Assina todos os documentos disponíveis para assinatura em todas as OJs (não abre para conferência).', 
-        elemento: idBotaoAssina
-    })
     let botaoExibe = criaBotaoLaranja({
         id: idBotaoExibe,
         ancestral: ancestral,
         texto: 'Exibir todos de todas as OJs',
-        acao: () => assinaTudo('exibe')
+        acao: () => assinaTudo()
     })
     criaTooltip({
         id: idBotaoExibe + 'tooltip', 
         texto: 'Exibe todos os documentos disponíveis para assinatura em todas as OJs para leitura, seleção e assinatura.',
         elemento: idBotaoExibe
     })
-    async function assinaTudo(parametro) {
+    async function assinaTudo() {
         let orgaos = interceptador_ler('gim_orgaos_julgadores') || null
         console.log('%c[Rota PJE]%c orgaos: ' + JSON.stringify(orgaos), LOG.info, 'color:inherit')
         if (!orgaos) {
@@ -61,14 +48,10 @@ async function rotaAssinaTudo() {
                 return
             }
         }
-        if (parametro === 'assina'){
-            await separaPerfisEAssina(orgaos)
-            return
-        }
         async function separaPerfisEAssina(orgaos, exclusoes = [], sinalizados = []){
             let idPerfis = []
             for (let orgao of orgaos){
-                let idPerfil = perfis.find(d => d?.idOrgaoJulgador === orgao?.idOrgaoJulgador) || {}
+                let idPerfil = perfis.find(d => d?.idOrgaoJulgador == orgao) || {}
                 if (!idPerfil?.idPerfil) continue
                 idPerfis.push(idPerfil)
             }
@@ -343,9 +326,8 @@ async function rotaCicloAssinatura(){
         for (let d of todasLinhas) {
             let numero = d.textContent.match(ROTA_REGEX_CNJ)?.[0];
             let botaoHabilitado = !d.querySelector('button.botao-icone-tabela-assinar.mat-button-disabled');
-            let semImpedimento = !d.querySelector('pje-impedimento-alerta button');
             
-            if (botaoHabilitado && semImpedimento) {
+            if (botaoHabilitado) {
                 linhasAssinaveis.push(d);
             } else if (numero && !sinalizados.includes(numero)) {
                 sinalizados.push(numero);
@@ -380,7 +362,8 @@ async function rotaCicloAssinatura(){
         if (!marcadas) return reciclar(tentativa, 'nenhuma marcada')
         armazenar({rotapje_assinaTudo: execucao?.rotapje_assinaTudo})
         await clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
-        await suspender(10000)
+        await aguardarElemento('PJE-RESPOSTA-ASSINATURA .mat-dialog-content')
+        await suspender(2000)
         defineCiclo(execucao?.rotapje_assinaTudo)
     }
 
