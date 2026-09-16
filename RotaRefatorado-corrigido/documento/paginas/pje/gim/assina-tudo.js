@@ -1,3 +1,5 @@
+// Iniciar na 468
+
 async function rotaAssinaTudo() {
     // Se estiver na janela de assinar todos, para a função que assina
     let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
@@ -57,7 +59,7 @@ async function rotaAssinaTudo() {
             }
         }
         async function separaPerfisEAssina(orgaos, inclusoes = [], sinalizados = []){
-            // vai pegar os perfis de acordo com os processos sinalizados
+            // vai pegar os perfis de acordo com os processos
             let idPerfis = []
             for (let orgao of orgaos){
                 let idPerfil = perfis.find(d => d?.idOrgaoJulgador == orgao) || {}
@@ -170,10 +172,10 @@ async function rotaAssinaTudo() {
                 await apresentaDespachos(pesquisa?.resultado, idRolante, idCheck, sinalizados, div)
             }
             if (pesquisa?.qtdPaginas > 1) {
-                for (let i = 2; i <= pesquisa?.qtdPaginas; i++){
-                    let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=' + i + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador// + '&assinarTodos=true'
-                    let pesquisa = await rota_fetch(url) || {}
-                    if (pesquisa?.resultado) await apresentaDespachos(pesquisa?.resultado, idRolante, idCheck, sinalizados, div)
+                for (let j = 2; j <= pesquisa?.qtdPaginas; j++){
+                    let url = location.origin + '/pje-comum-api/api/gim/processos/todos?pagina=' + j + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorResponsavel=false&data=' + Math.floor(data/1000) + '&idOrgaoJulgador=' + orgao?.idOrgaoJulgador// + '&assinarTodos=true'
+                    let pesquisaNova = await rota_fetch(url) || {}
+                    if (pesquisaNova?.resultado) await apresentaDespachos(pesquisaNova?.resultado, idRolante, idCheck, sinalizados, div)
                 }
             }
             // variável que indica se o processo pode ser assinado em lote ou não: minutaPendenteAnalise
@@ -192,7 +194,10 @@ async function rotaAssinaTudo() {
             id: idAssinaSelecionadosESinalizados,
             texto: 'Assinar Selecionados e Sinalizados',
             ancestral: idDivBotaoFuturo,
-            acao: async () => await assinaProcessosSelecionados(idCheck, sinalizados)
+            acao: async () => {
+                assinaSelecionadosESinalizados.disabled = true
+                await assinaProcessosSelecionados(idCheck, sinalizados)
+            }
         })
         criaTooltip({
             id: idAssinaSelecionadosESinalizados + 'tooltip',
@@ -218,7 +223,7 @@ async function rotaAssinaTudo() {
             console.log('%c[Rota PJE]%c 137 seleciona todos: ' + JSON.stringify(137), LOG.teste, 'color:inherit')
             let dataset = elemento.dataset.marcado
             console.log('%c[Rota PJE]%c dataset: ' + JSON.stringify(dataset), LOG.teste, 'color:inherit')
-            let checks = [...document.querySelectorAll('[id^=' + seletor + ']')]
+            let checks = [...document.querySelectorAll('[id^="' + seletor + '"]')]
             for (let check of checks){
                 if (['caixa', 'tooltip'].some(c => check.id.includes(c))) continue
                 if (check.dataset.marcado !== dataset && check !== elemento){
@@ -256,9 +261,11 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
 }
 
 async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
-    let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa.includes('Assinar'))
+    let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa?.includes('Assinar'))
     console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados.length), LOG.teste, 'color:inherit')
-    let sinalizadosOJ = dados.filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa.includes('Assinar')).map(d=> d?.numeroProcesso)
+    let sinalizadosOJ = dados
+        .filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa?.includes('Assinar'))
+        .map(d => ({ processo: d.numeroProcesso, oj: String(d.idOrgaoJulgador) }))
     sinalizados.push(...sinalizadosOJ)
     for (let processo of filtrados){
         console.log('%c[Rota PJE]%c processo: ' + JSON.stringify(processo), LOG.aviso, 'color:inherit')
@@ -328,10 +335,6 @@ async function rotaCicloAssinatura(){
     let nomeJanela = window.name
     if (!nomeJanela.includes('rotapje_assinaTudo')) return
     let execucao = await obterArmazenamento('rotapje_assinaTudo')
-    if (execucao?.fim){
-        window.name = ''
-        return
-    }
     let timeStamp = execucao?.rotapje_assinaTudo?.execucao
     if(!nomeJanela.includes(timeStamp)) return
 
@@ -350,6 +353,7 @@ async function rotaCicloAssinatura(){
         await aguardarElemento('pje-paginador .total-registros')
         await suspender(1000)
         let linhasPorPagina = [...document.querySelectorAll('pje-paginador .mat-table-pagination .mat-select')][1]
+        if (!linhasPorPagina) return reciclar(tentativa, 'paginador ausente')
         let quantidade = document.querySelector('pje-paginador .total-registros').textContent.split('de').pop().trim()
         let menor = quantidade > 100 ? 100 : quantidade
         if (Number(menor) > Number(linhasPorPagina.textContent)){
@@ -383,8 +387,8 @@ async function rotaCicloAssinatura(){
             
             if (botaoHabilitado) {
                 linhasAssinaveis.push(d);
-            } else if (numero && !sinalizados.includes(numero)) {
-                sinalizados.push(numero);
+            } else if (numero && !sinalizados.some(s => s.processo === numero)) {
+                sinalizados.push({ processo: numero, oj: ojAtual })
             }
         }
         
@@ -407,7 +411,7 @@ async function rotaCicloAssinatura(){
             defineCiclo(execucao?.rotapje_assinaTudo)
             return 
         }
-        armazenar({rotapje_assinaTudo: execucao?.rotapje_assinaTudo})
+        await armazenar({rotapje_assinaTudo: execucao?.rotapje_assinaTudo})
         let divergentes = linhasAssinaveis.filter(l => {
             let numero = l.textContent.match(ROTA_REGEX_CNJ)?.[0]
             let marcada = !!l.querySelector('input.mat-checkbox-input')?.checked
@@ -416,9 +420,22 @@ async function rotaCicloAssinatura(){
         if (divergentes.length) return reciclar(tentativa, 'marcação divergente da lista')
         let marcadasTotal = tabelaCorpo.querySelectorAll('input.mat-checkbox-input:checked').length
         if (marcadasTotal !== marcadas) return reciclar(tentativa, 'caixa marcada fora da lista')
+        let assinaveis = linhasAssinaveis
+            .filter(l => l.querySelector('input.mat-checkbox-input')?.checked)
+            .map(l => l.textContent.match(ROTA_REGEX_CNJ)?.[0])
+            .filter(Boolean)
         await clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
         await aguardarElemento('PJE-RESPOSTA-ASSINATURA .mat-dialog-content')
         await suspender(2000)
+        let tabelaResultados = execucao.rotapje_assinaTudo.tabelaResultados ??= []
+        let confirmacaoAssinatura = document.querySelector('PJE-RESPOSTA-ASSINATURA .mat-dialog-content')
+        let assinadoTipo = confirmacaoAssinatura?.textContent?.includes('realizadas com sucesso') ? 'SUCESSO' : 'ERRO'
+        let resultadoParcial = assinaveis.map(d => {
+            let dados = execucao?.rotapje_assinaTudo?.inclusoes.find(c => c.processo == d)
+            return {processo: d, oj: dados?.oj || ojAtual, confirmacao: assinadoTipo}
+        })
+        tabelaResultados.push(...resultadoParcial)
+        await armazenar({rotapje_assinaTudo: execucao.rotapje_assinaTudo})
         if (Number(quantidade) > 100) {
             let r = execucao.rotapje_assinaTudo
             r.recargas = (r.perfilRecarga === r.perfilExecucao) ? (r.recargas || 0) + 1 : 1
@@ -448,7 +465,10 @@ async function rotaCicloAssinatura(){
         if (index === -1) return
         if (index === execucao?.idPerfis?.length - 1) {
             window.name = ''
-            await tratarSinalizados(execucao?.sinalizados)
+            let sinalizadosRelatorio = (execucao?.sinalizados || [])
+                .map(s => ({ processo: s.processo, oj: s.oj, confirmacao: 'SINALIZADO' }))
+            //RELATORIO AQUI
+            await tratarSinalizados((execucao?.sinalizados || []).map(s => s.processo))
             await removerArmazenamento('rotapje_assinaTudo')
             return
         }
@@ -460,60 +480,103 @@ async function rotaCicloAssinatura(){
     }
 
 }
-async function tratarSinalizados(sinalizados, data = '') {
-    if(!data) data = Date.now()
-    armazenar({rotapje_assinaTudo_tratarSinalizados: {sinalizados: sinalizados, execucao: data, atual: sinalizados[0]}})
-    await tratarSinalizadosAbrir(data)
-    console.log('%c[Rota PJE]%c sinalizados: ' + JSON.stringify(sinalizados), LOG.teste, 'color:inherit')
-}
-async function tratarSinalizadosAbrir(data) {
-    let armazenamento = await obterArmazenamento('rotapje_assinaTudo_tratarSinalizados')
-    let sinalizados = armazenamento?.rotapje_assinaTudo_tratarSinalizados?.sinalizados || []
-    if (!sinalizados.length) return
-    let processo = sinalizados[0]
-    let dados = await buscarIdPeloNumeroCNJ(processo) || {}
-    if (!dados?.id) return
-    let idTarefa = await rota_buscarTarefa(dados?.id) || ''
-    if (!idTarefa) return
-    console.log('%c[Rota PJE]%c id + idTarefa + processo: ' + JSON.stringify(dados?.id + ' - ' + idTarefa + ' - ' + processo), LOG.teste, 'color:inherit', dados)
-    let url = location.origin + '/pjekz/processo/' + dados?.id + '/tarefa/' + idTarefa
-    sinalizadosTrocarPerfilENavegar(dados?.idOrgaoJulgador, url, data)
-    //[Rota PJE] id + idTarefa + processo: "4736929 - 559/assinar - 0010242-89.2026.5.15.0090"
-    //[Rota PJE] id + idTarefa + processo: "4162527 - 561/assinar - 0011644-79.2024.5.15.0090"
-    //[Rota PJE] id + idTarefa + processo: "2193070 - 559/assinar - 0010078-71.2019.5.15.0090"
+let CHAVE_SINALIZADOS = 'rotapje_assinaTudo_tratarSinalizados'
+
+async function tratarSinalizados(sinalizados = [], data = Date.now()) {
+    let fila = [...new Set(sinalizados)]
+    if (!fila.length) return
+    await armazenar({[CHAVE_SINALIZADOS]: {sinalizados: fila, execucao: data}})
+    await tratarSinalizadosAbrir(false)
 }
 
-async function sinalizadosTrocarPerfilENavegar(oj, url, data) {
-    let perfis = await interceptador_lerPerfis()
-    let perfil = perfis.find(d => d?.idOrgaoJulgador === oj)
+// mesmaAba = false → primeira abertura (aba nova, via segundo plano)
+// mesmaAba = true  → botão "Próximo" (navega na aba atual)
+async function tratarSinalizadosAbrir(mesmaAba) {
+    let execucao = (await obterArmazenamento(CHAVE_SINALIZADOS))?.[CHAVE_SINALIZADOS]
+    let fila = execucao?.sinalizados || []
+    while (fila.length) {
+        let processo = fila[0]
+        let dados = await buscarIdPeloNumeroCNJ(processo) || {}
+        let idTarefa = dados?.id ? (await rota_buscarTarefa(dados.id) || '') : ''
+        if (dados?.id && idTarefa) {
+            await armazenar({[CHAVE_SINALIZADOS]: {...execucao, sinalizados: fila}})
+            let trocou = await sinalizadosTrocarPerfil(dados.idOrgaoJulgador)
+            if (trocou) {
+                let url = location.origin + '/pjekz/processo/' + dados.id + '/tarefa/' + idTarefa
+                        + '?rotapje_sinalizado=' + execucao.execucao
+                if (mesmaAba) location.href = url
+                else abrirURL({url, tipo: 'aba'})
+                return
+            }
+        }
+        console.log('%c[Rota PJE]%c sinalizado não localizado, pulando:', LOG.aviso, 'color:inherit', processo)
+        fila.shift()
+    }
+    await removerArmazenamento(CHAVE_SINALIZADOS)
+    if (mesmaAba) window.name = ''
+    rota_avisoTemporario('Não há mais sinalizados.', 'info', 3000)
+}
+
+async function sinalizadosTrocarPerfil(oj) {
+    let perfis = await interceptador_lerPerfis() || []
+    if (!perfis.length) perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
+    let perfil = perfis.find(d => String(d?.idOrgaoJulgador) === String(oj))
+    if (!perfil) return false
     await rota_fetchPost(location.origin + '/pje-seguranca/api/token/perfis/trocar', JSON.stringify({ id_perfil: perfil.idPerfil }))
-    window.open(url, 'rotapje_assinaTudo_tratarSinalizados' + data)
+    return true
 }
 
 async function rota_assinarTudo_sinalizadoAberto() {
-    let chave = 'rotapje_assinaTudo_tratarSinalizados'
-    let nomeJanela = window.name
-    let armazenamento = await obterArmazenamento(chave) || {}
-    let execucao = armazenamento?.[chave] || {}
+    let paramURL = new URLSearchParams(location.search).get('rotapje_sinalizado') // antes de qualquer await
+    let execucao = (await obterArmazenamento(CHAVE_SINALIZADOS))?.[CHAVE_SINALIZADOS]
     if (!execucao?.execucao) return
-    if (!nomeJanela.includes(chave) || !nomeJanela.includes(execucao?.execucao)) return
-    execucao.sinalizados = execucao?.sinalizados.filter(d => d != execucao?.atual)
-    execucao.atual = execucao?.sinalizados[0] || ''
-    await aguardarElemento('mat-tab-header .mat-tab-label-active')
-    let elementos   = [...document.querySelectorAll('mat-tab-header .mat-tab-label')]
-    let elemento    = elementos.find(d => d.textContent.includes('Comentários'))
-    clicar(elemento)
-    if (!execucao.atual) {
-        window.name = ''
-        return
+    let marca = CHAVE_SINALIZADOS + execucao.execucao
+    if (!window.name.includes(marca)) {
+        if (paramURL !== String(execucao.execucao)) return
+        window.name = marca
     }
-    armazenar({[chave]: execucao})
-    window.addEventListener('beforeunload', () => {
-        tratarSinalizados(execucao.sinalizados, execucao.execucao)
+    await aguardarElemento('mat-tab-header .mat-tab-label')
+    await suspender(3000)
+    let comentarios = [...document.querySelectorAll('mat-tab-header .mat-tab-label')]
+        .find(d => d.textContent.includes('Comentários'))
+    if (comentarios) clicar(comentarios)
+    rota_tratarSinalizados_criarWidgetProximo(execucao)
+}
+
+function rota_tratarSinalizados_criarWidgetProximo(execucao) {
+    let idWidget = id('tratarSinalizados', 'widget')
+    document.getElementById(idWidget)?.remove()
+    let restantes = (execucao.sinalizados?.length || 1) - 1
+    _rota_criarWidgetFlutuante({
+        id: idWidget,
+        titulo: 'Sinalizados',
+        largura: '280px'
+    })
+    let botao = criaBotaoLaranja({
+        id: idWidget + '_proximo',
+        ancestral: idWidget,   // confira se o conteúdo do widget vai no próprio id ou num filho
+        texto: restantes ? '▶ Próximo sinalizado (' + restantes + ' restantes)' : '✔ Encerrar sinalizados',
+        acao: async () => {
+            botao.disabled = true
+            try {
+                let atual = (await obterArmazenamento(CHAVE_SINALIZADOS))?.[CHAVE_SINALIZADOS]
+                if (!atual) return
+                atual.sinalizados.shift()
+                await armazenar({[CHAVE_SINALIZADOS]: atual})
+                await tratarSinalizadosAbrir(true)
+            } catch (e) {
+                console.error('[Rota PJE] próximo sinalizado:', e)
+                rota_avisoTemporario('Erro ao abrir o próximo sinalizado.', 'erro', 3000)
+                botao.disabled = false
+            }
+        }
     })
 }
 
 
+//window.addEventListener('beforeunload', () => {
+//    tratarSinalizados(execucao.sinalizados, execucao.execucao)
+//})
 
 //window.addEventListener('beforeunload', () => {
 //    comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])

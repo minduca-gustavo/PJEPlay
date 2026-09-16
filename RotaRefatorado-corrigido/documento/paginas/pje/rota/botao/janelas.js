@@ -991,14 +991,25 @@ function _rota_aguardarEstabilizacao(callback, minimoMs = 5000) {
 // Fora de _rota_montarWidget, no escopo do módulo:
 let _rota_geracao = 0  // variável de módulo
 
-function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio = 0){
-	_rota_geracao++
-	let minhaGeracao = _rota_geracao  // capturada no closure
-	
-	remover('#rotapje-widget')
+// ════════════════════════════════════════════════════════════
+// WIDGET FLUTUANTE GENÉRICO (reutilizável)
+// Cria container + header arrastável, anexa ao body e devolve
+// { widget, header } para o chamador preencher o conteúdo.
+// ════════════════════════════════════════════════════════════
+function _rota_criarWidgetFlutuante({
+	id         = 'rotapje-widget',
+	titulo     = '▶ ROTA PJE',
+	subtitulo  = '',
+	posSalva   = null,
+	slotIndex  = null,
+	nomeTarefa = null,
+	largura    = '220px',
+	estilo     = {},
+} = {}){
+	remover('#' + id)
 
 	let widget = document.createElement('div')
-	widget.id  = 'rotapje-widget'
+	widget.id  = id
 	Object.assign(widget.style, {
 		position:     'fixed',
 		zIndex:       String(ROTA_Z.widget),
@@ -1009,8 +1020,8 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		boxShadow:    '0 4px 16px rgba(0,0,0,0.12)',
 		fontFamily:   "'Segoe UI', system-ui, sans-serif",
 		cursor:       'default',
-		width:        '220px',
-	})
+		width:        largura,
+	}, estilo)
 
 	let posInicial = posSalva || { bottom:'20px', right:'20px', top:'auto', left:'auto' }
 	Object.assign(widget.style, posInicial)
@@ -1027,50 +1038,74 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		marginBottom:   '6px',
 	})
 
-	let titulo = document.createElement('span')
-	Object.assign(titulo.style, { color:'#f9f9fa', fontWeight:'700', fontSize:'11px' })
-	titulo.textContent = '▶ PJE ROTA'
+	let tituloEl = document.createElement('span')
+	Object.assign(tituloEl.style, { color:'#f9f9fa', fontWeight:'700', fontSize:'11px' })
+	tituloEl.textContent = titulo
 
-	let numEl = document.createElement('span')
-	Object.assign(numEl.style, {
+	let subEl = document.createElement('span')
+	Object.assign(subEl.style, {
 		color:'#f9f9fa', fontSize:'10px', flex:'1',
 		textAlign:'right', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap',
 	})
-	numEl.textContent = numProc
-	numEl.title = numProc
+	subEl.textContent = subtitulo || ''
+	subEl.title       = subtitulo || ''
 
-	header.appendChild(titulo)
-	header.appendChild(numEl)
+	header.appendChild(tituloEl)
+	header.appendChild(subEl)
 	widget.appendChild(header)
+
+	document.body.appendChild(widget)
+	_rota_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
+
+	return { widget, header }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// WIDGET DA ROTA (temporizador ou modo normal)
+// ════════════════════════════════════════════════════════════
+function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, nomeTarefa, widgetParams, temporizador, tsInicio = 0){
+	_rota_geracao++
+	let minhaGeracao = _rota_geracao  // capturada no closure
+
+	// ── Checagem antecipada do temporizador ───────────────────
+	// Feita ANTES de criar o widget, para não deixar um container
+	// vazio na tela quando o tempo já esgotou.
+	let segundosTotal = 0, opcoes = [], contadorAtual = 0, pausado = false
+
+	if(temporizador && temporizador.ativo){
+		segundosTotal = parseInt(temporizador.segundos) || 30
+		opcoes = (temporizador.opcoes || '').split(',').map(s => s.trim()).filter(Boolean)
+
+		let elapsed = tsInicio > 0 ? Math.floor((Date.now() - tsInicio) / 1000) : 0
+		contadorAtual = Math.max(0, segundosTotal - elapsed)
+
+		if(localStorage.getItem(ROTA_KEY_BASE + sessao) == 'pausado') pausado = true
+
+		if(contadorAtual <= 0 && !pausado){
+			remover('#rotapje-widget')
+			if(minhaGeracao === _rota_geracao){
+				localStorage.setItem('rotapje_nota_' + sessao, '')
+				rota_sinalizar(sessao, 'proximo')
+			}
+			return
+		}
+	}
+
+	let { widget } = _rota_criarWidgetFlutuante({
+		subtitulo: numProc,
+		posSalva,
+		slotIndex,
+		nomeTarefa,
+	})
 
 	// ════════════════════════════════════════════════════════
 	// MODO TEMPORIZADOR
 	// ════════════════════════════════════════════════════════
 	if(temporizador && temporizador.ativo){
-		let segundosTotal = parseInt(temporizador.segundos) || 30
-		let opcoes = (temporizador.opcoes || '').split(',').map(s => s.trim()).filter(Boolean)
-
-		// Calcula tempo restante a partir do timestamp de início sincronizado
-		let elapsed = tsInicio > 0 ? Math.floor((Date.now() - tsInicio) / 1000) : 0
-		let contadorAtual = Math.max(0, segundosTotal - elapsed)
-
-		let pausado       = false
-		let intervalo     = null
+		let intervalo      = null
 		let opcaoEscolhida = null
-		let sinalInicial = localStorage.getItem(ROTA_KEY_BASE + sessao)
-		if (sinalInicial == 'pausado') pausado = true
 
-		// Se o tempo já esgotou antes de montar (janela muito lenta), avança logo
-		if(contadorAtual <= 0 && !pausado){
-			if(minhaGeracao === _rota_geracao){
-				let nota = opcaoEscolhida || ''
-				localStorage.setItem('rotapje_nota_' + sessao, nota)
-				rota_sinalizar(sessao, 'proximo')
-			}
-			return
-		}
-
-		// ── Disrota do contador ───────────────────────────────
 		let divContador = document.createElement('div')
 		Object.assign(divContador.style, {
 			textAlign:    'center',
@@ -1088,8 +1123,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		divContador.textContent = contadorAtual
 
 		function atualizarContador(){
-			let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
-			if (sinal == 'pausado') pausado = true
+			if(localStorage.getItem(ROTA_KEY_BASE + sessao) == 'pausado') pausado = true
 			if(!pausado) divContador.textContent = contadorAtual
 			if(pausado){
 				pausarContadorDiv()
@@ -1111,9 +1145,8 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		function iniciarContagem(){
 			if(intervalo) clearInterval(intervalo)
 			intervalo = setInterval(() => {
-				let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
-				if (sinal == 'pausado') pausado = true
-				if(pausado) {
+				if(localStorage.getItem(ROTA_KEY_BASE + sessao) == 'pausado') pausado = true
+				if(pausado){
 					pausarContadorDiv()
 					return
 				}
@@ -1126,8 +1159,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 						return
 					}
 					if(minhaGeracao !== _rota_geracao) return
-					let nota = opcaoEscolhida || ''
-					localStorage.setItem('rotapje_nota_' + sessao, nota)
+					localStorage.setItem('rotapje_nota_' + sessao, opcaoEscolhida || '')
 					rota_sinalizar(sessao, 'proximo')
 				}
 			}, 1000)
@@ -1177,18 +1209,6 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 				btn.textContent = textoExibido
 				btn.title = opcao
 
-				function setAtivo(ativo){
-					if(ativo){
-						btn.style.background  = 'rgba(255,167,38,0.15)'
-						btn.style.borderColor = 'rgba(255,167,38,0.6)'
-						btn.style.color       = '#ffa726'
-					} else {
-						btn.style.background  = '#f9f9fa'
-						btn.style.borderColor = '#dcdcdc'
-						btn.style.color       = '#2c3e50'
-					}
-				}
-
 				btn.addEventListener('mouseenter', () => { if(opcaoEscolhida !== opcao) btn.style.background = 'rgba(0,0,0,0.02)' })
 				btn.addEventListener('mouseleave', () => { if(opcaoEscolhida !== opcao) btn.style.background = '#f9f9fa' })
 
@@ -1217,14 +1237,12 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 		btnProximo.addEventListener('click', () => {
 			clearInterval(intervalo)
-			let nota = opcaoEscolhida || ''
-			localStorage.setItem('rotapje_nota_' + sessao, nota)
+			localStorage.setItem('rotapje_nota_' + sessao, opcaoEscolhida || '')
 			rota_sinalizar(sessao, 'proximo')
 		})
 		btnEncerrar.addEventListener('click', () => {
 			clearInterval(intervalo)
-			let nota = opcaoEscolhida || ''
-			localStorage.setItem('rotapje_nota_' + sessao, nota)
+			localStorage.setItem('rotapje_nota_' + sessao, opcaoEscolhida || '')
 			rota_sinalizar(sessao, 'encerrar')
 		})
 
@@ -1234,8 +1252,6 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 		linhaBotoes.appendChild(btnProximo)
 		widget.appendChild(linhaBotoes)
 
-		document.body.appendChild(widget)
-		_rota_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
 		if(!pausado){
 			iniciarContagem()
 		} else {
@@ -1285,8 +1301,6 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	widget.appendChild(linhaBotoes)
 
 	// ── Botões de parâmetros (clipboard) ──────────────────────
-	// Aparecem apenas quando a lista foi enviada "com parâmetros".
-
 	if(widgetParams && widgetParams.length){
 		let divParams = document.createElement('div')
 		Object.assign(divParams.style, {
@@ -1298,10 +1312,8 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			marginTop:     '2px',
 		})
 
-		widgetParams.forEach((param, idx) => {
+		widgetParams.forEach(param => {
 			let btn = document.createElement('button')
-
-			// Trunca o texto para caber no botão (máx 28 chars)
 			let textoExibido = param.length > 28 ? param.slice(0, 26) + '…' : param
 
 			Object.assign(btn.style, {
@@ -1320,7 +1332,7 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 				fontFamily:   "'Segoe UI', system-ui, sans-serif",
 			})
 			btn.textContent = textoExibido
-			btn.title = param  // tooltip com texto completo
+			btn.title = param
 
 			btn.addEventListener('mouseenter', () => {
 				btn.style.background  = 'rgba(255,167,38,0.1)'
@@ -1335,7 +1347,6 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 			btn.addEventListener('click', () => {
 				navigator.clipboard.writeText(param).then(() => {
-					let orig = btn.textContent
 					btn.textContent = '✅ Copiado!'
 					btn.style.color = '#2e7d32'
 					setTimeout(() => {
@@ -1343,7 +1354,6 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 						btn.style.color = '#2c3e50'
 					}, 1500)
 				}).catch(() => {
-					// Fallback: cria textarea temporário
 					let t = document.createElement('textarea')
 					t.value = param
 					document.body.appendChild(t)
@@ -1360,9 +1370,6 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 
 		widget.appendChild(divParams)
 	}
-
-	document.body.appendChild(widget)
-	_rota_tornarArrastavel(widget, header, slotIndex, nomeTarefa)
 }
 
 // [ALTERAÇÃO 1] Vertical usa metade da largura do widget horizontal
