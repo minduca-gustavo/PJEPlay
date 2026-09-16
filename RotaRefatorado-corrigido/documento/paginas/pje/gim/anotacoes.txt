@@ -2,3 +2,85 @@ snippet pra criar: let elemento = document.querySelector(seletor) ?? await aguar
 
 <div _ngcontent-fkv-c518="" role="toolbar" class="centralizado-botoes ng-star-inserted"><button _ngcontent-fkv-c518="" mat-button="" class="mat-focus-indicator chip-azul mat-button mat-button-base" tabindex="0"><span class="mat-button-wrapper"><span _ngcontent-fkv-c518="">Exibir todos</span></span><span matripple="" class="mat-ripple mat-button-ripple"></span><span class="mat-button-focus-overlay"></span></button><button _ngcontent-fkv-c518="" mat-button="" class="mat-focus-indicator chip-azul mat-button mat-button-base" tabindex="0"><span class="mat-button-wrapper"><span _ngcontent-fkv-c518="">Assinar todos</span></span><span matripple="" class="mat-ripple mat-button-ripple"></span><span class="mat-button-focus-overlay"></span></button><button style="display: block; background: rgb(255, 167, 36); color: rgb(255, 255, 255); border: medium; border-radius: 6px; padding: 8px 12px; margin-left: 3px; margin-right: 3px; font-size: 12px; font-weight: 700; font-family: &quot;Segoe UI&quot;, system-ui, sans-serif; cursor: pointer; text-align: center; transition: background 0.15s; box-sizing: border-box;" id="rotapje_assinaTudo_botao_assina">Assinar todos em todas as OJs</button><button style="display: block; background: rgb(255, 167, 36); color: rgb(255, 255, 255); border: medium; border-radius: 6px; padding: 8px 12px; margin-left: 3px; margin-right: 3px; font-size: 12px; font-weight: 700; font-family: &quot;Segoe UI&quot;, system-ui, sans-serif; cursor: pointer; text-align: center; transition: background 0.15s; box-sizing: border-box;" id="rotapje_assinaTudo_botao_exibe">Exibir todos de todas as OJs</button></div>
 
+function observa(parametro) {
+  const S = (window.__observa ??= { obs: null, log: [], inicio: null, onUnload: null });
+
+  const desc = el => {
+    let s = el.tagName.toLowerCase();
+    if (el.id) s += '#' + el.id;
+    if (typeof el.className === 'string' && el.className.trim())
+      s += '.' + el.className.trim().split(/\s+/).join('.');
+    return s;
+  };
+  const caminho = el => {
+    const p = [];
+    while (el && el.nodeType === 1 && p.length < 4) { p.unshift(desc(el)); el = el.parentElement; }
+    return p.join(' > ');
+  };
+  const texto = n => {
+    const t = (n.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    return t ? `"${t}"` : '';
+  };
+  const hora = () => {
+    const d = new Date();
+    return d.toLocaleTimeString('pt-BR', { hour12: false }) + '.' + String(d.getMilliseconds()).padStart(3, '0');
+  };
+
+  const baixar = motivo => {
+    const txt = [
+      `Página: ${location.href}`,
+      `Início: ${S.inicio}`,
+      `Fim: ${new Date().toLocaleString('pt-BR')} (${motivo})`,
+      `Eventos: ${S.log.length}`,
+      '',
+      ...S.log
+    ].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain;charset=utf-8' }));
+    a.download = `observa_${Date.now()}.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  const parar = () => {
+    S.obs?.disconnect();
+    S.obs = null;
+    if (S.onUnload) removeEventListener('beforeunload', S.onUnload);
+    S.onUnload = null;
+  };
+
+  if (parametro === 'iniciar') {
+    if (S.obs) return console.warn('observa: já está observando.');
+    S.log = [];
+    S.inicio = new Date().toLocaleString('pt-BR');
+
+    S.obs = new MutationObserver(mutacoes => {
+      for (const m of mutacoes) {
+        const pai = caminho(m.target);
+        m.addedNodes.forEach(n => {
+          if (n.nodeType === 1) S.log.push(`[${hora()}] + ENTROU  ${pai} > ${desc(n)} ${texto(n)}`);
+        });
+        m.removedNodes.forEach(n => {
+          if (n.nodeType === 1) S.log.push(`[${hora()}] - SAIU    ${pai} > ${desc(n)} ${texto(n)}`);
+        });
+      }
+    });
+    S.obs.observe(document.body, { childList: true, subtree: true });
+
+    S.onUnload = () => {
+      S.log.push(`[${hora()}] ### PÁGINA SENDO RECARREGADA/FECHADA`);
+      parar();
+      baixar('antes do recarregamento');
+    };
+    addEventListener('beforeunload', S.onUnload);
+
+    console.log('observa: observando o body...');
+  } else if (parametro === 'final') {
+    if (!S.obs && !S.log.length) return console.warn('observa: nada foi observado.');
+    parar();
+    baixar('final manual');
+    console.log(`observa: finalizado, ${S.log.length} eventos baixados.`);
+  } else {
+    console.warn("observa: use 'iniciar' ou 'final'.");
+  }
+}
