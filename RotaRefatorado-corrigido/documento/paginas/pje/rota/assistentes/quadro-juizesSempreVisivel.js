@@ -269,6 +269,11 @@ async function preencheQuadro(idQuadro, dados = []) {
             id: 'juizes',
             texto: 'Quadro de Juízes',
             acao: async () => await preencheQuadro(idQuadro)
+        },
+        {
+            id: 'comQuemFalar',
+            texto: 'Com quem falar',
+            acao: async () => await preencheComQuemFalar(idQuadro)
         }
     ]
 
@@ -311,7 +316,13 @@ async function preencheQuadro(idQuadro, dados = []) {
             montaGrupo(idRolante, idBase + i, dadosVara, colunas)
         })
     }
+    async function preencheComQuemFalar(elemento) {
+        let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_juizes.json'
+        
+    }
+    async function consultaQuadrosGit(url){
 
+    }
     async function tabelaAssistentesSecretarios() {
         let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_juizes.json'
         let resposta = await fetch(url, { cache: 'no-store', referrerPolicy: 'no-referrer' })

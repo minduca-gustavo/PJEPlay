@@ -58,6 +58,12 @@ async function gestao_inicializar() {
             tooltip: 'Informações sobre Juízes - assistente/secretário, modelos de despacho, etc.',
             acrescentaColunas: true
         },
+        {
+            id: id('comQuemFalar'),
+            texto: '📞\nCom quem falar',
+            tooltip: 'Informações sobre as OJs - assessores e equipe.',
+            acrescentaColunas: true
+        },
     ]
 
     for (let botao of botoesDoca) {
@@ -68,7 +74,7 @@ async function gestao_inicializar() {
             acao: () => grade_abrir(botao)
         })
         b.style.width      = '100%'
-        b.style.height     = '50px'
+        b.style.height     = 'fit-content'
         b.style.whiteSpace = 'pre-line'
         b.addEventListener('mouseover', () => {
             if (botao.tooltip) {
@@ -117,7 +123,10 @@ async function gestao_inicializar() {
             }
         }
         removerCarregando()  // ← deve ficar FORA do try/catch, depois dele
-        
+        if (configBotao.id === id('comQuemFalar')){
+            grade_comQuemFalar()
+            return
+        }
         // Deriva colunas: usa configBotao.colunas se existir, senão deriva do primeiro objeto
         if (configBotao.colunas && configBotao.colunas.length) {
             _colunasAtivas = configBotao.colunas.map(c => {
@@ -138,6 +147,49 @@ async function gestao_inicializar() {
         if (gestor) {
             rodape_mostrarBotoesEdicao()
         }
+    }
+
+    function grade_comQuemFalar(){
+        console.log('%c[Rota PJE]%c _dadosGit: ' + JSON.stringify(_dadosGit), LOG.teste, 'color:inherit')
+        let el = document.getElementById(divPrincipal)
+        if (el) el.innerHTML = ''
+        let idInput = id('comQuemFalar', 'input')
+        criaInputAnotacao({
+            textoEmCima: 'Não altere sem saber o que está fazendo.',
+            id: idInput,
+            ancestral: el.id,
+        })
+        let inputSel = document.getElementById(idInput)
+        inputSel.value = JSON.stringify(_dadosGit, null, 2)
+        inputSel.style.height = 'auto'
+        inputSel.style.height = inputSel.scrollHeight + 'px'
+        let rodape = document.getElementById(divRodape)
+        if (rodape) rodape.innerHTML = ''
+        let botaoSalvar = criaBotaoLaranja({
+            id: id('comQuemFalar', 'salva'),
+            texto: 'Salvar',
+            ancestral: rodape.id,
+            acao: async () => {
+                botaoSalvar.disabled = true
+                let obj
+                try {
+                    obj = JSON.parse(inputSel.value)
+                } catch (e) {
+                    alert('JSON inválido: ' + e.message)
+                    botaoSalvar.disabled = false
+                    return
+                }
+                await githubSalvarDados('comQuemFalar.json', JSON.stringify(obj, null, 2))
+                el.innerHTML = ''
+                criaTexto({
+                    id: id('comQuemFalar', 'textoSucesso'),
+                    texto: 'Salvo com sucesso',
+                    ancestral: el.id
+                })
+                await suspender(4000)
+                grade_comQuemFalar
+            }
+        })
     }
 
     // ── Renderiza os dados em modo VISUALIZAÇÃO (somente leitura) ────────────
