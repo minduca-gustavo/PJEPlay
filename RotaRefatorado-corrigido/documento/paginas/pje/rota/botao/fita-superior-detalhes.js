@@ -13,34 +13,40 @@ async function criaFitaSuperior() {
         id: 'rotapje-busca-posicao-fila-div-barra',
         ancestral: 'ffff'
     })
-    console.log('%c[Rota PJE]%c cria a fita' + JSON.stringify(8 + ': fita'), LOG.rosa, 'color:inherit')
     
-    div.style.backgroundColor = corToolbar
-    div.style.color = corToolbar
-    div.style.gap = '0px'
-    div.style.padding = '0px'
-    div.style.marginBottom = '0px'
-    div.style.heigth = '14px'
-    div.style.zIndex = '9999999'
-    div.style.display = 'flex'
-    div.style.flexDirection = 'row'
-    div.style.alignItems = 'center'
+    formataFitaSuperior(div, corToolbar)
 
     // Insere a div no DOM antes de criar os botões,
     // pois criaBotaoAzul busca o ancestral pelo id
-    barra
-        ? barra.parentElement.insertBefore(div, barra)
-        : document.body.prepend(div)
-
+    insereFitaSuperior(barra, div)
+    
     await busca_filaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
 }
 
-function confereCriaFitaSuperior(){
+function formataFitaSuperior(elemento, cor){
+    elemento.style.backgroundColor = cor
+    elemento.style.gap = '0px'
+    elemento.style.padding = '0px'
+    elemento.style.marginBottom = '0px'
+    elemento.style.height = '14px'
+    elemento.style.zIndex = '9999999'
+    elemento.style.display = 'flex'
+    elemento.style.flexDirection = 'row'
+    elemento.style.alignItems = 'center'
+}
+
+async function confereCriaFitaSuperior(){
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
-    criaFitaSuperior()
+    await criaFitaSuperior()
+}
+
+function insereFitaSuperior(elemento, inserir){
+    elemento
+        ? elemento.parentElement.insertBefore(inserir, elemento)
+        : document.body.prepend(inserir)
 }
 
 // ___________________________________________________
