@@ -77,7 +77,7 @@ function evitaQueda_limparGuarda() {
 
 async function evitaQueda() {
     if (!location.href.includes('trt15.jus.br/pjekz')) return
-
+    
     let name = 'rota_evitaQuedaAtivo'
     let evitaQuedaAtivo = await obterArmazenamento([name]).then(d => d?.[name])
     if (!evitaQuedaAtivo) return
@@ -103,9 +103,13 @@ async function evitaQueda() {
 
     let texto = elemento.textContent
     if (!texto.includes('Acesso Negado') && !texto.includes('mudança de perfil')) {
-        evitaQueda_limparGuarda()
-        return
+        await suspender(1000)
+        if (!sel('pjeAcessoNegado')){
+            evitaQueda_limparGuarda()
+            return
+        }
     }
+    
 
     if (guarda.tentativas >= EVITA_QUEDA_MAX) {
         console.warn(

@@ -1,6 +1,9 @@
 // Iniciar na 468
 
 async function rotaAssinaTudo() {
+    // quando a homologação está ruim, TRUE para poder usar em outra página.
+    let homologacaoRuim = false
+    let janelaInicial = homologacaoRuim ? JANELA.painelGlobal : JANELA.gim
     // Se estiver na janela de assinar todos, para a função que assina
     let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
     if (janelaCiclo) {
@@ -14,12 +17,12 @@ async function rotaAssinaTudo() {
         return
     }
     // Se não for nenhum dos três retorna, caso contrário prossegue
-    let janela = confereJanela(JANELA.gim)
+    let janela = confereJanela(janelaInicial)
     if (!janela) return
     console.log('%c[Rota PJE]%c assina Janela: ' + JSON.stringify(4), LOG.info, 'color:inherit')
     // Insere botão ao lado dos botões que já existem
-    let ancestral = '.centralizado-botoes'
-    let elemento = await aguardarElemento('.centralizado-botoes')
+    let ancestral = homologacaoRuim ? 'pje-painel-global .cabecalho' : '.centralizado-botoes'
+    let elemento = await aguardarElemento(ancestral)
     if (!elemento) return
     console.log('%c[Rota PJE]%c assina Elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit', elemento)
     let idBotaoExibe = id('assinaTudo', 'botao', 'exibe')
@@ -41,11 +44,12 @@ async function rotaAssinaTudo() {
         //assinaTudo - quando o botão é clicado, lê os perfis do usuário para fazer busca nas OJs.
         let sinalizados = [] // para reunir os sinalizados e apresentá-los depois.
         let orgaos = interceptador_ler('gim_orgaos_julgadores') || null
+        if (!orgaos) orgaos = await rota_fetch(location.origin + '/pje-comum-api/api/gim/orgaosjulgadores')
         console.log('%c[Rota PJE]%c orgaos: ' + JSON.stringify(orgaos), LOG.info, 'color:inherit')
         if (!orgaos) {
             rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
             console.log('%c[Rota PJE]%c interceptador: erro 29', LOG.info, 'color:inherit')
-            return
+            return false
         }
         let data = Date.now()
         // se não consegue ler nas meta-tags, busca de novo no PJE.
@@ -55,7 +59,7 @@ async function rotaAssinaTudo() {
             if (!perfis.length) {
                 rota_avisoTemporario('Ocorreu um erro.', 'erro', 3000)
                 console.log('%c[Rota PJE]%c interceptador: erro 38', LOG.info, 'color:inherit')
-                return
+                return false
             }
         }
         async function separaPerfisEAssina(orgaos, inclusoes = [], sinalizados = []){
@@ -68,11 +72,11 @@ async function rotaAssinaTudo() {
             }
             if (!idPerfis.length) {
                 rota_avisoTemporario('Nenhum perfil encontrado para as OJs selecionadas.', 'erro', 3000)
-                return
+                return false
             }
             await armazenar({rotapje_assinaTudo:{idPerfis: idPerfis, execucao: data, perfilExecucao: idPerfis[0].idPerfil, inclusoes: inclusoes, sinalizados: sinalizados}})
             await rotaAssinaTudo_trocarPerfilENavegar(idPerfis[0], data)
-            return
+            return true
         }
         // CRIA DIV CENTRALIZADA PARA MOSTRAR OS DESPACHOS
         let idDiv = id('assinaTudo', 'exibirTodos')
@@ -185,7 +189,7 @@ async function rotaAssinaTudo() {
         if (!div.isConnected) return // impede a execução se o usuário fechar
         atualizaContador(i, orgaos.length, true)
         let temDocumentos = document.querySelectorAll(`[id^="${idCheck}_"][data-processo]`).length
-        if (!temDocumentos) {
+        if (!temDocumentos && !sinalizados.length) {
             contador.textContent = 'Nenhum documento disponível para assinatura em lote.'
             return
         }
@@ -196,7 +200,8 @@ async function rotaAssinaTudo() {
             ancestral: idDivBotaoFuturo,
             acao: async () => {
                 assinaSelecionadosESinalizados.disabled = true
-                await assinaProcessosSelecionados(idCheck, sinalizados)
+                let iniciou = await assinaProcessosSelecionados(idCheck, sinalizados)
+                if (!iniciou) assinaSelecionadosESinalizados.disabled = false
             }
         })
         criaTooltip({
@@ -211,13 +216,18 @@ async function rotaAssinaTudo() {
             )
             let inclusoes = checksValidos
                 .filter(d => d.dataset?.marcado == 1)
-                .map(c => ({ processo: c.dataset.processo, oj: String(c.dataset.oj) }))
+                .map(c => ({ processo: c.dataset.processo, oj: String(c.dataset.oj), ojDescricao: c.dataset.ojDescricao || '' }))
             if (!inclusoes.length) {
-                rota_avisoTemporario('Nenhum documento selecionado.', 'aviso', 3000)
-                return
+                if (!sinalizados.length) {
+                    rota_avisoTemporario('Nenhum documento selecionado.', 'aviso', 3000)
+                    return false
+                }
+                await tratarSinalizados(sinalizados.map(s => s.processo))
+                return true
             }
             let orgaos = [...new Set(inclusoes.map(d => d.oj))]
-            await separaPerfisEAssina(orgaos, inclusoes, sinalizados)
+            return await separaPerfisEAssina(orgaos, inclusoes, sinalizados)
+            
         }
         function selecionaTodos(elemento, seletor) {
             console.log('%c[Rota PJE]%c 137 seleciona todos: ' + JSON.stringify(137), LOG.teste, 'color:inherit')
@@ -265,7 +275,7 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
     console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados.length), LOG.teste, 'color:inherit')
     let sinalizadosOJ = dados
         .filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa?.includes('Assinar'))
-        .map(d => ({ processo: d.numeroProcesso, oj: String(d.idOrgaoJulgador) }))
+        .map(d => ({ processo: d.numeroProcesso, oj: String(d.idOrgaoJulgador), ojDescricao: d.descricaoOrgaoJulgador || '' }))
     sinalizados.push(...sinalizadosOJ)
     for (let processo of filtrados){
         console.log('%c[Rota PJE]%c processo: ' + JSON.stringify(processo), LOG.aviso, 'color:inherit')
@@ -296,8 +306,9 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
             id: idCheckBoxProcesso,
             ancestral: idDivCabecalhoProcesso
         })
-        checkBoxProcesso.dataset.processo = processo?.numeroProcesso
-        checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador
+        checkBoxProcesso.dataset.processo = processo?.numeroProcesso || ''
+        checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador || ''
+        checkBoxProcesso.dataset.ojDescricao = processo?.descricaoOrgaoJulgador || ''
         clicar(checkBoxProcesso)
         let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
         let tituloProcesso = criaSubTitulo({
@@ -425,11 +436,21 @@ async function rotaCicloAssinatura(){
             .map(l => l.textContent.match(ROTA_REGEX_CNJ)?.[0])
             .filter(Boolean)
         await clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
-        await aguardarElemento('PJE-RESPOSTA-ASSINATURA .mat-dialog-content')
+        let dialogo = await aguardarElemento('mat-dialog-container .mat-dialog-content')
+        if (dialogo && !dialogo.closest('pje-resposta-assinatura')) {
+            let r = execucao.rotapje_assinaTudo
+            r.recargasAviso = (r.perfilRecargaAviso === r.perfilExecucao) ? (r.recargasAviso || 0) + 1 : 1
+            r.perfilRecargaAviso = r.perfilExecucao
+            await armazenar({rotapje_assinaTudo: r})
+            console.log('%c[Rota PJE]%c diálogo inesperado:', LOG.aviso, 'color:inherit', dialogo.textContent.trim())
+            if (r.recargasAviso <= 3) { location.reload(); return }
+            defineCiclo(r)
+            return
+        }
         await suspender(2000)
+        if (document.querySelector('mat-dialog-container [aria-label="Fechar"]')) clicar(document.querySelector('mat-dialog-container [aria-label="Fechar"]'))
         let tabelaResultados = execucao.rotapje_assinaTudo.tabelaResultados ??= []
-        let confirmacaoAssinatura = document.querySelector('PJE-RESPOSTA-ASSINATURA .mat-dialog-content')
-        let assinadoTipo = confirmacaoAssinatura?.textContent?.includes('realizadas com sucesso') ? 'SUCESSO' : 'ERRO'
+        let assinadoTipo = dialogo?.textContent?.includes('realizadas com sucesso') ? 'SUCESSO' : 'ERRO'
         let resultadoParcial = assinaveis.map(d => {
             let dados = execucao?.rotapje_assinaTudo?.inclusoes.find(c => c.processo == d)
             return {processo: d, oj: dados?.oj || ojAtual, confirmacao: assinadoTipo}
@@ -465,9 +486,27 @@ async function rotaCicloAssinatura(){
         if (index === -1) return
         if (index === execucao?.idPerfis?.length - 1) {
             window.name = ''
-            let sinalizadosRelatorio = (execucao?.sinalizados || [])
-                .map(s => ({ processo: s.processo, oj: s.oj, confirmacao: 'SINALIZADO' }))
-            //RELATORIO AQUI
+            let descricoes = {}
+            for (let d of [...(execucao?.inclusoes || []), ...(execucao?.sinalizados || [])]) {
+                if (d.ojDescricao) descricoes[d.oj] = d.ojDescricao
+            }
+            let relatorio = {}
+            for (let i of execucao?.inclusoes || [])
+                relatorio[i.processo] = { processo: i.processo, oj: i.oj, confirmacao: 'NÃO ASSINADO' }
+            for (let s of execucao?.sinalizados || [])
+                relatorio[s.processo] = { processo: s.processo, oj: s.oj, confirmacao: 'SINALIZADO' }
+            for (let r of execucao?.tabelaResultados || [])
+                relatorio[r.processo] = r   // o último registro prevalece
+            let linhasRelatorio = Object.values(relatorio)
+                .map(r => ({ ...r, oj: descricoes[r.oj] || r.oj }))
+            let resultadoBaixar = []
+            for (let l = 0; l < linhasRelatorio.length; l++) {
+                if (l === 0){
+                    resultadoBaixar.push('OJ\tPROCESSO\tCONFIRMAÇÃO')
+                }
+                resultadoBaixar.push([linhasRelatorio[l].oj, linhasRelatorio[l].processo, linhasRelatorio[l].confirmacao].join('\t'))
+            }
+            _baixarArquivo(resultadoBaixar.join('\n'), `assinados${Date.now()}.txt`, 'text/plain')
             await tratarSinalizados((execucao?.sinalizados || []).map(s => s.processo))
             await removerArmazenamento('rotapje_assinaTudo')
             return
@@ -505,7 +544,7 @@ async function tratarSinalizadosAbrir(mesmaAba) {
                 let url = location.origin + '/pjekz/processo/' + dados.id + '/tarefa/' + idTarefa
                         + '?rotapje_sinalizado=' + execucao.execucao
                 if (mesmaAba) location.href = url
-                else abrirURL({url, tipo: 'aba'})
+                else abrirURL({url/*, tipo: 'aba'*/})
                 return
             }
         }
@@ -513,8 +552,12 @@ async function tratarSinalizadosAbrir(mesmaAba) {
         fila.shift()
     }
     await removerArmazenamento(CHAVE_SINALIZADOS)
-    if (mesmaAba) window.name = ''
     rota_avisoTemporario('Não há mais sinalizados.', 'info', 3000)
+    if (mesmaAba) {
+        window.name = ''
+        await suspender(3000)   // tempo para o usuário ver o aviso
+        NAVEGADOR.runtime.sendMessage({ acao: 'FecharEstaAba' })
+    }
 }
 
 async function sinalizadosTrocarPerfil(oj) {
@@ -571,12 +614,8 @@ function rota_tratarSinalizados_criarWidgetProximo(execucao) {
             }
         }
     })
+    botao.style.width = '100%'
 }
-
-
-//window.addEventListener('beforeunload', () => {
-//    tratarSinalizados(execucao.sinalizados, execucao.execucao)
-//})
 
 //window.addEventListener('beforeunload', () => {
 //    comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])
