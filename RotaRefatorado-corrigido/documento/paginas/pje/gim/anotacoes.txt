@@ -1,3 +1,9 @@
+ABRIR O SISCONDJ
+ABRIR O SIGEO
+ABRIR O E-MAIL
+ABRIR O CHAT
+
+
 snippet pra criar: let elemento = document.querySelector(seletor) ?? await aguardarComTimeout(aguardarElemento(seletor), 8000, 'motivo')
 
 <div _ngcontent-fkv-c518="" role="toolbar" class="centralizado-botoes ng-star-inserted"><button _ngcontent-fkv-c518="" mat-button="" class="mat-focus-indicator chip-azul mat-button mat-button-base" tabindex="0"><span class="mat-button-wrapper"><span _ngcontent-fkv-c518="">Exibir todos</span></span><span matripple="" class="mat-ripple mat-button-ripple"></span><span class="mat-button-focus-overlay"></span></button><button _ngcontent-fkv-c518="" mat-button="" class="mat-focus-indicator chip-azul mat-button mat-button-base" tabindex="0"><span class="mat-button-wrapper"><span _ngcontent-fkv-c518="">Assinar todos</span></span><span matripple="" class="mat-ripple mat-button-ripple"></span><span class="mat-button-focus-overlay"></span></button><button style="display: block; background: rgb(255, 167, 36); color: rgb(255, 255, 255); border: medium; border-radius: 6px; padding: 8px 12px; margin-left: 3px; margin-right: 3px; font-size: 12px; font-weight: 700; font-family: &quot;Segoe UI&quot;, system-ui, sans-serif; cursor: pointer; text-align: center; transition: background 0.15s; box-sizing: border-box;" id="rotapje_assinaTudo_botao_assina">Assinar todos em todas as OJs</button><button style="display: block; background: rgb(255, 167, 36); color: rgb(255, 255, 255); border: medium; border-radius: 6px; padding: 8px 12px; margin-left: 3px; margin-right: 3px; font-size: 12px; font-weight: 700; font-family: &quot;Segoe UI&quot;, system-ui, sans-serif; cursor: pointer; text-align: center; transition: background 0.15s; box-sizing: border-box;" id="rotapje_assinaTudo_botao_exibe">Exibir todos de todas as OJs</button></div>

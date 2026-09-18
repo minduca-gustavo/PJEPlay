@@ -2,7 +2,7 @@
 
 async function rotaAssinaTudo() {
     // quando a homologação está ruim, TRUE para poder usar em outra página.
-    let homologacaoRuim = false
+    let homologacaoRuim = true
     let janelaInicial = homologacaoRuim ? JANELA.painelGlobal : JANELA.gim
     // Se estiver na janela de assinar todos, para a função que assina
     let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
@@ -188,6 +188,7 @@ async function rotaAssinaTudo() {
         }
         if (!div.isConnected) return // impede a execução se o usuário fechar
         atualizaContador(i, orgaos.length, true)
+        atualizaContadorDespachos()
         let temDocumentos = document.querySelectorAll(`[id^="${idCheck}_"][data-processo]`).length
         if (!temDocumentos && !sinalizados.length) {
             contador.textContent = 'Nenhum documento disponível para assinatura em lote.'
@@ -245,6 +246,10 @@ async function rotaAssinaTudo() {
             let contador = document.getElementById(idContador)
             contador.textContent = final ? 'Busca finalizada: ' + atual + ' de ' + total + ' OJs.' : 'Buscando ' + atual + '/' + total + ' OJs'
         }
+        function atualizaContadorDespachos(){
+            let contadores = [...document.querySelectorAll('[id^="' + id('assinaTudo', 'contador', 'cabecalho') + '"]')].filter(d => d.id.match('cabecalho_\d'))
+            console.log('%c[Rota PJE]%c contadores.length: ' + JSON.stringify(contadores.length), LOG.info, 'color:inherit')
+        }
         
     }
 }
@@ -301,23 +306,22 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
             ancestral: idDivProcesso,
             rowColumn: 'row-reverse'
         })
-        let idCheckBoxProcesso = idCheck + '_' + processo?.id
-        let checkBoxProcesso = criaCheckBox({
-            id: idCheckBoxProcesso,
-            ancestral: idDivCabecalhoProcesso
-        })
-        checkBoxProcesso.dataset.processo = processo?.numeroProcesso || ''
-        checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador || ''
-        checkBoxProcesso.dataset.ojDescricao = processo?.descricaoOrgaoJulgador || ''
-        clicar(checkBoxProcesso)
-        let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
-        let tituloProcesso = criaSubTitulo({
+        let idTituloProcessoCabecalho = id('assinaTudo', 'titulo_cabecalho', processo?.id)
+        let tituloProcessoCabecalho = criaSubTitulo({
             texto: processo?.numeroProcesso,
-            id: idTituloProcesso,
+            id: idTituloProcessoCabecalho,
             ancestral: idDivCabecalhoProcesso
         })
-        tituloProcesso.style.width      = '100%'
-        tituloProcesso.style.fontSize   = '16px'
+        tituloProcessoCabecalho.style.width      = '100%'
+        tituloProcessoCabecalho.style.fontSize   = '16px'
+        let idContadorCabecalho = id('assinaTudo', 'contador', 'cabecalho', processo?.id)
+        let contadorCabecalho = criaSubTitulo({
+            texto: '',
+            id: idContadorCabecalho,
+            ancestral: idDivCabecalhoProcesso
+        })
+        contadorCabecalho.style.width      = 'fit-content'
+        contadorCabecalho.style.fontSize   = '16px'
         formataDiv(divProcesso, 'fundo', 'auto', 'auto', 'relative')
         
         //conteudo.querySelector('img')?.remove()
@@ -327,6 +331,29 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
             ancestral: idDivProcesso
         })
         divConteudo.innerHTML = conteudo
+        let idDivRodapeProcesso = id('assinaTudo', 'rodape', processo?.id)
+        let rodapeProcesso = criaDiv({
+            id: idDivRodapeProcesso,
+            ancestral: idDivProcesso,
+            rowColumn: 'row-reverse'
+        })
+        let idCheckBoxProcesso = idCheck + '_' + processo?.id
+        let checkBoxProcesso = criaCheckBox({
+            id: idCheckBoxProcesso,
+            ancestral: idDivRodapeProcesso
+        })
+        checkBoxProcesso.dataset.processo = processo?.numeroProcesso || ''
+        checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador || ''
+        checkBoxProcesso.dataset.ojDescricao = processo?.descricaoOrgaoJulgador || ''
+        clicar(checkBoxProcesso)
+        let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
+        let tituloProcesso = criaSubTitulo({
+            texto: processo?.numeroProcesso,
+            id: idTituloProcesso,
+            ancestral: idDivRodapeProcesso
+        })
+        tituloProcesso.style.width      = '100%'
+        tituloProcesso.style.fontSize   = '16px'
 
     }
 }

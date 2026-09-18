@@ -292,10 +292,8 @@ async function preencheQuadro(idQuadro, dados = []) {
     }
 
     if (dados.length === 0) {
-        let resposta = await fetch(QJ_URL_DADOS, { cache: 'no-store', referrerPolicy: 'no-referrer' })
-        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`)
-        console.log('%c[Rota PJE]%c resposta: ' + JSON.stringify(resposta), LOG.info, 'color:inherit')
-        let armazenamento = await resposta.json()
+        let armazenamento = await consultaQuadrosGit(QJ_URL_DADOS)
+        if (!armazenamento) return
         let varas = [...new Set(armazenamento.map(d => d?.Vara))]
         let colunas = Object.keys(armazenamento[0] ?? {})
         let idBase = id('visualizadorJuizes', 'linha', 'finais')
@@ -317,17 +315,20 @@ async function preencheQuadro(idQuadro, dados = []) {
         })
     }
     async function preencheComQuemFalar(elemento) {
-        let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_juizes.json'
-        
+        let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_comQuemFalar.json'
+        let armazenamento = await consultaQuadrosGit(url)
+        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.aviso, 'color:inherit')
     }
     async function consultaQuadrosGit(url){
-
+        let resposta = await fetch(url, { cache: 'no-store', referrerPolicy: 'no-referrer' })
+        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`)
+        console.log('%c[Rota PJE]%c resposta: ' + JSON.stringify(resposta), LOG.info, 'color:inherit')
+        let armazenamento = await resposta.json()
+        return armazenamento
     }
     async function tabelaAssistentesSecretarios() {
         let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_juizes.json'
-        let resposta = await fetch(url, { cache: 'no-store', referrerPolicy: 'no-referrer' })
-        if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`)
-        let armazenamento = await resposta.json()
+        let armazenamento = await consultaQuadrosGit(url)
         console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.teste, 'color:inherit')
         let juizes = [...new Set(armazenamento.map(d => d?.JUIZ))]
         let colunas = Object.keys(armazenamento[0] ?? {})
