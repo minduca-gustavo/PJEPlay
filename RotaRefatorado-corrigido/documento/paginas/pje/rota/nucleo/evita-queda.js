@@ -104,7 +104,7 @@ async function evitaQueda() {
     let texto = elemento.textContent
     if (!texto.includes('Acesso Negado') && !texto.includes('mudança de perfil')) {
         await suspender(1000)
-        if (!sel('pjeAcessoNegado')){
+        if (!(await sel('pjeAcessoNegado'))){
             evitaQueda_limparGuarda()
             return
         }

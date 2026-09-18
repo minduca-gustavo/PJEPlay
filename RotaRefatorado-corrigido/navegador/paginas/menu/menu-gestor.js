@@ -187,7 +187,7 @@ async function gestao_inicializar() {
                     ancestral: el.id
                 })
                 await suspender(4000)
-                grade_comQuemFalar
+                grade_comQuemFalar()
             }
         })
     }

@@ -1,8 +1,8 @@
 // Iniciar na 468
+let homologacaoRuim = true
 
 async function rotaAssinaTudo() {
     // quando a homologação está ruim, TRUE para poder usar em outra página.
-    let homologacaoRuim = true
     let janelaInicial = homologacaoRuim ? JANELA.painelGlobal : JANELA.gim
     // Se estiver na janela de assinar todos, para a função que assina
     let janelaCiclo = confereJanela(JANELA.gimAssinarTodos)
@@ -114,6 +114,12 @@ async function rotaAssinaTudo() {
         })
         titulo.style.width = '100%'
         titulo.style.fontSize = '16px'
+        let idSubCabecalho = id('assinaTudo', 'subCabecalho')
+        let subCabecalho = criaDiv({
+            id: idSubCabecalho,
+            ancestral: idDiv,
+            rowColumn: 'row-reverse'
+        })
         // CRIA DIV ROLANTE PARA POSICIONAR OS DESPACHOS
         let idRolante = id('assinaTudo', 'rolante')
         let rolante = criaDiv({
@@ -139,7 +145,7 @@ async function rotaAssinaTudo() {
         let idCheckTodos = idCheck + '_selecionaTodos'
         let checkTodos = criaCheckBox({
             id: idCheckTodos,
-            ancestral: idRodape
+            ancestral: idSubCabecalho
         })
         criaTooltip({
             id: idCheckTodos + 'tooltip', 
@@ -151,6 +157,13 @@ async function rotaAssinaTudo() {
             clicar(checkTodos)
         }
         checkTodos.addEventListener('click', () => selecionaTodos(checkTodos, idCheck))
+        let idSubSeleciona = id('assina', 'subSeleciona')
+        let subSeleciona = criaSubTitulo({
+            id: idSubSeleciona,
+            texto: 'Seleciona todos',
+            ancestral: idSubCabecalho
+        })
+        subSeleciona.style.fontSize = '16px'
         let idDivBotaoFuturo = id('assinaTudo', 'divBotaoFuturo')
         let divBotaoFuturo = criaDiv({
             id: idDivBotaoFuturo,
@@ -247,8 +260,11 @@ async function rotaAssinaTudo() {
             contador.textContent = final ? 'Busca finalizada: ' + atual + ' de ' + total + ' OJs.' : 'Buscando ' + atual + '/' + total + ' OJs'
         }
         function atualizaContadorDespachos(){
-            let contadores = [...document.querySelectorAll('[id^="' + id('assinaTudo', 'contador', 'cabecalho') + '"]')].filter(d => d.id.match('cabecalho_\d'))
+            let contadores = [...document.querySelectorAll('[id^="' + id('assinaTudo', 'contador', 'cabecalho') + '"]')].filter(d => d.id.match(/cabecalho_\d+/))
             console.log('%c[Rota PJE]%c contadores.length: ' + JSON.stringify(contadores.length), LOG.info, 'color:inherit')
+            for (let i = 0; i < contadores.length; i++){
+                contadores[i].textContent = (i + 1) + '/' + contadores.length
+            }
         }
         
     }
@@ -276,10 +292,31 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
 }
 
 async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
-    let filtrados = dados.filter(d => !d?.minutaPendenteAnalise && !d?.temOcorrenciaImpedimento && d?.tarefa?.includes('Assinar'))
-    console.log('%c[Rota PJE]%c filtrados: ' + JSON.stringify(filtrados.length), LOG.teste, 'color:inherit')
-    let sinalizadosOJ = dados
-        .filter(d => (d?.minutaPendenteAnalise || d?.temOcorrenciaImpedimento) && d?.tarefa?.includes('Assinar'))
+    let bloqueados = await resolveBloqueados(dados)
+    async function resolveBloqueados(dados) {
+        let nomeUsuario = document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent || ''
+        let usuario = normalizar(nomeUsuario)
+
+        let bloqueados = []
+        let impedimentos = dados.filter(d => d?.temOcorrenciaImpedimento && d?.tarefa?.includes('Assinar'))
+        for (let imp of impedimentos) {
+            let busca = await rota_fetch(location.origin + '/pje-comum-api/api/ocorrenciasimpedimentomagistrado/' + imp?.id)
+            if (!Array.isArray(busca)) {           // falha de rede: trata como bloqueado, por segurança
+                bloqueados.push(imp)
+                continue
+            }
+            if (busca.some(d => d?.nomeMagistradoAfetado && usuario.includes(normalizar(d.nomeMagistradoAfetado)))) {
+                bloqueados.push(imp)
+            }
+        }
+        bloqueados.push(...dados.filter(d => d?.minutaPendenteAnalise && d?.tarefa?.includes('Assinar')))
+        return bloqueados
+    }
+    let bloqueadosIds = new Set(bloqueados.map(d => d.id))
+
+    let filtrados = dados.filter(d => d?.tarefa?.includes('Assinar') && !bloqueadosIds.has(d.id))
+
+    let sinalizadosOJ = bloqueados
         .map(d => ({ processo: d.numeroProcesso, oj: String(d.idOrgaoJulgador), ojDescricao: d.descricaoOrgaoJulgador || '' }))
     sinalizados.push(...sinalizadosOJ)
     for (let processo of filtrados){
@@ -304,15 +341,16 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
         let cabecalhoProcesso = criaDiv({
             id: idDivCabecalhoProcesso,
             ancestral: idDivProcesso,
-            rowColumn: 'row-reverse'
+            rowColumn: 'row'
         })
+        cabecalhoProcesso.style.gap = '50px'
         let idTituloProcessoCabecalho = id('assinaTudo', 'titulo_cabecalho', processo?.id)
         let tituloProcessoCabecalho = criaSubTitulo({
             texto: processo?.numeroProcesso,
             id: idTituloProcessoCabecalho,
             ancestral: idDivCabecalhoProcesso
         })
-        tituloProcessoCabecalho.style.width      = '100%'
+        tituloProcessoCabecalho.style.width      = 'fit-content'
         tituloProcessoCabecalho.style.fontSize   = '16px'
         let idContadorCabecalho = id('assinaTudo', 'contador', 'cabecalho', processo?.id)
         let contadorCabecalho = criaSubTitulo({
@@ -470,7 +508,7 @@ async function rotaCicloAssinatura(){
             r.perfilRecargaAviso = r.perfilExecucao
             await armazenar({rotapje_assinaTudo: r})
             console.log('%c[Rota PJE]%c diálogo inesperado:', LOG.aviso, 'color:inherit', dialogo.textContent.trim())
-            if (r.recargasAviso <= 3) { location.reload(); return }
+            if (r.recargasAviso <= 3 && !homologacaoRuim) { location.reload(); return }
             defineCiclo(r)
             return
         }

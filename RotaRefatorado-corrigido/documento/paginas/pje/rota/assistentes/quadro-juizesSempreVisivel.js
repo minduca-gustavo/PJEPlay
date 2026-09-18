@@ -318,6 +318,11 @@ async function preencheQuadro(idQuadro, dados = []) {
         let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_comQuemFalar.json'
         let armazenamento = await consultaQuadrosGit(url)
         console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.aviso, 'color:inherit')
+        let maiores = Object.keys(armazenamento)
+        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(maiores), LOG.aviso, 'color:inherit')
+        document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
+        
+
     }
     async function consultaQuadrosGit(url){
         let resposta = await fetch(url, { cache: 'no-store', referrerPolicy: 'no-referrer' })
