@@ -1,5 +1,5 @@
 // Iniciar na 468
-let homologacaoRuim = true
+let homologacaoRuim = location.href.includes('-web-hm') ? true : false
 
 async function rotaAssinaTudo() {
     // quando a homologação está ruim, TRUE para poder usar em outra página.
@@ -289,6 +289,7 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
         display:        'flex',
         padding:        '4px 4px 4px 4px'
     })
+    return div
 }
 
 async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){

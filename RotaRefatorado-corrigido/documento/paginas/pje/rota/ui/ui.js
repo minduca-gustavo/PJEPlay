@@ -1558,7 +1558,7 @@ function criaTooltip({ id, texto = '', elemento }) {
         whiteSpace:    'pre-wrap',
         maxWidth:      '240px',
         boxShadow:     '0 2px 8px rgba(0,0,0,0.15)',
-        zIndex:        '99999999',
+        zIndex:        '999999999',
         pointerEvents: 'none',
         lineHeight:    '1.4',
     })

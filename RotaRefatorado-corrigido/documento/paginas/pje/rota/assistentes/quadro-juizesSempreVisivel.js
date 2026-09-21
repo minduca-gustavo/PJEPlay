@@ -24,9 +24,9 @@
 //      não deixar um badge desatualizado na tela.
 // ============================================================
 
-const QJ_URL_DADOS = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_finais.json'
+let QJ_URL_DADOS = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_finais.json'
 
-const QJ_AJUSTE_TOPO = [
+let QJ_AJUSTE_TOPO = [
     { trecho: 'minutar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
     { trecho: 'assinar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
     { trecho: 'tarefa',         topo: 0,  banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
@@ -34,7 +34,7 @@ const QJ_AJUSTE_TOPO = [
     { trecho: 'pjekz/processo', topo: 36, banner: 'pje-cabecalho div[role="banner"]', quebra: true},
 ]
 
-const QJ_ESTILO_COMPACTO = {
+let QJ_ESTILO_COMPACTO = {
     marginTop:    '0px',
     marginBottom: '0px',
     gap:          '0px',
@@ -261,14 +261,14 @@ async function preencheQuadro(idQuadro, dados = []) {
 
     let botoes = [
         {
-            id: 'assistentes',
-            texto: 'Secretários/Assistentes',
-            acao: async () => await tabelaAssistentesSecretarios()
-        },
-        {
             id: 'juizes',
             texto: 'Quadro de Juízes',
             acao: async () => await preencheQuadro(idQuadro)
+        },
+        {
+            id: 'assistentes',
+            texto: 'Secretários/Assistentes',
+            acao: async () => await tabelaAssistentesSecretarios()
         },
         {
             id: 'comQuemFalar',
@@ -318,10 +318,140 @@ async function preencheQuadro(idQuadro, dados = []) {
         let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_comQuemFalar.json'
         let armazenamento = await consultaQuadrosGit(url)
         console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.aviso, 'color:inherit')
-        let maiores = Object.keys(armazenamento)
-        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(maiores), LOG.aviso, 'color:inherit')
         document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
+        let fases = Object.keys(armazenamento)
+        let idBase = id('visualizadorJuizes', 'linha', 'assistente')
         
+        console.log('%c[Rota PJE]%c elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit', elemento)
+        criaDiv({
+            id: idBase + '_tituloDiv',
+            ancestral: elemento
+        })
+        criaTitulo({
+            id: idBase + '_titulo',
+            texto: 'Clique no nome da pessoa para abrir o contato (e-mail, chat, etc.).',
+            ancestral: idBase + '_tituloDiv'
+        })
+        let divBase = criaDiv({
+            id: idBase,
+            ancestral: elemento
+        })
+        divBase.style.overflowY = 'auto'
+        //let idRolante = id('visualizadorJuizes', 'linha', 'finais', 'divRolante')
+        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(elemento), LOG.aviso, 'color:inherit', divBase)
+        function formataDivQJ(elemento){
+            elemento.style.gap = '1px'
+            elemento.style.margin = '1px'
+            elemento.style.padding = '1px'
+            elemento.style.width = '100%'
+            elemento.style.height = 'auto'
+            return elemento
+        }
+        for (let fase of fases){
+            let idFase = id('comQuemFalar', normalizar(fase))
+            let divFase = formataDivQJ(criaDiv({
+                id: idFase,
+                ancestral: idBase,
+                rowColumn: 'row'
+            }))
+            formataDiv(divFase, 'branco', 'auto', 'auto', 'inherit')
+            divFase.style.transform = ''
+            divFase.style.gap = '1px'
+            let idSubtitulo = id('comQuemFalar', normalizar(fase), 'subtitulo', 'div')
+            let divSubtitulo = criaDiv({
+                id: idSubtitulo,
+                ancestral: idFase
+            })
+            divSubtitulo.style.writingMode = 'vertical-rl'
+            divSubtitulo.style.transform = 'rotate(180deg)'
+            //if (fase == 'DAM' || fase == 'DAA') continue
+            criaSubTitulo({
+                id: id('comQuemFalar', normalizar(fase), 'subtitulo'),
+                texto: fase,
+                ancestral: idSubtitulo
+            })
+            let ojs = Object.keys(armazenamento[fase])
+            console.log('%c[Rota PJE]%c ojs: ' + JSON.stringify(ojs), LOG.rosa, 'color:inherit')
+            let idOjs = id('comQuemFalar', normalizar(fase), 'ojs')
+            
+            
+            let ASSESSORES = ['Assessor', 'Chefe de Divisão', 'Chefe de Seção']
+            let testaOJ = s => /[A-Z]\d/.test(s)
+            let formataProId = s => normalizar(s).replace(/\s/g, '_')
+
+            formataDivQJ(criaDiv({ id: idOjs, ancestral: idFase }))
+            for (let oj of ojs) {
+                montaComQuemFalar(oj, armazenamento[fase][oj], idOjs, [normalizar(fase)])
+            }
+            document.getElementById(idOjs).style.gap = '1px'
+
+            function montaComQuemFalar(chave, valor, idPai, caminho = []) {
+                let novoCaminho = [...caminho, formataProId(chave)]
+                let idDiv = id('comQuemFalar', ...novoCaminho)
+                let montaAssessor = ASSESSORES.includes(chave) || Array.isArray(valor)
+                if (montaAssessor) {
+                    formataDivQJ(criaDiv({
+                        id: idDiv,
+                        ancestral: idPai,
+                        rowColumn: 'column'
+                    }))
+                    criaAssessores(chave, valor, idDiv)
+                    return
+                }
+
+                formataDivQJ(criaDiv({
+                    id: idDiv,
+                    ancestral: idPai,
+                    rowColumn: 'row'
+                }))
+
+                let sub = criaSubTitulo({
+                    id: idDiv + '_subTitulo',
+                    ancestral: idDiv,
+                    texto: testaOJ(chave) ? chave : chave + ':'
+                })
+                sub.style.writingMode = 'vertical-rl'
+                sub.style.transform = 'rotate(180deg)'
+
+                let idFilhos = idDiv + '_filhos'
+                formataDivQJ(criaDiv({
+                    id: idFilhos,
+                    ancestral: idDiv,
+                    rowColumn: 'column'
+                }))
+                formataDiv(document.getElementById(idFilhos), 'branco', '98%', 'auto', 'inherit')
+                document.getElementById(idFilhos).style.transform = ''
+                for (let [subChave, subValor] of Object.entries(valor ?? {})) {
+                    montaComQuemFalar(subChave, subValor, idFilhos, novoCaminho)
+                }
+            }
+
+            function criaAssessores(cargo, assessores, idPai) {
+                for (let a of assessores ?? []) {
+                    if (!a?.nome) continue
+                    let idLinha = `${idPai}_${formataProId(a.nome)}`
+                    formataDivQJ(criaDiv({
+                        id: idLinha,
+                        ancestral: idPai,
+                        rowColumn: 'row'
+                    }))
+                    criaSubTitulo({
+                        id: idLinha + '_subTitulo',
+                        ancestral: idLinha,
+                        texto: cargo + ':'
+                    })
+                    let idTexto = idLinha + '_texto'
+                    let el = criaTexto({ id: idTexto, texto: a.nome, ancestral: idLinha })
+                    el.style.cursor = 'pointer'
+                    el.addEventListener('click', () => window.open(a.link))
+                    criaTooltip({
+                        id: idTexto + '_tooltip',
+                        texto: 'Clique para abrir o contato.',
+                        elemento: idTexto
+                    })
+                }
+            }
+        }
 
     }
     async function consultaQuadrosGit(url){
@@ -395,8 +525,8 @@ function montaGrupo(idRolante, idGrupo, dados, colunas) {
 }
 
 function formataValor(valor) {
-    const PAR = '0,2,4,6,8'
-    const IMPAR = '1,3,5,7,9'
+    let PAR = '0,2,4,6,8'
+    let IMPAR = '1,3,5,7,9'
 
     let texto = String(valor ?? '')
     if (texto === PAR) return 'PAR'
