@@ -14,61 +14,61 @@ async function menuPericiasAud() {
         acao: async () => await criaQuadroDePericias()
     })
 
-    async function criaQuadroDePericias(){
-        let idDivQuadro = id('aud', 'pericias', 'quadro')
-        let remover = [...document.querySelectorAll('#' + idDivQuadro)].map(d => d.remove())
-        let quadro = criaDiv({
-            id: idDivQuadro,
-            ancestral: 'ffff'
-        })
-        formataDiv(quadro, 'branco', '75%', '75%')
-        let idCabecalho = id('aud', 'pericias', 'quadro', 'cabecalho')
-        let cabecalho = criaDiv({
-            id: idCabecalho,
-            ancestral: idDivQuadro,
-            rowColumn: 'row-reverse'
-        })
-        let idBotaoFechar = id('aud', 'pericias', 'quadro', 'fechar')
-        let botaoFechar = criaBotaoAzul({
-            id: idBotaoFechar,
-            texto: '✕',
-            ancestral: idCabecalho,
-            acao: () => {
-                document.getElementById(idDivQuadro)?.remove()
-                return
-            }
-        })
-        botaoFechar.style.height =          '20px'
-        botaoFechar.style.fontSize =        '13px'
-        botaoFechar.style.lineHeight =      '1px'
-        botaoFechar.style.padding =         '2px 5px'
-        botaoFechar.style.borderRadius =    '4px'
-        let idTitulo = id('aud', 'pericias', 'quadro', 'titulo')
-        let titulo = criaTitulo({
-            id: idTitulo,
-            texto: 'Perícias',
-            ancestral: idCabecalho
-        })
-        titulo.style.width = '100%'
-        titulo.style.fontSize = '18px'
-        let idRolante = id('aud', 'pericias', 'quadro', 'rolante')
-        let divRolante = criaDiv({
-            id: idRolante,
-            ancestral: idDivQuadro
-        })
-        divRolante.style.overflowY = 'auto'
-
-        let dados = await buscarDadosPeritosGit()
-
-        await montarQuadro(idRolante, dados)
-
-        async function buscarDadosPeritosGit() {
-            let resposta = await lerGit('rotapje_peritos.json')
-            if (typeof resposta === 'string') {
-                try { resposta = JSON.parse(resposta) } catch (e) { resposta = [] }
-            }
-            return Array.isArray(resposta) ? resposta : []
+}
+async function criaQuadroDePericias(){
+    let idDivQuadro = id('aud', 'pericias', 'quadro')
+    let remover = [...document.querySelectorAll('#' + idDivQuadro)].map(d => d.remove())
+    let quadro = criaDiv({
+        id: idDivQuadro,
+        ancestral: 'ffff'
+    })
+    formataDiv(quadro, 'branco', '75%', '75%')
+    let idCabecalho = id('aud', 'pericias', 'quadro', 'cabecalho')
+    let cabecalho = criaDiv({
+        id: idCabecalho,
+        ancestral: idDivQuadro,
+        rowColumn: 'row-reverse'
+    })
+    let idBotaoFechar = id('aud', 'pericias', 'quadro', 'fechar')
+    let botaoFechar = criaBotaoAzul({
+        id: idBotaoFechar,
+        texto: '✕',
+        ancestral: idCabecalho,
+        acao: () => {
+            document.getElementById(idDivQuadro)?.remove()
+            return
         }
+    })
+    botaoFechar.style.height =          '20px'
+    botaoFechar.style.fontSize =        '13px'
+    botaoFechar.style.lineHeight =      '1px'
+    botaoFechar.style.padding =         '2px 5px'
+    botaoFechar.style.borderRadius =    '4px'
+    let idTitulo = id('aud', 'pericias', 'quadro', 'titulo')
+    let titulo = criaTitulo({
+        id: idTitulo,
+        texto: 'Perícias',
+        ancestral: idCabecalho
+    })
+    titulo.style.width = '100%'
+    titulo.style.fontSize = '18px'
+    let idRolante = id('aud', 'pericias', 'quadro', 'rolante')
+    let divRolante = criaDiv({
+        id: idRolante,
+        ancestral: idDivQuadro
+    })
+    divRolante.style.overflowY = 'auto'
+
+    let dados = await buscarDadosPeritosGit()
+
+    await montarQuadro(idRolante, dados)
+
+    async function buscarDadosPeritosGit() {
+        let resposta = await lerGit('rotapje_peritos.json')
+        if (typeof resposta === 'string') {
+            try { resposta = JSON.parse(resposta) } catch (e) { resposta = [] }
+        }
+        return Array.isArray(resposta) ? resposta : []
     }
 }
 
@@ -340,18 +340,32 @@ async function montarQuadro(idRolante, dados) {
         })
         previa.id = idSecao + '-previa'
         _ui_inserir(previa, idSecao)
-
+        
+        criaDiv({
+            id: idSecao + '-div',
+            ancestral: idSecao,
+            rowColumn: 'row'
+        })
+        let textoLimpar = '🧹 Limpar tudo'
+        let botaoLimpar = criaBotaoAzul({
+            id: idSecao + '-limpar',
+            texto: textoLimpar,
+            ancestral: idSecao + '-div',
+            acao: async () => await criaQuadroDePericias()
+        })
+        botaoLimpar.style.width = '50%'
         let textoCopiar = '📋 Copiar texto'
         let botaoCopiar = criaBotaoAzul({
             id: idSecao + '-copiar',
             texto: textoCopiar,
-            ancestral: idSecao,
+            ancestral: idSecao + '-div',
             acao: async () => {
                 let ok = await pericias_copiarFormatado(previa)
                 botaoCopiar.textContent = ok ? '✓ Copiado com sucesso!' : 'Falha ao copiar'
                 setTimeout(() => botaoCopiar.textContent = textoCopiar, 2000)
             }
         })
+        botaoCopiar.style.width = '50%'
 
         let credito = criaTexto({ id: idSecao + '-credito', texto: 'Modelos: otocampos@trt15.jus.br', ancestral: idSecao })
         credito.style.fontSize  = '10px'

@@ -622,6 +622,15 @@ async function rota_fetch_IACriaConversa(
 		let dados = await r.json()
 		let id = dados.conversationId || dados.id || null
 		relatar('Conversa criada: ' + id, dados, 'resposta')
+		let urlGet = 'https://ia.jt.jus.br/chat/conversation/' + id + '/__data.json?x-sveltekit-invalidated=11'
+		let intermediario = await fetch(urlGet, {
+			method: 'GET', credentials: 'include'
+		});
+		console.log('%c[Rota PJE]%c intermediario: ' + JSON.stringify(intermediario), LOG.aviso, 'color:inherit')
+		if(!intermediario.ok) return null;
+		let resposta = await intermediario.json();
+		console.log('%c[Rota PJE]%c intermediario: ' + JSON.stringify(resposta), LOG.teste, 'color:inherit')
+		return
 		return id
 	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
 }

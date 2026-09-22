@@ -11,11 +11,15 @@ async function teste(){
     ancestral: 'ffff'
   })
   formataDiv(div, 'branco', '350px', '80px', 'absolute')
+  let input = criaInputAnotacao({
+    id: divId + '_input',
+    ancestral: divId,
+  })
   let botao = criaBotaoAzul({
     id: divId + '_botao',
     ancestral: divId,
     texto: 'Teste',
-    acao: () => alert('Teste')
+    acao: async () => await testeIA(document.getElementById(divId + '_input').value)
   })
   criaBotaoLaranja({
     id: divId + '_fechar',
@@ -24,4 +28,13 @@ async function teste(){
     acao: () => div.remove()
   })
 }
-//teste()
+teste()
+async function testeIA(parametro){
+  let idAssistente = '6aac80f81501b0e00725a8df'
+  let conversa = await rota_fetch_IACriaConversa(idAssistente)
+  console.log('%c[Rota PJE]%c conversa: ' + JSON.stringify(conversa), LOG.mb, 'color:inherit')
+  return
+  let resultado = await rota_fetch_IAEnviaRequisicao(parametro, conversa)
+  console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)  
+  alert (resultado)
+}
