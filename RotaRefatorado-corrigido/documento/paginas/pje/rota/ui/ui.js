@@ -1967,7 +1967,7 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
                 acao: () => abrir(doc)
             })
             criaTooltip({
-                id: idBotao + '_tooltip',
+                id: idBotao + '_tip',
                 texto: doc?.titulo + '\n' + defineTextoBotaoTermo(termo, 0, 0, false) + ' - ' + 'Id ' + doc?.idUnicoDocumento + ' - ' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4),
                 elemento: idBotao
             })

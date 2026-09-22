@@ -286,7 +286,7 @@ async function rota_aoAbrir(){
 	if(!habilitado) return
 
 	pinturaInicio().catch(e => relatar('Pintura:', e, 'erro'))
-	botaoRota_iniciar()
+	botaoRotaIniciar().catch(e => relatar('Botão Rota:', e, 'erro'))
 
 	rota_interfacePorContexto()
 
@@ -355,7 +355,7 @@ function rota_observarNavegacaoSPA(){
 
 		relatar('Navegação SPA:', urlAnterior, 'mutacao')
 
-		remover('#rotapje-widget')
+		remover(id('botaoRota'))
 		pinturaInicio().catch(() => {})
 
 		if(location.search.includes('rotapje_sessao=')){
@@ -377,7 +377,7 @@ function rota_observarNavegacaoSPA(){
 
 		obterArmazenamento(['habilitado']).then(cfg => {
 			if(cfg?.habilitado === false) return
-			botaoRota_atualizarUrl()
+			botaoRotaIniciar().catch(e => relatar('Botão Rota (SPA):', e, 'erro'))
 			rota_interfacePorContexto()
 			window.dispatchEvent(new CustomEvent('rotapje:url-mudou'))
 		})

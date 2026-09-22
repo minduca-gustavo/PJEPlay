@@ -579,3 +579,105 @@ async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}){
 	armazenar({ rota_mudancasNoBody: mudancas })
 	return mudancas
 }
+
+/**
+ * Boundary fixo para o multipart do Chat JT. Arbitrário: só
+ * precisa ser igual no header e no corpo. Não precisa mudar nunca.
+ */
+const ROTA_IA_BOUNDARY = '----rotaboundary0001'
+
+
+/**
+ * Tools padrão da conversa. Sobrescreva por parâmetro quando
+ * a conversa usar outro conjunto.
+ */
+const ROTA_IA_TOOLS_PADRAO = [
+	'68dfe85f4e08d7bbdaf52bab',
+	'000000000000000000000002',
+	'000000000000000000000010',
+]
+
+
+/**
+ * Cria uma conversa nova no Chat JT e devolve o conversationId.
+ * Retorna null em caso de erro.
+ */
+async function rota_fetch_IACriaConversa(
+	assistantId = '',
+	modelo = 'modelo_rapido'
+){
+	let url = 'https://ia.jt.jus.br/chat/conversation'
+	try{
+		relatar('POST ' + url, assistantId, 'requisicao')
+		let r = await fetch(url, {
+			method: 'POST', mode: 'cors', credentials: 'include',
+			headers: { 'Content-Type': 'application/json', 'Accept': '*/*' },
+			body: JSON.stringify({
+				model: modelo,
+				assistantId: assistantId,
+				metadata: { _isCorisco: false }
+			})
+		})
+		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
+		let dados = await r.json()
+		let id = dados.conversationId || dados.id || null
+		relatar('Conversa criada: ' + id, dados, 'resposta')
+		return id
+	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+}
+
+
+/**
+ * Envia um texto para uma conversa do Chat JT e devolve o
+ * finalAnswer (texto completo da resposta). Retorna null em erro.
+ *
+ * O id da mensagem é sempre um UUID novo — reutilizar id de
+ * mensagem é o que causava o erro 500 genérico.
+ */
+async function rota_fetch_IAEnviaRequisicao(
+	texto = '',
+	conversationId = '',
+	tools = ROTA_IA_TOOLS_PADRAO,
+	boundary = ROTA_IA_BOUNDARY
+){
+	let url = 'https://ia.jt.jus.br/chat/conversation/' + conversationId
+	let payload = {
+		inputs: texto,
+		id: crypto.randomUUID(),
+		is_retry: false,
+		is_continue: false,
+		web_search: false,
+		tools: tools
+	}
+	let corpo = `--${boundary}\r\n`
+		+ 'Content-Disposition: form-data; name="data"\r\n\r\n'
+		+ JSON.stringify(payload) + '\r\n'
+		+ `--${boundary}--\r\n`
+
+	try{
+		relatar('POST ' + url, texto.slice(0, 200), 'requisicao')
+		let r = await fetch(url, {
+			method: 'POST', mode: 'cors', credentials: 'include',
+			headers: {
+				'Content-Type': `multipart/form-data; boundary=${boundary}`,
+				'Accept': '*/*',
+			},
+			body: corpo
+		})
+		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
+
+		// A resposta é um stream de eventos (uma linha JSON por
+		// evento: status / keepAlive / stream / finalAnswer)
+		let linhas = (await r.text()).split('\n')
+		let parciais = []
+		for(let linha of linhas){
+			if(!linha.trim()) continue
+			let evento
+			try{ evento = JSON.parse(linha) } catch(e){ continue }
+			if(evento.type === 'stream') parciais.push(evento.token)
+			if(evento.type === 'finalAnswer') return evento.text
+		}
+		// Se não veio finalAnswer, devolve o que juntou dos tokens
+		return parciais.join('') || null
+	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+}
