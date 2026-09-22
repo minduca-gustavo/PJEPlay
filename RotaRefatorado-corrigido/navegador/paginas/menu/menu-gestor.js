@@ -179,7 +179,7 @@ async function gestao_inicializar() {
                     botaoSalvar.disabled = false
                     return
                 }
-                await githubSalvarDados('comQuemFalar.json', JSON.stringify(obj, null, 2))
+                await githubSalvarDados(id('comQuemFalar.json'), obj)
                 el.innerHTML = ''
                 criaTexto({
                     id: id('comQuemFalar', 'textoSucesso'),

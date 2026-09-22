@@ -1,5 +1,5 @@
 {
-	"version":					"2.2.2",
+	"version":					"2.2.4",
 	"short_name":				"RotaPJE",
 	"name":							"Rota PJE",
 	"description":			"Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -91,7 +91,8 @@
 		},
 		{
 			"matches":[
-				"<all_urls>"
+				"*://*.jus.br/*",
+				"*://*.gov.br/*"
 			],
 			"js":[
 				"documento/paginas/melhor-leitura/melhor-leitura.js"
@@ -146,6 +147,7 @@
 				"documento/paginas/pje/rota/nucleo/modelo.js",
 
 				"documento/paginas/pje/api/consultas.js",
+				"documento/paginas/pje/aud/aud.js",
 				"documento/paginas/pje/requisicoes/interceptador.js",
 				"documento/paginas/pje/requisicoes/documento.js",
 				

@@ -24,4 +24,4 @@ async function teste(){
     acao: () => div.remove()
   })
 }
-teste()
+//teste()

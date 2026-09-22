@@ -294,6 +294,7 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
 
 async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
     let bloqueados = await resolveBloqueados(dados)
+    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit', dados)
     async function resolveBloqueados(dados) {
         let nomeUsuario = document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent || ''
         let usuario = normalizar(nomeUsuario)
@@ -333,50 +334,56 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
         }
         if (!div.isConnected) return // impede a execução se o usuário fechar
         if (!conteudo) continue
-        let idDivProcesso = id('assinaTudo', 'processo', processo?.id)
+        let idProcesso = processo?.id
+        let idDivProcesso = id('assinaTudo', 'processo', idProcesso)
         let divProcesso = criaDiv({
             id: idDivProcesso,
             ancestral: idRolante + '_grade'
         })
-        let idDivCabecalhoProcesso = id('assinaTudo', 'cabecalho', processo?.id)
+        let idDivCabecalhoProcesso = id('assinaTudo', 'cabecalho', idProcesso)
         let cabecalhoProcesso = criaDiv({
             id: idDivCabecalhoProcesso,
             ancestral: idDivProcesso,
-            rowColumn: 'row'
+            rowColumn: 'row-reverse'
         })
-        cabecalhoProcesso.style.gap = '50px'
-        let idTituloProcessoCabecalho = id('assinaTudo', 'titulo_cabecalho', processo?.id)
-        let tituloProcessoCabecalho = criaSubTitulo({
-            texto: processo?.numeroProcesso,
-            id: idTituloProcessoCabecalho,
-            ancestral: idDivCabecalhoProcesso
-        })
-        tituloProcessoCabecalho.style.width      = 'fit-content'
-        tituloProcessoCabecalho.style.fontSize   = '16px'
-        let idContadorCabecalho = id('assinaTudo', 'contador', 'cabecalho', processo?.id)
+        let idContadorCabecalho = id('assinaTudo', 'contador', 'cabecalho', idProcesso)
         let contadorCabecalho = criaSubTitulo({
             texto: '',
             id: idContadorCabecalho,
             ancestral: idDivCabecalhoProcesso
         })
-        contadorCabecalho.style.width      = 'fit-content'
-        contadorCabecalho.style.fontSize   = '16px'
+        let idAbreDetalhesCabecalho = id('assinaTudo', 'abre_detalhes', idProcesso)
+        let botaoAbreDetalhesCabecalho = criaBotaoLaranja({
+            id: idAbreDetalhesCabecalho,
+            texto: 'Abre os detalhes do processo',
+            ancestral: idDivCabecalhoProcesso,
+            acao: () => {
+                let url = location.origin + '/pjekz/processo/' + idProcesso + '/detalhe'
+                window.open(url, '_blank')
+            }
+        })
+        let idTituloProcessoCabecalho = id('assinaTudo', 'titulo_cabecalho', idProcesso)
+        let tituloProcessoCabecalho = criaSubTitulo({
+            texto: processo?.numeroProcesso,
+            id: idTituloProcessoCabecalho,
+            ancestral: idDivCabecalhoProcesso
+        })
         formataDiv(divProcesso, 'fundo', 'auto', 'auto', 'relative')
         
         //conteudo.querySelector('img')?.remove()
-        let idDivConteudo = id('assinaTudo', 'conteudo', processo?.id)
+        let idDivConteudo = id('assinaTudo', 'conteudo', idProcesso)
         let divConteudo = criaDiv({
             id: idDivConteudo,
             ancestral: idDivProcesso
         })
         divConteudo.innerHTML = conteudo
-        let idDivRodapeProcesso = id('assinaTudo', 'rodape', processo?.id)
+        let idDivRodapeProcesso = id('assinaTudo', 'rodape', idProcesso)
         let rodapeProcesso = criaDiv({
             id: idDivRodapeProcesso,
             ancestral: idDivProcesso,
             rowColumn: 'row-reverse'
         })
-        let idCheckBoxProcesso = idCheck + '_' + processo?.id
+        let idCheckBoxProcesso = idCheck + '_' + idProcesso
         let checkBoxProcesso = criaCheckBox({
             id: idCheckBoxProcesso,
             ancestral: idDivRodapeProcesso
@@ -385,12 +392,32 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
         checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador || ''
         checkBoxProcesso.dataset.ojDescricao = processo?.descricaoOrgaoJulgador || ''
         clicar(checkBoxProcesso)
-        let idTituloProcesso = id('assinaTudo', 'titulo', processo?.id)
+        let idAbreDetalhesRodape = id('assinaTudo', 'abre_detalhes_rodape', idProcesso)
+        let botaoAbreDetalhesRodape = criaBotaoLaranja({
+            id: idAbreDetalhesRodape,
+            texto: 'Abre os detalhes do processo',
+            ancestral: idDivRodapeProcesso,
+            acao: () => {
+                let url = location.origin + '/pjekz/processo/' + idProcesso + '/detalhe'
+                window.open(url, '_blank')
+            }
+        })
+        let idTituloProcesso = id('assinaTudo', 'titulo', idProcesso)
         let tituloProcesso = criaSubTitulo({
             texto: processo?.numeroProcesso,
             id: idTituloProcesso,
             ancestral: idDivRodapeProcesso
         })
+        //cabecalhoProcesso.style.gap = '50px'
+        contadorCabecalho.style.width      = '50px'
+        contadorCabecalho.style.fontSize   = '16px'
+        contadorCabecalho.style.margin   = '0px'
+        botaoAbreDetalhesCabecalho.style.width = '250px'
+        tituloProcessoCabecalho.style.width      = '100%'
+        tituloProcessoCabecalho.style.fontSize   = '16px'
+        //rodapeProcesso.style.gap = '50px'
+        checkBoxProcesso.style.width = '50px'
+        botaoAbreDetalhesRodape.style.width = '250px'
         tituloProcesso.style.width      = '100%'
         tituloProcesso.style.fontSize   = '16px'
 

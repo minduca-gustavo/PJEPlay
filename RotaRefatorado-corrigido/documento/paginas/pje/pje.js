@@ -320,7 +320,10 @@ function rota_interfacePorContexto(){
 
 	// nucleo/gigs.js — primeira tentativa; o observer cobre o resto
 	devolverGig()
-
+	
+	// documento/paginas/pje/aud/aud.js - cria o botão de menu de perícias
+	audFuncoes()
+	
 	// gigs — botão de copiar atendimento. Passada de recuperação:
 	// o observador central só vê o que é adicionado depois dele,
 	// então o que já estava na tela depende desta chamada.
