@@ -355,6 +355,76 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
+                id: id(secao, 'botao', 'listagem_tarefa'),
+                texto: 'Lista processos na tarefa Recebimento em fase de execução, separando entre OJs',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'listagem_tarefa_nome'),
+                        textoEmCima: 'ESTE INPUT ESTÁ INATIVO NESTE FILTRO',
+                        placeholder: 'INATIVO',
+                        tipoInput: 'criaInput',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let valorTarefa = valores[0]?.trim() || 'TODAS'
+                    let idsx = [], tx = []
+                    let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true') || []
+                    if (!tarefas.length) return 'Ocorreu um erro. Atualize a página e tente novamente.'
+                    let tarefa = tarefas.find(d => d.nome == 'Recebimento de instância superior') || {}
+                    if (!tarefa?.nome) return 'Ocorreu um erro. Atualize a página e tente novamente.'
+                    let r = await buscarProcessosPorTarefa(tarefa?.nome, '&faseProcessual=EXECUCAO')
+                    idsx.push(...r.ids); tx.push(...r.t)
+                    if (!idsx.length) return 'Nenhum processo encontrado.'
+                    let d = []
+                    for (let i = 0; i < idsx.length; i++) {
+                        let publicos = [
+                            'municipio',
+                            'empresa brasileira de correios',
+                            'estado de sao paulo',
+                            'recuperacao',
+                            'falid'
+                        ]
+                        if (publicos.some(d => normalizar(tx[i]?.reu).includes(d) && !normalizar(tx[i]?.reu).includes('e outros'))){
+                            defineOJ('EXE4')
+                            continue
+                        }
+                        let url = location.origin + '/pje-comum-api/api/processos/id/' + idsx[i] +'/partes'
+                        let dados = await rota_fetch(url) || {}
+                        if (!dados?.PASSIVO) continue
+                        if (!dados?.PASSIVO?.some(d=> d?.tipoPessoa == 'F' || d?.tipoPessoa == 'J')){
+                            defineOJ('EXE4')
+                            continue
+                        }
+                        let timeline = await buscarDocumentos(idsx[i]) || []
+                        if (!timeline.length) continue
+                        let acordao = timeline?.find(d=> d.tipo == 'Acórdão' && d.titulo == 'Acórdão') || {}
+                        console.log('%c[Rota PJE]%c acordao: ' + JSON.stringify(acordao), LOG.info, 'color:inherit')
+                        if (!acordao?.id) continue
+                        let teor = await extrairHtml(idsx[i], acordao?.id) || ''
+                        if (!teor) continue
+                        if (normalizar(teor).includes('prescricao intercorrente')){
+                            defineOJ('EXE2')
+                            continue
+                        }
+                        defineOJ('EXE1')
+                        function defineOJ(OJ){
+                            d.push({
+                                Id:         idsx[i] || '',
+                                Processo:   tx[i]?.numero || '',
+                                Tipo:       tx[i]?.descricaoClasseJudicial || '',
+                                Fase:       tx[i]?.labelFaseProcessual || '',
+                                Reclamada:  tx[i]?.reu   || '',
+                                Reclamante: tx[i]?.autor || '',
+                                Autuado_em: (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || '',
+                                OJ:         OJ
+                            })
+                        }
+                        
+                    }
+                    return d
+                }
+            },
+            {
                 id: id(secao, 'botao', 'sentenca_acordao'),
                 texto: 'Busca textos das Sentenças e Acórdãos',
                 inputs: [

@@ -776,10 +776,16 @@ async function triagem_inicial_acoesCertificar(){
         rota_avisoObrigatorio('Prossiga manualmente.', 5)
         return
     }
-    let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
-    await suspender(1000)
-    await clicar(botaoAssinar)
-    monitorarBody(6000, 100)
+    await aguardarElemento('.botoes-acoes')
+    await suspender (1000)
+    if (!document.querySelector('.botoes-acoes').children.length){
+        let botaoSalvar = document.querySelector('.metadados button')
+        clicar(botaoSalvar)
+    } else {
+        let botaoAssinar = sel('anexarDocumentosBotaoAssinar')
+        await suspender(1000)
+        await clicar(botaoAssinar)
+    }
     if (dados.intimar){
         window.addEventListener('beforeunload', () => {
             comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])
@@ -980,7 +986,11 @@ async function triagem_inicial_acoesIntimar(){
         await suspender(1000)
     }
     await suspender(1000)
-    await clicar(botaoAssinar)
+    if (!botaoAssinar.disabled){
+        await clicar(botaoAssinar)
+    } else {
+        document.querySelector('button[aria-label^=Salva]').click()
+    }
     window.addEventListener('beforeunload', () => {
         if (dados.proximoPasso) {
             comandar(dados.proximoPasso.comando, dados.proximoPasso.parametros)
