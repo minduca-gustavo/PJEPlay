@@ -31,10 +31,9 @@ async function teste(){
 teste()
 async function testeIA(parametro){
   let idAssistente = '6aac80f81501b0e00725a8df'
-  let conversa = await rota_fetch_IACriaConversa(idAssistente)
-  console.log('%c[Rota PJE]%c conversa: ' + JSON.stringify(conversa), LOG.mb, 'color:inherit')
-  return
-  let resultado = await rota_fetch_IAEnviaRequisicao(parametro, conversa)
+  let {id, aut} = await rota_fetch_IACriaConversa(idAssistente)
+  //console.log('%c[Rota PJE]%c conversa: ' + JSON.stringify(conversa), LOG.mb, 'color:inherit')
+  let resultado = await rota_fetch_IAEnviaRequisicao(parametro, id, aut)
   console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)  
   alert (resultado)
 }

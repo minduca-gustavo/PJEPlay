@@ -622,16 +622,18 @@ async function rota_fetch_IACriaConversa(
 		let dados = await r.json()
 		let id = dados.conversationId || dados.id || null
 		relatar('Conversa criada: ' + id, dados, 'resposta')
-		let urlGet = 'https://ia.jt.jus.br/chat/conversation/' + id + '/__data.json?x-sveltekit-invalidated=11'
-		let intermediario = await fetch(urlGet, {
+		let urlGet = 'https://ia.jt.jus.br/chat/conversation/' + id + '/__data.json'
+		let s = await fetch(urlGet, {
 			method: 'GET', credentials: 'include'
 		});
-		console.log('%c[Rota PJE]%c intermediario: ' + JSON.stringify(intermediario), LOG.aviso, 'color:inherit')
-		if(!intermediario.ok) return null;
-		let resposta = await intermediario.json();
-		console.log('%c[Rota PJE]%c intermediario: ' + JSON.stringify(resposta), LOG.teste, 'color:inherit')
-		return
-		return id
+		let intermediario = await s.json()
+		if (!intermediario) return
+		console.log('%c[Rota PJE]%c intermediario: ' + JSON.stringify(intermediario), LOG.teste, 'color:inherit')
+		let data = intermediario?.nodes?.[1]?.data
+		let aut = data?.[data?.find(d => d?.id)?.id]
+		console.log('%c[Rota PJE]%c aut' + JSON.stringify(aut), LOG.aviso, 'color:inherit')
+		return {id: id, aut: aut}
+		
 	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
 }
 
@@ -646,13 +648,14 @@ async function rota_fetch_IACriaConversa(
 async function rota_fetch_IAEnviaRequisicao(
 	texto = '',
 	conversationId = '',
+	aut = '',
 	tools = ROTA_IA_TOOLS_PADRAO,
 	boundary = ROTA_IA_BOUNDARY
 ){
 	let url = 'https://ia.jt.jus.br/chat/conversation/' + conversationId
 	let payload = {
 		inputs: texto,
-		id: crypto.randomUUID(),
+		id: aut,
 		is_retry: false,
 		is_continue: false,
 		web_search: false,
