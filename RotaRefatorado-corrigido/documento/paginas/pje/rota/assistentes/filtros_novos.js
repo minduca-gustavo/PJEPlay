@@ -69,7 +69,8 @@ async function criaWidgetfiltrosNovos(ancestral) {
     const USUARIOS_PERMITIDOS = [
         'gustavo',
         'heber',
-        'ronaldo'
+        'ronaldo',
+        'matheus'
         // acrescente aqui
     ]
 
@@ -355,7 +356,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'listagem_tarefa'),
+                id: id(secao, 'botao', 'recebimento_execucao'),
                 texto: 'Lista processos na tarefa Recebimento em fase de execução, separando entre OJs',
                 inputs: [
                     {
