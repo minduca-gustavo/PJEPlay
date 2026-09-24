@@ -116,7 +116,9 @@ async function buscarSegundoGrauBasicos(numero) {
 			headers: { ...rota_cabecalhos(), 'X-Grau-Instancia': '2' }
 		})
 		if (!r.ok) { relatar('HTTP ' + r.status, url, 'erro'); return [] }
+		console.log('%c[Rota PJE]%c r 119: ' + JSON.stringify(r), LOG.info, 'color:inherit')
 		let dados = await r.json()
+		console.log('%c[Rota PJE]%c dados 119: ' + JSON.stringify(dados), LOG.info, 'color:inherit')
 		relatar('Resposta de ' + url, dados, 'resposta')
 		return Array.isArray(dados) ? dados : (dados ? [dados] : [])
 	} catch (e) { relatar('fetch erro: ' + e.message, url, 'erro'); return [] }

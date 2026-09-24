@@ -560,9 +560,16 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     for (let i = 0; i < maximo; i++) {
                         atualizar_contador(ancestral, (tarefas.length + 1) + '/' + (tarefas.length + 1), (i + 1) + '/' + maximo)
                         let id = idsx[i] || null
+                        console.log('%c[Rota PJE]%c tx[i]' + JSON.stringify(tx[i]), LOG.info, 'color:inherit')
+                        let numero = tx[i]?.numero || null
                         if (!id) continue
+                        if (!numero) continue
                         let idsDocs = []
                         let timeline   = await buscarDocumentos(id) || []
+                        let idSegundo = await buscarSegundoGrauBasicos(numero) || []
+                        console.log('%c[Rota PJE]%c idSegundo' + JSON.stringify(idSegundo), LOG.aviso, 'color:inherit', idSegundo)
+                        return
+                        let timelineSegundo = []
                         let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
                         let sentencas  = timeline
                             .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
