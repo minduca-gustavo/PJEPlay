@@ -567,9 +567,12 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         let idsDocs = []
                         let timeline   = await buscarDocumentos(id) || []
                         let idSegundo = await buscarSegundoGrauBasicos(numero) || []
-                        console.log('%c[Rota PJE]%c idSegundo' + JSON.stringify(idSegundo), LOG.aviso, 'color:inherit', idSegundo)
-                        return
-                        let timelineSegundo = []
+                        let dadosSegundo = []
+                        if (idSegundo.length != 0){
+                            dadosSegundo = await buscarSegundoGrau(idSegundo[0]?.id) || []
+                            console.log('%c[Rota PJE]%c dadosSegundo 573: ' + JSON.stringify(dadosSegundo), LOG.info, 'color:inherit', dadosSegundo)
+                        }
+                        let timelineSegundo = dadosSegundo?.itensProcesso || []
                         let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
                         let sentencas  = timeline
                             .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
@@ -597,14 +600,20 @@ async function criaWidgetfiltrosNovos(ancestral) {
                                 return {idDocumento: d?.id, teor: teorCorpo, dataDocumento: d?.data, tipo: d?.tipo, instancia: d?.instancia}
                             })
                         )
+                        let url = 'https://ia.jt.jus.br/chat/'
+
+                        window.open(url, id('filtros_novos', 'sentencas_e_acordaos_') + Date.now())
+                        //let idAssistente = '6aac80f81501b0e00725a8df'
+                        //let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
+                        //let resultado = await rota_fetch_IAEnviaRequisicao(parametro, idIA, aut)
                         d.push({
                             id:         idsx[i] || '',
                             numero:     tx[i].numero || '',
-                            sentencasEAcordaos: documentosInternosTexto
+                            sentencasEAcordaos: documentosInternosTexto,
                         })
                     }
                     _baixarArquivo(JSON.stringify(d, null, 2), 'sentencasEAcordaos.json', 'application/json')
-                    _baixarArquivo(JSON.stringify(d, null, 2), 'sentencasEAcordaos.txt', 'text/plain')
+                    //_baixarArquivo(JSON.stringify(d, null, 2), 'sentencasEAcordaos.txt', 'text/plain')
                     return 'O arquivo foi baixado.'
                 }
             },

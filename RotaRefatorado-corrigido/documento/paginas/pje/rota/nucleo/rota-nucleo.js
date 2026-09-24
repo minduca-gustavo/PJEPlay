@@ -632,7 +632,7 @@ async function rota_fetch_IACriaConversa(
 		let data = intermediario?.nodes?.[1]?.data
 		let aut = data?.[data?.find(d => d?.id)?.id]
 		console.log('%c[Rota PJE]%c aut' + JSON.stringify(aut), LOG.aviso, 'color:inherit')
-		return {id: id, aut: aut}
+		return {idIA: id, aut: aut}
 		
 	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
 }

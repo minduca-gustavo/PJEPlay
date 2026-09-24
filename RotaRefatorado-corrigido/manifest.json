@@ -145,7 +145,7 @@
 				"documento/paginas/pje/rota/nucleo/estado.js",
 				"documento/paginas/pje/rota/nucleo/cache.js",
 				"documento/paginas/pje/rota/nucleo/modelo.js",
-
+				
 				"documento/paginas/pje/api/consultas.js",
 				"documento/paginas/pje/aud/aud.js",
 				"documento/paginas/pje/requisicoes/interceptador.js",
@@ -155,6 +155,7 @@
 				"documento/paginas/pje/rota/ui/ui.js",
 				"documento/paginas/pje/rota/nucleo/movimentar.js",
 				
+				"documento/paginas/chatJT/chatJT.js",
 				"documento/paginas/pje/gim/assina-tudo.js",
 				"documento/paginas/pje/rota/botao/pintura.js",
 				"documento/paginas/pje/rota/botao/janelas.js",
