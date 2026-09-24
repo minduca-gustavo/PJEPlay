@@ -835,7 +835,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         //if (dataPula?.con2_prazo_vencido_pula_data){
         //    inputPulando.value = dataPula?.con2_prazo_vencido_pula_data
         //}
-        for (i; i < dados?.rota_dadosCon2PrazoVencido?.horariosVagos?.length; i++) {
+        for (let i; i < dados?.rota_dadosCon2PrazoVencido?.horariosVagos?.length; i++) {
             let horario = dados?.rota_dadosCon2PrazoVencido?.horariosVagos?.[i]
             let horarioInicial = new Date(horario.horarioInicial)
             let horarioInicialBotao = `${horario.descricaoTipoAudiencia} - ${horarioInicial.toLocaleDateString('pt-BR')} às ${horarioInicial.getHours()}h${String(horarioInicial.getMinutes()).padStart(2, '0')}`

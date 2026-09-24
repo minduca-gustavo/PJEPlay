@@ -136,7 +136,7 @@ async function botaoRotaIniciar(){
 	document.getElementById(ROTA_ID_BOTAO)?.remove()
 
 	let botaoRota = _rota_criarBotaoDOM(ROTA_ID_BOTAO)
-	botaoRota.style.left = 'max(15%, 120px)'
+	botaoRota.style.left = 'max(15%, 180px)'
 	botaoRota.style.top = '-4px'
 	botaoRota.appendChild(_rota_criarBotoesAjuda())
 

@@ -87,6 +87,40 @@ async function post(url, corpo){
 	})
 }
 
+async function buscarSegundoGrau(id) {
+	const url = location.origin + '/pje-consulta-api/api/processos/' + id
+	const tk1g = document.cookie.match(/(?:^|;\s*)access_token_1g=([^;]+)/)?.[1]
+	try {
+		relatar('GET ' + url, '', 'requisicao')
+		let r = await fetch(url, {
+			method: 'GET', mode: 'cors', credentials: 'include',
+			headers: {
+				...rota_cabecalhos(),
+				'X-Grau-Instancia': '2',
+				...(tk1g && { 'Authorization': 'Bearer ' + tk1g })
+			}
+		})
+		if (!r.ok) { relatar('HTTP ' + r.status, url, 'erro'); return null }
+		let dados = await r.json()
+		relatar('Resposta de ' + url, dados, 'resposta')
+		return Array.isArray(dados) ? (dados[0] || null) : dados
+	} catch (e) { relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+}
+
+async function buscarSegundoGrauBasicos(numero) {
+	const url = location.origin + '/pje-consulta-api/api/processos/dadosbasicos/' + encodeURIComponent(numero)
+	try {
+		relatar('GET ' + url, '', 'requisicao')
+		let r = await fetch(url, {
+			method: 'GET', mode: 'cors', credentials: 'include',
+			headers: { ...rota_cabecalhos(), 'X-Grau-Instancia': '2' }
+		})
+		if (!r.ok) { relatar('HTTP ' + r.status, url, 'erro'); return [] }
+		let dados = await r.json()
+		relatar('Resposta de ' + url, dados, 'resposta')
+		return Array.isArray(dados) ? dados : (dados ? [dados] : [])
+	} catch (e) { relatar('fetch erro: ' + e.message, url, 'erro'); return [] }
+}
 
 async function rota_download(url = ''){
 	try{

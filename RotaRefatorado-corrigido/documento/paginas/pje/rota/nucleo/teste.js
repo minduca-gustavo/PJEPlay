@@ -21,7 +21,11 @@ async function teste(){
     id: divId + '_botao',
     ancestral: divId,
     texto: 'Teste',
-    acao: async () => await funcao(document.getElementById(divId + '_input').value)
+    acao: async () => {
+      let resultado = await funcao(document.getElementById(divId + '_input').value)
+      console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
+      apresentaResultados(resultado)
+    }
   })
   criaBotaoLaranja({
     id: divId + '_fechar',
@@ -30,22 +34,21 @@ async function teste(){
     acao: () => div.remove()
   })
 }
-teste()
+//teste()
 
 function testeJSON(parametro){
-  console.log('%c[Rota PJE]%c parametro: ' + JSON.stringify(parametro), LOG.info, 'color:inherit')
   //let teste = parametro.flatMap(d => d.nodosFilhos)
   let entrada = typeof(parametro) === 'string' ? JSON.parse(parametro) : parametro
   let resultado = []
-  if (!resultado.some(d => d?.id == entrada.id)) resultado.push({id: entrada?.id, titulo: entrada?.titulo})
   if(entrada.nodosFilhos){
-    console.log('%c[Rota PJE]%c if: ' + JSON.stringify(), LOG.teste, 'color:inherit')
-    for (j of entrada?.nodosFilhos){
-      if (!resultado.some(d => d?.id == j.id)) resultado.push({id: j?.id, titulo: j?.titulo})
-      if (j.nodosFilhos) testeJSON(j)
+    for (let j of entrada?.nodosFilhos){
+        let result = []
+        if (j.nodosFilhos) resultado.push(...testeJSON(j))
+        if (!resultado.some(d => d?.id == entrada.id) && !j?.titulo.includes('Link para o nodo')) resultado.push({id: j?.id, titulo: j?.titulo})
+      }
     }
-  }
-  console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit')
+  if (!resultado.some(d => d?.id == entrada.id) && !entrada?.titulo.includes('Link para o nodo')) resultado.push({id: entrada?.id, titulo: entrada?.titulo})
+  return resultado
 }
 async function testeIA(parametro){
   let idAssistente = '6aac80f81501b0e00725a8df'

@@ -359,12 +359,12 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 id: id(secao, 'botao', 'recebimento_execucao'),
                 texto: 'Lista processos na tarefa Recebimento em fase de execução, separando entre OJs',
                 inputs: [
-                    {
-                        id: id(secao, 'input', 'listagem_tarefa_nome'),
-                        textoEmCima: 'ESTE INPUT ESTÁ INATIVO NESTE FILTRO',
-                        placeholder: 'INATIVO',
-                        tipoInput: 'criaInput',
-                    }
+                    //{
+                    //    id: id(secao, 'input', 'listagem_tarefa_nome'),
+                    //    textoEmCima: 'ESTE INPUT ESTÁ INATIVO NESTE FILTRO',
+                    //    placeholder: 'INATIVO',
+                    //    tipoInput: 'criaInput',
+                    //}
                 ],
                 funcao: async (valores, ancestral) => {
                     let valorTarefa = valores[0]?.trim() || 'TODAS'
@@ -426,6 +426,87 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
+                id: id(secao, 'botao', 'pesquisa_timeline'),
+                texto: 'Faz busca de termos na timeline e devolve processos que contiverem os termos',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'pesquisa_timeline', 'tarefa'),
+                        textoEmCima: 'Digite a tarefa',
+                        placeholder: 'Ex: Prazos vencidos',
+                        tipoInput: 'criaInputAnotacao',
+                    },
+                    {
+                        id: id(secao, 'input', 'pesquisa_timeline', 'movimentoOuDocumento'),
+                        textoEmCima: 'Digite Movimento, Documento, ou Ambos',
+                        placeholder: 'Ex: movimento, AMBOS, Documento',
+                        tipoInput: 'criaInput',
+                    },
+                    {
+                        id: id(secao, 'input', 'pesquisa_timeline', 'termosTimeline'),
+                        textoEmCima: 'Digite os termos a buscar, separados por vírgula',
+                        placeholder: 'Ex: Acordo, SENTENÇA, Ata da audiencia',
+                        tipoInput: 'criaInput',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let valorTarefa = valores[0]?.trim()
+                    console.log('%c[Rota PJE]%c valorTarefa: ' + JSON.stringify(valorTarefa), LOG.teste, 'color:inherit')
+                    let movimentoOuDocumento = normalizar(valores[1])?.trim() || 'ambos'
+                    console.log('%c[Rota PJE]%c movimentoOuDocumento: ' + JSON.stringify(movimentoOuDocumento), LOG.info, 'color:inherit')
+                    let termosTimeline = valores[2]?.split(',').map(d=> normalizar(d)?.trim())
+                    console.log('%c[Rota PJE]%c termosTimeline: ' + JSON.stringify(termosTimeline), LOG.aviso, 'color:inherit')
+                    if (!valorTarefa) return 'Digite uma tarefa.'
+                    let funcoes = {
+                        ambos: 'buscarDocumentosEMovimentos',
+                        documentos: 'buscarDocumentos',
+                        movimentos: 'buscarMovimentos'
+                    }
+                    let mapaFuncoes = {
+                        buscarDocumentosEMovimentos,
+                        buscarDocumentos,
+                        buscarMovimentos
+                    }
+                    console.log('%c[Rota PJE]%c funcoes[]: ' + JSON.stringify(funcoes[movimentoOuDocumento]), LOG.teste, 'color:inherit')
+                    let funcao = funcoes[movimentoOuDocumento] || null
+                    if(!funcao) return 'Digite ambos, movimentos ou documentos'
+                    console.log('%c[Rota PJE]%c funcao: ' + JSON.stringify(typeof funcao), LOG.teste, 'color:inherit')
+                    let idsx = [], tx = []
+                    let tarefas = await rota_fetch(location.origin + '/pje-comum-api/api/tarefas/ativas?presenteEmProcesso=true') || []
+                    let tarefa = tarefas.find(d => d.nome == valorTarefa) || {}
+                    if (!tarefa?.nome) return 'Tarefa não encontrada.'
+                    atualizar_contador(ancestral, '1/2', '...')
+                    let r = await buscarProcessosPorTarefa(tarefa?.nome)
+                    atualizar_contador(ancestral, '2/2', '...')
+                    idsx.push(...r.ids); tx.push(...r.t)
+                    if (!idsx.length) return 'Nenhum processo encontrado.'
+                    let d = []
+                    for (let i = 0; i < idsx.length; i++) {
+                        atualizar_contador(ancestral, '2/2', (i + 1) + '/' + idsx.length)
+                        let timeline = await mapaFuncoes[funcao](idsx[i]) || []
+                        if (!timeline.length) continue
+                        let encontrados = []
+                        for (let valor of termosTimeline){
+                            if (timeline.some(d => normalizar(d?.tipo).includes(valor) || normalizar(d?.titulo).includes(valor))) encontrados.push(valor)
+                        }
+                        if (encontrados.length) encontrado(encontrados.join(', '))
+                        function encontrado(valor){
+                            d.push({
+                                Id:         idsx[i] || '',
+                                Processo:   tx[i]?.numero || '',
+                                Tipo:       tx[i]?.descricaoClasseJudicial || '',
+                                Fase:       tx[i]?.labelFaseProcessual || '',
+                                Reclamada:  tx[i]?.reu   || '',
+                                Reclamante: tx[i]?.autor || '',
+                                Autuado_em: (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || '',
+                                encontrado: valor
+                            })
+                        }
+                        
+                    }
+                    return d
+                }
+            },
+            {
                 id: id(secao, 'botao', 'sentenca_acordao'),
                 texto: 'Busca textos das Sentenças e Acórdãos',
                 inputs: [
@@ -462,13 +543,13 @@ async function criaWidgetfiltrosNovos(ancestral) {
                             let etapaTexto = tarefas.length > 1 ? (it + 1) + '/' + (tarefas.length + 1) : 0
                             let tarefa = await resolverTarefa(tarefaNome)
                             if (!tarefa) continue
-                            let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1)
+                            let r = await buscarProcessosPorTarefaPagina(tarefa.id, 1, '&faseProcessual=CONHECIMENTO')
                             atualizar_contador(ancestral, etapaTexto, '1/' + r.paginas)
                             idsx.push(...r.ids); tx.push(...r.t)
                             if (idsx.length >= maximo) break
                             for (let pagina = 2; pagina <= r.paginas; pagina++) {
                                 atualizar_contador(ancestral, etapaTexto, pagina + '/' + r.paginas)
-                                let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina)
+                                let rp = await buscarProcessosPorTarefaPagina(tarefa.id, pagina, '&faseProcessual=CONHECIMENTO')
                                 idsx.push(...rp.ids); tx.push(...rp.t)
                                 if (idsx.length >= maximo) break
                             }
@@ -485,11 +566,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
                         let sentencas  = timeline
                             .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
-                            .map(d => d?.id) || []
+                            .map(d => ({id: d?.id, data: d?.data, tipo: d?.tipo, instancia: d?.instancia})) || []
                         idsDocs.push(...sentencas)
                         let documentosInternosTexto = await Promise.all
                             (idsDocs.map(async (d) => {
-                                let teor = await extrairHtml(id, d) || null
+                                let teor = await extrairHtml(id, d?.id) || null
                                 let parser = new DOMParser();
                                 let teorHtml = teor ? parser.parseFromString(teor, 'text/html') : null
                                 let divs = teorHtml ? [...teorHtml.querySelectorAll('div.corpo')] : []
@@ -503,10 +584,10 @@ async function criaWidgetfiltrosNovos(ancestral) {
                                     .filter(texto => texto.length > 0)
                                     .join('\n\n')
                                 if (!teor){
-                                    let teorPDF = await rota_extrairTeorDocumento(id, d) || null
+                                    let teorPDF = await rota_extrairTeorDocumento(id, d?.id) || null
                                     if (teorPDF) teorCorpo = teorPDF
                                 }
-                                return {idDocumento: d, teor: teorCorpo}
+                                return {idDocumento: d?.id, teor: teorCorpo, dataDocumento: d?.data, tipo: d?.tipo, instancia: d?.instancia}
                             })
                         )
                         d.push({
@@ -1282,19 +1363,30 @@ async function criaWidgetfiltrosNovos(ancestral) {
             texto: 'Filtrar',
             ancestral: idConteiner,
             acao: async () => {
-                let ranking = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
-                let atual = ranking[ancestral] || { pontos: 0, ultimoUso: 0 }
-                // ou use `ancestral`, que é o mesmo valor que idConteiner deriva
-                atual.pontos += 1
-                atual.ultimoUso = Date.now()
-                ranking[ancestral] = atual
-                await armazenar({ rota_ranking_botoesFiltro: ranking})
+                let raiz = document.querySelector('#' + id('filtros'))
+                let botoesTela = [...(raiz?.querySelectorAll('button') || [])]
+                botoesTela.forEach(b => b.disabled = true)
 
-                let resultado = await funcao(inputs.map(inp => document.querySelector('#' + inp.id)?.value), idConteiner)
-                if (Array.isArray(resultado)) {
-                    apresentaResultados(resultado)
-                } else {
-                    atualizar_contador(idConteiner, 0, resultado)
+                try {
+                    let armazenado = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
+                    let ranking = armazenado?.rota_ranking_botoesFiltro || {}
+                    let atual = ranking[ancestral] || { pontos: 0, ultimoUso: 0 }
+                    atual.pontos += 1
+                    atual.ultimoUso = Date.now()
+                    ranking[ancestral] = atual
+                    await armazenar({ rota_ranking_botoesFiltro: ranking })
+
+                    let resultado = await funcao(inputs.map(inp => document.querySelector('#' + inp.id)?.value), idConteiner)
+                    if (Array.isArray(resultado)) {
+                        apresentaResultados(resultado)
+                    } else {
+                        atualizar_contador(idConteiner, 0, resultado)
+                    }
+                } catch (e) {
+                    console.error('[Rota PJE] erro no filtro:', e)
+                    atualizar_contador(idConteiner, 0, 'Ocorreu um erro. Veja o console.')
+                } finally {
+                    botoesTela.forEach(b => b.disabled = false)
                 }
             }
         })
