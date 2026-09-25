@@ -85,11 +85,11 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     let idURLMatch = location.href.match(/\/processo\/(\d+)\/detalhe/);
     let idURL = idURLMatch?.[1]; // "2992885"
     let [timeline, gigs, gigs_concluidos, processo, recursos] = await Promise.all([
-        interceptador_aguardar('timeline').then(() => interceptador_lerTimeline() || []),
-        interceptador_aguardar('gigs').then(() => interceptador_lerGigs() || []),
-        interceptador_aguardar('gigs_concluidos').then(() => interceptador_lerGigsConcluidos() || []),
-        interceptador_aguardar('processo').then(() => interceptador_lerProcesso() || {}),
-        interceptador_aguardar('recursos').then(() => interceptador_lerRecursos() || {}),
+        interceptador_aguardar('timeline', 30000).then(() => interceptador_lerTimeline() || []),
+        interceptador_aguardar('gigs', 30000).then(() => interceptador_lerGigs() || []),
+        interceptador_aguardar('gigs_concluidos', 30000).then(() => interceptador_lerGigsConcluidos() || []),
+        interceptador_aguardar('processo', 30000).then(() => interceptador_lerProcesso() || {}),
+        interceptador_aguardar('recursos', 30000).then(() => interceptador_lerRecursos() || {}),
     ])
     gigs.push(...gigs_concluidos)
     let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
@@ -105,6 +105,7 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     let salaJuizes = []
     let sala = juizSimetriaPeloGig ? salas.find(sala => sala?.nome.includes(juizSimetriaPeloGig.toUpperCase())) : null
     console.log('%c[Rota PJE]%c sala 106: ' + JSON.stringify(sala), LOG.rosa, 'color:inherit')
+    console.log('%c[Rota PJE]%c recursos: ' + JSON.stringify(recursos), LOG.rosa, 'color:inherit')
     let horariosVagos = []
     if (sala) {
         horariosVagos = await buscarSalasHorariosVagos(sala.id) || []
@@ -279,7 +280,12 @@ async function triagem_inicial_despachar(tipo) {
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
     }
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === recurso)
+    let pageRecursos = dadosTriagemInicial?.recursos || await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos') || []
+    if (!pageRecursos.length){
+        await rota_avisoObrigatorio('Ocorreu um erro. Atualize a página.', 30)
+        return
+    }
+    let page =         pageRecursos?.find(r => r?.nome === recurso) || []
     if (!page?.caminhoRecurso){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
@@ -782,7 +788,7 @@ async function triagem_inicial_acoesCertificar(){
         let botaoSalvar = document.querySelector('.metadados button')
         clicar(botaoSalvar)
     } else {
-        let botaoAssinar = sel('anexarDocumentosBotaoAssinar')
+        let botaoAssinar = document.querySelector('.botoes-acoes [aria-label^="Assinar"]')
         await suspender(1000)
         await clicar(botaoAssinar)
     }
@@ -1022,7 +1028,12 @@ async function triagem_inicial_aguardandoAudiencia(tipo) {
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return
     }
-    let page =          dadosTriagemInicial?.recursos?.find(r => r?.nome === recurso)
+    let pageRecursos = dadosTriagemInicial?.recursos || await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos') || []
+    if (!pageRecursos.length){
+        await rota_avisoObrigatorio('Ocorreu um erro. Atualize a página.', 30)
+        return
+    }
+    let page =          pageRecursos.find(r => r?.nome === recurso)
     if (!page?.caminhoRecurso){
         await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
         return

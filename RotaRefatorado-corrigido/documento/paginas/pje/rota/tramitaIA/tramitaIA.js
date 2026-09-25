@@ -1,5 +1,6 @@
 function tramitaIAFuncoes(){
-    tramitaIACriaBotao()
+    return
+    //tramitaIACriaBotao()
 }
 
 async function tramitaIACriaBotao(){
