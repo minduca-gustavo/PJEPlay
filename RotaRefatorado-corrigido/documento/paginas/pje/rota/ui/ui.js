@@ -95,6 +95,10 @@ function _ui_el(tag, estilos = {}) {
 // Se 'ancestral' não for encontrado, insere no body com aviso.
 function _ui_inserir(el, ancestral) {
     // Aceita id simples ('minha-div') ou seletor CSS ('[class*="pje"]')
+    if (ancestral === document.body){
+        document.body.appendChild(el)
+        return
+    }
     const pai = ancestral.match(/^[a-zA-Z0-9_-]+$/)
         ? document.getElementById(ancestral)
         : document.querySelector(ancestral)
@@ -1609,6 +1613,21 @@ function criaTooltip({ id, texto = '', elemento }) {
     }
 }
 
+function criaBotaoFechar({id, ancestral, elementoFechar}){
+    let botao = criaBotaoAzul({
+        id: id,
+        ancestral: ancestral,
+        texto: '✕',
+        acao: () => {
+            document.getElementById(elementoFechar)?.remove()
+            return
+        }
+    })
+    botao.style.padding = '0px 4px'
+    botao.style.width = 'fit-content'
+    botao.style.height = 'fit-content'
+    return botao
+}
 
 /**
  * Cria plaquinha colorida com tooltip embutido.

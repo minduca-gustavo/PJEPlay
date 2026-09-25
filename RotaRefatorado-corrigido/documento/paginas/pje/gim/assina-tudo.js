@@ -33,7 +33,7 @@ async function rotaAssinaTudo() {
         texto: 'Exibir todos de todas as OJs',
         acao: () => assinaTudo()
     })
-    botaoExibe.style.display = 'inline-block'
+    botaoExibe.style.display = 'inline'
     botaoExibe.style.verticalAlign = 'middle'
     criaTooltip({
         id: idBotaoExibe + 'tooltip', 
@@ -272,13 +272,13 @@ async function rotaAssinaTudo() {
 
 //rotaAssinaTudo()
 
-function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute') {
+function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute', top = '50%', left = '50%', transform = 'translate(-50%, -50%)') {
     let bgCor = UI_CORES[cor] || UI_CORES.branco
     Object.assign(div.style,{
         position:       position,
-        top:            '50%',
-        left:           '50%',
-        transform:      'translate(-50%, -50%)',
+        top:            top,
+        left:           left,
+        transform:      transform,
         width:          largura,
         height:         altura,
         background:     bgCor,

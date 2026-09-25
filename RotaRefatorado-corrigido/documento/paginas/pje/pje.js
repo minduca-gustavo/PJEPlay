@@ -107,6 +107,11 @@ async function rota(){
 
 	relatar('Otimizando o PJe…', CONTEXTO, 'execucao')
 
+	
+	
+	
+	
+
 	// nucleo/rota-nucleo.js
 	identificaUsuario()
 
@@ -324,8 +329,11 @@ function rota_interfacePorContexto(){
 	// documento/paginas/pje/aud/aud.js - cria o botão de menu de perícias
 	audFuncoes()
 	
-	// documento/paginas/chatJT/chatJT.js - cria o botão de menu de perícias
+	//// documento/paginas/chatJT/chatJT.js - cria o botão de menu de perícias
 	chatJTFuncoes()
+
+	// documento/paginas/pje/rota/tramitaIA/tramitaIA.js - cria o botão de menu Tramita IA
+	tramitaIAFuncoes()
 
 	// gigs — botão de copiar atendimento. Passada de recuperação:
 	// o observador central só vê o que é adicionado depois dele,

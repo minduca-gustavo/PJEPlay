@@ -165,6 +165,8 @@
 				"documento/paginas/pje/rota/assistentes/porta-de-entrada.js",
 				"documento/paginas/pje/rota/assistentes/compilador-de-assistentes.js",
 				"documento/paginas/pje/rota/assistentes/consulta-qualquer-oj.js",
+				"documento/paginas/pje/rota/tramitaIA/tramitaIA.js",
+				"documento/paginas/pje/rota/tramitaIA/ris.js",
 				"documento/paginas/pje/rota/botao/fita-superior-detalhes.js",
 				"documento/paginas/pje/rota/nucleo/sigeo.js",
 				"documento/paginas/pje/rota/nucleo/gigs.js",

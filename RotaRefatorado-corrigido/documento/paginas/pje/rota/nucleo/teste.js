@@ -1,7 +1,8 @@
 async function teste(){
   let janelas = [
     /ia\.jt\.jus\.br/,
-    JANELA.meuPainel
+    JANELA.meuPainel,
+    JANELA.painelGlobal
   ]
   let janela = janelas.some(j => j.test(window.location.href))
   if (!janela) return
@@ -16,7 +17,12 @@ async function teste(){
     id: divId + '_input',
     ancestral: divId,
   })
-  let funcao = confereJanela(JANELA.meuPainel) ? testeJSON : testeIA
+  let mapaFuncoes = {
+    testeJSON,
+    testeIA,
+    testePatch,
+  }
+  let funcao = confereJanela(/ia\.jt\.jus\.br/) ? testeIA : testePatch
   let botao = criaBotaoAzul({
     id: divId + '_botao',
     ancestral: divId,
@@ -24,7 +30,7 @@ async function teste(){
     acao: async () => {
       let resultado = await funcao(document.getElementById(divId + '_input').value)
       console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
-      apresentaResultados(resultado)
+      //apresentaResultados(resultado)
     }
   })
   criaBotaoLaranja({
@@ -35,6 +41,11 @@ async function teste(){
   })
 }
 //teste()
+
+function testePatch(){
+  let teste = interceptador_ler('agrupamento_tarefas_processos')
+  alert(JSON.stringify(teste))
+}
 
 function testeJSON(parametro){
   //let teste = parametro.flatMap(d => d.nodosFilhos)

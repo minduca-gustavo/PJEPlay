@@ -39,7 +39,7 @@ async function otimizar(){
 
 	// modulos/definicoes.js — expõe os ícones como custom properties
 	definirIcones()
-
+	
 	// documento/paginas/pje/pje.js
 	rota()
 
