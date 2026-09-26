@@ -1,3 +1,6 @@
+// arquitetura - soma da janela + href puxa o armazenamento. O armazenamento tem a tarefa específica
+
+
 function chatJTFuncoes(){
     console.log('%c[Rota PJE]%c ChatJS.js 2: ' + JSON.stringify(2), LOG.info, 'color:inherit')
     let janela = confereJanela(/\/ia\.jt\.jus\.br\/chat/)
