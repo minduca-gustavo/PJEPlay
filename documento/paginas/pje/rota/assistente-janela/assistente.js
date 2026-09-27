@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 //        }
 //    })
 //
+    
     // Cria rodapé imediatamente
     const rodape = document.querySelector('.assistente-rodape')
     if (rodape) {
@@ -65,7 +66,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         rodape.id = 'rota-rodape'
         criaBotaoProximoEEncerrar({ id: 'rota-btn-nav', ancestral: 'rota-rodape' })
     }
-
+    await obterArmazenamento(['rotaGeometria']).then(async cfg => {
+        if (!ROTA_LINUX || !cfg?.rotaGeometria) return
+        const aba = await browser.tabs.getCurrent()   // sempre a aba desta página
+        if (aba) browser.windows.update(aba.windowId, cfg.rotaGeometria)
+    })
+    
     document.getElementById('btn-fechar-assistente')
         ?.addEventListener('click', () => window.close())
 

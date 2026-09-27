@@ -15,6 +15,9 @@ let _rota_cursor       = 0
 let _rota_ativo        = false
 let _rota_relatorio    = []
 let _rota_janelasMundo = []
+// Geração do fluxo: incrementada a cada início/cancelamento/retomada.
+// Qualquer espera ou recursão de uma geração antiga se autodescarta.
+let _rota_geracaoFluxo = 0
 
 // ── Chave de persistência do fluxo (sobrevive ao reload) ──
 const ROTA_KEY_FLUXO = 'rotapje_fluxo_retomar'
@@ -52,6 +55,7 @@ async function rota_fluxo_retomar(){
 	_rota_cursor    = dados.cursor ?? 0
 	_rota_relatorio = dados.relatorio || []
 	_rota_ativo     = true
+	_rota_geracaoFluxo++
 	rota_avisoTemporario('🔄 Retomando fluxo após atualização…', 'info', 3000)
 	await rota_processarCursor(dados.slots, dados.tarefaUnica, dados.temporizador)
 }
@@ -410,30 +414,25 @@ function rota_calcularGeometria(posicao) {
 // Substitui rota_calcularGeometria para o tipo 'esquerdaAssistida'.
 
 function rota_geometriaModoAssistido() {
-    const sw   = window.screen.availWidth
-    const sh   = window.screen.availHeight
-    const topo = Math.round(sh * 0.15 * 1.1)  // mesmo cálculo do original
-	let espacoDev = 0
-	if(MODO_DEV){ 
-		espacoDev = 200
-		
-	}
+    const sw = screen.availWidth
+    const sh = window.screen.availHeight
+    const espacoDev = MODO_DEV ? 200 : 0
 
-    const largAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE)  // 20%
-    const GAP = 20
-	const largPJE        = sw - largAssistente - GAP                     // 80% exato
-	
+    const largAssistente = Math.round(sw * ROTA_LARGURA_ASSISTENTE * (ROTA_LINUX ? 0.95 : 1))
+    const GAP     = 20
+    const largPJE = sw - largAssistente - GAP
+
     return {
         pje: {
-            width:  /*ROTA_LINUX ? (sw * 0.80) :*/ largPJE,
+            width:  largPJE,
             height: sh - espacoDev,
             left:   0,
-            top:    0 + espacoDev,  // deixa espaço para o modo dev, se ativo
+            top:    espacoDev,        // espaço para o modo dev, se ativo
         },
         assistente: {
             width:  largAssistente,
-            height: /*ROTA_LINUX ? sh : */(sh - espacoDev),          // assistente ocupa altura total
-            left:   largPJE + GAP,     // cola exatamente onde o PJE termina
+            height: sh - espacoDev,
+            left:   largPJE + GAP,    // cola onde o PJE termina
             top:    0,
         },
     }
@@ -500,30 +499,51 @@ function rota_sinalizar(sessao, acao){
 	localStorage.setItem(ROTA_KEY_BASE + sessao, acao)
 }
 
-function rota_aguardarSinal(sessao, timeout = 28800000){
+function rota_aguardarSinal(sessao, geracao, timeout = 28800000){
     return new Promise(resolver => {
-        let inicio = Date.now()
+        let inicio    = Date.now()
+        let ocupado   = false   // impede ticks sobrepostos (o tick é assíncrono)
+        let resolvido = false
+
+        function finalizar(valor){
+            if(resolvido) return
+            resolvido = true
+            clearInterval(tick)
+            resolver(valor)
+        }
+
         let tick = setInterval(async () => {
-            // Sinal das janelas PJe via localStorage
-            let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
-            if(sinal && sinal !== 'pausado'){
-                clearInterval(tick)
-                localStorage.removeItem(ROTA_KEY_BASE + sessao)
-                resolver(sinal)
-                return
-            }
+            if(resolvido || ocupado) return
+            ocupado = true
+            try{
+                // Fluxo cancelado ou substituído: esta espera morre em silêncio
+                if(geracao !== _rota_geracaoFluxo){ finalizar('cancelado'); return }
 
-            // Sinal do assistente via NAVEGADOR.storage
-            let cfg = await obterArmazenamento(['rotaSinalAssistente'])
-            let sinalAssistente = cfg?.rotaSinalAssistente
-            if(sinalAssistente && sinalAssistente !== 'pausado'){
-                clearInterval(tick)
-                await armazenar({ rotaSinalAssistente: null })
-                resolver(sinalAssistente)
-                return
-            }
+                // Sinal das janelas PJe via localStorage (já é por sessão)
+                let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
+                if(sinal && sinal !== 'pausado'){
+                    localStorage.removeItem(ROTA_KEY_BASE + sessao)
+                    finalizar(sinal)
+                    return
+                }
 
-            if(Date.now() - inicio > timeout){ clearInterval(tick); resolver('timeout') }
+                // Sinal do assistente via NAVEGADOR.storage (global entre abas!)
+                // Formato novo: { execucao, acao }. Só aceita se for DESTA sessão.
+                let cfg = await obterArmazenamento(['rotaSinalAssistente'])
+                if(resolvido || geracao !== _rota_geracaoFluxo){ finalizar('cancelado'); return }
+                let s = cfg?.rotaSinalAssistente
+                let acao = (s && typeof s === 'object' && String(s.execucao) === String(sessao))
+                    ? s.acao : null
+                if(acao && acao !== 'pausado'){
+                    finalizar(acao)
+                    await armazenar({ rotaSinalAssistente: null })
+                    return
+                }
+
+                if(Date.now() - inicio > timeout) finalizar('timeout')
+            } finally {
+                ocupado = false
+            }
         }, 300)
     })
 }
@@ -546,6 +566,7 @@ function rota_monitorarFechamento(sessao){
 // ── Cancelar fluxo ativo ───────────────────────────────────
 
 function rota_cancelarFluxoAtivo(){
+    _rota_geracaoFluxo++        // mata esperas/recursões pendentes mesmo se já inativo
     if(!_rota_ativo) return
     _rota_ativo       = false
     _rota_processando = false   // ← ADICIONAR esta linha
@@ -616,6 +637,7 @@ async function rota_iniciarFluxo({ fila }){
         return
     }
 
+    _rota_geracaoFluxo++
     _rota_fila      = fila
     _rota_cursor    = 0
     _rota_ativo     = true
@@ -642,6 +664,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
     if(!_rota_ativo) return
     if(_rota_processando) return   // ← trava
     _rota_processando = true
+    const geracao = _rota_geracaoFluxo   // geração dona desta execução
 	// Mantém contexto acessível para persistência em caso de reload por troca de OJ
 	_rota_slots_ativos       = slots
 	_rota_tarefaUnica_ativa  = tarefaUnica
@@ -699,6 +722,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 		await rota_abrirAssistente(cfgTarefa.tarefaAtiva, execucao)
 		await suspender(500)
 	}
+	if(geracao !== _rota_geracaoFluxo) return   // fluxo trocado durante os awaits
 
 
 	localStorage.removeItem(ROTA_KEY_BASE    + sessao)
@@ -741,10 +765,12 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 			+ (posSalva ? '&rotapje_pos=' + encodeURIComponent(JSON.stringify(posSalva)) : '')
 			+ (params.length ? '&rotapje_params=' + encodeURIComponent(JSON.stringify(params)) : '')
 			+ (tmrJson ? '&rotapje_tmr=' + tmrJson : '')
+			+ (ROTA_LINUX ? '&rotapje_geo=' + encodeURIComponent(JSON.stringify(geo)) : '')
 
 		let nomeW = /\/documento\/\d+\/conteudo/.test(slot.url)
 			? rota_nomeJanela(slot.slotIndex + '-' + i, execucao)
 			: rota_nomeJanela(slot.slotIndex, execucao)
+   		console.log('[Rota PJE] geo slot', slot.slotIndex, JSON.stringify(geo))
 		let w = window.open(
 			urlFinal, nomeW,   // ← aqui
 			'width='  + geo.width  + ',height=' + geo.height +
@@ -754,7 +780,10 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 		if(w) _rota_janelasMundo.push(w)
 	})
 
-	let sinal = await rota_aguardarSinal(sessao)
+	let sinal = await rota_aguardarSinal(sessao, geracao)
+
+	// Espera órfã de um fluxo anterior: não toca em estado nenhum.
+	if(sinal === 'cancelado' || geracao !== _rota_geracaoFluxo) return
 
 	
 	// Fecha todas as janelas e limpa chaves de sincronização
@@ -802,6 +831,16 @@ async function rota_injetarWidget(ctxSalvo = null){
 		let params = new URL(location.href).searchParams
 		sessao     = params.get('rotapje_sessao')
 		if(!sessao) return
+		let geoParam = params.get('rotapje_geo')
+		if (geoParam && ROTA_LINUX) {
+			try {
+				const geo = JSON.parse(geoParam)
+				const posicionar = () =>
+					browser.runtime.sendMessage({ acao: 'rota_posicionar', geo }).catch(() => {})
+				posicionar()
+				setTimeout(posicionar, 1500)   // reforço, caso o TWin reposicione depois
+			} catch (_) {}
+		}
 
 		tarefaUnica  = decodeURIComponent(params.get('rotapje_tarefaunica') || '')
 		numProc      = decodeURIComponent(params.get('rotapje_num') || '')

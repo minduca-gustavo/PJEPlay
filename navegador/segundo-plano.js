@@ -41,6 +41,11 @@ async function semearTarefaPadrao(){
 	}
 }
 
+NAVEGADOR.runtime.onMessage.addListener((msg, sender) => {
+    if (msg?.acao !== 'rota_posicionar' || !sender.tab) return
+    return browser.windows.update(sender.tab.windowId, msg.geo)
+})
+
 NAVEGADOR.runtime.onInstalled.addListener(async () => {
 	await PRONTO
 	definirIconeDaExtensaoPeloEstado(CONFIGURACAO.ativa)

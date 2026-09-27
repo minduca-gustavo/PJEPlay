@@ -1403,12 +1403,18 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     _ui_hoverBotao(btnProximo, UI_CORES.laranja, UI_CORES.laranjaHover)
 
     // Lê a sessão no momento do clique para garantir o valor atual
+    const execucao = () => new URL(location.href).searchParams.get('rotapje_execucao') || ''
+
     btnProximo.addEventListener('click', async () => {
-        await armazenar({ rotaSinalAssistente: 'proximo' })
+        if (btnProximo.disabled) return
+        btnProximo.disabled = btnEncerrar.disabled = true   // evita clique duplo
+        await armazenar({ rotaSinalAssistente: { execucao: execucao(), acao: 'proximo' } })
     })
 
     btnEncerrar.addEventListener('click', async () => {
-        await armazenar({ rotaSinalAssistente: 'encerrar' })
+        if (btnEncerrar.disabled) return
+        btnProximo.disabled = btnEncerrar.disabled = true
+        await armazenar({ rotaSinalAssistente: { execucao: execucao(), acao: 'encerrar' } })
         await armazenar({ rotaAssistenteFechar: true })
     })
     linha.appendChild(btnEncerrar)
