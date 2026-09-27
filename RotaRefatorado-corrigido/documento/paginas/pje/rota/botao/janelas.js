@@ -425,14 +425,14 @@ function rota_geometriaModoAssistido() {
 	
     return {
         pje: {
-            width:  ROTA_LINUX ? (sw * 0.80) : largPJE,
+            width:  /*ROTA_LINUX ? (sw * 0.80) :*/ largPJE,
             height: sh - espacoDev,
             left:   0,
             top:    0 + espacoDev,  // deixa espaço para o modo dev, se ativo
         },
         assistente: {
             width:  largAssistente,
-            height: ROTA_LINUX ? sh : (sh - espacoDev),          // assistente ocupa altura total
+            height: /*ROTA_LINUX ? sh : */(sh - espacoDev),          // assistente ocupa altura total
             left:   largPJE + GAP,     // cola exatamente onde o PJE termina
             top:    0,
         },
