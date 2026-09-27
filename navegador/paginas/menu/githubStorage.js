@@ -147,6 +147,7 @@ async function githubTestarSenha(senha) {
     await _githubDecryptToken(encJson, senha);
     return true;
   } catch(e) {
+    console.log('%c[Rota PJE]%c catch: ' + JSON.stringify(e.message), LOG.aviso, 'color:inherit')
     return false;
   }
 }

@@ -3,25 +3,27 @@
    Tema claro institucional
    ============================================================ */
 
+/* A paleta saiu daqui: mora em estilos/rotapje-cores.css.
+   Estes aliases apenas apontam para lá. */
 :root {
-  --pje-azul:        #0078aa;
-  --pje-azul-claro:  #2a5a8c;
-  --pje-laranja:     #ffa726;
-  --pje-laranja-esc: #D68C20;
-  --pje-branco:      #ffffff;
-  --pje-fundo:       #f9f9fa;
-  --pje-borda:       #dcdcdc;
-  --pje-texto:       #2c3e50;
-  --pje-texto-suave: #6b7c93;
-  --pje-info-bg:     #eaf2fb;
-  --pje-info-borda:  #add8e6;
-  --pje-info-texto:  #1a3a5c;
-  --pje-ok-bg:       #e8f8ef;
-  --pje-ok-borda:    #82dda8;
-  --pje-ok-texto:    #1e8449;
-  --pje-erro-bg:     #fbeaea;
-  --pje-erro-borda:  #f5c6c6;
-  --pje-erro-texto:  #c0392b;
+  --pje-azul:         hsla(var(--extensao-rotapje-cor-azul),1);
+  --pje-azul-claro:   hsla(var(--extensao-rotapje-cor-azul-claro),1);
+  --pje-azul-hover:   hsla(var(--extensao-rotapje-cor-azul-hover),1);
+  --pje-laranja:      hsla(var(--extensao-rotapje-cor-laranja),1);
+  --pje-laranja-esc:  hsla(var(--extensao-rotapje-cor-laranja-esc),1);
+  --pje-branco:       hsla(var(--extensao-rotapje-cor-branco),1);
+  --pje-fundo:        hsla(var(--extensao-rotapje-cor-fundo),1);
+  --pje-borda:        hsla(var(--extensao-rotapje-cor-borda),1);
+  --pje-texto:        hsla(var(--extensao-rotapje-cor-texto),1);
+  --pje-texto-suave:  hsla(var(--extensao-rotapje-cor-texto-suave),1);
+  --pje-info-bg:      hsla(var(--extensao-rotapje-cor-info-fundo),1);
+  --pje-info-borda:   hsla(var(--extensao-rotapje-cor-info-borda),1);
+  --pje-erro-bg:      hsla(var(--extensao-rotapje-cor-perigo),0.1);
+  --pje-erro-borda:   hsla(var(--extensao-rotapje-cor-perigo),0.4);
+  --pje-erro-texto:   hsla(var(--extensao-rotapje-cor-perigo),1);
+  --pje-ok-bg:        hsla(var(--extensao-rotapje-cor-sucesso),0.1);
+  --pje-ok-borda:     hsla(var(--extensao-rotapje-cor-sucesso),0.4);
+  --pje-ok-texto:     hsla(var(--extensao-rotapje-cor-sucesso),1);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

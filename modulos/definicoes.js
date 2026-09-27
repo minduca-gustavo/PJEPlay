@@ -1,125 +1,254 @@
-// ── Variáveis e definições globais ───────────────────────────
-// No topo do content script (ex: index.js ou onde MODO_DEV é usado)
+// VARIÁVEIS E DEFINIÇÕES GLOBAIS E DINÂMICAS, DISPONÍVEIS PARA TODAS OS ESCOPOS:
 
 const
-	LOCAL		= (typeof window !== 'undefined') ? window.location.href : '',
-	NAVEGADOR	= _definirNavegador(),
-	EXTENSAO	= _definirExtensao()
+	NAVEGADOR			= definirNavegador()
+	
+var
+	CONFIGURACAO	= {},													//-> Preenchida com NAVEGADOR.storage.local.get() pela função await definirChavesPrimariasDasConfiguracoes().
+	CONTEXTO			= {},													//-> Para rotular com uma expressão única, por meio de fragmentos e expressões regulares derivados da global LOCAL, em que "domínio" o script está rodando.
+	DATA					= definirDatas(),							//-> Obtém as datas utilizadas com frequência.
+	DOCUMENTO			= {},													//-> Reservada para receber dados do documento.
+	EXTENSAO			= definirDadosDaExtensao(),		//-> Obtém as chaves do arquivo manifest.json.
+	EXPRESSAO			= {},													//-> Obtém as expressões regulares utilizadas com frequência.
+	LINK					= {},													//-> Reservada para receber links comuns.
+	LOCAL					= definirLocal(),							//-> Obtém a URL.
+	PJE						= {},													//-> Reservada para receber os dados do PJe.
+	PROCESSO			= {},													//-> Reservada para receber os dados do processo.
+	TELA					= definirTela()								//-> Informações da tela.
 
-var CONFIGURACAO = {}
-var MODO_DEV = false
 
-// Lê o valor salvo no storage ao iniciar
-obterArmazenamento(['modoDev']).then(cfg => {
-    MODO_DEV = cfg?.modoDev === true
-})
+/**
+ * Deve ser executada após o preenchimento do objeto ${CONFIGURACAO} com as chaves obtidas do objeto NAVEGADOR.storage.local.
+ * Define configurações primárias da extensão, preenchendo o objeto NAVEGADOR.storage.local com os padrões definidos.
+ * Recarrega a extensão, se necessário.
+ */
+async function definicoesGlobais(){
 
+	relatar('Definições Globais:', '', 'configuracao')
 
+	await definirChavesPrimariasDasConfiguracoes()
 
-// Reage a mudanças em tempo real (popup alterando o valor)
-NAVEGADOR.storage.onChanged.addListener((changes) => {
-    if ('modoDev' in changes) {
-        MODO_DEV = changes.modoDev.newValue === true
-    }
-})   // ativado via popup página 4 — controla o relatar()
-var JANELA = {
-    meuPainel:          	/\/pjekz\/gigs\/meu-painel/,
-    gigsRelatorios:         /\/pjekz\/gigs\/relatorios\/atividades/,
-    painelGlobal:      		/\/pjekz\/painel\/global/,
-	painelGlobalTarefas:	/\/pjekz\/painel\/global\/\d*\/lista-processos/,
-	analisarEAssinar:	    /\/pjekz\/painel\/global\/2\/lista-processos/,
-    painelGlobalTodos: 		/\/pjekz\/painel\/global\/todos\/lista-processos/,
-    detalhes:          		/\/pjekz\/processo\/\d*\/detalhe/,
-    tarefa:          		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
-	documentosConteudo:		/\/pjekz\/processo\/\d*\/detalhe\/documento\/\d*\/conteudo*/,
-	escaninho: 				/\/pjekz\/escaninho/,
-	retificar:				/\/pjekz\/processo\/\d*\/retificar/,
-	certificar:				/\/pjekz\/processo\/\d*\/documento\/anexar/,
-	pec:				    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
-	processoTarefa: 		/\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
-	pautaAudiencias: 		/\/pjekz\/pauta-audiencias/,
-	atasAudiencias: 		/\/pjekz\/atas-audiencias/,
-    aud:                    /\/aud\/#\/audiencia/
+	LINK			= definirLinks()
+	EXPRESSAO	= definirExpressoesRegulares()
+	CONTEXTO	= definirContexto()
+
+	async function definirChavesPrimariasDasConfiguracoes(){
+
+		relatar('Verificando chaves primárias das configurações…',CONFIGURACAO,'configuracao')
+
+		let recarregar = ''
+
+		if(CONFIGURACAO?.ativa === undefined){
+			relatar('Defindo estado inicial da extensão…','','configuracao')
+			await armazenar({ativa:true})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.assistenteDeContexto === undefined){
+			relatar('Defindo estado inicial das configurações do Assistente de Contexto…','','configuracao')
+			await armazenar({
+				assistenteDeContexto:{
+					pje_autenticacao:	{expandido:true},
+					siscondj:	{expandido:true},
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.assistenteDeSelecao === undefined){
+			relatar('Defindo estado inicial das configurações do Assistente de Seleção…','','configuracao')
+			await armazenar({
+				assistenteDeSelecao:{
+					ativado:					true,
+					abrirUrlsEmAbas:	false
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.janela === undefined){
+			relatar('Defindo estado inicial das configurações de dimensões de janelas…','','configuracao')
+			await armazenar({
+				janela:{}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.extensao === undefined){
+			await armazenar({
+				extensao:{
+					abrirUrlsEmAbas:	false
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.pessoa === undefined){
+			relatar('Defindo estado inicial das configurações individuais…','','configuracao')
+			await armazenar({
+				pessoa:{
+					instancia:	'1',
+					regiao:			'15'
+				}
+			})
+			recarregar = true
+		}
+
+		if(
+			CONFIGURACAO?.sistemasSatelites === undefined
+			||
+			!CONFIGURACAO?.sistemasSatelites?.ecartaUrlConsultaProcessos
+			||
+			!CONFIGURACAO?.sistemasSatelites?.zoomSubdominio
+		){
+			relatar('Defindo estado inicial das configurações de Sistemas Satélites…','','configuracao')
+			await armazenar({
+				sistemasSatelites:{
+					ecartaUrlConsultaProcessos:	'https://ecarta.trt15.jus.br/consultarProcesso.xhtml',
+					zoomSubdominio:	'trt15-jus-br'
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.diagnostico === undefined){
+			relatar('Defindo estado inicial das configurações de Diagnóstico…','','configuracao')
+			await armazenar({
+				diagnostico:{
+					armazenamento:	false,
+					automacao:			false,
+					configuracao:		false,
+					contexto:				false,
+					dom:						false,
+					erro:						false,
+					execucao:				false,
+					mutacao:				false,
+					navegador:			false,
+					requisicao:			false,
+					resposta:				false,
+					selecao:				false,
+					teste:					false,
+					texto:					false,
+					xhr:						false,
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.esforcos === undefined){
+			relatar('Defindo estado inicial das configurações de Esforços Repetitivos Poupados…','','configuracao')
+			await armazenar({
+				esforcos:{
+					desde:			DATA.hoje.curta,
+					cliques:		1,
+					movimentos:	1,
+					teclas:			1,
+					segundos:		1
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.pje_processo_tarefa_conclusaoAoMagistrado_aoAbrir?.sugerirNomesDosJuizosConfigurados === undefined){
+			relatar('Defindo estado inicial das configurações de Escolha de Juízo…','','configuracao')
+			await armazenar({
+				pje_processo_tarefa_conclusaoAoMagistrado_aoAbrir:{
+					sugerirNomesDosJuizosConfigurados:	true
+				}
+			})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.autoGIGS?.compartilhados){
+			relatar('Limpando autoGIGS.compartilhados…','','configuracao')
+			let autoGIGS	= CONFIGURACAO?.autoGIGS
+			relatar('autoGIGS',autoGIGS,'configuracao')
+			autoGIGS.compartilhados	= ''
+			autoGIGS.urlConfiguracoesCompartilhadas	= 'https://scpiracicaba-trt15-jus-br.github.io/pje-dashboard/sise-jt/gigs.json'
+			await armazenar({autoGIGS})
+			recarregar = true
+		}
+
+		if(CONFIGURACAO?.selecionarJuizo?.documentoModeloId){
+			relatar('Limpando selecionarJuizo.documentoModeloId…','','configuracao')
+			let selecionarJuizo	= CONFIGURACAO?.selecionarJuizo
+			relatar('selecionarJuizo',selecionarJuizo,'configuracao')
+			selecionarJuizo.documentoModeloId	= ''
+			selecionarJuizo.urlConfiguracoesCompartilhadas	= 'https://scpiracicaba-trt15-jus-br.github.io/pje-dashboard/sise-jt/juizos.json'
+			await armazenar({selecionarJuizo})
+			recarregar = true
+		}
+
+		if(recarregar){
+			if(NAVEGADOR?.runtime?.reload)
+				NAVEGADOR.runtime.reload()
+		}
+
+	}
+
 }
 
 
-
-function _definirNavegador(){
-	if(typeof browser === 'undefined' && typeof chrome !== 'undefined') return chrome
-	return browser
-}
-
-function _definirExtensao(){
-	let ext = NAVEGADOR.runtime.getManifest()
-	ext.prefixo = ext.short_name.toLowerCase().replace(/[-]/g, '')
-	return ext
+function definirLocal(){
+	return  (typeof window !== 'undefined') ? window.location.href : ''
 }
 
 
-// ── Storage ───────────────────────────────────────────────────
-
-function armazenar(chave){
-	try{ return NAVEGADOR.storage.local.set(chave) }
-	catch(e){ console.error('[RotaPJE] armazenar:', e); throw e }
+function definirNavegador(){
+	let navegador = ''
+	if(typeof browser === 'undefined' && typeof chrome !== 'undefined')
+		navegador = chrome
+	else
+		navegador = browser
+	return navegador
 }
 
-async function obterArmazenamento(chave = null){
-	try{ return await NAVEGADOR.storage.local.get(chave) }
-	catch(e){ return chave === null ? {} : null }
+
+function definirTela(){
+	return  (typeof window !== 'undefined') ? window.screen : {}
 }
 
-async function removerArmazenamento(chave) {
-    await NAVEGADOR.storage.local.remove(chave)
+
+/**
+ * Define os dados da extensão, obtendo do arquivo manifest.json.
+ * @returns 
+ */
+function definirDadosDaExtensao(){
+
+	let extensao = NAVEGADOR.runtime.getManifest()
+	extensao.prefixo = extensao.short_name.toLowerCase().replace(/[-]/g,'')
+
+	return extensao
+
 }
 
-// ── Humanização do nome da tarefa ─────────────────────────────
 
-const _ASS_NOMES_TAREFA = {
-    'triagem_inicial':   'Triagem Inicial',
-    'pos-triagem':       'Pós-Triagem',
-    'balcao-virtual':    'Balcão Virtual',
-    'audiencia':         'Audiência',
-    'cumprimento':       'Cumprimento de Sentença',
-    'execucao':          'Execução',
-    'sentenca':          'Sentença',
-    'instrucao':         'Instrução',
-    'julgamento':        'Julgamento',
-}
-
-function _ass_nomeTarefa(id) {
-    if (!id) return '—'
-    if (_ASS_NOMES_TAREFA[id]) return _ASS_NOMES_TAREFA[id]
-    // Fallback: kebab-case → Title Case
-    return id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
-
-function buscaEmTextoMalFormatado(textoABuscar, termo, antes = 0, depois = 0){
-    console.log('%c[Rota PJE]%c chamou buscaEm ' + JSON.stringify(123), LOG.rosa, 'color:inherit')
-    let texto = normalizar(textoABuscar).toLowerCase()
-    let mapa = []
-    let espacos = []
-    let limpo = ''
-    for (let i=0; i < texto.length; i++){
-        let c = texto[i];
-        if (/\s/.test(c)) {
-            espacos.push(i);
-            continue; // pula espaços/quebras de linha
-        }
-        limpo += c;
-        mapa.push(i);
-    }
-    console.log('termo: ' + JSON.stringify(termo))
-    //let d = termo.map(e => !/\s/.test(e)).join('')
-    //console.log('%c[Rota PJE]%c d: ' + JSON.stringify(d), LOG.aviso, 'color:inherit')
-    let busca = normalizar(termo).toLowerCase().replace(/\s+/g, '')
-    console.log('busca: ' + JSON.stringify(busca))
-    let posicao = limpo.indexOf(busca)
-    if (posicao === -1) return null
-    let inicio = mapa[posicao]
-    let fim = mapa[posicao + busca.length - 1] + 1
-    let espacoInicio = espacos[espacos.findIndex(d=> d > Math.max(0, inicio - antes)) - 1]
-    let espacoFim = espacos[espacos.findIndex(d=> d > Math.min(textoABuscar.length, fim + depois))]
-    let resultado = textoABuscar.slice(espacoInicio, espacoFim)
-    return {trechos: resultado, termo: termo, inicio: inicio, fim: fim}
-    
+function definirIcones(){
+	let raiz = extensao_raiz()
+	let icones = [
+		'0',
+		'1',
+		'bb',
+		'dimensoes',
+		'engrenagem',
+		'google',
+		'google-tradutor',
+		'lista',
+		'maiusculas',
+		'minusculas',
+		'pje',
+		'prancheta',
+		'recarregar',
+		't',
+		'tique',
+		'trt',
+		'tst',
+		'whatsapp'
+	]
+	icones.forEach(icone => {
+		document.documentElement.style.setProperty(
+			`--extensao-sisejt-icone-${icone}`,
+			`url("${raiz}imagens/${icone}.svg")`
+		)
+	})
 }
