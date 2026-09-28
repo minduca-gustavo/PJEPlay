@@ -85,11 +85,11 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
     let idURLMatch = location.href.match(/\/processo\/(\d+)\/detalhe/);
     let idURL = idURLMatch?.[1]; // "2992885"
     let [timeline, gigs, gigs_concluidos, processo, recursos] = await Promise.all([
-        interceptador_aguardar('timeline', 30000).then(() => interceptador_lerTimeline() || []),
-        interceptador_aguardar('gigs', 30000).then(() => interceptador_lerGigs() || []),
-        interceptador_aguardar('gigs_concluidos', 30000).then(() => interceptador_lerGigsConcluidos() || []),
-        interceptador_aguardar('processo', 30000).then(() => interceptador_lerProcesso() || {}),
-        interceptador_aguardar('recursos', 30000).then(() => interceptador_lerRecursos() || {}),
+        interceptador_aguardar('timeline', 8000).then(()        => interceptador_lerTimeline()          || []),
+        interceptador_aguardar('gigs', 8000).then(()            => interceptador_lerGigs()              || []),
+        interceptador_aguardar('gigs_concluidos', 8000).then(() => interceptador_lerGigsConcluidos()    || []),
+        interceptador_aguardar('processo', 8000).then(()        => interceptador_lerProcesso()          || {}),
+        interceptador_aguardar('recursos', 8000).then(()        => interceptador_lerRecursos()          || []),
     ])
     gigs.push(...gigs_concluidos)
     let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
@@ -97,6 +97,9 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
         let gigsAPI = await buscarGigs(processo?.numero) || []
         gig = gigsAPI.find(g => /GAB.*JU.*/i.test(g?.tipoAtividade?.descricao || '')) ?? {}
     }
+    if (!timeline.length) timeline = buscarDocumentos(idURL) || []
+    if (!processo.id) processo = await buscarProcesso(idURL) || {}
+    if (!recursos.length) recursos = await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos')
     let gigNormalizado = normalizar(gig?.tipoAtividade?.descricao)
     let juizSimetriaPeloGig = gigNormalizado.split(/ju[ií]za?/i, 2)[1]?.trim() || ''
     console.log('%c[Rota PJE]%c juizSimetriaPeloGig 106: ' + JSON.stringify(juizSimetriaPeloGig), LOG.rosa, 'color:inherit')
@@ -784,6 +787,9 @@ async function triagem_inicial_acoesCertificar(){
     }
     await aguardarElemento('.botoes-acoes')
     await suspender (1000)
+    if (dados.intimar){
+        comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])
+    }
     if (!document.querySelector('.botoes-acoes').children.length){
         let botaoSalvar = document.querySelector('.metadados button')
         clicar(botaoSalvar)
@@ -791,11 +797,6 @@ async function triagem_inicial_acoesCertificar(){
         let botaoAssinar = document.querySelector('.botoes-acoes [aria-label^="Assinar"]')
         await suspender(1000)
         await clicar(botaoAssinar)
-    }
-    if (dados.intimar){
-        window.addEventListener('beforeunload', () => {
-            comandar(['triagem_inicial_intimar'], [{dados: dados.intimar}])
-        })
     }
     await suspender(2000)
     return
@@ -992,7 +993,7 @@ async function triagem_inicial_acoesIntimar(){
         await suspender(1000)
     }
     await suspender(1000)
-    if (!botaoAssinar.disabled){
+    if (!document.querySelector('button[aria-label^=Assina]').disabled){
         await clicar(botaoAssinar)
     } else {
         document.querySelector('button[aria-label^=Salva]').click()
