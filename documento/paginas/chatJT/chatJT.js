@@ -49,7 +49,7 @@ async function chatJTFuncoes(){
 async function chatJTExecutaPrompt(parametros, dados) {
     let idAssistente = parametros.assistente
     let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
-    let resultado = await rota_fetch_IAEnviaRequisicao(dados, idIA, aut)
+    let resultado = await rota_fetch_IAEnviaRequisicao(JSON.stringify(dados), idIA, aut)
     console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
     if (!parametros.orquestrador) return resultado
 }
