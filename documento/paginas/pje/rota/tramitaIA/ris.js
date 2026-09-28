@@ -37,6 +37,7 @@ async function tramitaIASecaoRis(elemento, ancestral){
             rotinaErro('atualize')
             return
         }
+        let i = 0
         for (let processo of processos) {
             let id = processo?.id || null
             let numero = processo?.numeroProcesso || null
@@ -85,8 +86,16 @@ async function tramitaIASecaoRis(elemento, ancestral){
                 sentencasEAcordaos: documentosInternosTexto,
                 execucao: Date.now()
             }
-            armazenar({[elemento]: d})
-            window.open(url, elemento + Date.now())
+            let armazenamento = elemento + Date.now()
+            console.log('%c[Rota PJE]%c d: ' + JSON.stringify(d), LOG.teste, 'color:inherit')
+            console.log('%c[Rota PJE]%c elemento armazenar: ' + JSON.stringify(armazenamento), LOG.info, 'color:inherit')
+            await armazenar({[armazenamento]: d})
+            if (i === 0) {
+                window.open(url, armazenamento)
+            } else {
+                return
+            }
+            i++
             //let idAssistente = '6aac80f81501b0e00725a8df'
             //let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
             //let resultado = await rota_fetch_IAEnviaRequisicao(parametro, idIA, aut)
