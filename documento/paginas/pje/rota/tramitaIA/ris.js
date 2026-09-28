@@ -1,4 +1,9 @@
-async function tramitaIASecaoRis(elemento, ancestral){
+
+
+async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRechamada){
+    if (rechamada){
+        mostraResultadosBuscaRis(elemento, dadosRechamada)
+    }
     let el = document.getElementById(elemento)
     el.style.flexDirection = 'row-reverse'
     el.style.alignItems = 'baseline'
@@ -15,7 +20,7 @@ async function tramitaIASecaoRis(elemento, ancestral){
     let texto = criaTexto({
         id: elemento + '_texto',
         ancestral: elemento,
-        texto: 'Este assistente busca os textos dos acórdãos e sentenças dos processos da tela, e encaminha para a IA, que responderá duas perguntas: qual o resultando do processo (procedente, improcedente, etc.)? Tem obrigação de fazer?'
+        texto: 'ATENÇÃO: FILTRE APENAS PROCESSOS DO CONHECIMENTO. Este assistente busca os textos dos acórdãos e sentenças dos processos da tela, e encaminha para a IA, que responderá duas perguntas: qual o resultando do processo (procedente, improcedente, etc.)? Tem obrigação de fazer?'
     })
     let titulo = criaSubTitulo({
         id: elemento + '_titulo',
@@ -29,6 +34,7 @@ async function tramitaIASecaoRis(elemento, ancestral){
             elementos.filter(d => d?.id != elemento?.id).
             map(c => c.remove())
         }
+        mostraResultadosBuscaRis(rolante, 0)
         let meta = interceptador_ler('agrupamento_tarefas_processos')
         let processos = meta?.resultado || []
         alert(JSON.stringify(processos))
@@ -38,7 +44,10 @@ async function tramitaIASecaoRis(elemento, ancestral){
             return
         }
         let i = 0
+        let execucao = Date.now()
+        let dados = []
         for (let processo of processos) {
+            mostraResultadosBuscaRis(rolante, )
             let id = processo?.id || null
             let numero = processo?.numeroProcesso || null
             if (!id) continue
@@ -84,23 +93,32 @@ async function tramitaIASecaoRis(elemento, ancestral){
                 id:         id || '',
                 numero:     numero || '',
                 sentencasEAcordaos: documentosInternosTexto,
-                execucao: Date.now()
             }
-            let armazenamento = elemento + Date.now()
-            console.log('%c[Rota PJE]%c d: ' + JSON.stringify(d), LOG.teste, 'color:inherit')
-            console.log('%c[Rota PJE]%c elemento armazenar: ' + JSON.stringify(armazenamento), LOG.info, 'color:inherit')
-            await armazenar({[armazenamento]: d})
-            if (i === 0) {
-                window.open(url, armazenamento)
-            } else {
-                return
-            }
-            i++
-            //let idAssistente = '6aac80f81501b0e00725a8df'
-            //let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
-            //let resultado = await rota_fetch_IAEnviaRequisicao(parametro, idIA, aut)
+            dados.push(d)
         }
-        console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.teste, 'color:inherit')
+        let armazenamento = elemento + execucao
+        esperaTramitaIA = true
+        await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
+        window.open(url, armazenamento)
+        return
+    }
+
+    function mostraResultadosBuscaRis(idElemento, contador){
+        let idDiv = id('tramitaIA', 'mostraResultadosBuscaRis')
+        criaDiv({
+            id: idDiv,
+            ancestral: idElemento
+        })
+        if (typeof contador === 'string' || typeof contador === 'number'){
+            let texto = contador === 0 ? 'Iniciando buscas.' : contador
+            let conteudo = criaSubTitulo({
+                id: idDiv + '_conteudo',
+                ancestral: idDiv,
+                texto: texto
+            })
+            conteudo.style.fontSize = '16px'
+            return
+        }
     }
 
     function rotinaErro(tipo){

@@ -1,5 +1,6 @@
 // arquitetura - soma da janela + href puxa o armazenamento. O armazenamento tem a tarefa específica
-
+let esperaChatJT = false
+let dadosChatJT  = []
 
 async function chatJTFuncoes(){
     console.log('%c[Rota PJE]%c ChatJS.js 2: ' + JSON.stringify(2), LOG.info, 'color:inherit')
@@ -18,19 +19,12 @@ async function chatJTFuncoes(){
     // pega a tarefa do nome da janela
     let tarefa = janelaNome.replace('rotapje_', '').replace(execucao, '')
     // obtem o armazenamento pra conferir o timestamp
-    // o que vem do armazenamento:
-    //let d = {
-    //    id:         id || '',
-    //    numero:     numero || '',
-    //    sentencasEAcordaos: documentosInternosTexto,
-    //    execucao: Date.now()
-    //}
     console.log('%c[Rota PJE]%c tarefa: ' + JSON.stringify(tarefa), LOG.aviso, 'color:inherit')
     let armazenamento = await obterArmazenamento(janelaNome)
-    let dados = armazenamento[janelaNome]
-    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(armazenamento), LOG.teste, 'color:inherit')
-    console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.teste, 'color:inherit')
-    if (dados?.execucao != execucao) return
+    let dadosTarefa = armazenamento[janelaNome]
+    console.log('%c[Rota PJE]%c dadosTarefa: ' + JSON.stringify(armazenamento), LOG.teste, 'color:inherit')
+    console.log('%c[Rota PJE]%c dadosTarefa: ' + JSON.stringify(dadosTarefa), LOG.teste, 'color:inherit')
+    if (dadosTarefa?.execucao != execucao) return
     let mapaFuncoes = {
         chatJTSentencasEAcordaosConhecimento
     }
@@ -42,14 +36,24 @@ async function chatJTFuncoes(){
             orquestrador: false
         }
     ]
+    let dados = dadosTarefa?.dados
     let parametros = correspondenciaFuncoes.find(c => c?.label == tarefa)
-    chatJTExecutaPrompt(parametros, dados)
+    let resultado = []
+    if (!Array.isArray(dados)){
+        let consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dado))
+        resultado = [{dados: dados, resultado: consulta}]
+    }
+    for (let dado of dados){
+        let consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dado))
+        resultado.push({dados: dados, resultado: consulta})
+    }
+    rota_avisar('tramitaIA', {funcao: 'tramitaIASecaoRisRechamada', resultado: resultado})
 }
 
-async function chatJTExecutaPrompt(parametros, dados) {
+async function chatJTExecutaPrompt(parametros, texto) {
     let idAssistente = parametros.assistente
     let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
-    let resultado = await rota_fetch_IAEnviaRequisicao(JSON.stringify(dados), idIA, aut)
+    let resultado = await rota_fetch_IAEnviaRequisicao(texto, idIA, aut)
     console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
     if (!parametros.orquestrador) return resultado
 }

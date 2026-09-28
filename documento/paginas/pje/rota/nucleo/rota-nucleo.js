@@ -510,6 +510,24 @@ function id(...partes){
 	return ['rotapje', ...partes].filter(Boolean).join('_')
 }
 
+// ── Ouvinte geral (rota-nucleo.js) ────────────────────────────
+
+const rota_reacoes = {
+	tramitaIA: 'tramitaIACriaSecoes'
+}   // nome do sinal → função
+
+function rota_avisar(nome, dados){
+	armazenar({ rotapje_sinal: { nome: nome, dados: dados, t: Date.now() } })
+}
+
+NAVEGADOR.storage.onChanged.addListener(function rota_ouvinteGeral(mudancas){
+	let sinal = mudancas['rotapje_sinal']?.newValue
+	if(!sinal) return
+	let fn = rota_reacoes[sinal.nome]
+	if(!fn) return
+	try { fn(sinal.dados) }
+	catch(e){ console.log('[Rota PJE] erro na reação ' + sinal.nome, e) }
+})
 
 // ── Instrumentação de bancada ─────────────────────────────────
 

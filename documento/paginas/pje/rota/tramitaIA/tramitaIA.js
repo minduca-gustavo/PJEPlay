@@ -1,3 +1,7 @@
+// Listener de comunicação entre janelas
+let esperaTramitaIA = false
+let dadosEsperaTramitaIA = {funcao: '', parametro}
+
 function tramitaIAFuncoes(){
     tramitaIACriaBotao()
 }
@@ -75,7 +79,8 @@ async function tramitaIAMenu() {
     tramitaIACriaSecoes(idRolante)
 }
 
-function tramitaIACriaSecoes(elemento){
+function tramitaIACriaSecoes(elemento = null, {funcaoRechamada, dados = null}){
+    if (!elemento && !dados) return
     let secoes = [
         {
             nome: 'ris',
@@ -84,6 +89,13 @@ function tramitaIACriaSecoes(elemento){
     ]
     let mapaFuncoes = {
         tramitaIASecaoRis // está no arquivo ris.js
+    }
+    if (esperaTramitaIA){
+        esperaTramitaIA = false
+        let fn = funcaoRechamada
+        if (!fn) return
+        fn(idDiv, elemento, true, dados)
+        return
     }
     for (secao of secoes){
         let idDiv = elemento + '_' + secao?.nome
