@@ -13,8 +13,7 @@ async function chatJTFuncoes(){
     if (esperaChatJT) return
     esperaChatJT = true
     let login = await chatJTconfereLogin()
-    console.log('%c[Rota PJE]%c login: ' + JSON.stringify(login), LOG.aviso, 'color:inherit')
-    if (!login) return
+    if (!login){ esperaChatJT = false; return }
     // pega o timestamp do nome da janela
     let execucao = janelaNome.match(/\d{13}$/)?.[0]
     // pega a tarefa do nome da janela
