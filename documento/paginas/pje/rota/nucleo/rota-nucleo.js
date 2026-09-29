@@ -516,7 +516,7 @@ const rota_reacoes = {
 }   // nome do sinal → função
 
 function rota_avisar(nome, dados){
-	armazenar({ rotapje_sinal: { nome: nome, dados: dados, t: Date.now() } })
+	return armazenar({ rotapje_sinal: { nome: nome, dados: dados, t: Date.now() } })
 }
 
 NAVEGADOR.storage.onChanged.addListener(function rota_ouvinteGeral(mudancas){

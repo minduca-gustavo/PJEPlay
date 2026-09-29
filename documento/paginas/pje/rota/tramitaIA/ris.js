@@ -2,7 +2,23 @@
 
 async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRechamada){
     if (rechamada){
-        mostraResultadosBuscaRis(elemento, dadosRechamada)
+        let rolante = document.getElementById(ancestral)
+        rolante.replaceChildren()                 // tira a seção e o "Iniciando buscas"
+        rolante.style.overflowY = 'hidden'
+        console.log('%c[Rota PJE]%c dadosRechamada: ' + JSON.stringify(dadosRechamada), LOG.info, 'color:inherit', dadosRechamada)
+        return
+        apresentaResultados({
+            array: dadosRechamada,
+            nome: 'tramitaIA_resultadoRis',
+            ancestral: ancestral,
+            embutido: true,
+            aoVoltar: () => {
+                rolante.replaceChildren()
+                rolante.style.overflowY = 'auto'
+                tramitaIACriaSecoes({elemento: ancestral})
+            }
+        })
+        return
     }
     let el = document.getElementById(elemento)
     el.style.flexDirection = 'row-reverse'
@@ -29,15 +45,13 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
     })
 
     async function buscaSentencasEAcordaos(elemento, rolante){
-        let elementos = document.getElementById(rolante).children
-        if (elementos.length > 1){
-            elementos.filter(d => d?.id != elemento?.id).
-            map(c => c.remove())
-        }
+        let elementos = [...document.getElementById(rolante).children]
+            .filter(d => d.id !== elemento)
+            .forEach(d => d.remove())
         mostraResultadosBuscaRis(rolante, 0)
         let meta = interceptador_ler('agrupamento_tarefas_processos')
         let processos = meta?.resultado || []
-        alert(JSON.stringify(processos))
+        
         
         if (!processos.length) {
             rotinaErro('atualize')
@@ -47,7 +61,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         let execucao = Date.now()
         let dados = []
         for (let processo of processos) {
-            mostraResultadosBuscaRis(rolante, )
+            mostraResultadosBuscaRis(rolante, 'Processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length)
             let id = processo?.id || null
             let numero = processo?.numeroProcesso || null
             if (!id) continue
@@ -88,7 +102,6 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                     return {idDocumento: d?.id, teor: teorCorpo, dataDocumento: d?.data, tipo: d?.tipo, instancia: d?.instancia}
                 })
             )
-            let url = 'https://ia.jt.jus.br/chat/'
             let d = {
                 id:         id || '',
                 numero:     numero || '',
@@ -96,6 +109,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             }
             dados.push(d)
         }
+        let url = 'https://ia.jt.jus.br/chat/'
         let armazenamento = elemento + execucao
         esperaTramitaIA = true
         await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
@@ -105,20 +119,12 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
 
     function mostraResultadosBuscaRis(idElemento, contador){
         let idDiv = id('tramitaIA', 'mostraResultadosBuscaRis')
-        criaDiv({
-            id: idDiv,
-            ancestral: idElemento
-        })
-        if (typeof contador === 'string' || typeof contador === 'number'){
-            let texto = contador === 0 ? 'Iniciando buscas.' : contador
-            let conteudo = criaSubTitulo({
-                id: idDiv + '_conteudo',
-                ancestral: idDiv,
-                texto: texto
-            })
-            conteudo.style.fontSize = '16px'
-            return
-        }
+        if (!document.getElementById(idDiv)) criaDiv({ id: idDiv, ancestral: idElemento })
+        let idConteudo = idDiv + '_conteudo'
+        let conteudo = document.getElementById(idConteudo)
+            || criaSubTitulo({ id: idConteudo, ancestral: idDiv, texto: '' })
+        conteudo.textContent = contador === 0 ? 'Iniciando buscas.' : String(contador)
+        conteudo.style.fontSize = '16px'
     }
 
     function rotinaErro(tipo){

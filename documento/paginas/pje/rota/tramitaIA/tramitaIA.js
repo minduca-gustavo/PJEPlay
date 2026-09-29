@@ -1,7 +1,6 @@
 // Listener de comunicação entre janelas
 let esperaTramitaIA = false
-let dadosEsperaTramitaIA = {funcao: '', parametro}
-rota_reacoes.tramitaIA = 'tramitaIACriaSecoes'
+rota_reacoes.tramitaIA = tramitaIACriaSecoes
 
 function tramitaIAFuncoes(){
     tramitaIACriaBotao()
@@ -34,6 +33,7 @@ async function tramitaIACriaBotao(){
 
 async function tramitaIAMenu() {
     let idBase = id('tramitaIA', 'menu')
+    document.getElementById(idBase).remove()
     let div = criaDiv({
         id: idBase,
         ancestral: document.body
@@ -77,11 +77,10 @@ async function tramitaIAMenu() {
         ancestral: idBase
     })
     rolante.style.overflowY = 'auto'
-    tramitaIACriaSecoes(idRolante)
+    tramitaIACriaSecoes({elemento: idRolante})
 }
 
-function tramitaIACriaSecoes({elemento = null, funcaoRechamada, dados = null}){
-    if (!elemento && !dados) return
+function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = null}){
     let secoes = [
         {
             nome: 'ris',
@@ -91,14 +90,17 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada, dados = null}){
     let mapaFuncoes = {
         tramitaIASecaoRis // está no arquivo ris.js
     }
-    if (esperaTramitaIA){
-        esperaTramitaIA = false
-        let fn = funcaoRechamada
-        if (!fn) return
-        fn(idDiv, elemento, true, dados)
+    if (funcaoRechamada){
+        if (!esperaTramitaIA) return
+        let fn = mapaFuncoes[funcaoRechamada]
+        let idDiv = elemento
+        let ancestral = document.getElementById(idDiv)?.parentElement?.id
+        if (!fn || !ancestral) return
+        esperaTramitaIA = false   // só desliga quando tem certeza que vai agir
+        fn(idDiv, ancestral, true, dados)
         return
     }
-    for (secao of secoes){
+    for (let secao of secoes){
         let idDiv = elemento + '_' + secao?.nome
         let div = criaDiv({
             id: idDiv,
@@ -108,6 +110,4 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada, dados = null}){
         let funcao = mapaFuncoes[secao?.funcao]
         funcao(idDiv, elemento)
     }
-    
-    
 }

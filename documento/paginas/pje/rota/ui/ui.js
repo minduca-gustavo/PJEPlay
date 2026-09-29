@@ -2261,3 +2261,167 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
         }
     }
 }
+
+function apresentaResultados({array, nome, ancestral = document.body, embutido = false, aoVoltar = null}){
+    let divId = id(nome)
+    let div = criaDiv({
+        id: divId,
+        ancestral: ancestral
+    })
+    Object.assign(div.style, {
+        background:     UI_CORES.branco,
+        border:         '1px solid ' + UI_CORES.azul,
+        borderRadius:   '8px',
+        boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
+        display:        'flex',
+        padding:        '4px 4px 4px 4px',
+        ...(embutido ? {
+            position:     'relative',
+            width:        '98%',
+            flex:         '1 1 auto',
+            minHeight:    '0',
+            marginBottom: '0'
+        } : {
+            position:   'absolute',
+            top:        '50%',
+            left:       '50%',
+            transform:  'translate(-50%, -50%)',
+            width:      '80%',
+            height:     '80%',
+            zIndex:     String(ROTA_Z.flutuante ?? 9000)
+        })
+    })
+    
+    let divTitulo = criaDiv({
+        id: id(nome, 'divTitulo'),
+        ancestral: divId,
+        rowColumn: 'row'
+    })
+    let titulo = criaTitulo({
+        id: id(nome, 'titulo'),
+        texto: 'Resultado',
+        ancestral: id(nome, 'divTitulo')
+    })
+    if (!embutido) {
+        let botaoFechar = criaBotaoAzul({
+            id: id(nome, 'fechar'),
+            texto: '✕',
+            ancestral: id(nome, 'divTitulo'),
+            acao: () => {
+                document.getElementById(divId).remove()
+                return
+            }
+        })
+        botaoFechar.style.height =          '15px'
+        botaoFechar.style.fontSize =        '13px'
+        botaoFechar.style.lineHeight =      '1'
+        botaoFechar.style.padding =         '2px 5px'
+        botaoFechar.style.borderRadius =    '4px'
+        botaoFechar.style.position =        'fixed'
+        botaoFechar.style.right =           '4px'
+    }
+    let divLinhas = criaDiv({
+        id: id(nome, 'linhas'),
+        ancestral: divId
+    })
+    divLinhas.style.overflowY = 'auto'
+    let i = 0
+    for (i; i < array.length; i++){
+        if (i === 0){
+            let primeiraLinha = criaDiv({
+            id: id(nome, 'linha' + i),
+            ancestral: id(nome, 'linhas'), 
+            rowColumn: 'row'
+        })
+        }
+        let linha = criaDiv({
+            id: id(nome, 'linha' + (i + 1)),
+            ancestral: id(nome, 'linhas'), 
+            rowColumn: 'row'
+        })
+        let objeto = array[i]
+        for(let j = 0 ; j < Object.entries(objeto).length; j++){
+            
+            let largura = Math.floor(100/Object.entries(objeto).length)
+            if (i === 0){
+                let celula = criaSubTitulo({
+                    id: id(nome, 'linhaCabecalho' + i, 'celula' + j),
+                    ancestral: id(nome, 'linha' + i),
+                    texto: Object.keys(objeto)[j]
+                })
+                celula.style.width = largura + '%'
+            }
+            
+            let celula = criaTexto({
+                id: id(nome, 'linha' + i, 'celula' + j),
+                ancestral: id(nome, 'linha' + (i + 1)),
+                texto: Object.values(objeto)[j]
+            })
+            
+            celula.style.width = largura + '%'
+            
+        }
+    }
+    i++
+    let linhaFinal = criaDiv({
+        id: id(nome, 'linha' + i),
+        ancestral: divId, 
+        rowColumn: 'row'
+    })
+    //linhaFinal.style.
+    let botoesFinais = [
+        {
+            id: id(nome, 'copiar'),
+            texto: 'Copiar dados tabulados',
+            ancestral: id(nome, 'linha' + i),
+        },
+        {
+            id: id(nome, 'baixarTexto'),
+            texto: 'Baixar em formato TXT',
+            ancestral: id(nome, 'linha' + i),
+        },
+        {
+            id: id(nome, 'baixarJSON'),
+            texto: 'Baixar em formato JSON',
+            ancestral: id(nome, 'linha' + i),
+        },
+    ]
+    for (let k = 0; k < botoesFinais.length; k++) {
+        let botaoConfig = botoesFinais[k]
+        let funcaoBotao = k % 2 === 0 ? criaBotaoAzul : criaBotaoLaranja
+        funcaoBotao({
+            id: botaoConfig.id,
+            texto: botaoConfig.texto,
+            ancestral: botaoConfig.ancestral,
+            acao: () => extrairResultado(botaoConfig.id)
+        })
+    }
+    if (aoVoltar){
+        criaBotaoLaranja({
+            id: id(nome, 'voltar'),
+            texto: 'Nova análise',
+            ancestral: id(nome, 'linha' + i),
+            acao: aoVoltar
+        })
+    }
+
+    // ── Exportação — usam o `array` recebido por apresentaResultados,
+    //    não o que já foi renderizado na tela ─────────────────────
+    function extrairResultado(tipo){
+        let nomeFuncao = tipo.split('_').pop()
+        let funcoes = { copiar, baixarJSON, baixarTexto }
+        funcoes[nomeFuncao]?.()
+
+        function copiar(){
+            navigator.clipboard.writeText(arrayParaTsv(array))
+        }
+
+        function baixarTexto(){
+            _baixarArquivo(arrayParaTsv(array), 'resultado.txt', 'text/plain')
+        }
+
+        function baixarJSON(){
+            _baixarArquivo(JSON.stringify(array, null, 2), 'resultado.json', 'application/json')
+        }
+    }
+}
