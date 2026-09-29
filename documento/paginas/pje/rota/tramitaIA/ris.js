@@ -5,7 +5,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         let rolante = document.getElementById(ancestral)
         rolante.replaceChildren()                 // tira a seção e o "Iniciando buscas"
         rolante.style.overflowY = 'hidden'
-        console.log('%c[Rota PJE]%c dadosRechamada: ' + JSON.stringify(dadosRechamada), LOG.info, 'color:inherit', dadosRechamada)
+        _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeChatJT.json', 'application/json')
         return
         apresentaResultados({
             array: dadosRechamada,
@@ -111,9 +111,10 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         }
         let url = 'https://ia.jt.jus.br/chat/'
         let armazenamento = elemento + execucao
-        esperaTramitaIA = armazenamento
+        esperaTramitaIA = { janela: armazenamento, dados: dados }
         await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
         window.open(url, armazenamento)
+        mostraResultadosBuscaRis(rolante, 'Aguardando a IA no chat. Não feche a janela.')
         return
     }
 

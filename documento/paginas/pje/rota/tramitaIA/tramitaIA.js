@@ -14,7 +14,7 @@ async function tramitaIACriaBotao(){
     if (!janela) return
     let seletores = [
         {
-            janela: JANELA.painelGlobalTarefas,
+            janela: JANELA.painelGlobal,
             seletor: '.cabecalho-icones' 
         }
     ]
@@ -33,7 +33,7 @@ async function tramitaIACriaBotao(){
 
 async function tramitaIAMenu() {
     let idBase = id('tramitaIA', 'menu')
-    document.getElementById(idBase).remove()
+    let remover = document.getElementById(idBase)?.remove()
     let div = criaDiv({
         id: idBase,
         ancestral: document.body
@@ -91,13 +91,14 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = n
         tramitaIASecaoRis // está no arquivo ris.js
     }
     if (funcaoRechamada){
-        if (!esperaTramitaIA || esperaTramitaIA !== janela) return
+        let esperado = esperaTramitaIA
+        if (!esperado || esperado.janela !== janela) return
         let fn = mapaFuncoes[funcaoRechamada]
         let idDiv = elemento
         let ancestral = document.getElementById(idDiv)?.parentElement?.id
         if (!fn || !ancestral) return
-        esperaTramitaIA = false   // só desliga quando tem certeza que vai agir
-        fn(idDiv, ancestral, true, dados)
+        esperaTramitaIA = false
+        fn(idDiv, ancestral, true, rota_juntaResultados(esperado.dados, dados))
         return
     }
     for (let secao of secoes){

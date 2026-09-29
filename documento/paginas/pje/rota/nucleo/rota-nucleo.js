@@ -528,6 +528,17 @@ NAVEGADOR.storage.onChanged.addListener(function rota_ouvinteGeral(mudancas){
 	catch(e){ console.log('[Rota PJE] erro na reação ' + sinal.nome, e) }
 })
 
+function chatJTLimpaJSON(texto){
+    try { return JSON.parse(String(texto).replace(/^\s*```json\s*|\s*```\s*$/g, '')) }
+    catch(e){ return null }
+}
+
+// junta o que foi enviado (guardado na aba de origem) com o que voltou, pelo índice
+function rota_juntaResultados(enviados, retornados = []){
+    if (!Array.isArray(enviados)) return [{ dados: enviados, resultado: retornados[0]?.resultado }]
+    return retornados.map(r => ({ ...(enviados[r.indice] ?? {}), resultado: r.resultado }))
+}
+
 // ── Instrumentação de bancada ─────────────────────────────────
 
 async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}){

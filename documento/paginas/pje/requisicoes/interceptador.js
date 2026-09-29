@@ -10,7 +10,7 @@
 // ============================================================
 
 const INTERCEPTADOR_URL = {
-    agrupamentoTarefasProcessos:    /\/pje-comum-api\/api\/agrupamentotarefas\/\d+\/processos*/i,
+    agrupamentoTarefasProcessos:    /\/pje-comum-api\/api\/agrupamentotarefas(?:\/\d+)?\/processos/i,
     audiencias:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
     dadosBasicos:                   /\/pje-comum-api\/api\/processos\/dadosbasicos\//i,
     documentos:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/documentos/i,

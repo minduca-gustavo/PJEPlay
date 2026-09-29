@@ -48,13 +48,13 @@ async function chatJTFuncoes(){
         let consulta = null
         try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados)) }
         catch(e){ consulta = 'ERRO: ' + e.message }
-        resultado = [{dados: dados, resultado: consulta}]
+        resultado = [{ indice: null, resultado: chatJTLimpaJSON(consulta) ?? 'sem resposta' }]
     } else {
-        for (let dado of dados){
+        for (let i = 0; i < dados.length; i++){
             let consulta = null
-            try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dado)) }
+            try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados[i])) }
             catch(e){ consulta = 'ERRO: ' + e.message }
-            resultado.push({ numero: dado.numero, resultado: consulta ?? 'sem resposta' })
+            resultado.push({ indice: i, resultado: chatJTLimpaJSON(consulta) ?? 'sem resposta' })
         }
     }
     await rota_avisar('tramitaIA', {
