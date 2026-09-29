@@ -529,17 +529,22 @@ NAVEGADOR.storage.onChanged.addListener(function rota_ouvinteGeral(mudancas){
 })
 
 function chatJTLimpaJSON(texto){
-    if (texto && typeof texto === 'object') return texto
+    if (texto && typeof texto === 'object') return { lido: true, resultado: texto }
     let s = String(texto ?? '')
     let ini = s.indexOf('{'), fim = s.lastIndexOf('}')
-    if (ini === -1 || fim <= ini) return null
-    try { return JSON.parse(s.slice(ini, fim + 1)) } catch(e){ return null }
+    if (ini !== -1 && fim > ini){
+        try { return { lido: true, resultado: JSON.parse(s.slice(ini, fim + 1)) } } catch(e){}
+    }
+    return { lido: false, resultado: s || 'sem resposta' }
 }
 
 // junta o que foi enviado (guardado na aba de origem) com o que voltou, pelo índice
 function rota_juntaResultados(enviados, retornados = []){
-    if (!Array.isArray(enviados)) return [{ dados: enviados, resultado: retornados[0]?.resultado }]
-    return retornados.map(r => ({ ...(enviados[r.indice] ?? {}), resultado: r.resultado }))
+    if (!Array.isArray(enviados)){
+        let r = retornados[0] ?? {}
+        return [{ dados: enviados, lido: r.lido ?? false, resultado: r.resultado }]
+    }
+    return retornados.map(r => ({ ...(enviados[r.indice] ?? {}), lido: r.lido, resultado: r.resultado }))
 }
 
 // ── Instrumentação de bancada ─────────────────────────────────

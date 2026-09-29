@@ -14,7 +14,6 @@ async function chatJTFuncoes(){
     esperaChatJT = true
     let login = await chatJTconfereLogin()
     if (!login){ esperaChatJT = false; return }
-    texto.style.fontSize = '20px'
     // pega o timestamp do nome da janela
     let execucao = janelaNome.match(/\d{13}$/)?.[0]
     // pega a tarefa do nome da janela
@@ -61,20 +60,21 @@ async function chatJTFuncoes(){
         ancestral: id('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
         texto: 'Aguarde, iniciando consultas. Não feche esta página.'
     })
+    texto.style.fontSize = '20px'
     let resultado = []
     if (!Array.isArray(dados)){
         texto.textContent = 'Efetuando consulta'
         let consulta = null
         try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados)) }
         catch(e){ consulta = 'ERRO: ' + e.message }
-        resultado = [{ indice: null, resultado: chatJTLimpaJSON(consulta) ?? 'sem resposta' }]
+        resultado = [{ indice: null, ...chatJTLimpaJSON(consulta) }]
     } else {
         for (let i = 0; i < dados.length; i++){
             texto.textContent = 'Consulta em andamento: ' + (i + 1) + '/' + dados.length
             let consulta = null
             try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados[i])) }
             catch(e){ consulta = 'ERRO: ' + e.message }
-            resultado.push({ indice: i, resultado: chatJTLimpaJSON(consulta) ?? consulta ?? 'sem resposta' })
+            resultado.push({ indice: i, ...chatJTLimpaJSON(consulta) })
         }
     }
     await rota_avisar('tramitaIA', {
@@ -86,7 +86,7 @@ async function chatJTFuncoes(){
     await removerArmazenamento(janelaNome)
     texto.textContent = 'Concluído. Você já pode fechar esta janela.'
     console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)
-    //window.close()
+    window.close()
 }
 
 async function chatJTExecutaPrompt(parametros, texto) {
