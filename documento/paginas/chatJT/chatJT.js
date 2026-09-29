@@ -39,9 +39,15 @@ async function chatJTFuncoes(){
     ]
     let dados = dadosTarefa?.dados
     let parametros = correspondenciaFuncoes.find(c => c?.label == tarefa)
+    if (!parametros){
+        console.log('%c[Rota PJE]%c chatJT: tarefa sem correspondência: ' + tarefa, LOG.aviso, 'color:inherit')
+        return
+    }
     let resultado = []
     if (!Array.isArray(dados)){
-        let consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados))
+        let consulta = null
+        try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados)) }
+        catch(e){ consulta = 'ERRO: ' + e.message }
         resultado = [{dados: dados, resultado: consulta}]
     } else {
         for (let dado of dados){
@@ -51,9 +57,15 @@ async function chatJTFuncoes(){
             resultado.push({ numero: dado.numero, resultado: consulta ?? 'sem resposta' })
         }
     }
-    await rota_avisar('tramitaIA', {elemento: janelaNome.replace(execucao, ''), funcaoRechamada: parametros.funcaoRechamada, dados: resultado})
+    await rota_avisar('tramitaIA', {
+        janela: janelaNome,
+        elemento: janelaNome.replace(execucao, ''), 
+        funcaoRechamada: parametros.funcaoRechamada, 
+        dados: resultado
+    })
     await removerArmazenamento(janelaNome)
-    window.close()
+    console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)
+    //window.close()
 }
 
 async function chatJTExecutaPrompt(parametros, texto) {

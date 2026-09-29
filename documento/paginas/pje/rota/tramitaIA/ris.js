@@ -111,7 +111,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         }
         let url = 'https://ia.jt.jus.br/chat/'
         let armazenamento = elemento + execucao
-        esperaTramitaIA = true
+        esperaTramitaIA = armazenamento
         await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
         window.open(url, armazenamento)
         return

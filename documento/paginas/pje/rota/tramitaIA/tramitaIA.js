@@ -80,7 +80,7 @@ async function tramitaIAMenu() {
     tramitaIACriaSecoes({elemento: idRolante})
 }
 
-function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = null}){
+function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = null, janela = null}){
     let secoes = [
         {
             nome: 'ris',
@@ -91,7 +91,7 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = n
         tramitaIASecaoRis // está no arquivo ris.js
     }
     if (funcaoRechamada){
-        if (!esperaTramitaIA) return
+        if (!esperaTramitaIA || esperaTramitaIA !== janela) return
         let fn = mapaFuncoes[funcaoRechamada]
         let idDiv = elemento
         let ancestral = document.getElementById(idDiv)?.parentElement?.id
