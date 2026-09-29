@@ -47,7 +47,7 @@ async function chatJTFuncoes(){
         let consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dado))
         resultado.push({dados: dados, resultado: consulta})
     }
-    rota_avisar('tramitaIA', {funcao: 'tramitaIASecaoRisRechamada', resultado: resultado})
+    rota_avisar('tramitaIA', {funcaoRechamada: 'tramitaIASecaoRisRechamada', dados: resultado})
 }
 
 async function chatJTExecutaPrompt(parametros, texto) {

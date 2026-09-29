@@ -1,6 +1,7 @@
 // Listener de comunicação entre janelas
 let esperaTramitaIA = false
 let dadosEsperaTramitaIA = {funcao: '', parametro}
+rota_reacoes.tramitaIA = 'tramitaIACriaSecoes'
 
 function tramitaIAFuncoes(){
     tramitaIACriaBotao()
@@ -79,7 +80,7 @@ async function tramitaIAMenu() {
     tramitaIACriaSecoes(idRolante)
 }
 
-function tramitaIACriaSecoes(elemento = null, {funcaoRechamada, dados = null}){
+function tramitaIACriaSecoes({elemento = null, funcaoRechamada, dados = null}){
     if (!elemento && !dados) return
     let secoes = [
         {

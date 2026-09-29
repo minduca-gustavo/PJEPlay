@@ -513,7 +513,6 @@ function id(...partes){
 // ── Ouvinte geral (rota-nucleo.js) ────────────────────────────
 
 const rota_reacoes = {
-	tramitaIA: 'tramitaIACriaSecoes'
 }   // nome do sinal → função
 
 function rota_avisar(nome, dados){
