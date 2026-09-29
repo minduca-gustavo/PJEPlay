@@ -14,6 +14,7 @@ async function chatJTFuncoes(){
     esperaChatJT = true
     let login = await chatJTconfereLogin()
     if (!login){ esperaChatJT = false; return }
+    texto.style.fontSize = '20px'
     // pega o timestamp do nome da janela
     let execucao = janelaNome.match(/\d{13}$/)?.[0]
     // pega a tarefa do nome da janela
@@ -43,18 +44,37 @@ async function chatJTFuncoes(){
         console.log('%c[Rota PJE]%c chatJT: tarefa sem correspondência: ' + tarefa, LOG.aviso, 'color:inherit')
         return
     }
+    let overlay = criaDiv({
+        id: id('tramitaIA', 'chatJT', 'overlay'),
+        ancestral: document.body
+    })
+    formataDiv(overlay, 'branco', '100%', '100%', 'absolute')
+    overlay.style.background = 'rgba(255,255,255,0.85)'
+    overlay.style.justifyContent = 'center'
+    overlay.style.alignItems = 'center'
+    let divMensagem = criaDiv({
+        id: id('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
+        ancestral: id('tramitaIA', 'chatJT', 'overlay')
+    })
+    let texto = criaSubTitulo({
+        id: id('tramitaIA', 'chatJT', 'overlay', 'mensagem', 'texto'),
+        ancestral: id('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
+        texto: 'Aguarde, iniciando consultas. Não feche esta página.'
+    })
     let resultado = []
     if (!Array.isArray(dados)){
+        texto.textContent = 'Efetuando consulta'
         let consulta = null
         try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados)) }
         catch(e){ consulta = 'ERRO: ' + e.message }
         resultado = [{ indice: null, resultado: chatJTLimpaJSON(consulta) ?? 'sem resposta' }]
     } else {
         for (let i = 0; i < dados.length; i++){
+            texto.textContent = 'Consulta em andamento: ' + (i + 1) + '/' + dados.length
             let consulta = null
             try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados[i])) }
             catch(e){ consulta = 'ERRO: ' + e.message }
-            resultado.push({ indice: i, resultado: chatJTLimpaJSON(consulta) ?? 'sem resposta' })
+            resultado.push({ indice: i, resultado: chatJTLimpaJSON(consulta) ?? consulta ?? 'sem resposta' })
         }
     }
     await rota_avisar('tramitaIA', {
@@ -64,6 +84,7 @@ async function chatJTFuncoes(){
         dados: resultado
     })
     await removerArmazenamento(janelaNome)
+    texto.textContent = 'Concluído. Você já pode fechar esta janela.'
     console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)
     //window.close()
 }

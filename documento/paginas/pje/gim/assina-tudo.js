@@ -272,25 +272,7 @@ async function rotaAssinaTudo() {
 
 //rotaAssinaTudo()
 
-function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute', top = '50%', left = '50%', transform = 'translate(-50%, -50%)') {
-    let bgCor = UI_CORES[cor] || UI_CORES.branco
-    Object.assign(div.style,{
-        position:       position,
-        top:            top,
-        left:           left,
-        transform:      transform,
-        width:          largura,
-        height:         altura,
-        background:     bgCor,
-        border:         '1px solid ' + UI_CORES.azul,
-        borderRadius:   '8px',
-        boxShadow:      '0 4px 16px rgba(0,0,0,0.15)',
-        zIndex:         String(ROTA_Z.flutuante ?? 9000),
-        display:        'flex',
-        padding:        '4px 4px 4px 4px'
-    })
-    return div
-}
+
 
 async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
     let bloqueados = await resolveBloqueados(dados)

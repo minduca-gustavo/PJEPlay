@@ -529,8 +529,11 @@ NAVEGADOR.storage.onChanged.addListener(function rota_ouvinteGeral(mudancas){
 })
 
 function chatJTLimpaJSON(texto){
-    try { return JSON.parse(String(texto).replace(/^\s*```json\s*|\s*```\s*$/g, '')) }
-    catch(e){ return null }
+    if (texto && typeof texto === 'object') return texto
+    let s = String(texto ?? '')
+    let ini = s.indexOf('{'), fim = s.lastIndexOf('}')
+    if (ini === -1 || fim <= ini) return null
+    try { return JSON.parse(s.slice(ini, fim + 1)) } catch(e){ return null }
 }
 
 // junta o que foi enviado (guardado na aba de origem) com o que voltou, pelo índice

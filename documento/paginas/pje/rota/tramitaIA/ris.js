@@ -6,9 +6,9 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         rolante.replaceChildren()                 // tira a seção e o "Iniciando buscas"
         rolante.style.overflowY = 'hidden'
         _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeChatJT.json', 'application/json')
-        return
+        
         apresentaResultados({
-            array: dadosRechamada,
+            array: dadosRechamada.map(tramitaIALinhaRis),
             nome: 'tramitaIA_resultadoRis',
             ancestral: ancestral,
             embutido: true,
@@ -19,6 +19,28 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             }
         })
         return
+// ris.js, no nível do arquivo
+        function tramitaIALinhaRis(item){
+            let r = item.resultado
+            let lido = !!r && typeof r === 'object'
+            let doc = lido
+                ? (item.sentencasEAcordaos || []).find(d => d.idDocumento == r.documentoDecisivo)
+                : null
+            return {
+                numero:       item.numero ?? '',
+                situacao:     lido ? 'OK' : 'CONFERIR',
+                cenario:      lido ? (r.cenario ?? '') : '',
+                rotulo:       lido ? (r.rotulo ?? '') : '',
+                confianca:    lido ? (r.confianca ?? '') : '',
+                decisivo:     doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
+                resultado:    lido ? (r.resultadoPrevalecente ?? '') : '',
+                providencias: lido ? [].concat(r.providencias ?? []).join('; ') : '',
+                evidencia:    lido ? (r.evidencia ?? '') : '',
+                observacao:   lido ? (r.observacao ?? '') : '',
+                resposta:     lido ? '' : String(r ?? '')
+            }
+        }
+        
     }
     let el = document.getElementById(elemento)
     el.style.flexDirection = 'row-reverse'
