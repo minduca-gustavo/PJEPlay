@@ -664,10 +664,8 @@ async function rota_fetch_IACriaConversa(
 		});
 		let intermediario = await s.json()
 		if (!intermediario) return
-		console.log('%c[Rota PJE]%c intermediario: ' + JSON.stringify(intermediario), LOG.teste, 'color:inherit')
 		let data = intermediario?.nodes?.[1]?.data
 		let aut = data?.[data?.find(d => d?.id)?.id]
-		console.log('%c[Rota PJE]%c aut' + JSON.stringify(aut), LOG.aviso, 'color:inherit')
 		return {idIA: id, aut: aut}
 		
 	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }

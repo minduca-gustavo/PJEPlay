@@ -1,1 +1,84 @@
-https://pje.trt15.jus.br/pje-consulta-api/api/processos/1345163
+{
+    label: 'tramitaIA_menu_rolante_ris',
+    funcaoRechamada: 'tramitaIASecaoRis',
+    orquestrador: false,
+    sequencia: [
+        {
+            chave: 'resultado',        // chave no objeto final
+            assistente: '6aac80f8...', // prompt de resultado prevalecente
+            filtro: null               // sempre executa
+        },
+        {
+            chave: 'providencias',
+            assistente: 'abc123...',   // prompt de providências
+            filtro: (dados) =>         // só executa se há assunto relevante
+                dados.sentencasEAcordaos?.length > 0
+        },
+        {
+            chave: 'obrigacaoFazer',
+            assistente: 'def456...',
+            filtro: (dados) =>
+                dados.sentencasEAcordaos?.some(d => /reintegra|folha|vincend/i.test(d.teor || ''))
+        }
+    ]
+}
+
+for (let i = 0; i < dados.length; i++) {
+    texto.textContent = 'Consulta em andamento: ' + (i + 1) + '/' + dados.length
+    let item = dados[i]
+    let respostaItem = { indice: i }
+
+    for (let etapa of parametros.sequencia) {
+        if (etapa.filtro && !etapa.filtro(item)) {
+            respostaItem[etapa.chave] = null
+            continue
+        }
+        try {
+            let consulta = await chatJTExecutaPrompt(
+                { assistente: etapa.assistente, orquestrador: false },
+                JSON.stringify(item)
+            )
+            respostaItem[etapa.chave] = chatJTLimpaJSON(consulta)
+        } catch(e) {
+            respostaItem[etapa.chave] = { erro: e.message }
+        }
+    }
+    resultado.push(respostaItem)
+}
+
+if (!Array.isArray(dados)) {
+    // caso único (não muda)
+} else {
+    for (let i = 0; i < dados.length; i++) {
+        texto.textContent = 'Consulta em andamento: ' + (i + 1) + '/' + dados.length
+        let item = dados[i]
+        let respostaItem = { indice: i }
+
+        if (parametros.sequencia) {
+            // modo sequência
+            for (let etapa of parametros.sequencia) {
+                if (etapa.filtro && !etapa.filtro(item)) {
+                    respostaItem[etapa.chave] = null
+                    continue
+                }
+                try {
+                    let consulta = await chatJTExecutaPrompt(
+                        { assistente: etapa.assistente, orquestrador: false },
+                        JSON.stringify(item)
+                    )
+                    respostaItem[etapa.chave] = chatJTLimpaJSON(consulta)
+                } catch(e) {
+                    respostaItem[etapa.chave] = { erro: e.message }
+                }
+            }
+        } else {
+            // modo simples — RIS e qualquer futura tarefa de prompt único
+            let consulta = null
+            try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(item)) }
+            catch(e) { consulta = 'ERRO: ' + e.message }
+            respostaItem = { indice: i, ...chatJTLimpaJSON(consulta) }
+        }
+
+        resultado.push(respostaItem)
+    }
+}
