@@ -129,8 +129,7 @@ async function botaoRotaIniciar(){
 
 	await aguardarElemento(ROTA_SELETOR_BRASAO)
 	let brasao = document.querySelector(ROTA_SELETOR_BRASAO)
-	if(!brasao) return
-
+	
 	// Abertura + SPA podem chamar em sequência e as duas chamadas
 	// passarem pelo await: remove de novo para não duplicar.
 	document.getElementById(ROTA_ID_BOTAO)?.remove()
