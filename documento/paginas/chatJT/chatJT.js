@@ -33,7 +33,6 @@ async function chatJTFuncoes(){
             label: 'tramitaIA_menu_rolante_ris',
             nome: 'Recebimento e Remessa analisa sentença e Acórdãos',
             assistente: '6aac80f81501b0e00725a8df',
-            orquestrador: false,
             funcaoRechamada: 'tramitaIASecaoRis'
         }
     ]
