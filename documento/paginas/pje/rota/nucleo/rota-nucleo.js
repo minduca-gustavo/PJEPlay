@@ -616,6 +616,9 @@ async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}){
 	return mudancas
 }
 
+async function removeQuebras(texto) {
+	return texto.replace(/[\s\u0085]+/g, ' ').trim()
+}
 /**
  * Boundary fixo para o multipart do Chat JT. Arbitrário: só
  * precisa ser igual no header e no corpo. Não precisa mudar nunca.
@@ -671,9 +674,6 @@ async function rota_fetch_IACriaConversa(
 	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
 }
 
-async function removeQuebras(texto) {
-	return texto.replace(/[\s\u0085]+/g, ' ').trim()
-}
 
 /**
  * Envia um texto para uma conversa do Chat JT e devolve o
