@@ -37,6 +37,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                 qualObrigacao:              lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
                 evidencia:                  lido ? (removeQuebras(r.evidencia) ?? '') : '',
                 observacao:                 lido ? (removeQuebras(r.observacao) ?? '') : '',
+                processosAssociados:        lido ? item.associados.join(', ') : ''
             }
         }
         
@@ -89,6 +90,9 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             if (!numero) continue
             let idsDocs = []
             let timeline   = await buscarDocumentos(id) || []
+            let urlAssociados = 'https://pje.trt15.jus.br/pje-comum-api/api/processos/id/' + id + '/associados?pagina=1&tamanhoPagina=100&ordenacaoCrescente=true'
+            let resultadoAssociados = await rota_fetch(urlAssociados)?.resultado || []
+            let associados = resultadoAssociados.map(d => d?.numeroProcesso) || []
             let idSegundo = await buscarSegundoGrauBasicos(numero) || []
             let dadosSegundo = []
             if (idSegundo.length != 0){
