@@ -86,5 +86,4 @@ if (!Array.isArray(dados)) {
 
 
 Recebimento do TRT - verificar se tem processo conexo de cumprimento de sentença; se tem acordo homologado em instancia superior ou acordo após a sentença ou acórdão
-Daniela Moretto Vargas, 20 min
 em caso de improcedência: se tem fixação de multa;  honorários periciais para serem requisitados; honorários advocatícios suspenso; dinheiro da reclamada para devolver ou apólice para liberar
