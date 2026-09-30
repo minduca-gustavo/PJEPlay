@@ -83,7 +83,8 @@ async function buscarCalculos(i) {
 async function buscarDocumentos(i) {
 	let dados = await rota_fetch(
 		location.origin + '/pje-comum-api/api/processos/id/' + i + '/timeline?somenteDocumentosAssinados=true&buscarMovimentos=false&buscarDocumentos=true'
-	)
+	) || null
+	if (!dados) return null
 	if (!Array.isArray(dados)) dados = dados?.conteudo || dados?.content || []
 	return dados.filter(entry => entry.documento === true)
 }
@@ -133,40 +134,42 @@ async function buscarChips(i) {
 //}
 
 async function rota_extrairTeorDocumento(idProcesso, idDocumento) {
-    let url  = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/conteudo?incluirCapa=false&incluirAssinatura=true`
-    let res  = await fetch(url, { credentials: 'include' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+	let url = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/conteudo?incluirCapa=false&incluirAssinatura=true`
+	let res = await rota_fetchBruto(url, { headers: rota_cabecalhos('*/*') })
+	if (!res) return null
 
-    let contentType = res.headers.get('content-type') || ''
+	try {
+		let contentType = res.headers.get('content-type') || ''
 
-    if (contentType.includes('application/pdf')) {
-        let bytes = Array.from(new Uint8Array(await res.arrayBuffer()))
-        let resp  = await NAVEGADOR.runtime.sendMessage({ tipo: 'EXTRAIR_PDF', bytes })
-        if (!resp.ok) throw new Error(resp.erro)
-        return resp.texto
-    }
-
-    if (contentType.includes('application/json')) {
-		let json  = await res.json()
-		let b64   = json.conteudoBase64.trim()
-		let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-		let html  = new TextDecoder('iso-8859-1').decode(bytes)
-
-		if (html.startsWith('%PDF')) {
-			let resp = await NAVEGADOR.runtime.sendMessage({
-				tipo: 'EXTRAIR_PDF', bytes: Array.from(bytes)
-			})
-			if (!resp.ok) throw new Error(resp.erro)
-			return resp.texto
+		if (contentType.includes('application/pdf')) {
+			let bytes = Array.from(new Uint8Array(await res.arrayBuffer()))
+			return await _extrairPdf(bytes, url)
 		}
 
-		let doc = new DOMParser().parseFromString(html, 'text/html')
-		return doc.body.innerText
-	}
+		if (contentType.includes('application/json')) {
+			let json  = await res.json()
+			let b64   = (json?.conteudoBase64 || '').trim()
+			if (!b64) { relatar('conteudoBase64 vazio', url, 'erro'); return null }
+			let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+			let html  = new TextDecoder('iso-8859-1').decode(bytes)
 
-    // Fallback: texto puro
-    return res.text()
+			if (html.startsWith('%PDF')) return await _extrairPdf(Array.from(bytes), url)
+			return new DOMParser().parseFromString(html, 'text/html').body.innerText
+		}
+
+		return await res.text()
+	} catch (e) {
+		relatar('erro ao extrair teor: ' + e.message, url, 'erro')
+		return null
+	}
 }
+
+async function _extrairPdf(bytes, url) {
+	let resp = await NAVEGADOR.runtime.sendMessage({ tipo: 'EXTRAIR_PDF', bytes })
+	if (!resp?.ok) { relatar('EXTRAIR_PDF falhou: ' + (resp?.erro || 'sem resposta'), url, 'erro'); return null }
+	return resp.texto
+}
+
 async function extrairHtml(idProcesso, idDocumento) {
     let url  = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/html`
     let pesquisa = await rota_fetch(url).then(d=> d?.modeloDocumento) || ''

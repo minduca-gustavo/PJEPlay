@@ -40,20 +40,30 @@ function rota_cabecalhos(aceita = 'application/json, text/plain, */*'){
 	}
 }
 
-
-async function rota_fetch(url = ''){
-	try{
+// Faz a requisição com o mesmo tratamento de erro, mas devolve a Response crua
+async function rota_fetchBruto(url = '', opcoes = {}) {
+	try {
 		relatar('GET ' + url, '', 'requisicao')
 		let r = await fetch(url, {
 			method: 'GET', mode: 'cors', credentials: 'include',
-			headers: rota_cabecalhos()
+			...opcoes
 		})
-		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
+		if (!r.ok) { relatar('HTTP ' + r.status, url, 'erro'); return null }
+		return r
+	} catch (e) { relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+}
+
+// rota_fetch passa a ser só "bruto + json", com o mesmo comportamento de antes
+async function rota_fetch(url = '') {
+	let r = await rota_fetchBruto(url, { headers: rota_cabecalhos() })
+	if (!r) return null
+	try {
 		let dados = await r.json()
 		relatar('Resposta de ' + url, dados, 'resposta')
 		return dados
-	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+	} catch (e) { relatar('json inválido: ' + e.message, url, 'erro'); return null }
 }
+
 
 
 async function rota_fetchPost(url = '', body){
