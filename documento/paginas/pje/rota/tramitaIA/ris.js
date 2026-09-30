@@ -105,7 +105,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             let titulosAcordo = timelineSegundo
                 .filter(d => termosAcordo.some(c => normalizar(d?.titulo).includes(c)))
                 .map(d => {
-                    return d.titulo + ' datada de ' + d?.data.slice(8, 10) + '/' + d?.data.slice(5, 7) + '/' + d?.data.slice(0, 4)
+                    return 'Documento ' + d.titulo + ' datado de ' + d?.data.slice(8, 10) + '/' + d?.data.slice(5, 7) + '/' + d?.data.slice(0, 4)
                 })
                 .join(', ');
             console.log('%c[Rota PJE]%c timelineSegundo: ' + JSON.stringify(timelineSegundo), LOG.info, 'color:inherit')
