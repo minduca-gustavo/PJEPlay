@@ -37,6 +37,8 @@ async function chatJTFuncoes(){
         }
     ]
     let dados = dadosTarefa?.dados
+    let naoMandar = dados?.naoMandar || {}
+    delete dados.naoMandar
     let parametros = correspondenciaFuncoes.find(c => c?.label == tarefa)
     if (!parametros){
         console.log('%c[Rota PJE]%c chatJT: tarefa sem correspondência: ' + tarefa, LOG.aviso, 'color:inherit')
@@ -80,7 +82,8 @@ async function chatJTFuncoes(){
         janela: janelaNome,
         elemento: janelaNome.replace(execucao, ''), 
         funcaoRechamada: parametros.funcaoRechamada, 
-        dados: resultado
+        dados: resultado,
+        naoMandar: naoMandar
     })
     await removerArmazenamento(janelaNome)
     texto.textContent = 'Concluído. Você já pode fechar esta janela.'

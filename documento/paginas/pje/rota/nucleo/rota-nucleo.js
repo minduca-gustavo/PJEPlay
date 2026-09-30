@@ -256,7 +256,7 @@ async function preencherCKEditorExecCommand(seletor, texto){
 // ── Texto — semânticas próprias do Rota ───────────────────────
 //
 // normalizar() NÃO é removerAcentuacao() do SISE: além de tirar
-// acento, ela minúscula e usa NFD (cobre acentos fora da faixa
+// acento, ela minuscula e usa NFD (cobre acentos fora da faixa
 // latin-1 tratada lá). A busca em texto mal formatado depende
 // desse contrato, por isso fica.
 

@@ -37,7 +37,8 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                 qualObrigacao:              lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
                 evidencia:                  lido ? (removeQuebras(r.evidencia) ?? '') : '',
                 observacao:                 lido ? (removeQuebras(r.observacao) ?? '') : '',
-                processosAssociados:        lido ? item.associados.join(', ') : ''
+                processosAssociados:        lido ? item.naoMandar?.associados?.join(', ') : '',
+                possivelAcordo:             lido ? item.naoMandar?.acordos?.join(', ') : '',
             }
         }
         
@@ -100,6 +101,12 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                 console.log('%c[Rota PJE]%c dadosSegundo 573: ' + JSON.stringify(dadosSegundo), LOG.info, 'color:inherit', dadosSegundo)
             }
             let timelineSegundo = dadosSegundo?.itensProcesso || []
+            let termosAcordo = ['acordo', 'homolog', 'transacao']
+            let titulosAcordo = timelineSegundo
+                .filter(d => termosAcordo.some(c => normalizar(d?.titulo).includes(c)))
+                .map(d => d.titulo)
+                .join(', ');
+            console.log('%c[Rota PJE]%c timelineSegundo: ' + JSON.stringify(timelineSegundo), LOG.info, 'color:inherit')
             let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
             let sentencas  = timeline
                 .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
@@ -128,9 +135,10 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                 })
             )
             let d = {
-                id:         id || '',
-                numero:     numero || '',
+                id:                 id || '',
+                numero:             numero || '',
                 sentencasEAcordaos: documentosInternosTexto,
+                naoMandar:          {associados: associados, acordos: titulosAcordo}
             }
             dados.push(d)
         }
