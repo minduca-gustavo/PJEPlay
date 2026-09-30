@@ -1,0 +1,36 @@
+curl 'https://ia.jt.jus.br/chat/conversation' \
+  -X POST \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:156.0) Gecko/20100101 Firefox/156.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://ia.jt.jus.br/chat/' \
+  -H 'Content-Type: application/json' \
+  -H 'Origin: https://ia.jt.jus.br' \
+  -H 'Connection: keep-alive' \
+  -H 'Cookie: _ga_6XPDMBF9EN=GS2.1.s1764281342$o4$g0$t1764281344$j58$l0$h0; _ga=GA1.1.550604705.1763373560; chatjt-new=5c0bdd07-3292-453b-b197-93f17d705445' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Priority: u=0' \
+  -H 'TE: trailers' \
+  --data-raw '{"model":"modelo_rapido","assistantId":"67addaeeb41bbc82d729578c","metadata":{"_isCorisco":false}}'
+
+  curl 'https://ia.jt.jus.br/chat/conversation/6abd232eca0692f5d34ebf65' \
+  -X POST \
+  -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:156.0) Gecko/20100101 Firefox/156.0' \
+  -H 'Accept: */*' \
+  -H 'Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7' \
+  -H 'Accept-Encoding: gzip, deflate, br, zstd' \
+  -H 'Referer: https://ia.jt.jus.br/chat/conversation/6abd232eca0692f5d34ebf65' \
+  -H 'Content-Type: multipart/form-data; boundary=----geckoformboundary9f060158548717d195b8b1175dfb9a2e' \
+  -H 'Origin: https://ia.jt.jus.br' \
+  -H 'Connection: keep-alive' \
+  -H 'Cookie: _ga_6XPDMBF9EN=GS2.1.s1764281342$o4$g0$t1764281344$j58$l0$h0; _ga=GA1.1.550604705.1763373560; chatjt-new=5c0bdd07-3292-453b-b197-93f17d705445' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Priority: u=4' \
+  -H 'TE: trailers' \
+  --data-binary \
+  $'------geckoformboundary9f060158548717d195b8b1175dfb9a2e\r\nContent-Disposition: form-data; name="files"; filename="base64;Documento_8ed6a64.pdf"\r\nContent-Type: application/pdf\r\n\r\n------geckoformboundary9f060158548717d195b8b1175dfb9a2e\r\nContent-Disposition: form-data; name="data"\r\n\r\n{"inputs":"Segue.","id":"ec7c5281-5f0f-4880-a839-55d84a16c878","is_retry":false,"is_continue":false,"web_search":false,"tools":["68dfe85f4e08d7bbdaf52bab","000000000000000000000002","000000000000000000000010"]}\r\n------geckoformboundary9f060158548717d195b8b1175dfb9a2e--\r\n'

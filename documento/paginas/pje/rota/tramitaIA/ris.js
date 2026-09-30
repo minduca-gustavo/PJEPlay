@@ -28,15 +28,15 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             return {
                 numero:                     item.numero ?? '',
                 situacao:                   lido ? 'OK' : 'CONFERIR',
-                resultadoPrevalecente:      lido ? (r.resultadoPrevalecente ?? '') : '',
-                explicacaoDaIA:             lido ? (r.encadeamento ?? '') : '',
-                confianca:                  lido ? (r.confianca ?? '') : '',
+                resultadoPrevalecente:      lido ? (removeQuebras(r.resultadoPrevalecente) ?? '') : '',
+                explicacaoDaIA:             lido ? (removeQuebras(r.encadeamento) ?? '') : '',
+                confianca:                  lido ? (removeQuebras(r.confianca) ?? '') : '',
                 decisivo:                   doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
-                providenciasDaSecretaria:   lido ? [].concat(r.providenciasSecretaria ?? []).join('; ') : '',
-                obrigacaoDeFazer:           lido ? (r.obrigacaoDeFazer ?? '') : '',
-                qualObrigacao:              lido ? (r.qualObrigacao ?? '') : '',
-                evidencia:                  lido ? (r.evidencia ?? '') : '',
-                observacao:                 lido ? (r.observacao ?? '') : '',
+                providenciasDaSecretaria:   lido ? [].concat(removeQuebras(r.providenciasSecretaria) ?? []).join('; ') : '',
+                obrigacaoDeFazer:           lido ? (removeQuebras(r.obrigacaoDeFazer) ?? '') : '',
+                qualObrigacao:              lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
+                evidencia:                  lido ? (removeQuebras(r.evidencia) ?? '') : '',
+                observacao:                 lido ? (removeQuebras(r.observacao) ?? '') : '',
             }
         }
         

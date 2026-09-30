@@ -671,6 +671,9 @@ async function rota_fetch_IACriaConversa(
 	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
 }
 
+async function removeQuebras(texto) {
+	return texto.replace(/[\s\u0085]+/g, ' ').trim()
+}
 
 /**
  * Envia um texto para uma conversa do Chat JT e devolve o
