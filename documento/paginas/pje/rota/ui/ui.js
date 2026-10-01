@@ -2370,6 +2370,7 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
                     texto: Object.keys(objeto)[j]
                 })
                 celula.style.width = largura + '%'
+                celula.style.whiteSpace = 'pre-wrap'
             }
             
             let celula = criaTexto({

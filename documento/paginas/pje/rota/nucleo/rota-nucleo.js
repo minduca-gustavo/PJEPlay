@@ -616,8 +616,8 @@ async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}){
 	return mudancas
 }
 
-async function removeQuebras(texto) {
-	return texto.replace(/[\s\u0085]+/g, ' ').trim()
+function removeQuebras(texto) {
+	return typeof texto === 'string' ? texto.replace(/[\s\u0085]+/g, ' ').trim() : ''
 }
 /**
  * Boundary fixo para o multipart do Chat JT. Arbitrário: só
