@@ -1,24 +1,22 @@
-
-
-async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRechamada){
+async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada = false, dadosRechamada){
     if (rechamada){
-        let rolante = document.getElementById(ancestral)
+        let rolante = document.getElementById(ancestralLimpar)
         rolante.replaceChildren()                 // tira a seção e o "Iniciando buscas"
         rolante.style.overflowY = 'hidden'
         _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeChatJT.json', 'application/json')
         apresentaResultados({
             array: dadosRechamada.map(tramitaIALinhaRis),
             nome: 'tramitaIA_resultadoRis',
-            ancestral: ancestral,
+            ancestral: ancestralLimpar,
             embutido: true,
             aoVoltar: () => {
                 rolante.replaceChildren()
                 rolante.style.overflowY = 'auto'
-                tramitaIACriaSecoes({elemento: ancestral})
+                tramitaIACriaSecoes({elemento: ancestralLimpar})
             }
         })
         return
-// ris.js, no nível do arquivo
+        // ris.js, no nível do arquivo
         function tramitaIALinhaRis(item){
             let analise = item.analise
             let lido = analise?.lido === true
@@ -46,27 +44,27 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         }
         
     }
-    let el = document.getElementById(elemento)
+    let el = document.getElementById(elementoAncestral)
     el.style.flexDirection = 'row-reverse'
     el.style.alignItems = 'baseline'
-    let idBotao = elemento + 'botao'
+    let idBotao = elementoAncestral + 'botao'
     let botao = criaBotaoLaranja({
         id: idBotao,
-        ancestral: elemento,
+        ancestral: elementoAncestral,
         texto: 'Analisar',
         acao: async ()=> {
-            await buscaSentencasEAcordaos(elemento, ancestral)
+            await buscaSentencasEAcordaos(elementoAncestral, ancestralLimpar)
         }
     })
     botao.style.alignSelf = 'center'
     let texto = criaTexto({
-        id: elemento + '_texto',
-        ancestral: elemento,
+        id: elementoAncestral + '_texto',
+        ancestral: elementoAncestral,
         texto: 'ATENÇÃO: FILTRE APENAS PROCESSOS DO CONHECIMENTO. Este assistente busca os textos dos acórdãos e sentenças dos processos da tela, e encaminha para a IA, que responderá duas perguntas: qual o resultando do processo (procedente, improcedente, etc.)? Tem obrigação de fazer?'
     })
     let titulo = criaSubTitulo({
-        id: elemento + '_titulo',
-        ancestral: elemento,
+        id: elementoAncestral + '_titulo',
+        ancestral: elementoAncestral,
         texto: 'Assistente de recebimento do TRT'
     })
 
@@ -179,4 +177,3 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         return
     }
 }
-

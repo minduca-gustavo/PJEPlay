@@ -21,6 +21,7 @@ async function criaFitaSuperior() {
     insereFitaSuperior(barra, div)
     
     await busca_filaCriaBotao()
+    await busca_pautaEletronicaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
 }
@@ -60,12 +61,7 @@ async function busca_filaCriaBotao(){
         acao: () => busca_posicao_filaConsultar(),
         texto: 'Busca posição do processo na fila.'
     })
-    botao.style.width = 'fit-content'
-    botao.style.fontSize = '9px'
-    botao.style.height     = '14px'
-    botao.style.lineHeight = '14px'
-    botao.style.padding    = '0 8px'
-    botao.style.zIndex = '9999999'
+    estiloBotaoFitaSuperior(botao)
 }
 
 function buscaPosicaoFilaPainelGlobal(){
@@ -185,13 +181,115 @@ function busca_posicao_filaNavegar(url) {
 }
 
 
+
 // ___________________________________________________
-// [2] ABRE TAREFA DO ROTA EM JANELAS
+// [2] ABRE PAUTA ELETRÔNICA
+// ___________________________________________________
+
+async function busca_pautaEletronicaCriaBotao() {
+    let botao = await criaBotaoLaranja({
+        id: id('buscaPautaEletronica', 'botao'),
+        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        acao: () => busca_pautaEletronica(),
+        texto: 'Pauta Eletrônica'
+    })
+    criaTooltip({
+        id: id('buscaPautaEletronica', 'botao', 'tooltip'),
+        texto: 'Abre a pauta eletrônica na sala correspondente, SE houver audiência marcada',
+        elemento: botao
+    })
+    estiloBotaoFitaSuperior(botao)
+}
+
+async function busca_pautaEletronica() {
+    let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
+    let idURL = idURLMatch?.[1]
+    let audienciasMarcadas = interceptador_lerAudiencias() || await buscarAudienciasMarcadas(idURL) || []
+    if (!audienciasMarcadas.length) {
+        fitaSuperiorErro('Não há audiências marcadas')
+        return
+    }
+    let sala = audienciasMarcadas[0]?.salaFisica?.nome
+    let oj = interceptador_lerProcesso() || await buscarProcesso(id) || {}
+    if (!oj?.orgaoJulgador?.descricao) {
+        fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente')
+        return
+    }
+    let url = 'https://pauta.trt15.jus.br/pautaeletronica/pautaAudiencia.xhtml'
+    let tarefa = id('buscaPautaEletronica')
+    let execucao = Date.now()
+    let nomeJanela = tarefa + '_' + execucao
+    await armazenar ({[tarefa]: {execucao: execucao, oj: oj?.orgaoJulgador?.descricao, sala: sala}})
+    window.open(url, nomeJanela)
+}
+
+async function pautaEletronicaAbriu() {
+    let janela = confereJanela(JANELA.pautaEletronica)
+    if (!janela) return
+    let tarefa = id('buscaPautaEletronica')
+    let janelaNome = window.name
+    if (!janelaNome.includes(tarefa)) return
+    let armazenamento = await obterArmazenamento(tarefa)
+    let dado = armazenamento[tarefa]
+    if (!janelaNome.includes(dado?.execucao)) return
+    let jurisdicao = 'select[id="main:jurisdicao"]'
+    await rotinaCliques(jurisdicao, dado?.oj)
+    let local = 'select[id="main:local"]'
+    await aguardarMudar(local)
+    await rotinaCliques(local, dado?.oj)
+    let sala = 'select[id="main:sala"]'
+    await aguardarMudar(sala)
+    await rotinaCliques(sala, dado?.sala)
+    await suspender (1000)
+    window.name = ''
+    await removerArmazenamento(tarefa)
+    document.querySelector('a[id="main:btnPautaDia"]').click()
+    return
+
+    async function aguardarMudar(local) {
+        let i = 0
+        while(!confereElemento(local)){
+            await suspender(1000)
+            i++
+            if (i === 10) {
+                fitaSuperiorErro('Ocorreu um erro. Proceda manualmente.')
+                return
+            }
+        }
+        return
+        function confereElemento(seletor){
+            let elemento = document.querySelector(seletor)
+            let opcoes = [...elemento.querySelectorAll('option')]
+            return opcoes.length > 1 ? true : false
+        }
+    }
+    
+    async function rotinaCliques(elemento, opcao){
+        await aguardarElemento(elemento)
+        await suspender(1000)
+        let menu = document.querySelector(elemento)
+        let opcoes = [...menu.querySelectorAll('option')]
+        let opcaoEncontrada = opcoes.find(d => d.textContent == opcao || opcao.includes(d.textContent))
+        menu.value = opcaoEncontrada?.value
+        menu.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+}
+
+
+
+function fitaSuperiorErro(texto){
+    if (typeof texto !== 'string') return
+    rota_avisoObrigatorio(texto, 5)
+    return
+}
+
+// ___________________________________________________
+// [3] ABRE TAREFA DO ROTA EM JANELAS
 // ___________________________________________________
 
 async function abre_tarefa_rotaCriaBotao() {
     let nomeTarefaAtiva = await abre_tarefa_rotaNomeTarefaAtiva()
-    let botaoTarefa = await criaBotaoLaranja({
+    let botaoTarefa = await criaBotaoAzul({
         id: 'rotapje-abre-tarefa-rota-botao',
         ancestral: 'rotapje-busca-posicao-fila-div-barra',
         acao: () => abre_tarefa_rotaAbrirEmModoJanelas(),
@@ -224,12 +322,12 @@ async function abre_tarefa_rotaAbrirEmModoJanelas(){
 
 
 // ___________________________________________________
-// [3] IR PARA A OJ DESTE PROCESSO
+// [4] IR PARA A OJ DESTE PROCESSO
 // ___________________________________________________
 
 async function irParaAOJDesteProcessoCriaBotao() {
     let id = 'rotapje-irParaAOJDesteProcesso' 
-    let botaoTarefa = await criaBotaoAzul({
+    let botaoTarefa = await criaBotaoLaranja({
         id: id + '_botao',
         ancestral: 'rotapje-busca-posicao-fila-div-barra',
         acao: () => irParaAOJDesteProcesso(),

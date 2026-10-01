@@ -50,6 +50,22 @@ async function chatJTFuncoes(){
                 }
             ],
             funcaoRechamada: 'tramitaIASecaoRis'
+        },
+        {
+            label: 'tramitaIA_menu_rolante_ris',
+            nome: 'Recebimento e Remessa analisa sentença e Acórdãos',
+            sequencia: [
+                {
+                    assistente: '6aac80f81501b0e00725a8df',
+                    chave: 'analise',
+                    //filtro: null, // só vai atuar se tiver alguma coisa
+                    //escopo: null, // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
+                    //arquivos: 'arquivos',  // caminho em dados com [{ nome, base64, mime }]
+                    //instrucao: 'Analise a sentença e o acórdão anexos.'  // opcional
+                    //mandaResultadoPara: chaveDoOutroAssistente
+                }
+            ],
+            funcaoRechamada: 'tramitaIASecaoRis'
         }
     ]
     let dados = dadosTarefa?.dados

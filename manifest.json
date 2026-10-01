@@ -167,6 +167,7 @@
 				"documento/paginas/pje/rota/assistentes/consulta-qualquer-oj.js",
 				"documento/paginas/pje/rota/tramitaIA/tramitaIA.js",
 				"documento/paginas/pje/rota/tramitaIA/ris.js",
+				"documento/paginas/pje/rota/tramitaIA/damPeritoDecide.js",
 				"documento/paginas/pje/rota/botao/fita-superior-detalhes.js",
 				"documento/paginas/pje/rota/nucleo/sigeo.js",
 				"documento/paginas/pje/rota/nucleo/gigs.js",

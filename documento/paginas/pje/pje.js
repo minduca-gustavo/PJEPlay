@@ -290,6 +290,8 @@ async function rota_aoAbrir(){
 	// ── Telas normais: respeita o interruptor ──────────────────
 	if(!habilitado) return
 
+	pautaEletronicaAbriu()
+
 	pinturaInicio().catch(e => relatar('Pintura:', e, 'erro'))
 	botaoRotaIniciar().catch(e => relatar('Botão Rota:', e, 'erro'))
 

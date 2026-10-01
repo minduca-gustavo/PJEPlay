@@ -85,10 +85,15 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = n
         {
             nome: 'ris',
             funcao: 'tramitaIASecaoRis'
+        },
+        {
+            nome: 'damPeritoDecide',
+            funcao: 'tramitaIASecaoDamPeritoDecide'
         }
     ]
     let mapaFuncoes = {
-        tramitaIASecaoRis // está no arquivo ris.js
+        tramitaIASecaoRis, // está no arquivo ris.js
+        tramitaIASecaoDamPeritoDecide, // está no arquivo damPeritoDecide.js
     }
     if (funcaoRechamada){
         let esperado = esperaTramitaIA
