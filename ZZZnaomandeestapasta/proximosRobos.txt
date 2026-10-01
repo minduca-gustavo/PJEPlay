@@ -1,0 +1,4 @@
+- busca nas petições de termos da execução.
+- botão da Regina
+- busca dos acordos pro cejusc
+- remover petições por título e tipo

@@ -540,11 +540,15 @@ function chatJTLimpaJSON(texto){
 
 // junta o que foi enviado (guardado na aba de origem) com o que voltou, pelo índice
 function rota_juntaResultados(enviados, retornados = []){
+    let semIndice = r => { let { indice, ...analises } = r ?? {}; return analises }
+    retornados = retornados || []
     if (!Array.isArray(enviados)){
-        let r = retornados[0] ?? {}
-        return [{ dados: enviados, lido: r.lido ?? false, resultado: r.resultado }]
+        return [{ dados: enviados, ...semIndice(retornados[0]) }]
     }
-    return retornados.map(r => ({ ...(enviados[r.indice] ?? {}), lido: r.lido, resultado: r.resultado }))
+    return enviados.map((item, i) => ({
+        ...item,
+        ...semIndice(retornados.find(r => r.indice === i))
+    }))
 }
 
 // ── Instrumentação de bancada ─────────────────────────────────

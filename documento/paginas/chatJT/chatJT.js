@@ -1,9 +1,8 @@
 // arquitetura - soma da janela + href puxa o armazenamento. O armazenamento tem a tarefa específica
 let esperaChatJT = false
-let dadosChatJT  = []
+
 
 async function chatJTFuncoes(){
-    console.log('%c[Rota PJE]%c ChatJS.js 2: ' + JSON.stringify(2), LOG.info, 'color:inherit')
     // verifica se é a janela do chatJT
     let janela = confereJanela(/\/ia\.jt\.jus\.br\/chat/)
     if (!janela) return
@@ -16,18 +15,25 @@ async function chatJTFuncoes(){
     if (!login){ esperaChatJT = false; return }
     // pega o timestamp do nome da janela
     let execucao = janelaNome.match(/\d{13}$/)?.[0]
+    if (!execucao) {
+        window.name = ''
+        rota_avisoObrigatorio('Ocorreu um erro. Tente novamente', 4)
+        return
+    }   // sem timestamp, a comparação abaixo passaria com undefined == undefined
     // pega a tarefa do nome da janela
     let tarefa = janelaNome.replace('rotapje_', '').replace(execucao, '')
     // obtem o armazenamento pra conferir o timestamp
-    console.log('%c[Rota PJE]%c tarefa: ' + JSON.stringify(tarefa), LOG.aviso, 'color:inherit')
     let armazenamento = await obterArmazenamento(janelaNome)
     let dadosTarefa = armazenamento[janelaNome]
-    console.log('%c[Rota PJE]%c dadosTarefa: ' + JSON.stringify(armazenamento), LOG.teste, 'color:inherit')
-    console.log('%c[Rota PJE]%c dadosTarefa: ' + JSON.stringify(dadosTarefa), LOG.teste, 'color:inherit')
     if (dadosTarefa?.execucao != execucao) return
-    let mapaFuncoes = {
-        chatJTSentencasEAcordaosConhecimento
-    }
+    /*
+    ATENÇÃO. CHAVES A EVITAR:
+    indice
+    naoMandar
+    dados
+    lido
+    resultado
+    */
     let correspondenciaFuncoes = [
         {
             label: 'tramitaIA_menu_rolante_ris',
@@ -35,26 +41,32 @@ async function chatJTFuncoes(){
             sequencia: [
                 {
                     assistente: '6aac80f81501b0e00725a8df',
-                    chave: 'resultado',
-                    filtro: null, // só vai atuar se tiver alguma coisa
-                    escopo: null, // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
+                    chave: 'analise',
+                    //filtro: null, // só vai atuar se tiver alguma coisa
+                    //escopo: null, // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
                     //arquivos: 'arquivos',  // caminho em dados com [{ nome, base64, mime }]
                     //instrucao: 'Analise a sentença e o acórdão anexos.'  // opcional
+                    //mandaResultadoPara: chaveDoOutroAssistente
                 }
             ],
             funcaoRechamada: 'tramitaIASecaoRis'
         }
     ]
     let dados = dadosTarefa?.dados
-    let naoMandar = dados?.naoMandar || {}
-    console.log('%c[Rota PJE]%c naoMandar antes' + JSON.stringify(naoMandar), LOG.aviso, 'color:inherit')
-    delete dados.naoMandar
-    console.log('%c[Rota PJE]%c naoMandar depois' + JSON.stringify(naoMandar), LOG.erro, 'color:inherit')
+    let naoMandar = (!Array.isArray(dados) && dados?.naoMandar) || {}   // só vale para dados em objeto
     let parametros = correspondenciaFuncoes.find(c => c?.label == tarefa)
-    if (!parametros){
+    if (!parametros) {
+        window.name = ''
+        rota_avisoObrigatorio('Ocorreu um erro. Tente novamente', 4)
         console.log('%c[Rota PJE]%c chatJT: tarefa sem correspondência: ' + tarefa, LOG.aviso, 'color:inherit')
         return
     }
+    // depois de achar parametros:
+    if (!chatJTTemConteudo(dados)) {
+        console.log('%c[Rota PJE]%c chatJT: tarefa sem dados: ' + tarefa, LOG.aviso, 'color:inherit')
+        return
+    }
+    chatJTValidaSequencia(parametros.sequencia)
     let overlay = criaDiv({
         id: id('tramitaIA', 'chatJT', 'overlay'),
         ancestral: document.body
@@ -73,37 +85,40 @@ async function chatJTFuncoes(){
         texto: 'Aguarde, iniciando consultas. Não feche esta página.'
     })
     texto.style.fontSize = '20px'
+    let ehLista = Array.isArray(dados)
+    let itens = ehLista ? dados : [dados]
     let resultado = []
-    if (!Array.isArray(dados)){
-        texto.textContent = 'Efetuando consulta'
-        let consulta = null
-        try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados)) }
-        catch(e){ consulta = 'ERRO: ' + e.message }
-        resultado = [{ indice: null, ...chatJTLimpaJSON(consulta) }]
-    } else {
-        for (let i = 0; i < dados.length; i++){
-            texto.textContent = 'Consulta em andamento: ' + (i + 1) + '/' + dados.length
-            let consulta = null
-            try { consulta = await chatJTExecutaPrompt(parametros, JSON.stringify(dados[i])) }
-            catch(e){ consulta = 'ERRO: ' + e.message }
-            resultado.push({ indice: i, ...chatJTLimpaJSON(consulta) })
+    try {
+        for (let i = 0; i < itens.length; i++) {
+            let prefixo = ehLista ? 'Consulta em andamento: ' + (i + 1) + '/' + itens.length : 'Efetuando consulta'
+            texto.textContent = prefixo
+            let respostas = await chatJTExecutaSequencia(parametros.sequencia, chatJTSemNaoMandar(itens[i]), (n, t) => {
+                if (t > 1) texto.textContent = prefixo + ' (etapa ' + n + '/' + t + ')'
+            })
+            console.log('%c[Rota PJE]%c respostas: ' + JSON.stringify(respostas), LOG.aviso, 'color:inherit')
+            resultado.push({ indice: ehLista ? i : null, ...respostas })
         }
+        console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit')
+        await rota_avisar('tramitaIA', {
+            janela: janelaNome,
+            elemento: janelaNome.replace(execucao, ''),
+            funcaoRechamada: parametros.funcaoRechamada,
+            dados: resultado,
+            naoMandar: naoMandar
+        })
+        await removerArmazenamento(janelaNome)
+        texto.textContent = 'Concluído. Você já pode fechar esta janela.'
+        window.close()
+    } catch (e) {
+        texto.textContent = 'Erro: ' + e.message + '. Feche esta janela e tente novamente.'
+        console.log('%c[Rota PJE]%c chatJT erro: ' + e.message, LOG.aviso, 'color:inherit')
     }
-    await rota_avisar('tramitaIA', {
-        janela: janelaNome,
-        elemento: janelaNome.replace(execucao, ''), 
-        funcaoRechamada: parametros.funcaoRechamada, 
-        dados: resultado,
-        naoMandar: naoMandar
-    })
-    await removerArmazenamento(janelaNome)
-    texto.textContent = 'Concluído. Você já pode fechar esta janela.'
-    console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)
-    window.close()
 }
 
 async function chatJTExecutaPrompt(idAssistente, texto, arquivos = []) {
-    let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
+    let conversa = await rota_fetch_IACriaConversa(idAssistente)
+    if (!conversa?.idIA || !conversa?.aut) throw new Error('falha ao criar conversa')
+    let { idIA, aut } = conversa
     let resultado = await rota_fetch_IAEnviaRequisicao(texto, idIA, aut, arquivos)
     console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
     if (resultado == null) throw new Error('sem resposta da IA')
@@ -120,9 +135,7 @@ async function chatJTconfereLogin() {
     return true
 }
 
-async function chatJTSentencasEAcordaosConhecimento(params) {
-    
-}
+
 
 function chatJTObterCaminho(obj, caminho) {
     return caminho.split('.').reduce((o, k) => o?.[k], obj)
@@ -145,34 +158,75 @@ function chatJTPassaFiltro(filtro, entrada) {
 
 async function chatJTExecutaSequencia(sequencia, dados, aoIniciarEtapa) {
     let acumulado = {}
+    let recebidos = {}   // { chaveDestino: { chaveOrigem: resultado } }
+    let chavesArquivos = sequencia.map(s => s.arquivos?.split('.')[0]).filter(Boolean)
+
     for (let e = 0; e < sequencia.length; e++) {
         let etapa = sequencia[e]
+        let chave = etapa.chave || 'resultado'
         let entrada = etapa.escopo ? chatJTObterCaminho(dados, etapa.escopo) : dados
 
-        // arquivos: caminho em dados -> [{ nome, base64, mime }]
         let arquivos = etapa.arquivos ? chatJTObterCaminho(dados, etapa.arquivos) : []
         if (!Array.isArray(arquivos)) arquivos = arquivos ? [arquivos] : []
 
-        if (!chatJTTemConteudo(entrada) && !arquivos.length) continue
+        // filtro avalia a entrada bruta (antes de tirar os arquivos)
         if (!chatJTPassaFiltro(etapa.filtro, entrada)) continue
 
-        // tira o base64 do texto (senão o JSON levaria o arquivo duas vezes)
-        if (etapa.arquivos && !etapa.escopo && entrada && typeof entrada == 'object' && !Array.isArray(entrada)) {
-            let { [etapa.arquivos.split('.')[0]]: _ignorado, ...resto } = entrada
-            entrada = resto
-        }
+        // tira do texto as chaves de arquivo de qualquer etapa
+        if (!etapa.escopo && entrada && typeof entrada == 'object' && !Array.isArray(entrada))
+            entrada = Object.fromEntries(Object.entries(entrada).filter(([k]) => !chavesArquivos.includes(k)))
 
-        let corpo = ''
-        if (chatJTTemConteudo(entrada)) corpo = typeof entrada == 'string' ? entrada : JSON.stringify(entrada)
+        let anteriores = recebidos[chave] || {}
+        let temAnteriores = Object.keys(anteriores).length > 0
+
+        if (!chatJTTemConteudo(entrada) && !arquivos.length && !temAnteriores) continue
+
+        let textoEntrada = ''
+        if (chatJTTemConteudo(entrada))
+            textoEntrada = typeof entrada == 'string' ? entrada : JSON.stringify(entrada)
+
+        let corpo = textoEntrada
+        if (temAnteriores) {
+            let blocos = []
+            if (textoEntrada) blocos.push('DADOS:\n' + textoEntrada)
+            blocos.push('RESULTADO DAS ANÁLISES ANTERIORES:\n' + JSON.stringify(anteriores))
+            corpo = blocos.join('\n\n')
+        }
         if (arquivos.length) corpo = (etapa.instrucao || 'Segue o documento.') + (corpo ? '\n\n' + corpo : '')
 
         aoIniciarEtapa?.(e + 1, sequencia.length)
         let consulta = null
+        let falhou = false
         try { consulta = await chatJTExecutaPrompt(etapa.assistente, corpo, arquivos) }
-        catch (err) { consulta = 'ERRO: ' + err.message }
-        acumulado[etapa.chave || 'resultado'] = chatJTLimpaJSON(consulta)
+        catch (err) { consulta = 'ERRO: ' + err.message; falhou = true }
+
+        let resposta = chatJTLimpaJSON(consulta)   // erro vira { lido: false, resultado: 'ERRO: ...' }
+        acumulado[chave] = resposta
+
+        if (!falhou) {
+            for (let destino of [].concat(etapa.mandaResultadoPara || [])) {
+                recebidos[destino] = recebidos[destino] || {}
+                recebidos[destino][chave] = resposta.resultado   // sem o envelope
+            }
+        }
     }
     return acumulado
 }
 
+function chatJTValidaSequencia(sequencia) {
+    sequencia.forEach((etapa, i) => {
+        for (let destino of [].concat(etapa.mandaResultadoPara || [])) {
+            let posicao = sequencia.findIndex(s => s.chave == destino)
+            if (posicao <= i)
+                console.log('%c[Rota PJE]%c chatJT: mandaResultadoPara inválido "' + destino + '" na etapa ' + (etapa.chave || i), LOG.aviso, 'color:inherit')
+        }
+    })
+}
+
 // seletor do login 'form[action="/chat/login"]'
+
+function chatJTSemNaoMandar(item) {
+    if (!item || typeof item != 'object' || Array.isArray(item)) return item
+    let { naoMandar: _ignorado, ...resto } = item
+    return resto
+}
