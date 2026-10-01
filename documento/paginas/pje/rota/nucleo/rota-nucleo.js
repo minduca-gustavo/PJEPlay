@@ -683,50 +683,75 @@ async function rota_fetch_IACriaConversa(
  * mensagem é o que causava o erro 500 genérico.
  */
 async function rota_fetch_IAEnviaRequisicao(
-	texto = '',
-	conversationId = '',
-	aut = '',
-	tools = ROTA_IA_TOOLS_PADRAO,
-	boundary = ROTA_IA_BOUNDARY
+    texto = '',
+    conversationId = '',
+    aut = '',
+    arquivos = [],
+    tools = ROTA_IA_TOOLS_PADRAO
 ){
-	let url = 'https://ia.jt.jus.br/chat/conversation/' + conversationId
-	let payload = {
-		inputs: texto,
-		id: aut,
-		is_retry: false,
-		is_continue: false,
-		web_search: false,
-		tools: tools
-	}
-	let corpo = `--${boundary}\r\n`
-		+ 'Content-Disposition: form-data; name="data"\r\n\r\n'
-		+ JSON.stringify(payload) + '\r\n'
-		+ `--${boundary}--\r\n`
+    let url = 'https://ia.jt.jus.br/chat/conversation/' + conversationId
+    let payload = {
+        inputs: texto,
+        id: aut,
+        is_retry: false,
+        is_continue: false,
+        web_search: false,
+        tools: tools
+    }
 
-	try{
-		relatar('POST ' + url, texto.slice(0, 200), 'requisicao')
-		let r = await fetch(url, {
-			method: 'POST', mode: 'cors', credentials: 'include',
-			headers: {
-				'Content-Type': `multipart/form-data; boundary=${boundary}`,
-				'Accept': '*/*',
-			},
-			body: corpo
-		})
-		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
+    try{
+        let form = new FormData()
 
-		// A resposta é um stream de eventos (uma linha JSON por
-		// evento: status / keepAlive / stream / finalAnswer)
-		let linhas = (await r.text()).split('\n')
-		let parciais = []
-		for(let linha of linhas){
-			if(!linha.trim()) continue
-			let evento
-			try{ evento = JSON.parse(linha) } catch(e){ continue }
-			if(evento.type === 'stream') parciais.push(evento.token)
-			if(evento.type === 'finalAnswer') return evento.text
-		}
-		// Se não veio finalAnswer, devolve o que juntou dos tokens
-		return parciais.join('') || null
-	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+        // Arquivos primeiro, como na requisição original
+        for(let arq of arquivos){
+            let base64 = arq.base64 ?? await rota_blobParaBase64(arq.blob)
+            let mime = arq.mime || arq.blob?.type || 'application/octet-stream'
+            // O conteúdo da parte é o TEXTO base64; o prefixo no nome avisa o servidor
+            form.append('files', new Blob([base64], { type: mime }), 'base64;' + arq.nome)
+        }
+        form.append('data', JSON.stringify(payload))
+
+        relatar('POST ' + url, texto.slice(0, 200) + (arquivos.length ? ` [+${arquivos.length} arquivo(s)]` : ''), 'requisicao')
+        let r = await fetch(url, {
+            method: 'POST', mode: 'cors', credentials: 'include',
+            headers: { 'Accept': '*/*' },   // sem Content-Type!
+            body: form
+        })
+        if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
+
+        let linhas = (await r.text()).split('\n')
+        let parciais = []
+        for(let linha of linhas){
+            if(!linha.trim()) continue
+            let evento
+            try{ evento = JSON.parse(linha) } catch(e){ continue }
+            if(evento.type === 'stream') parciais.push(evento.token)
+            if(evento.type === 'finalAnswer') return evento.text
+        }
+        return parciais.join('') || null
+    } catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+}
+
+
+/**
+ * Recebe o que veio do PJe (string ou Blob) e escolhe a forma de envio.
+ */
+async function rota_IAEnviaConteudo(conteudo, nome, conversationId, aut, instrucao = 'Segue o documento.'){
+    // Já é texto
+    if(typeof conteudo === 'string')
+        return rota_fetch_IAEnviaRequisicao(conteudo, conversationId, aut)
+
+    let tipo = conteudo.type || ''
+
+    // HTML ou texto: extrai e manda como texto
+    if(tipo.startsWith('text/')){
+        let bruto = await conteudo.text()
+        let texto = tipo.includes('html')
+            ? new DOMParser().parseFromString(bruto, 'text/html').body.innerText
+            : bruto
+        return rota_fetch_IAEnviaRequisicao(instrucao + '\n\n' + texto, conversationId, aut)
+    }
+
+    // PDF (ou outro binário): manda como arquivo
+    return rota_fetch_IAEnviaRequisicao(instrucao, conversationId, aut, [{ nome, blob: conteudo }])
 }

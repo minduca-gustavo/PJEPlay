@@ -32,7 +32,16 @@ async function chatJTFuncoes(){
         {
             label: 'tramitaIA_menu_rolante_ris',
             nome: 'Recebimento e Remessa analisa sentença e Acórdãos',
-            assistente: '6aac80f81501b0e00725a8df',
+            sequencia: [
+                {
+                    assistente: '6aac80f81501b0e00725a8df',
+                    chave: 'resultado',
+                    filtro: null, // só vai atuar se tiver alguma coisa
+                    escopo: null, // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
+                    //arquivos: 'arquivos',  // caminho em dados com [{ nome, base64, mime }]
+                    //instrucao: 'Analise a sentença e o acórdão anexos.'  // opcional
+                }
+            ],
             funcaoRechamada: 'tramitaIASecaoRis'
         }
     ]
@@ -91,12 +100,12 @@ async function chatJTFuncoes(){
     window.close()
 }
 
-async function chatJTExecutaPrompt(parametros, texto) {
-    let idAssistente = parametros.assistente
+async function chatJTExecutaPrompt(idAssistente, texto, arquivos = []) {
     let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
-    let resultado = await rota_fetch_IAEnviaRequisicao(texto, idIA, aut)
+    let resultado = await rota_fetch_IAEnviaRequisicao(texto, idIA, aut, arquivos)
     console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
-    if (!parametros.orquestrador) return resultado
+    if (resultado == null) throw new Error('sem resposta da IA')
+    return resultado
 }
 
 async function chatJTconfereLogin() {
@@ -111,6 +120,57 @@ async function chatJTconfereLogin() {
 
 async function chatJTSentencasEAcordaosConhecimento(params) {
     
+}
+
+function chatJTObterCaminho(obj, caminho) {
+    return caminho.split('.').reduce((o, k) => o?.[k], obj)
+}
+
+function chatJTTemConteudo(valor) {
+    if (valor == null) return false
+    if (typeof valor == 'string') return valor.trim() !== ''
+    if (Array.isArray(valor)) return valor.length > 0
+    if (typeof valor == 'object') return Object.keys(valor).length > 0
+    return !!valor
+}
+
+// filtro: null (sempre roda) | string (caminho que precisa ter conteúdo) | função(entrada) => boolean
+function chatJTPassaFiltro(filtro, entrada) {
+    if (filtro == null) return true
+    if (typeof filtro == 'function') return !!filtro(entrada)
+    return chatJTTemConteudo(chatJTObterCaminho(entrada, filtro))
+}
+
+async function chatJTExecutaSequencia(sequencia, dados, aoIniciarEtapa) {
+    let acumulado = {}
+    for (let e = 0; e < sequencia.length; e++) {
+        let etapa = sequencia[e]
+        let entrada = etapa.escopo ? chatJTObterCaminho(dados, etapa.escopo) : dados
+
+        // arquivos: caminho em dados -> [{ nome, base64, mime }]
+        let arquivos = etapa.arquivos ? chatJTObterCaminho(dados, etapa.arquivos) : []
+        if (!Array.isArray(arquivos)) arquivos = arquivos ? [arquivos] : []
+
+        if (!chatJTTemConteudo(entrada) && !arquivos.length) continue
+        if (!chatJTPassaFiltro(etapa.filtro, entrada)) continue
+
+        // tira o base64 do texto (senão o JSON levaria o arquivo duas vezes)
+        if (etapa.arquivos && !etapa.escopo && entrada && typeof entrada == 'object' && !Array.isArray(entrada)) {
+            let { [etapa.arquivos.split('.')[0]]: _ignorado, ...resto } = entrada
+            entrada = resto
+        }
+
+        let corpo = ''
+        if (chatJTTemConteudo(entrada)) corpo = typeof entrada == 'string' ? entrada : JSON.stringify(entrada)
+        if (arquivos.length) corpo = (etapa.instrucao || 'Segue o documento.') + (corpo ? '\n\n' + corpo : '')
+
+        aoIniciarEtapa?.(e + 1, sequencia.length)
+        let consulta = null
+        try { consulta = await chatJTExecutaPrompt(etapa.assistente, corpo, arquivos) }
+        catch (err) { consulta = 'ERRO: ' + err.message }
+        acumulado[etapa.chave || 'resultado'] = chatJTLimpaJSON(consulta)
+    }
+    return acumulado
 }
 
 // seletor do login 'form[action="/chat/login"]'

@@ -153,7 +153,7 @@ function _rota_criarBotaoDOM(id){
 	let btn = document.createElement('div')
 	btn.id  = id
 	Object.assign(btn.style, {
-		position:      'relative',
+		position:      'absolute',
 		zIndex:        '10000',
 		display:       'flex',
 		flexDirection: 'row',

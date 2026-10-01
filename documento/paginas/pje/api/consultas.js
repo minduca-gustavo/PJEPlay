@@ -152,10 +152,11 @@ async function rota_download(url = ''){
 }
 
 
-async function blobParaBase64(blob){
-	return new Promise(r => {
-		const leitor = new FileReader()
-		leitor.onloadend = () => r(leitor.result.split(',')[1])
-		leitor.readAsDataURL(blob)
-	})
+function rota_blobParaBase64(blob){
+    return new Promise((resolve, reject) => {
+        let leitor = new FileReader()
+        leitor.onload = () => resolve(String(leitor.result).split(',')[1] || '')
+        leitor.onerror = () => reject(leitor.error)
+        leitor.readAsDataURL(blob)
+    })
 }
