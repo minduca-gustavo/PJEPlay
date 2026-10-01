@@ -38,7 +38,9 @@ async function chatJTFuncoes(){
     ]
     let dados = dadosTarefa?.dados
     let naoMandar = dados?.naoMandar || {}
+    console.log('%c[Rota PJE]%c naoMandar antes' + JSON.stringify(naoMandar), LOG.aviso, 'color:inherit')
     delete dados.naoMandar
+    console.log('%c[Rota PJE]%c naoMandar depois' + JSON.stringify(naoMandar), LOG.erro, 'color:inherit')
     let parametros = correspondenciaFuncoes.find(c => c?.label == tarefa)
     if (!parametros){
         console.log('%c[Rota PJE]%c chatJT: tarefa sem correspondência: ' + tarefa, LOG.aviso, 'color:inherit')

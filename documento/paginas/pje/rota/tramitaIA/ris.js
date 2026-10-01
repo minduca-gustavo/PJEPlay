@@ -25,20 +25,21 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             let doc = lido
                 ? (item.sentencasEAcordaos || []).find(d => d.idDocumento == r.documentoDecisivo)
                 : null
+            let acordos = Array.isArray(item.naoMandar?.acordos) ? (item.naoMandar?.acordos?.join(', ')) : ''
             return {
-                numero:                     item.numero ?? '',
-                situacao:                   lido ? 'OK' : 'CONFERIR',
-                resultadoPrevalecente:      lido ? (removeQuebras(r.resultadoPrevalecente) ?? '') : '',
-                explicacaoDaIA:             lido ? (removeQuebras(r.encadeamento) ?? '') : '',
-                confianca:                  lido ? (removeQuebras(r.confianca) ?? '') : '',
-                decisivo:                   doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
-                providenciasDaSecretaria:   lido ? [].concat(removeQuebras(r.providenciasSecretaria) ?? []).join('; ') : '',
-                obrigacaoDeFazer:           lido ? (removeQuebras(r.obrigacaoDeFazer) ?? '') : '',
-                qualObrigacao:              lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
-                evidencia:                  lido ? (removeQuebras(r.evidencia) ?? '') : '',
-                observacao:                 lido ? (removeQuebras(r.observacao) ?? '') : '',
-                processosAssociados:        lido ? item.naoMandar?.associados?.join(', ') : '',
-                possivelAcordo:             lido ? item.naoMandar?.acordos?.join(', ') : '',
+                "Número":                     item.numero ?? '',
+                "Situação":                   lido ? 'OK' : 'CONFERIR',
+                "Resultado Prevalecente":     lido ? (removeQuebras(r.resultadoPrevalecente) ?? '') : '',
+                "Explicação da IA":           lido ? (removeQuebras(r.encadeamento) ?? '') : '',
+                "Confiança":                  lido ? (removeQuebras(r.confianca) ?? '') : '',
+                "Documento decisivo":         doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
+                "Providências da Secretaria": lido ? removeQuebras([].concat(r.providenciasSecretaria ?? []).filter(Boolean).join('; ')) : '',
+                "Tem Obrigação de fazer?":    lido ? (removeQuebras(r.obrigacaoDeFazer) ?? '') : '',
+                "Qual Obrigação?":            lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
+                "Evidência":                  lido ? (removeQuebras(r.evidencia) ?? '') : '',
+                "Observação":                 lido ? (removeQuebras(r.observacao) ?? '') : '',
+                "Processos Associados":       lido ? item.naoMandar?.associados?.join(', ') : '',
+                "Possível acordo":            lido ? acordos : '',
             }
         }
         
@@ -92,8 +93,8 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             let idsDocs = []
             let timeline   = await buscarDocumentos(id) || []
             let urlAssociados = 'https://pje.trt15.jus.br/pje-comum-api/api/processos/id/' + id + '/associados?pagina=1&tamanhoPagina=100&ordenacaoCrescente=true'
-            let resultadoAssociados = await rota_fetch(urlAssociados)?.resultado || []
-            let associados = resultadoAssociados.map(d => d?.numeroProcesso) || []
+            let resultadoAssociados = await rota_fetch(urlAssociados) || []
+            let associados = resultadoAssociados?.resultado?.map(d => d?.numeroProcesso) || []
             let idSegundo = await buscarSegundoGrauBasicos(numero) || []
             let dadosSegundo = []
             if (idSegundo.length != 0){
@@ -108,7 +109,9 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                     return 'Documento ' + d.titulo + ' datado de ' + d?.data.slice(8, 10) + '/' + d?.data.slice(5, 7) + '/' + d?.data.slice(0, 4)
                 })
                 .join(', ');
-            console.log('%c[Rota PJE]%c timelineSegundo: ' + JSON.stringify(timelineSegundo), LOG.info, 'color:inherit')
+            console.log('%c[Rota PJE]%c titulosAcordo' + JSON.stringify(titulosAcordo), LOG.erro, 'color:inherit')
+            console.log('%c[Rota PJE]%c resultadoAssociados' + JSON.stringify(resultadoAssociados), LOG.teste, 'color:inherit')
+            //console.log('%c[Rota PJE]%c timelineSegundo: ' + JSON.stringify(timelineSegundo), LOG.info, 'color:inherit')
             let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
             let sentencas  = timeline
                 .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
