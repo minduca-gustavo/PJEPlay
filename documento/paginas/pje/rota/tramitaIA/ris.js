@@ -1,70 +1,42 @@
-async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada = false, dadosRechamada){
+async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRechamada){
     if (rechamada){
-        let rolante = document.getElementById(ancestralLimpar)
+        let rolante = document.getElementById(ancestral)
         rolante.replaceChildren()                 // tira a seção e o "Iniciando buscas"
         rolante.style.overflowY = 'hidden'
-        _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeChatJT.json', 'application/json')
         apresentaResultados({
             array: dadosRechamada.map(tramitaIALinhaRis),
             nome: 'tramitaIA_resultadoRis',
-            ancestral: ancestralLimpar,
+            ancestral: ancestral,
             embutido: true,
             aoVoltar: () => {
                 rolante.replaceChildren()
                 rolante.style.overflowY = 'auto'
-                tramitaIACriaSecoes({elemento: ancestralLimpar})
+                tramitaIACriaSecoes({elemento: ancestral})
             }
         })
         return
-        // ris.js, no nível do arquivo
-        function tramitaIALinhaRis(item){
-            let analise = item.analise
-            let lido = analise?.lido === true
-            let r = lido ? analise.resultado : null
-            let doc = lido
-                ? (item.sentencasEAcordaos || []).find(d => d.idDocumento == r.documentoDecisivo)
-                : null
-            let acordos = String(item.naoMandar?.acordos ?? '')
-            let associados = Array.isArray(item.naoMandar?.associados) ? item.naoMandar.associados.join(', ') : ''
-            return {
-                "Número":                           item.numero ?? '',
-                "Situação":                         lido ? 'OK' : 'CONFERIR',
-                "Resultado Prevalecente":           lido ? (removeQuebras(r.resultadoPrevalecente) ?? '') : '',
-                "Explicação da IA":                 lido ? (removeQuebras(r.encadeamento) ?? '') : '',
-                "Confiança":                        lido ? (removeQuebras(r.confianca) ?? '') : '',
-                "Documento decisivo":               doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
-                "Providências da Secretaria":       lido ? removeQuebras([].concat(r.providenciasSecretaria ?? []).filter(Boolean).join('; ')) : '',
-                "Tem Obrigação de fazer?":          lido ? (removeQuebras(r.obrigacaoDeFazer) ?? '') : '',
-                "Qual Obrigação?":                  lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
-                "Evidência":                        lido ? (removeQuebras(r.evidencia) ?? '') : '',
-                "Observação":                       lido ? (removeQuebras(r.observacao) ?? '') : removeQuebras(String(analise?.resultado ?? 'sem análise')).slice(0, 300),
-                "Processos Associados":             associados,
-                "Petições ou movimentos de Acordo": acordos,
-            }
-        }
-        
     }
-    let el = document.getElementById(elementoAncestral)
+    let el = document.getElementById(elemento)
     el.style.flexDirection = 'row-reverse'
     el.style.alignItems = 'baseline'
-    let idBotao = elementoAncestral + 'botao'
+    let idBotao = elemento + 'botao'
     let botao = criaBotaoLaranja({
         id: idBotao,
-        ancestral: elementoAncestral,
+        ancestral: elemento,
         texto: 'Analisar',
         acao: async ()=> {
-            await buscaSentencasEAcordaos(elementoAncestral, ancestralLimpar)
+            await buscaSentencasEAcordaos(elemento, ancestral)
         }
     })
     botao.style.alignSelf = 'center'
     let texto = criaTexto({
-        id: elementoAncestral + '_texto',
-        ancestral: elementoAncestral,
+        id: elemento + '_texto',
+        ancestral: elemento,
         texto: 'ATENÇÃO: FILTRE APENAS PROCESSOS DO CONHECIMENTO. Este assistente busca os textos dos acórdãos e sentenças dos processos da tela, e encaminha para a IA, que responderá duas perguntas: qual o resultando do processo (procedente, improcedente, etc.)? Tem obrigação de fazer?'
     })
     let titulo = criaSubTitulo({
-        id: elementoAncestral + '_titulo',
-        ancestral: elementoAncestral,
+        id: elemento + '_titulo',
+        ancestral: elemento,
         texto: 'Assistente de recebimento do TRT'
     })
 
@@ -72,7 +44,7 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
         let elementos = [...document.getElementById(rolante).children]
             .filter(d => d.id !== elemento)
             .forEach(d => d.remove())
-        mostraResultadosBuscaSimples(rolante, 0, id('tramitaIA', 'mostraResultadosBuscaRis'))
+        mostraResultadosBuscaRis(rolante, 0)
         let meta = interceptador_ler('agrupamento_tarefas_processos')
         let processos = meta?.resultado || []
         
@@ -85,7 +57,7 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
         let execucao = Date.now()
         let dados = []
         for (let processo of processos) {
-            mostraResultadosBuscaSimples(rolante, 'Processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length, id('tramitaIA', 'mostraResultadosBuscaRis'))
+            mostraResultadosBuscaRis(rolante, 'Processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length)
             let id = processo?.id || null
             let numero = processo?.numeroProcesso || null
             if (!id) continue
@@ -109,7 +81,8 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
                     let data = d?.data
                     let dataFmt = data ? data.slice(8, 10) + '/' + data.slice(5, 7) + '/' + data.slice(0, 4) : 'data não informada'
                     return 'Documento ' + d.titulo + ' datado de ' + dataFmt
-                }).join(', ');
+                })
+                .join(', ');
             //console.log('%c[Rota PJE]%c timelineSegundo: ' + JSON.stringify(timelineSegundo), LOG.info, 'color:inherit')
             let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
             let sentencas  = timeline
@@ -133,7 +106,6 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
                         .join('\n\n')
                     if (!teor){
                         let teorPDF = await rota_extrairTeorDocumento(id, d?.id) || null
-                        teorPDF = normalizarTeor(teorPDF)
                         if (teorPDF) teorCorpo = teorPDF
                     }
                     return {idDocumento: d?.id, teor: teorCorpo, dataDocumento: d?.data, tipo: d?.tipo, instancia: d?.instancia}
@@ -152,11 +124,19 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
         esperaTramitaIA = { janela: armazenamento, dados: dados }
         await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
         window.open(url, armazenamento)
-        mostraResultadosBuscaSimples(rolante, 'Aguardando a IA no chat. Não feche a janela.', id('tramitaIA', 'mostraResultadosBuscaRis'))
+        mostraResultadosBuscaRis(rolante, 'Aguardando a IA no chat. Não feche a janela.')
         return
     }
 
-    
+    function mostraResultadosBuscaRis(idElemento, contador){
+        let idDiv = id('tramitaIA', 'mostraResultadosBuscaRis')
+        if (!document.getElementById(idDiv)) criaDiv({ id: idDiv, ancestral: idElemento })
+        let idConteudo = idDiv + '_conteudo'
+        let conteudo = document.getElementById(idConteudo)
+            || criaSubTitulo({ id: idConteudo, ancestral: idDiv, texto: '' })
+        conteudo.textContent = contador === 0 ? 'Iniciando buscas.' : String(contador)
+        conteudo.style.fontSize = '16px'
+    }
 
     function rotinaErro(tipo){
         let erros = [
@@ -171,3 +151,28 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
     }
 }
 
+function tramitaIALinhaRis(item){
+    let lido = item.lido === true
+    let r = lido ? item.resultado : null
+    let doc = lido
+        ? (item.sentencasEAcordaos || []).find(d => d.idDocumento == r.documentoDecisivo)
+        : null
+    let acordos = String(item.naoMandar?.acordos ?? '')
+    let associados = Array.isArray(item.naoMandar?.associados) ? item.naoMandar.associados.join(', ') : ''
+    return {
+        "Número":                           item.numero ?? '',
+        "Situação":                         lido ? 'OK' : 'CONFERIR',
+        "Resultado Prevalecente":           lido ? (removeQuebras(r.resultadoPrevalecente) ?? '') : '',
+        "Explicação da IA":                 lido ? (removeQuebras(r.encadeamento) ?? '') : '',
+        "Confiança":                        lido ? (removeQuebras(r.confianca) ?? '') : '',
+        "Documento decisivo":               doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
+        "Providências da Secretaria":       lido ? removeQuebras([].concat(r.providenciasSecretaria ?? []).filter(Boolean).join('; ')) : '',
+        "Tem Obrigação de fazer?":          lido ? (removeQuebras(r.obrigacaoDeFazer) ?? '') : '',
+        "Qual Obrigação?":                  lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
+        "Evidência":                        lido ? (removeQuebras(r.evidencia) ?? '') : '',
+        // quando CONFERIR, mostra o motivo (ERRO: ..., texto livre da IA ou sem análise)
+        "Observação":                       lido ? (removeQuebras(r.observacao) ?? '') : removeQuebras(String(item.resultado ?? 'sem análise')).slice(0, 300),
+        "Processos Associados":             associados,
+        "Petições ou movimentos de Acordo": acordos,
+    }
+}
