@@ -88,12 +88,12 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 // Agora vou pegar a petição de EE ou ISL, e salvar o conteúdo para o primeiro robô.
                 // Já salvei a DATA mais antiga entre as petições encontradas
                 let timelinePrimeiroAssistente = timeline.filter(d => d?.data >= dataMaisAntiga).map(c => {
-                    return {id: c?.id, tipo: c?.tipo, titulo: c?.titulo, data: c?.data, participacaoProcesso: c?.participacaoProcesso}
+                    return {id: c?.id, idUnicoDocumento: c?.idUnicoDocumento, tipo: c?.tipo, titulo: c?.titulo, data: c?.data, participacaoProcesso: c?.participacaoProcesso}
                 })
                 let peticoesPrimeiroAssistente = []
                 for (let peticao of embargosIsl) {
                     if (![16, 733].includes(peticao?.idTipo)) continue
-                    let { data, titulo, tipo, tipoPolo, participacaoProcesso } = peticao
+                    let { id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso } = peticao
                     let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, peticao.id) || '')
                     peticoesPrimeiroAssistente.push({ data, titulo, tipo, tipoPolo, participacaoProcesso, teor })
                 }
