@@ -529,6 +529,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
 
                 for (let doc of documentosTimeline){
                     let teor = await rota_extrairTeorDocumento(id, doc?.id)
+                    teor = normalizarTeor(teor)
                     console.log('%c[Rota PJE]%c teor' + JSON.stringify(teor), LOG.teste, 'color:inherit')
                     let resultado = []
 

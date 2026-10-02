@@ -117,3 +117,13 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = n
         funcao(idDiv, elemento)
     }
 }
+
+function mostraResultadosBuscaSimples(idAncestral, contador, idMostrador){
+    let idDiv = idMostrador
+    if (!document.getElementById(idDiv)) criaDiv({ id: idDiv, ancestral: idAncestral })
+    let idConteudo = idDiv + '_conteudo'
+    let conteudo = document.getElementById(idConteudo)
+        || criaSubTitulo({ id: idConteudo, ancestral: idDiv, texto: '' })
+    conteudo.textContent = contador === 0 ? 'Iniciando buscas.' : String(contador)
+    conteudo.style.fontSize = '16px'
+}

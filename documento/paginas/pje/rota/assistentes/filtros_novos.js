@@ -595,6 +595,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                                     .join('\n\n')
                                 if (!teor){
                                     let teorPDF = await rota_extrairTeorDocumento(id, d?.id) || null
+                                    teorPDF = normalizarTeor(teorPDF)
                                     if (teorPDF) teorCorpo = teorPDF
                                 }
                                 return {idDocumento: d?.id, teor: teorCorpo, dataDocumento: d?.data, tipo: d?.tipo, instancia: d?.instancia}
@@ -1075,6 +1076,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                             });
                         let peticaoInicial = timeline.filter(d => d?.tipo === 'Petição Inicial')
                         let teorPeticaoInicial = peticaoInicial.length ? await rota_extrairTeorDocumento(id, peticaoInicial[0]?.id) : ''
+                        teorPeticaoInicial = normalizarTeor(teorPeticaoInicial)
                         let peticao = {idDocumento: peticaoInicial[0]?.id || '', teor: teorPeticaoInicial}
                         let certidaoSimetria = timeline.findLast(d => d?.titulo.includes('Simetria'))
                         let tiposBusca = ['Certidão', 'Intimação', 'Despacho'];
@@ -1445,6 +1447,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
             let conteudos  = []
             for (let idDoc of idsDocs) {
                 let conteudo    = await rota_extrairTeorDocumento(id, idDoc) || ''
+                conteudo = normalizarTeor(conteudo)
                 let termoEncontrado = termo.split(',').some(d => buscaEmTextoMalFormatado(conteudo, d.trim(), 0, 0)?.trechos)
                 if (termoEncontrado) encontrado = true
                 conteudos.push(idDoc + ': ' + conteudo)

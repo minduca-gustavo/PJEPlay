@@ -133,35 +133,79 @@ async function buscarChips(i) {
 //    return resp.texto
 //}
 
-async function rota_extrairTeorDocumento(idProcesso, idDocumento) {
-	let url = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/conteudo?incluirCapa=false&incluirAssinatura=true`
-	let res = await rota_fetchBruto(url, { headers: rota_cabecalhos('*/*') })
-	if (!res) return null
+function normalizarTeor(teor) {
+    return (typeof teor === 'string' && teor.startsWith('data:application/pdf')) ? 'Documento de imagem' : teor
+}
 
-	try {
-		let contentType = res.headers.get('content-type') || ''
 
-		if (contentType.includes('application/pdf')) {
-			let bytes = Array.from(new Uint8Array(await res.arrayBuffer()))
-			return await _extrairPdf(bytes, url)
-		}
+async function rota_extrairTeorDocumento(idProcesso, idDocumento, pdfParaTexto = true) {
+    let url = `${location.origin}/pje-comum-api/api/processos/id/${idProcesso}/documentos/id/${idDocumento}/conteudo?incluirCapa=false&incluirAssinatura=true`
+    let res = await rota_fetchBruto(url, { headers: rota_cabecalhos('*/*') })
+    if (!res) return null
 
-		if (contentType.includes('application/json')) {
-			let json  = await res.json()
-			let b64   = (json?.conteudoBase64 || '').trim()
-			if (!b64) { relatar('conteudoBase64 vazio', url, 'erro'); return null }
-			let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
-			let html  = new TextDecoder('iso-8859-1').decode(bytes)
+    try {
+        let contentType = res.headers.get('content-type') || ''
 
-			if (html.startsWith('%PDF')) return await _extrairPdf(Array.from(bytes), url)
-			return new DOMParser().parseFromString(html, 'text/html').body.innerText
-		}
+        if (/^(audio|video)\//.test(contentType)) {
+            relatar('tipo sem teor extraível: ' + contentType, url, 'aviso')
+            return null
+        }
 
-		return await res.text()
-	} catch (e) {
-		relatar('erro ao extrair teor: ' + e.message, url, 'erro')
-		return null
-	}
+        let bytes
+        if (contentType.includes('application/json')) {
+            let b64 = ((await res.json())?.conteudoBase64 || '').trim()
+            if (!b64) { relatar('conteudoBase64 vazio', url, 'erro'); return null }
+            bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0))
+        } else {
+            bytes = new Uint8Array(await res.arrayBuffer())
+        }
+
+        if (_ehPdf(bytes)) {
+            if (!pdfParaTexto) return await _bytesParaDataUrl(bytes, 'application/pdf')
+
+            let texto = await _extrairPdf(Array.from(bytes), url)
+            if (_temTextoUtil(texto)) return texto
+            return await _bytesParaDataUrl(bytes, 'application/pdf')
+        }
+
+        let texto = _decodificarTexto(bytes)
+        if (/<\s*(html|body|p|div|span|table)\b/i.test(texto)) return _htmlParaTexto(texto)
+        return texto
+    } catch (e) {
+        relatar('erro ao extrair teor: ' + e.message, url, 'erro')
+        return null
+    }
+}
+
+function _ehPdf(bytes) {
+    return bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 // %PDF
+}
+
+function _temTextoUtil(texto, minimo = 50) {
+    return !!texto && texto.replace(/\s/g, '').length > minimo
+}
+
+function _decodificarTexto(bytes) {
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(bytes) }
+    catch { return new TextDecoder('iso-8859-1').decode(bytes) }
+}
+
+function _htmlParaTexto(html) {
+    let doc = new DOMParser().parseFromString(html, 'text/html')
+    doc.querySelectorAll('script, style').forEach(el => el.remove())
+    doc.querySelectorAll('br').forEach(el => el.replaceWith('\n'))
+    doc.querySelectorAll('p, div, li, tr, h1, h2, h3, h4, h5, h6')
+       .forEach(el => el.append('\n'))
+    return doc.body.textContent.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
+}
+
+function _bytesParaDataUrl(bytes, mime) {
+    return new Promise((resolve, reject) => {
+        let leitor = new FileReader()
+        leitor.onload  = () => resolve(leitor.result)
+        leitor.onerror = () => reject(leitor.error)
+        leitor.readAsDataURL(new Blob([bytes], { type: mime }))
+    })
 }
 
 async function _extrairPdf(bytes, url) {

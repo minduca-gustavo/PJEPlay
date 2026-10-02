@@ -72,7 +72,7 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
         let elementos = [...document.getElementById(rolante).children]
             .filter(d => d.id !== elemento)
             .forEach(d => d.remove())
-        mostraResultadosBuscaRis(rolante, 0)
+        mostraResultadosBuscaSimples(rolante, 0, id('tramitaIA', 'mostraResultadosBuscaRis'))
         let meta = interceptador_ler('agrupamento_tarefas_processos')
         let processos = meta?.resultado || []
         
@@ -85,7 +85,7 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
         let execucao = Date.now()
         let dados = []
         for (let processo of processos) {
-            mostraResultadosBuscaRis(rolante, 'Processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length)
+            mostraResultadosBuscaSimples(rolante, 'Processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length, id('tramitaIA', 'mostraResultadosBuscaRis'))
             let id = processo?.id || null
             let numero = processo?.numeroProcesso || null
             if (!id) continue
@@ -133,6 +133,7 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
                         .join('\n\n')
                     if (!teor){
                         let teorPDF = await rota_extrairTeorDocumento(id, d?.id) || null
+                        teorPDF = normalizarTeor(teorPDF)
                         if (teorPDF) teorCorpo = teorPDF
                     }
                     return {idDocumento: d?.id, teor: teorCorpo, dataDocumento: d?.data, tipo: d?.tipo, instancia: d?.instancia}
@@ -151,19 +152,11 @@ async function tramitaIASecaoRis(elementoAncestral, ancestralLimpar, rechamada =
         esperaTramitaIA = { janela: armazenamento, dados: dados }
         await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
         window.open(url, armazenamento)
-        mostraResultadosBuscaRis(rolante, 'Aguardando a IA no chat. Não feche a janela.')
+        mostraResultadosBuscaSimples(rolante, 'Aguardando a IA no chat. Não feche a janela.', id('tramitaIA', 'mostraResultadosBuscaRis'))
         return
     }
 
-    function mostraResultadosBuscaRis(idElemento, contador){
-        let idDiv = id('tramitaIA', 'mostraResultadosBuscaRis')
-        if (!document.getElementById(idDiv)) criaDiv({ id: idDiv, ancestral: idElemento })
-        let idConteudo = idDiv + '_conteudo'
-        let conteudo = document.getElementById(idConteudo)
-            || criaSubTitulo({ id: idConteudo, ancestral: idDiv, texto: '' })
-        conteudo.textContent = contador === 0 ? 'Iniciando buscas.' : String(contador)
-        conteudo.style.fontSize = '16px'
-    }
+    
 
     function rotinaErro(tipo){
         let erros = [

@@ -52,12 +52,12 @@ async function chatJTFuncoes(){
             funcaoRechamada: 'tramitaIASecaoRis'
         },
         {
-            label: 'tramitaIA_menu_rolante_ris',
-            nome: 'Recebimento e Remessa analisa sentença e Acórdãos',
+            label: 'tramitaIA_menu_rolante_damPeritoDecide',
+            nome: 'Analisa os pareceres periciais e decide se todos os pontos impugnados estão cobertos',
             sequencia: [
                 {
-                    assistente: '6aac80f81501b0e00725a8df',
-                    chave: 'analise',
+                    assistente: '6abfbef177acca97cae0ea20',
+                    chave: 'analisePrevia',
                     //filtro: null, // só vai atuar se tiver alguma coisa
                     //escopo: null, // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
                     //arquivos: 'arquivos',  // caminho em dados com [{ nome, base64, mime }]

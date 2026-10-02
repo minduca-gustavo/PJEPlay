@@ -34,11 +34,103 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
         ancestral: elementoAncestral,
         texto: 'Filtra processos com parecer pericial para decisão na DAM'
     })
-    function damBusca(modo){
+    async function damBusca(modo){
+        let idMostrador = id('tramitaIA', 'mostraResultadoBuscaDamPerito')
+        let limpar = [...document.getElementById(ancestralLimpar).children].filter(d => d?.id !== elementoAncestral).map(d => d.remove())
         if (modo === 'lista'){
             rota_avisoObrigatorio('Não implementado', 5)
             return
+        } else {
+            mostraResultadosBuscaSimples(ancestralLimpar, 'Buscando processos na Tarefa. Pode ser demorado.', idMostrador)
+            let processos = await buscarProcessosPorTarefa('Elaborar sentença') || []
+            if (!processos?.ids?.length) {
+                mostraResultadosBuscaSimples(ancestralLimpar, 'Não foram encontrados processos na tarefa Elaborar sentença.', idMostrador)
+                let botao = criaBotaoLaranja({
+                    id: id('tramitaIA', 'mostraResultado', 'botaoNovaBusca'),
+                    ancestral: ancestralLimpar,
+                    texto: 'Nova busca',
+                    acao: () => {
+                        document.getElementById(ancestralLimpar).replaceChildren()
+                        tramitaIACriaSecoes({elemento: ancestralLimpar})
+                    }
+                })
+                botao.style.width = 'fit-content'
+            }
+            console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.mb, 'color:inherit', processos)
+            let buscaProcessos = []
+            for (let i = 0; i < processos?.ids?.length; i++) {
+                if (i > 19) {
+                    _baixarArquivo(JSON.stringify(buscaProcessos, null, 2), 'EEISL.json', 'application/json')
+                    return
+                }
+                mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
+                let idProc = processos?.ids[i]
+                let dadosSimples = processos?.t[i]
+                let processo = await buscarProcesso(idProc, '/partes?apenasComPartePrincipal=false') || {}
+                if (!processo?.TERCEIROS) continue
+                let temPerito = processo?.TERCEIROS?.some(p => p?.tipo == 'PERITO')
+                if (!temPerito) continue
+                let partes = {
+                    ativo: processo?.ATIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica'})),
+                    passivo: processo?.PASSIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica'})),
+                }
+                let timeline = await buscarDocumentos(idProc) || []
+                let dataMaisAntiga = ''
+                let embargosIsl = timeline?.filter(d=> {
+                    let tipos = ['embargos a execucao', 'impugnacao a sentenca de liquidacao']
+                    if (tipos.some(t => normalizar(d?.tipo).includes(t) || normalizar(d?.titulo).includes(t))){
+                        dataMaisAntiga = new Date(dataMaisAntiga) < new Date(d?.data) ? dataMaisAntiga : d?.data
+                        return d
+                    }
+                })
+                if (!embargosIsl.length) continue
+                // até aqui, filtrei todos os processos que tem perito, que tem embargos ou ISL.
+                // Agora vou pegar a petição de EE ou ISL, e salvar o conteúdo para o primeiro robô.
+                // Já salvei a DATA mais antiga entre as petições encontradas
+                let timelinePrimeiroAssistente = timeline.filter(d => d?.data >= dataMaisAntiga).map(c => {
+                    return {id: c?.id, tipo: c?.tipo, titulo: c?.titulo, data: c?.data, participacaoProcesso: c?.participacaoProcesso}
+                })
+                let peticoesPrimeiroAssistente = []
+                for (let peticao of embargosIsl) {
+                    if (![16, 733].includes(peticao?.idTipo)) continue
+                    let { data, titulo, tipo, tipoPolo, participacaoProcesso } = peticao
+                    let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, peticao.id) || '')
+                    peticoesPrimeiroAssistente.push({ data, titulo, tipo, tipoPolo, participacaoProcesso, teor })
+                }
+                let dadosPrimeiroAssistente = {
+                    dadosProcessuais:{
+                        id: idProc,
+                        partes: partes,
+                        numero: dadosSimples?.numero,
+                        dataMaisAntiga,
+                        peticoesParaAnalise: peticoesPrimeiroAssistente,
+                        timeline: timelinePrimeiroAssistente
+                    }
+                }
+                buscaProcessos.push({dadosPrimeiroAssistente})
+
+                
+            }
+            _baixarArquivo(JSON.stringify(buscaProcessos, null, 2), 'EEISL.json', 'application/json')
+            
         }
 
     }
+    
 }
+
+/*
+eu tenho um array tipo
+[
+    {
+        data,
+        qualquerCoisa,
+    },
+    {
+        data,
+        qualquerCoisa,
+    },
+]
+
+Como faço pra salvar numa variável a data mais antiga, ou seja, comparar as datas e ficar com a mais antiga?
+*/
