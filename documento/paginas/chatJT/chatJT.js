@@ -59,13 +59,13 @@ async function chatJTFuncoes(){
                     assistente: '6abfbef177acca97cae0ea20',
                     chave: 'analisePrevia',
                     //filtro: null, // só vai atuar se tiver alguma coisa
-                    //escopo: null, // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
+                    escopo: "primeiroAssistente", // serve para "dividir" os dados, ou seja, serão mandados dados[valorDoEscopo]
                     //arquivos: 'arquivos',  // caminho em dados com [{ nome, base64, mime }]
                     //instrucao: 'Analise a sentença e o acórdão anexos.'  // opcional
                     //mandaResultadoPara: chaveDoOutroAssistente
                 }
             ],
-            funcaoRechamada: 'tramitaIASecaoRis'
+            funcaoRechamada: 'tramitaIASecaoDamPeritoDecide'
         }
     ]
     let dados = dadosTarefa?.dados

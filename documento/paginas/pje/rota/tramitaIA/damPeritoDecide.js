@@ -1,6 +1,7 @@
 async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar, rechamada = false, dadosRechamada) {
     if (rechamada){
-
+        _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeDamPerito.json', 'application/json')
+        return
     }
     let el = document.getElementById(elementoAncestral)
     el.style.flexDirection = 'row-reverse'
@@ -57,11 +58,11 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 botao.style.width = 'fit-content'
             }
             console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.mb, 'color:inherit', processos)
-            let buscaProcessos = []
+            let dados = {}
+            let execucao = Date.now()
             for (let i = 0; i < processos?.ids?.length; i++) {
                 if (i > 19) {
-                    _baixarArquivo(JSON.stringify(buscaProcessos, null, 2), 'EEISL.json', 'application/json')
-                    return
+                    break
                 }
                 mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
                 let idProc = processos?.ids[i]
@@ -107,11 +108,12 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                         timeline: timelinePrimeiroAssistente
                     }
                 }
-                buscaProcessos.push({dadosPrimeiroAssistente})
+                dados.primeiroAssistente = dadosPrimeiroAssistente
 
                 
             }
-            _baixarArquivo(JSON.stringify(buscaProcessos, null, 2), 'EEISL.json', 'application/json')
+            _baixarArquivo(JSON.stringify(dados, null, 2), 'EEISL.json', 'application/json')
+            mandaDadosProChatJT(elementoAncestral, execucao, dados, ancestralLimpar, idMostrador)
             
         }
 

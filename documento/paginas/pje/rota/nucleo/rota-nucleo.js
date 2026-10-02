@@ -760,3 +760,13 @@ async function rota_IAEnviaConteudo(conteudo, nome, conversationId, aut, instruc
     // PDF (ou outro binário): manda como arquivo
     return rota_fetch_IAEnviaRequisicao(instrucao, conversationId, aut, [{ nome, blob: conteudo }])
 }
+
+
+async function mandaDadosProChatJT(nomeElementoAncestral, execucao, dados, ancestralLimpar, idElementoMostra) {
+    let url = 'https://ia.jt.jus.br/chat/'
+    let armazenamento = nomeElementoAncestral + execucao
+    esperaTramitaIA = { janela: armazenamento, dados: dados }
+    await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
+    window.open(url, armazenamento)
+    mostraResultadosBuscaSimples(ancestralLimpar, 'Aguardando a IA no chat. Não feche a janela.', id('tramitaIA', 'mostraResultadosBuscaRis'))
+}
