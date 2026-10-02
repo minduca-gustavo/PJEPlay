@@ -95,11 +95,11 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                     if (![16, 733].includes(peticao?.idTipo)) continue
                     let { id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso } = peticao
                     let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, peticao.id) || '')
-                    peticoesPrimeiroAssistente.push({ data, titulo, tipo, tipoPolo, participacaoProcesso, teor })
+                    peticoesPrimeiroAssistente.push({ id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso, teor })
                 }
                 let dadosPrimeiroAssistente = {
                     dadosProcessuais:{
-                        id: idProc,
+                        idDoProcesso: idProc,
                         partes: partes,
                         numero: dadosSimples?.numero,
                         dataMaisAntiga,
