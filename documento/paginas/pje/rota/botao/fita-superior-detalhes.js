@@ -399,7 +399,9 @@ async function tramitaIAResumoRapidoBusca() {
     let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
     let idURL = idURLMatch?.[1]
     let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
-    let timelineLimpa = timeline.map()
+    let timelineLimpa = timeline.map(d => {
+        return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
+    })
     if (!audienciasMarcadas.length) {
         fitaSuperiorErro('Não há audiências marcadas')
         return
