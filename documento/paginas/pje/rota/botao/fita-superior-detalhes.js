@@ -402,6 +402,38 @@ async function tramitaIAResumoRapidoBusca() {
     let timelineLimpa = timeline.map(d => {
         return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
     })
+    let dataMaior = null
+    let atas = timelineLimpa.filter(d=> normalizar(d?.titulo).includes('ata da audiencia')) || []
+    let teorAtas = []
+    for (let ata of atas){
+        let teor = await rota_extrairTeorDocumento(idURL, ata?.id) || ''
+        teorAtas.push({id: ata?.id, informacoes: ata, teor})
+        dataMaior = dataMaior > new Date(ata?.data) ? dataMaior : ata?.data
+    }
+    let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c))) || []
+    let teorDespachos = []
+    for (let despacho of despachos){
+        let teor = await rota_extrairTeorDocumento(idURL, despacho?.id) || ''
+        teorDespachos.push({id: despacho?.id, informacoes: despacho, teor})
+        dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
+    }
+    let documentosPartes = timelineLimpa.filter(d=>{
+        let partes = ['perito', 'autor', 'reu'].some(c=> normalizar(d?.participacaoProcesso).includes(c) && d?.participacaoProcesso)
+        let data = new Date(d?.data) > dataMaior
+        if(partes && data) return d
+    }) || []
+    console.log('%c[Rota PJE]%c documentosPartes' + JSON.stringify(documentosPartes), LOG.erro, 'color:inherit')
+    let teorDocumentosPartes = []
+    for (let documento of documentosPartes){
+        let teor = await rota_extrairTeorDocumento(idURL, documento?.id) || ''
+        teorDocumentosPartes.push({id: documento?.id, informacoes: documento, teor})
+    }
+    let resultado = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
+    _baixarArquivo(JSON.stringify(resultado, null, 2), 'resumoRapidoCON1.json', 'application/json')
+    alert ('OK.')
+    return
+
+
     if (!audienciasMarcadas.length) {
         fitaSuperiorErro('Não há audiências marcadas')
         return
