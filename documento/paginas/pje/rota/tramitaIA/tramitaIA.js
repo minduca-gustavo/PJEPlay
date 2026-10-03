@@ -1,7 +1,3 @@
-// Listener de comunicação entre janelas
-let esperaTramitaIA = false
-rota_reacoes.tramitaIA = tramitaIACriaSecoes
-
 function tramitaIAFuncoes(){
     tramitaIACriaBotao()
 }
@@ -80,7 +76,7 @@ async function tramitaIAMenu() {
     tramitaIACriaSecoes({elemento: idRolante})
 }
 
-function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = null, janela = null}){
+function tramitaIACriaSecoes({elemento = null}){
     let secoes = [
         {
             nome: 'ris',
@@ -94,17 +90,6 @@ function tramitaIACriaSecoes({elemento = null, funcaoRechamada = null, dados = n
     let mapaFuncoes = {
         tramitaIASecaoRis, // está no arquivo ris.js
         tramitaIASecaoDamPeritoDecide, // está no arquivo damPeritoDecide.js
-    }
-    if (funcaoRechamada){
-        let esperado = esperaTramitaIA
-        if (!esperado || esperado.janela !== janela) return
-        let fn = mapaFuncoes[funcaoRechamada]
-        let idDiv = elemento
-        let ancestral = document.getElementById(idDiv)?.parentElement?.id
-        if (!fn || !ancestral) return
-        esperaTramitaIA = false
-        fn(idDiv, ancestral, true, rota_juntaResultados(esperado.dados, dados))
-        return
     }
     for (let secao of secoes){
         let idDiv = elemento + '_' + secao?.nome

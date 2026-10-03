@@ -1,7 +1,10 @@
+// Assistente do Chat JT usado pelo Recebimento e Remessa (analisa sentenças e acórdãos)
+const TRAMITAIA_RIS_ASSISTENTE = '6aac80f81501b0e00725a8df'
+
 async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRechamada){
     if (rechamada){
         let rolante = document.getElementById(ancestral)
-        rolante.replaceChildren()                 // tira a seção e o "Iniciando buscas"
+        rolante.replaceChildren()                 // tira a seção e o mostrador de progresso
         rolante.style.overflowY = 'hidden'
         apresentaResultados({
             array: dadosRechamada.map(tramitaIALinhaRis),
@@ -47,17 +50,14 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
         mostraResultadosBuscaRis(rolante, 0)
         let meta = interceptador_ler('agrupamento_tarefas_processos')
         let processos = meta?.resultado || []
-        
-        
+
         if (!processos.length) {
             rotinaErro('atualize')
             return
         }
-        let i = 0
-        let execucao = Date.now()
         let dados = []
         for (let processo of processos) {
-            mostraResultadosBuscaRis(rolante, 'Processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length)
+            mostraResultadosBuscaRis(rolante, 'Buscando documentos: processo ' + (processos.indexOf(processo) + 1) + ' de ' + processos.length)
             let id = processo?.id || null
             let numero = processo?.numeroProcesso || null
             if (!id) continue
@@ -83,7 +83,6 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                     return 'Documento ' + d.titulo + ' datado de ' + dataFmt
                 })
                 .join(', ');
-            //console.log('%c[Rota PJE]%c timelineSegundo: ' + JSON.stringify(timelineSegundo), LOG.info, 'color:inherit')
             let tituloRegex = /^TST\s*-\s*(Acórdão|Decisão)\b/i
             let sentencas  = timeline
                 .filter(d => ['Sentença', 'Acórdão'].includes(d?.tipo) || tituloRegex.test(d?.titulo || ''))
@@ -95,7 +94,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
                     let parser = new DOMParser();
                     let teorHtml = teor ? parser.parseFromString(teor, 'text/html') : null
                     let divs = teorHtml ? [...teorHtml.querySelectorAll('div.corpo')] : []
-                    // Se não encontrou nenhuma div.corpo, tenta div.body
+                    // Se não encontrou nenhuma div.corpo, tenta .conteudo_editor
                     if (teorHtml && divs.length === 0) {
                         divs = [...teorHtml.querySelectorAll('.conteudo_editor')]
                     }
@@ -119,13 +118,42 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             }
             dados.push(d)
         }
-        let url = 'https://ia.jt.jus.br/chat/'
-        let armazenamento = elemento + execucao
-        esperaTramitaIA = { janela: armazenamento, dados: dados }
-        await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
-        window.open(url, armazenamento)
-        mostraResultadosBuscaRis(rolante, 'Aguardando a IA no chat. Não feche a janela.')
-        return
+        if (!dados.length) {
+            rotinaErro('atualize')
+            return
+        }
+
+        // Consulta a IA direto daqui (o fetch roda no segundo plano)
+        let resultado = await consultaIARis(dados, rolante)
+        if (!resultado) return
+        tramitaIASecaoRis(elemento, rolante, true, rota_juntaResultados(dados, resultado))
+    }
+
+    async function consultaIARis(dados, rolante){
+        let resultado = []
+        for (let i = 0; i < dados.length; i++){
+            mostraResultadosBuscaRis(rolante, 'Consultando a IA: processo ' + (i + 1) + ' de ' + dados.length + '. Não feche a janela.')
+            let consulta = null
+            try {
+                consulta = await rota_IAConsulta(TRAMITAIA_RIS_ASSISTENTE, JSON.stringify(semNaoMandar(dados[i])))
+            } catch(e){
+                // se nem a primeira conversa abre, provavelmente não há login no Chat JT
+                if (i === 0 && e.message === 'falha ao criar conversa'){
+                    rotinaErro('login')
+                    return null
+                }
+                consulta = 'ERRO: ' + e.message
+            }
+            resultado.push({ indice: i, ...chatJTLimpaJSON(consulta) })
+        }
+        return resultado
+    }
+
+    // tira o naoMandar do item antes de enviar para a IA (sem alterar o objeto original)
+    function semNaoMandar(item){
+        if (!item || typeof item != 'object' || Array.isArray(item)) return item
+        let { naoMandar: _ignorado, ...resto } = item
+        return resto
     }
 
     function mostraResultadosBuscaRis(idElemento, contador){
@@ -143,6 +171,10 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
             {
                 tipo: 'atualize',
                 mensagem: 'Ocorreu um erro. Atualize a página e tente novamente.'
+            },
+            {
+                tipo: 'login',
+                mensagem: 'Não foi possível abrir a conversa no Chat JT. Faça login em ia.jt.jus.br e tente novamente.'
             }
         ]
         let mensagem = erros.find(d => d.tipo == tipo).mensagem
@@ -168,7 +200,7 @@ function tramitaIALinhaRis(item){
         "Documento decisivo":               doc ? doc.tipo + ' - ' + doc.instancia + ' - ' + String(doc.dataDocumento || '').slice(0, 10) : '',
         "Providências da Secretaria":       lido ? removeQuebras([].concat(r.providenciasSecretaria ?? []).filter(Boolean).join('; ')) : '',
         "Tem Obrigação de fazer?":          lido ? (removeQuebras(r.obrigacaoDeFazer) ?? '') : '',
-        "Qual Obrigação?":                  lido ? (removeQuebras(r.qualObrigacao) ?? '') : '',
+        "Qual Obrigação?":                  lido ? removeQuebras([].concat(r.qualObrigacao ?? []).filter(Boolean).join('; ')) : '',
         "Evidência":                        lido ? (removeQuebras(r.evidencia) ?? '') : '',
         // quando CONFERIR, mostra o motivo (ERRO: ..., texto livre da IA ou sem análise)
         "Observação":                       lido ? (removeQuebras(r.observacao) ?? '') : removeQuebras(String(item.resultado ?? 'sem análise')).slice(0, 300),

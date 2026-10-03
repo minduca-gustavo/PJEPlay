@@ -7,11 +7,14 @@
  * e capturarImagemDeElemento(). Mexer aqui é mexer no contrato
  * com a pasta modulos/.
  *
- * Ao final do arquivo ficam as duas responsabilidades próprias do
- * Rota: a extração de texto de PDF (EXTRAIR_PDF, que precisa do
- * pdf.js e por isso não pode rodar no content script) e a semeadura
- * da tarefa padrão.
+ * Ao final do arquivo ficam as responsabilidades próprias do Rota:
+ * o Chat JT (envio multipart e reescrita de Origin/Referer), a
+ * extração de texto de PDF (EXTRAIR_PDF, que precisa do pdf.js e
+ * por isso não pode rodar no content script) e a semeadura da
+ * tarefa padrão.
  */
+
+const EXT_ORIGIN = browser.runtime.getURL('').slice(0, -1) // "moz-extension://<uuid>"
 
 let PRONTO = inicializar()
 
@@ -23,29 +26,6 @@ async function inicializar(){
 	await semearTarefaPadrao()
 }
 
-
-/**
- * Sem isto, um usuário novo que nunca abre o menu fica sem nenhuma
- * tarefa 👤 e o rótulo do botão Rota mostra '—'.
- *
- * Roda a cada início do segundo plano — não via runtime.onInstalled —
- * porque esse evento não dispara de forma confiável em extensões
- * temporárias carregadas por about:debugging.
- * catalogo_garantirTarefaAtiva() é idempotente.
- */
-async function semearTarefaPadrao(){
-	try{
-		await catalogo_garantirTarefaAtiva()
-	} catch(erro){
-		relatar('semearTarefaPadrao:', erro, 'erro')
-	}
-}
-
-NAVEGADOR.runtime.onMessage.addListener((msg, sender) => {
-    if (msg?.acao !== 'rota_posicionar' || !sender.tab) return
-    return browser.windows.update(sender.tab.windowId, msg.geo)
-})
-
 NAVEGADOR.runtime.onInstalled.addListener(async () => {
 	await PRONTO
 	definirIconeDaExtensaoPeloEstado(CONFIGURACAO.ativa)
@@ -54,6 +34,11 @@ NAVEGADOR.runtime.onInstalled.addListener(async () => {
 NAVEGADOR.runtime.onStartup.addListener(async () => {
 	await PRONTO
 	definirIconeDaExtensaoPeloEstado(CONFIGURACAO.ativa)
+})
+
+NAVEGADOR.runtime.onMessage.addListener((msg, sender) => {
+	if(msg?.acao !== 'rota_posicionar' || !sender.tab) return
+	return browser.windows.update(sender.tab.windowId, msg.geo)
 })
 
 NAVEGADOR.runtime.onMessage.addListener((
@@ -69,48 +54,49 @@ NAVEGADOR.runtime.onMessage.addListener((
 	async function processar(){
 
 		await PRONTO
-	
+
 		relatar('Mensagem Recebida:', {mensagem,remetente}, 'navegador')
-	
+
 		let {
-			acao					= '',
-			url						= '',
+			acao			= '',
+			url				= '',
 			configuracao	= '',
 			requisicao		= '',
-			tipo					= '',
-			texto					= '',
-			chave					= '',
-			ativa					= true,
-			incognito		 	= false,
-			largura				= 0,
-			altura				= 0,
+			chatJT			= '',
+			tipo			= '',
+			texto			= '',
+			chave			= '',
+			ativa			= true,
+			incognito		= false,
+			largura			= 0,
+			altura			= 0,
 			horizontal		= 0,
-			vertical			= 0,
-			capturar			= false,
-			retangulo			= false,
-			copiar				= true,
-			processo			= '',
+			vertical		= 0,
+			capturar		= false,
+			retangulo		= false,
+			copiar			= true,
+			processo		= '',
 		} = mensagem
-	
+
+		// fetch genérico pedido pelo content script; JSON vem convertido
 		if(requisicao){
-			try{
-				relatar('Requisição:',requisicao,'requisicao')
-				let resposta = await fetch(requisicao, configuracao)
-				relatar('Resposta:',resposta,'resposta')
-				if(resposta.type === 'opaqueredirect')
-					throw new Error('Redirecionamento bloqueado.')
-				if(!resposta.ok)
-					throw new Error(`HTTP ${resposta.status}`)
-				let texto	= await resposta.text()	|| ''
-				let dados = texto_ou_json(texto)	|| ''
-				responder({sucesso:true, dados })
-			} catch(erro){
-				relatar('Erro:',erro,'erro')				
-				responder({sucesso:false,erro:erro.message })
-			}
+			relatar('Requisição:', requisicao, 'requisicao')
+			await buscarParaContentScript(requisicao, configuracao, responder)
 			return
 		}
-	
+
+		// envio de mensagem ao Chat JT; resposta vem bruta (stream, um JSON por linha)
+		if(chatJT){
+			relatar('ChatJT:', chatJT, 'requisicao')
+			await buscarParaContentScript(chatJT, {
+				method:			'POST',
+				credentials:	'include',
+				headers:		{ 'Accept': '*/*' },	// sem Content-Type: o fetch gera o boundary do multipart
+				body:			chatJT_montarFormulario(configuracao)
+			}, responder, true)
+			return
+		}
+
 		if(url){
 			if(tipo === 'aba')
 				criarAba({
@@ -129,14 +115,14 @@ NAVEGADOR.runtime.onMessage.addListener((
 					vertical
 				})
 			esforcosPoupados({
-				movimentos: 6,
-				cliques:				4,
-				teclas:				 contarCaracteres(url),
-				segundos:		 caracteresParaSegundos(url)
+				movimentos:	6,
+				cliques:	4,
+				teclas:		contarCaracteres(url),
+				segundos:	caracteresParaSegundos(url)
 			})
 			return
 		}
-	
+
 		if(acao === 'RecarregarExtensao'){
 			relatar('Recarregando extensão…','','navegador')
 			NAVEGADOR.runtime.reload()
@@ -147,13 +133,13 @@ NAVEGADOR.runtime.onMessage.addListener((
 			NAVEGADOR.tabs.reload(remetente.tab.id, {bypassCache:true})
 			return
 		}
-	
+
 		if(acao === 'FecharEstaAba' && remetente.tab){
 			relatar('Fechando aba atual…', '', 'navegador')
 			NAVEGADOR.tabs.remove(remetente.tab.id)
 			return
 		}
-	
+
 		if(acao === 'FecharAbaPorTitulo'){
 			relatar('Fechando aba com título contendo: ', '"' + texto + '"', 'navegador')
 			try{
@@ -173,7 +159,7 @@ NAVEGADOR.runtime.onMessage.addListener((
 			}
 			return
 		}
-	
+
 		if(tipo === 'EXTRAIR_PDF'){
 			try{
 				let texto = await extrairTextoDePDF(new Uint8Array(mensagem.bytes))
@@ -200,6 +186,28 @@ NAVEGADOR.runtime.onMessage.addListener((
 })
 
 
+/**
+ * Faz o fetch e responde ao content script no formato
+ * { sucesso, dados } ou { sucesso:false, erro }.
+ * bruto = true devolve o texto como veio (sem texto_ou_json).
+ */
+async function buscarParaContentScript(url, opcoes, responder, bruto = false){
+	try{
+		let resposta = await fetch(url, opcoes)
+		relatar('Resposta:', resposta, 'resposta')
+		if(resposta.type === 'opaqueredirect')
+			throw new Error('Redirecionamento bloqueado.')
+		if(!resposta.ok)
+			throw new Error(`HTTP ${resposta.status}`)
+		let texto = await resposta.text() || ''
+		responder({ sucesso:true, dados: bruto ? texto : (texto_ou_json(texto) || '') })
+	} catch(erro){
+		relatar('Erro:', erro, 'erro')
+		responder({ sucesso:false, erro:erro.message })
+	}
+}
+
+
 function criarAba(configuracao={}){
 	relatar('Criando aba…','','navegador')
 	relatar('Definindo opções:',configuracao,'navegador')
@@ -222,22 +230,22 @@ function criarAba(configuracao={}){
 async function criarJanela(configuracao = {}) {
 
 	let {
-		url					= 'about:blank',
-		largura			= TELA.availWidth,
-		altura			= TELA.availHeight,
+		url			= 'about:blank',
+		largura		= TELA.availWidth,
+		altura		= TELA.availHeight,
 		horizontal	= 0,
-		vertical		= 0,
-		chave				= 'nova',
-		tipo				= 'normal',
-		incognito		= false,
+		vertical	= 0,
+		chave		= 'nova',
+		tipo		= 'normal',
+		incognito	= false,
 	} = configuracao
 
 	let armazenamento = await NAVEGADOR.storage.local.get('janela')
 	let janela = armazenamento?.janela || {}
 	if (janela[chave]) {
 		let valor = janela[chave]
-		if (valor?.l) largura			= valor.l
-		if (valor?.a) altura			= valor.a
+		if (valor?.l) largura		= valor.l
+		if (valor?.a) altura		= valor.a
 		if (valor?.h) horizontal	= valor.h
 		if (valor?.v) vertical		= valor.v
 	}
@@ -246,10 +254,10 @@ async function criarJanela(configuracao = {}) {
 		url,
 		incognito,
 		height:	altura,
-		left:		horizontal,
-		top:		vertical,
+		left:	horizontal,
+		top:	vertical,
 		width:	largura,
-		type:		tipo,
+		type:	tipo,
 	}
 
 	try{
@@ -261,6 +269,49 @@ async function criarJanela(configuracao = {}) {
 
 }
 
+
+// ── Rota: Chat JT ─────────────────────────────────────────────
+
+/**
+ * O fetch do segundo plano sai com Origin moz-extension://, e o
+ * Chat JT recusa POST de formulário de outra origem. Aqui, só nas
+ * requisições disparadas pela própria extensão, Origin e Referer
+ * passam a ser os do próprio site.
+ * Exige as permissões webRequest e webRequestBlocking e o host
+ * https://ia.jt.jus.br/* no manifest.
+ */
+browser.webRequest.onBeforeSendHeaders.addListener(
+	(details) => {
+		if(!details.originUrl?.startsWith(EXT_ORIGIN)) return {}
+		let headers = details.requestHeaders.filter(
+			h => !['origin', 'referer'].includes(h.name.toLowerCase())
+		)
+		headers.push({ name: 'Origin',  value: 'https://ia.jt.jus.br' })
+		headers.push({ name: 'Referer', value: details.url })
+		return { requestHeaders: headers }
+	},
+	{ urls: ['https://ia.jt.jus.br/*'] },
+	['blocking', 'requestHeaders']
+)
+
+
+/**
+ * Monta o multipart no mesmo formato do site: cada arquivo vai
+ * como o TEXTO base64 (não os bytes), e o prefixo "base64;" no
+ * nome avisa o servidor disso. O payload vai no campo `data`.
+ * Recebe { dados: string JSON, partes: [{ base64, mime, nome }] }.
+ */
+function chatJT_montarFormulario({ dados = '{}', partes = [] } = {}){
+	let form = new FormData()
+	for(let p of partes){
+		form.append('files', new Blob([p.base64], { type: p.mime }), 'base64;' + p.nome)
+	}
+	form.append('data', dados)
+	return form
+}
+
+
+// ── Rota: PDF ─────────────────────────────────────────────────
 
 /**
  * Extrai o texto de um PDF usando o pdf.js empacotado em utils/.
@@ -279,4 +330,24 @@ async function extrairTextoDePDF(bytes){
 		texto += conteudo.items.map(item => item.str).join(' ') + '\n'
 	}
 	return texto
+}
+
+
+// ── Rota: tarefa padrão ───────────────────────────────────────
+
+/**
+ * Sem isto, um usuário novo que nunca abre o menu fica sem nenhuma
+ * tarefa 👤 e o rótulo do botão Rota mostra '—'.
+ *
+ * Roda a cada início do segundo plano — não via runtime.onInstalled —
+ * porque esse evento não dispara de forma confiável em extensões
+ * temporárias carregadas por about:debugging.
+ * catalogo_garantirTarefaAtiva() é idempotente.
+ */
+async function semearTarefaPadrao(){
+	try{
+		await catalogo_garantirTarefaAtiva()
+	} catch(erro){
+		relatar('semearTarefaPadrao:', erro, 'erro')
+	}
 }

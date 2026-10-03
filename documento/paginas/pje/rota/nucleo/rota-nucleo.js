@@ -529,29 +529,6 @@ NAVEGADOR.storage.onChanged.addListener(function rota_ouvinteGeral(mudancas){
 	catch(e){ console.log('[Rota PJE] erro na reação ' + sinal.nome, e) }
 })
 
-function chatJTLimpaJSON(texto){
-    if (texto && typeof texto === 'object') return { lido: true, resultado: texto }
-    let s = String(texto ?? '')
-    let ini = s.indexOf('{'), fim = s.lastIndexOf('}')
-    if (ini !== -1 && fim > ini){
-        try { return { lido: true, resultado: JSON.parse(s.slice(ini, fim + 1)) } } catch(e){}
-    }
-    return { lido: false, resultado: s || 'sem resposta' }
-}
-
-// junta o que foi enviado (guardado na aba de origem) com o que voltou, pelo índice
-function rota_juntaResultados(enviados, retornados = []){
-    let semIndice = r => { let { indice, ...analises } = r ?? {}; return analises }
-    retornados = retornados || []
-    if (!Array.isArray(enviados)){
-        return [{ dados: enviados, ...semIndice(retornados[0]) }]
-    }
-    return enviados.map((item, i) => ({
-        ...item,
-        ...semIndice(retornados.find(r => r.indice === i))
-    }))
-}
-
 // ── Instrumentação de bancada ─────────────────────────────────
 
 async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}){
@@ -622,14 +599,17 @@ async function monitorarBody(duracaoMs = 5000, intervaloMs = 300, filtro = {}){
 }
 
 function removeQuebras(texto) {
-	return typeof texto === 'string' ? texto.replace(/[\s\u0085]+/g, ' ').trim() : ''
+	return typeof texto === 'string' ? texto.replace(/[\s\u0085]+/g, ' ').trim() : texto
 }
-/**
- * Boundary fixo para o multipart do Chat JT. Arbitrário: só
- * precisa ser igual no header e no corpo. Não precisa mudar nunca.
- */
-const ROTA_IA_BOUNDARY = '----rotaboundary0001'
 
+
+// ── Chat JT (ia.jt.jus.br) ────────────────────────────────────
+// As requisições rodam no segundo plano (mensagens `requisicao` e
+// `chatJT` de segundo-plano.js), que reescreve Origin e Referer.
+// Por isso estas funções funcionam em qualquer content script,
+// inclusive na página do PJe, sem abrir a janela do chat.
+
+const ROTA_IA_URL = 'https://ia.jt.jus.br/chat/conversation'
 
 /**
  * Tools padrão da conversa. Sobrescreva por parâmetro quando
@@ -643,130 +623,196 @@ const ROTA_IA_TOOLS_PADRAO = [
 
 
 /**
- * Cria uma conversa nova no Chat JT e devolve o conversationId.
- * Retorna null em caso de erro.
+ * Cria uma conversa nova e devolve { idIA, aut }:
+ *   idIA → conversationId
+ *   aut  → id da mensagem raiz da conversa; vai como `id` no envio,
+ *          dizendo a qual mensagem a pergunta responde.
+ * Retorna null em erro (sem login no Chat JT cai aqui).
  */
-async function rota_fetch_IACriaConversa(
-	assistantId = '',
-	modelo = 'modelo_rapido'
-){
-	let url = 'https://ia.jt.jus.br/chat/conversation'
+async function rota_fetch_IACriaConversa(assistantId = '', modelo = 'modelo_rapido'){
 	try{
-		relatar('POST ' + url, assistantId, 'requisicao')
-		let r = await fetch(url, {
-			method: 'POST', mode: 'cors', credentials: 'include',
-			headers: { 'Content-Type': 'application/json', 'Accept': '*/*' },
-			body: JSON.stringify({
-				model: modelo,
-				assistantId: assistantId,
-				metadata: { _isCorisco: false }
-			})
+		relatar('POST ' + ROTA_IA_URL, assistantId, 'requisicao')
+		let criada = await NAVEGADOR.runtime.sendMessage({
+			requisicao: ROTA_IA_URL,
+			configuracao: {
+				method: 'POST',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json', 'Accept': '*/*' },
+				body: JSON.stringify({
+					model: modelo,
+					assistantId: assistantId,
+					metadata: { _isCorisco: false }
+				})
+			}
 		})
-		if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
-		let dados = await r.json()
-		let id = dados.conversationId || dados.id || null
-		relatar('Conversa criada: ' + id, dados, 'resposta')
-		let urlGet = 'https://ia.jt.jus.br/chat/conversation/' + id + '/__data.json'
-		let s = await fetch(urlGet, {
-			method: 'GET', credentials: 'include'
-		});
-		let intermediario = await s.json()
-		if (!intermediario) return
-		let data = intermediario?.nodes?.[1]?.data
+		if(!criada?.sucesso) throw new Error(criada?.erro || 'segundo plano não respondeu')
+		let idIA = criada.dados?.conversationId || criada.dados?.id || null
+		if(!idIA) throw new Error('resposta sem conversationId')
+		relatar('Conversa criada: ' + idIA, criada.dados, 'resposta')
+
+		let detalhes = await NAVEGADOR.runtime.sendMessage({
+			requisicao: ROTA_IA_URL + '/' + idIA + '/__data.json',
+			configuracao: { method: 'GET', credentials: 'include' }
+		})
+		if(!detalhes?.sucesso) throw new Error(detalhes?.erro || 'segundo plano não respondeu')
+		let data = detalhes.dados?.nodes?.[1]?.data
 		let aut = data?.[data?.find(d => d?.id)?.id]
-		return {idIA: id, aut: aut}
-		
-	} catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+		if(!aut) throw new Error('id da mensagem raiz não encontrado')
+		return { idIA, aut }
+	} catch(e){
+		relatar('rota_fetch_IACriaConversa: ' + e.message, assistantId, 'erro')
+		return null
+	}
 }
 
 
 /**
- * Envia um texto para uma conversa do Chat JT e devolve o
- * finalAnswer (texto completo da resposta). Retorna null em erro.
+ * Envia um texto (e, opcionalmente, arquivos) para uma conversa e
+ * devolve o texto completo da resposta. Retorna null em erro.
  *
- * O id da mensagem é sempre um UUID novo — reutilizar id de
- * mensagem é o que causava o erro 500 genérico.
+ * arquivos: [{ nome, blob }] ou [{ nome, base64, mime }]
+ * O base64 é calculado aqui porque Blob não atravessa o
+ * runtime.sendMessage de forma confiável; string atravessa.
  */
 async function rota_fetch_IAEnviaRequisicao(
-    texto = '',
-    conversationId = '',
-    aut = '',
-    arquivos = [],
-    tools = ROTA_IA_TOOLS_PADRAO
+	texto = '',
+	conversationId = '',
+	aut = '',
+	arquivos = [],
+	tools = ROTA_IA_TOOLS_PADRAO
 ){
-    let url = 'https://ia.jt.jus.br/chat/conversation/' + conversationId
-    let payload = {
-        inputs: texto,
-        id: aut,
-        is_retry: false,
-        is_continue: false,
-        web_search: false,
-        tools: tools
-    }
-
-    try{
-        let form = new FormData()
-
-        // Arquivos primeiro, como na requisição original
-        for(let arq of arquivos){
-            let base64 = arq.base64 ?? await rota_blobParaBase64(arq.blob)
-            let mime = arq.mime || arq.blob?.type || 'application/octet-stream'
-            // O conteúdo da parte é o TEXTO base64; o prefixo no nome avisa o servidor
-            form.append('files', new Blob([base64], { type: mime }), 'base64;' + arq.nome)
-        }
-        form.append('data', JSON.stringify(payload))
-
-        relatar('POST ' + url, texto.slice(0, 200) + (arquivos.length ? ` [+${arquivos.length} arquivo(s)]` : ''), 'requisicao')
-        let r = await fetch(url, {
-            method: 'POST', mode: 'cors', credentials: 'include',
-            headers: { 'Accept': '*/*' },   // sem Content-Type!
-            body: form
-        })
-        if(!r.ok){ relatar('HTTP ' + r.status, url, 'erro'); return null }
-
-        let linhas = (await r.text()).split('\n')
-        let parciais = []
-        for(let linha of linhas){
-            if(!linha.trim()) continue
-            let evento
-            try{ evento = JSON.parse(linha) } catch(e){ continue }
-            if(evento.type === 'stream') parciais.push(evento.token)
-            if(evento.type === 'finalAnswer') return evento.text
-        }
-        return parciais.join('') || null
-    } catch(e){ relatar('fetch erro: ' + e.message, url, 'erro'); return null }
+	let url = ROTA_IA_URL + '/' + conversationId
+	try{
+		let partes = []
+		for(let arq of arquivos){
+			partes.push({
+				base64: arq.base64 ?? await rota_blobParaBase64(arq.blob),
+				mime:   arq.mime || arq.blob?.type || 'application/octet-stream',
+				nome:   arq.nome || 'arquivo'
+			})
+		}
+		relatar('POST ' + url, texto.slice(0, 200) + (partes.length ? ` [+${partes.length} arquivo(s)]` : ''), 'requisicao')
+		let r = await NAVEGADOR.runtime.sendMessage({
+			chatJT: url,
+			configuracao: {
+				dados: JSON.stringify({
+					inputs: texto,
+					id: aut,
+					is_retry: false,
+					is_continue: false,
+					web_search: false,
+					tools: tools
+				}),
+				partes: partes
+			}
+		})
+		if(!r?.sucesso) throw new Error(r?.erro || 'segundo plano não respondeu')
+		return rota_IALeResposta(r.dados)
+	} catch(e){
+		relatar('rota_fetch_IAEnviaRequisicao: ' + e.message, url, 'erro')
+		return null
+	}
 }
 
 
 /**
- * Recebe o que veio do PJe (string ou Blob) e escolhe a forma de envio.
+ * Envia um conteúdo vindo do PJe, escolhendo a forma de envio:
+ *   string ................. vai como texto
+ *   Blob text/* (ou HTML) .. extrai o texto e manda como texto
+ *   Blob binário (PDF) ..... vai como arquivo anexo
+ * A instrução, se houver, vai antes do texto (ou como a mensagem
+ * que acompanha o anexo).
  */
-async function rota_IAEnviaConteudo(conteudo, nome, conversationId, aut, instrucao = 'Segue o documento.'){
-    // Já é texto
-    if(typeof conteudo === 'string')
-        return rota_fetch_IAEnviaRequisicao(conteudo, conversationId, aut)
+async function rota_IAEnviaConteudo(conteudo, nome = 'documento', conversationId = '', aut = '', instrucao = ''){
+	if(conteudo == null || conteudo === '') return null
+	let comInstrucao = texto => instrucao ? instrucao + '\n\n' + texto : texto
 
-    let tipo = conteudo.type || ''
+	if(typeof conteudo === 'string')
+		return rota_fetch_IAEnviaRequisicao(comInstrucao(conteudo), conversationId, aut)
 
-    // HTML ou texto: extrai e manda como texto
-    if(tipo.startsWith('text/')){
-        let bruto = await conteudo.text()
-        let texto = tipo.includes('html')
-            ? new DOMParser().parseFromString(bruto, 'text/html').body.innerText
-            : bruto
-        return rota_fetch_IAEnviaRequisicao(instrucao + '\n\n' + texto, conversationId, aut)
-    }
+	// duck typing: instanceof Blob pode falhar entre página e content script no Firefox
+	if(typeof conteudo?.arrayBuffer !== 'function'){
+		relatar('rota_IAEnviaConteudo: conteúdo não é string nem Blob', conteudo, 'erro')
+		return null
+	}
 
-    // PDF (ou outro binário): manda como arquivo
-    return rota_fetch_IAEnviaRequisicao(instrucao, conversationId, aut, [{ nome, blob: conteudo }])
+	let tipo = conteudo.type || ''
+	if(tipo.startsWith('text/')){
+		let bruto = await conteudo.text()
+		let texto = tipo.includes('html')
+			? new DOMParser().parseFromString(bruto, 'text/html').body.innerText
+			: bruto
+		return rota_fetch_IAEnviaRequisicao(comInstrucao(texto), conversationId, aut)
+	}
+
+	return rota_fetch_IAEnviaRequisicao(instrucao || 'Segue o documento.', conversationId, aut, [{ nome, blob: conteudo }])
 }
 
 
-async function mandaDadosProChatJT(nomeElementoAncestral, execucao, dados, ancestralLimpar, idElementoMostra) {
-    let url = 'https://ia.jt.jus.br/chat/'
-    let armazenamento = nomeElementoAncestral + execucao
-    esperaTramitaIA = { janela: armazenamento, dados: dados }
-    await armazenar({[armazenamento]: {dados: dados, execucao: execucao}})
-    window.open(url, armazenamento)
-    mostraResultadosBuscaSimples(ancestralLimpar, 'Aguardando a IA no chat. Não feche a janela.', id('tramitaIA', 'mostraResultadosBuscaRis'))
+/**
+ * Atalho para o caso comum: conversa nova com o assistente + um envio.
+ * Lança erro em vez de devolver null, para quem chama distinguir
+ * 'falha ao criar conversa' (geralmente falta de login) de
+ * 'sem resposta da IA'.
+ */
+async function rota_IAConsulta(assistente, texto, arquivos = []){
+	let conversa = await rota_fetch_IACriaConversa(assistente)
+	if(!conversa) throw new Error('falha ao criar conversa')
+	let resposta = await rota_fetch_IAEnviaRequisicao(texto, conversa.idIA, conversa.aut, arquivos)
+	if(resposta == null) throw new Error('sem resposta da IA')
+	return resposta
+}
+
+
+/**
+ * A resposta do envio é um JSON por linha (stream). Devolve o
+ * finalAnswer; se não vier, junta os tokens parciais.
+ */
+function rota_IALeResposta(texto = ''){
+	let parciais = []
+	for(let linha of String(texto).split('\n')){
+		if(!linha.trim()) continue
+		let evento
+		try{ evento = JSON.parse(linha) } catch(e){ continue }
+		if(evento.type === 'finalAnswer') return evento.text
+		if(evento.type === 'stream') parciais.push(evento.token)
+	}
+	return parciais.join('') || null
+}
+
+
+/** Blob → base64 puro (sem o prefixo "data:...;base64,"). */
+function rota_blobParaBase64(blob){
+	return new Promise((resolver, rejeitar) => {
+		let leitor = new FileReader()
+		leitor.onload  = () => resolver(String(leitor.result).split(',')[1] || '')
+		leitor.onerror = () => rejeitar(leitor.error)
+		leitor.readAsDataURL(blob)
+	})
+}
+
+
+/** Extrai o JSON da resposta da IA; se não houver, devolve o texto para conferência. */
+function chatJTLimpaJSON(texto){
+	if(texto && typeof texto === 'object') return { lido: true, resultado: texto }
+	let s = String(texto ?? '')
+	let ini = s.indexOf('{'), fim = s.lastIndexOf('}')
+	if(ini !== -1 && fim > ini){
+		try{ return { lido: true, resultado: JSON.parse(s.slice(ini, fim + 1)) } } catch(e){}
+	}
+	return { lido: false, resultado: s || 'sem resposta' }
+}
+
+
+/** Junta o que foi enviado com o que voltou da IA, pelo índice. */
+function rota_juntaResultados(enviados, retornados = []){
+	let semIndice = r => { let { indice, ...analises } = r ?? {}; return analises }
+	retornados = retornados || []
+	if(!Array.isArray(enviados)){
+		return [{ dados: enviados, ...semIndice(retornados[0]) }]
+	}
+	return enviados.map((item, i) => ({
+		...item,
+		...semIndice(retornados.find(r => r.indice === i))
+	}))
 }

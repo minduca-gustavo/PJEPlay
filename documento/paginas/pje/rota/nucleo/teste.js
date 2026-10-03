@@ -22,7 +22,7 @@ async function teste(){
     testeIA,
     testePatch,
   }
-  let funcao = confereJanela(/ia\.jt\.jus\.br/) ? testeIA : testePatch
+  let funcao = confereJanela(/ia\.jt\.jus\.br/) ? testeIA : testeIA
   let botao = criaBotaoAzul({
     id: divId + '_botao',
     ancestral: divId,
@@ -63,9 +63,9 @@ function testeJSON(parametro){
 }
 async function testeIA(parametro){
   let idAssistente = '6aac80f81501b0e00725a8df'
-  let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
+  let {idIA, aut} = await rota_fetch_IACriaConversaBack(idAssistente)
   //console.log('%c[Rota PJE]%c conversa: ' + JSON.stringify(conversa), LOG.mb, 'color:inherit')
-  let resultado = await rota_fetch_IAEnviaRequisicao(parametro, idIA, aut)
+  let resultado = await rota_fetch_IAEnviaRequisicaoBack(parametro, idIA, aut)
   console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)  
   alert (resultado)
 }
