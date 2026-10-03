@@ -381,10 +381,11 @@ async function irParaAOJDesteProcesso() {
 // ___________________________________________________
 
 async function tramitaIAResumoRapido() {
+    let idBotao = id('tramitaIAResumoRapido', 'botao')
     let botao = await criaBotaoAzul({
-        id: id('tramitaIAResumoRapido', 'botao'),
+        id: idBotao,
         ancestral: 'rotapje-busca-posicao-fila-div-barra',
-        acao: () => tramitaIAResumoRapidoBusca(),
+        acao: () => tramitaIAResumoRapidoBusca(idBotao),
         texto: 'Tramita IA - Resumo rápido'
     })
     criaTooltip({
@@ -395,114 +396,79 @@ async function tramitaIAResumoRapido() {
     estiloBotaoFitaSuperior(botao)
 }
 
-async function tramitaIAResumoRapidoBusca() {
-    let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
-    let idURL = idURLMatch?.[1]
-    let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
-    let timelineLimpa = timeline.map(d => {
-        return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
-    })
-    let dataMaior = null
-    let atas = timelineLimpa.filter(d=> normalizar(d?.titulo).includes('ata da audiencia')) || []
-    let teorAtas = []
-    for (let ata of atas){
-        let teor = await rota_extrairTeorDocumento(idURL, ata?.id) || ''
-        teorAtas.push({id: ata?.id, informacoes: ata, teor})
-        dataMaior = dataMaior > new Date(ata?.data) ? dataMaior : ata?.data
-    }
-    let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c))) || []
-    let teorDespachos = []
-    for (let despacho of despachos){
-        let teor = await rota_extrairTeorDocumento(idURL, despacho?.id) || ''
-        teorDespachos.push({id: despacho?.id, informacoes: despacho, teor})
-        dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
-    }
-    let documentosPartes = timelineLimpa.filter(d=>{
-        let partes = ['perito', 'autor', 'reu'].some(c=> normalizar(d?.participacaoProcesso).includes(c) && d?.participacaoProcesso)
-        let data = new Date(d?.data) > dataMaior
-        if(partes && data) return d
-    }) || []
-    console.log('%c[Rota PJE]%c documentosPartes' + JSON.stringify(documentosPartes), LOG.erro, 'color:inherit')
-    let teorDocumentosPartes = []
-    for (let documento of documentosPartes){
-        let teor = await rota_extrairTeorDocumento(idURL, documento?.id) || ''
-        teorDocumentosPartes.push({id: documento?.id, informacoes: documento, teor})
-    }
-    let resultado = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
-    _baixarArquivo(JSON.stringify(resultado, null, 2), 'resumoRapidoCON1.json', 'application/json')
-    alert ('OK.')
-    return
-
-
-    if (!audienciasMarcadas.length) {
-        fitaSuperiorErro('Não há audiências marcadas')
-        return
-    }
-    let sala = audienciasMarcadas[0]?.salaFisica?.nome
-    let oj = interceptador_lerProcesso() || await buscarProcesso(id) || {}
-    if (!oj?.orgaoJulgador?.descricao) {
-        fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente')
-        return
-    }
-    let url = 'https://pauta.trt15.jus.br/pautaeletronica/pautaAudiencia.xhtml'
-    let tarefa = id('buscaPautaEletronica')
-    let execucao = Date.now()
-    let nomeJanela = tarefa + '_' + execucao
-    await armazenar ({[tarefa]: {execucao: execucao, oj: oj?.orgaoJulgador?.descricao, sala: sala}})
-    window.open(url, nomeJanela)
-}
-
-async function pautaEletronicaAbriu() {
-    let janela = confereJanela(JANELA.pautaEletronica)
-    if (!janela) return
-    let tarefa = id('buscaPautaEletronica')
-    let janelaNome = window.name
-    if (!janelaNome.includes(tarefa)) return
-    let armazenamento = await obterArmazenamento(tarefa)
-    let dado = armazenamento[tarefa]
-    if (!janelaNome.includes(dado?.execucao)) return
-    let jurisdicao = 'select[id="main:jurisdicao"]'
-    await rotinaCliques(jurisdicao, dado?.oj)
-    let local = 'select[id="main:local"]'
-    await aguardarMudar(local)
-    await rotinaCliques(local, dado?.oj)
-    let sala = 'select[id="main:sala"]'
-    await aguardarMudar(sala)
-    await rotinaCliques(sala, dado?.sala)
-    await suspender (1000)
-    window.name = ''
-    await removerArmazenamento(tarefa)
-    document.querySelector('a[id="main:btnPautaDia"]').click()
-    return
-
-    async function aguardarMudar(local) {
-        let i = 0
-        while(!confereElemento(local)){
-            await suspender(1000)
-            i++
-            if (i === 10) {
-                fitaSuperiorErro('Ocorreu um erro. Proceda manualmente.')
-                return
-            }
+async function tramitaIAResumoRapidoBusca(idBotao) {
+    document.getElementById(idBotao).disabled = true
+    let ojs = [
+        {
+            oj: 'CON1',
+            funcao: 'tramitaIAResumoRapidoCON1'
         }
-        return
-        function confereElemento(seletor){
-            let elemento = document.querySelector(seletor)
-            let opcoes = [...elemento.querySelectorAll('option')]
-            return opcoes.length > 1 ? true : false
+    ]
+    let mapaFuncoes = {
+        tramitaIAResumoRapidoCON1
+    }
+    let funcao = ''
+    for(let oj of ojs){
+        let ojAtual = document.querySelector('section.oj-cargo').textContent
+        if(ojAtual.includes(oj?.oj)){
+            funcao = oj?.funcao
         }
     }
-    
-    async function rotinaCliques(elemento, opcao){
-        await aguardarElemento(elemento)
-        await suspender(1000)
-        let menu = document.querySelector(elemento)
-        let opcoes = [...menu.querySelectorAll('option')]
-        let opcaoEncontrada = opcoes.find(d => d.textContent == opcao || opcao.includes(d.textContent))
-        menu.value = opcaoEncontrada?.value
-        menu.dispatchEvent(new Event('change', { bubbles: true }))
+    if (!funcao) {
+        fitaSuperiorErro('Ainda não configurado para esta OJ.')
+        document.getElementById(idBotao).disabled = false
+        return
+    }
+    console.log('%c[Rota PJE]%c funcao' + JSON.stringify(funcao), LOG.aviso, 'color:inherit')
+    let resumo = await mapaFuncoes[funcao]()
+    montarResumo(resumo)
+    document.getElementById(idBotao).disabled = false
+    return
+
+    async function tramitaIAResumoRapidoCON1() {
+        let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
+        let idURL = idURLMatch?.[1]
+        let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
+        let timelineLimpa = timeline.map(d => {
+            return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
+        })
+        let dataMaior = null
+        let atas = timelineLimpa.filter(d=> normalizar(d?.titulo).includes('ata da audiencia')) || []
+        let teorAtas = []
+        for (let ata of atas){
+            let teor = await rota_extrairTeorDocumento(idURL, ata?.id) || ''
+            teorAtas.push({id: ata?.id, informacoes: ata, teor})
+            dataMaior = dataMaior > new Date(ata?.data) ? dataMaior : ata?.data
+        }
+        let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c))) || []
+        let teorDespachos = []
+        for (let despacho of despachos){
+            let teor = await rota_extrairTeorDocumento(idURL, despacho?.id) || ''
+            teorDespachos.push({id: despacho?.id, informacoes: despacho, teor})
+            dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
+        }
+        let documentosPartes = timelineLimpa.filter(d=>{
+            let partes = ['perito', 'autor', 'reu'].some(c=> normalizar(d?.participacaoProcesso).includes(c) && d?.participacaoProcesso)
+            let data = new Date(d?.data) > dataMaior
+            if(partes && data) return d
+        }) || []
+        let teorDocumentosPartes = []
+        for (let documento of documentosPartes){
+            let teor = await rota_extrairTeorDocumento(idURL, documento?.id) || ''
+            teorDocumentosPartes.push({id: documento?.id, informacoes: documento, teor})
+        }
+        let primeiroAssistente = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
+        let assistente = '6ac138f2bb98490b4befd0e7'
+        let resposta = await rota_IAConsulta(assistente, JSON.stringify(primeiroAssistente))
+        _baixarArquivo(JSON.stringify({primeiroAssistente, resposta}, null, 2), 'resumoRapidoCON1.json', 'application/json')
+        rota_avisoObrigatorio(resposta, 120)
+    }
+    function montarResumo(){
+
     }
 }
+
+
 
 function estiloBotaoFitaSuperior(botao){
     botao.style.width = 'fit-content'
