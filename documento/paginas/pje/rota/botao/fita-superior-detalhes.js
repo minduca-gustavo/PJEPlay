@@ -24,6 +24,7 @@ async function criaFitaSuperior() {
     await busca_pautaEletronicaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
+    await tramitaIAResumoRapido()
 }
 
 function formataFitaSuperior(elemento, cor){
@@ -375,6 +376,99 @@ async function irParaAOJDesteProcesso() {
     window.location.reload()
 }
 
+// ___________________________________________________
+// [5] TRAMITA IA RESUMO RÁPIDO
+// ___________________________________________________
+
+async function tramitaIAResumoRapido() {
+    let botao = await criaBotaoAzul({
+        id: id('tramitaIAResumoRapido', 'botao'),
+        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        acao: () => tramitaIAResumoRapidoBusca(),
+        texto: 'Tramita IA - Resumo rápido'
+    })
+    criaTooltip({
+        id: id('tramitaIAResumoRapido', 'botao', 'tooltip'),
+        texto: 'Apresenta um resumo rápido da tramitação do processo. Disponível apenas na CON1, por enquanto.',
+        elemento: botao
+    })
+    estiloBotaoFitaSuperior(botao)
+}
+
+async function tramitaIAResumoRapidoBusca() {
+    let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
+    let idURL = idURLMatch?.[1]
+    let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
+    let timelineLimpa = timeline.map()
+    if (!audienciasMarcadas.length) {
+        fitaSuperiorErro('Não há audiências marcadas')
+        return
+    }
+    let sala = audienciasMarcadas[0]?.salaFisica?.nome
+    let oj = interceptador_lerProcesso() || await buscarProcesso(id) || {}
+    if (!oj?.orgaoJulgador?.descricao) {
+        fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente')
+        return
+    }
+    let url = 'https://pauta.trt15.jus.br/pautaeletronica/pautaAudiencia.xhtml'
+    let tarefa = id('buscaPautaEletronica')
+    let execucao = Date.now()
+    let nomeJanela = tarefa + '_' + execucao
+    await armazenar ({[tarefa]: {execucao: execucao, oj: oj?.orgaoJulgador?.descricao, sala: sala}})
+    window.open(url, nomeJanela)
+}
+
+async function pautaEletronicaAbriu() {
+    let janela = confereJanela(JANELA.pautaEletronica)
+    if (!janela) return
+    let tarefa = id('buscaPautaEletronica')
+    let janelaNome = window.name
+    if (!janelaNome.includes(tarefa)) return
+    let armazenamento = await obterArmazenamento(tarefa)
+    let dado = armazenamento[tarefa]
+    if (!janelaNome.includes(dado?.execucao)) return
+    let jurisdicao = 'select[id="main:jurisdicao"]'
+    await rotinaCliques(jurisdicao, dado?.oj)
+    let local = 'select[id="main:local"]'
+    await aguardarMudar(local)
+    await rotinaCliques(local, dado?.oj)
+    let sala = 'select[id="main:sala"]'
+    await aguardarMudar(sala)
+    await rotinaCliques(sala, dado?.sala)
+    await suspender (1000)
+    window.name = ''
+    await removerArmazenamento(tarefa)
+    document.querySelector('a[id="main:btnPautaDia"]').click()
+    return
+
+    async function aguardarMudar(local) {
+        let i = 0
+        while(!confereElemento(local)){
+            await suspender(1000)
+            i++
+            if (i === 10) {
+                fitaSuperiorErro('Ocorreu um erro. Proceda manualmente.')
+                return
+            }
+        }
+        return
+        function confereElemento(seletor){
+            let elemento = document.querySelector(seletor)
+            let opcoes = [...elemento.querySelectorAll('option')]
+            return opcoes.length > 1 ? true : false
+        }
+    }
+    
+    async function rotinaCliques(elemento, opcao){
+        await aguardarElemento(elemento)
+        await suspender(1000)
+        let menu = document.querySelector(elemento)
+        let opcoes = [...menu.querySelectorAll('option')]
+        let opcaoEncontrada = opcoes.find(d => d.textContent == opcao || opcao.includes(d.textContent))
+        menu.value = opcaoEncontrada?.value
+        menu.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+}
 
 function estiloBotaoFitaSuperior(botao){
     botao.style.width = 'fit-content'
