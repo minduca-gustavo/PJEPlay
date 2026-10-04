@@ -58,7 +58,7 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 botao.style.width = 'fit-content'
             }
             console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.mb, 'color:inherit', processos)
-            let dados = {}
+            let dados = []
             let execucao = Date.now()
             for (let i = 0; i < processos?.ids?.length; i++) {
                 if (i > 19) {
@@ -108,12 +108,13 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                         timeline: timelinePrimeiroAssistente
                     }
                 }
-                dados.primeiroAssistente = dadosPrimeiroAssistente
+                let assistente = '6abfbef177acca97cae0ea20'
+                let respostaPrimeiroAssistente = await rota_IAConsulta(assistente, JSON.stringify(dadosPrimeiroAssistente, null, 2))
 
                 
             }
             _baixarArquivo(JSON.stringify(dados, null, 2), 'EEISL.json', 'application/json')
-            mandaDadosProChatJT(elementoAncestral, execucao, dados, ancestralLimpar, idMostrador)
+            
             
         }
 
