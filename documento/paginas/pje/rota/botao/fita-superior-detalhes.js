@@ -460,6 +460,22 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
         let primeiroAssistente = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
         let assistente = '6ac138f2bb98490b4befd0e7'
         let resposta = await rota_IAConsulta(assistente, JSON.stringify(primeiroAssistente))
+        if (!resposta){
+            fitaSuperiorErro('Faça o login no ChatJT.')
+            return
+        }
+        let processo = interceptador_lerProcesso() || await buscarProcesso(idURL) || {}
+        if (!processo?.numero) {
+            fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente.')
+            return
+        }
+        let gigs = interceptador_lerGigs() || await buscarGigs(processo?.numero) || []
+        gigs = gigs.map(d => ({prazo: d?.dataPrazo, observacao: d?.observacao, tipoAtividade: d?.tipoAtividade?.descricao, statusAtividade: d?.statusAtividade}))
+        let tarefa = interceptador_lerTarefaMaisRecente() || await buscarTarefaMaisRecente(idURL) || null
+        if (!tarefa) {
+            fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente.')
+            return
+        }
         _baixarArquivo(JSON.stringify({primeiroAssistente, resposta}, null, 2), 'resumoRapidoCON1.json', 'application/json')
         rota_avisoObrigatorio(resposta, 120)
     }
