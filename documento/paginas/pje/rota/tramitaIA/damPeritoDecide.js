@@ -139,7 +139,7 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 }
                 dadosSegundoAssistentePush.push(dadosSegundoAssistente)
                 let respostaSegundoAssistente = await rota_IAConsulta(segundoAssistente, JSON.stringify(dadosSegundoAssistente, null, 2)) || null
-                dados.push(respostaSegundoAssistente)
+                dados.push(chatJTLimpaJSON(respostaSegundoAssistente))
             }
             _baixarArquivo(JSON.stringify(dadosSegundoAssistentePush, null, 2), 'EEISL.json', 'application/json')
             _baixarArquivo(JSON.stringify(dados, null, 2), 'resultadoFinal.json', 'application/json')
