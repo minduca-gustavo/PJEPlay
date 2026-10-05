@@ -60,10 +60,12 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
             console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.mb, 'color:inherit', processos)
             let dados = []
             let execucao = Date.now()
+            let a = 0
+            let dadosSegundoAssistentePush = []
             for (let i = 0; i < processos?.ids?.length; i++) {
-                if (i > 19) {
-                    break
-                }
+                //if (i > 19) {
+                //    break
+                //}
                 // PRIMEIRO ASSISTENTE
                 mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
                 let idProc = processos?.ids[i]
@@ -86,6 +88,8 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                     }
                 })
                 if (!embargosIsl.length) continue
+                a++
+                if(a===10) break
                 // até aqui, filtrei todos os processos que tem perito, que tem embargos ou ISL.
                 // Agora vou pegar a petição de EE ou ISL, e salvar o conteúdo para o primeiro robô.
                 // Já salvei a DATA mais antiga entre as petições encontradas
@@ -109,18 +113,33 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                         timeline: timelinePrimeiroAssistente
                     }
                 }
-                let assistente = '6abfbef177acca97cae0ea20'
-                let respostaPrimeiroAssistente = await rota_IAConsulta(assistente, JSON.stringify(dadosPrimeiroAssistente, null, 2))
+                console.log('%c[Rota PJE]%c dadosPrimeiroAssistente: ' + JSON.stringify(dadosPrimeiroAssistente), LOG.teste, 'color:inherit')
+                let primeiroAssistente = '6abfbef177acca97cae0ea20'
+                let respostaPrimeiroAssistente = await rota_IAConsulta(primeiroAssistente, JSON.stringify(dadosPrimeiroAssistente, null, 2))
                 // SEGUNDO ASSISTENTE
                 let timelineSegundoAssistente = timeline.filter(d => normalizar(d?.participacaoProcesso).includes('perito') && new Date(d?.data) >= dataMaisAntiga)
+                let segundoAssistente = '6ac3a3d9bb98490b4bf122cb'
                 let manifestacoesPerito = []
                 for (let manifestacao of timelineSegundoAssistente){
                     let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, manifestacao.id) || '')
-                    manifestacoesPerito.push(teor)
+                    let ({id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso})
+                    manifestacoesPerito.push({id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso, teor})
                 }
                 
+                let dadosSegundoAssistente = {dadosProcessuais:
+                    {
+                        idDoProcesso: idProc,
+                        partes: partes,
+                        numero: dadosSimples?.numero,
+                        timeline: timelinePrimeiroAssistente,
+                        manifestacoesPerito,
+                        respostaPrimeiroAssistente,
+                    }
+                }
+                dadosSegundoAssistentePush.push(dadosSegundoAssistente)
+                
             }
-            _baixarArquivo(JSON.stringify(dados, null, 2), 'EEISL.json', 'application/json')
+            _baixarArquivo(JSON.stringify(dadosSegundoAssistentePush, null, 2), 'EEISL.json', 'application/json')
             
             
         }
