@@ -83,13 +83,17 @@ function tramitaIACriaSecoes({elemento = null}){
             funcao: 'tramitaIASecaoRis'
         },
         {
-            nome: 'damPeritoDecide',
-            funcao: 'tramitaIASecaoDamPeritoDecide'
-        }
+            nome: 'removerPEC',
+            funcao: 'tramitaIARemoverPEC'
+        },
+        //{
+        //    nome: 'damPeritoDecide',
+        //    funcao: 'tramitaIASecaoDamPeritoDecide'
+        //}
     ]
     let mapaFuncoes = {
         tramitaIASecaoRis, // está no arquivo ris.js
-        tramitaIASecaoDamPeritoDecide, // está no arquivo damPeritoDecide.js
+        tramitaIARemoverPEC, // está no arquivo removerPEC.js
     }
     for (let secao of secoes){
         let idDiv = elemento + '_' + secao?.nome
