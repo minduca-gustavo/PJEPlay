@@ -64,6 +64,7 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 if (i > 19) {
                     break
                 }
+                // PRIMEIRO ASSISTENTE
                 mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
                 let idProc = processos?.ids[i]
                 let dadosSimples = processos?.t[i]
@@ -110,7 +111,13 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 }
                 let assistente = '6abfbef177acca97cae0ea20'
                 let respostaPrimeiroAssistente = await rota_IAConsulta(assistente, JSON.stringify(dadosPrimeiroAssistente, null, 2))
-
+                // SEGUNDO ASSISTENTE
+                let timelineSegundoAssistente = timeline.filter(d => normalizar(d?.participacaoProcesso).includes('perito') && new Date(d?.data) >= dataMaisAntiga)
+                let manifestacoesPerito = []
+                for (let manifestacao of timelineSegundoAssistente){
+                    let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, manifestacao.id) || '')
+                    manifestacoesPerito.push(teor)
+                }
                 
             }
             _baixarArquivo(JSON.stringify(dados, null, 2), 'EEISL.json', 'application/json')
