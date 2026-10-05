@@ -86,12 +86,12 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                     data,
                     teor: teorUltimoDespacho
                 }
-                let timelinePosDespacho = timeline.filter(d=> {
-                    let {id, idUnicoDocumento, titulo, tipo, data} = d
-                    if (new Date(d?.data) >= new Date (data)){
-                        return {id, idUnicoDocumento, titulo, tipo, data}
-                    }
-                })
+                let dataDespacho = despacho.data;
+
+                let timelinePosDespacho = timeline
+                    .filter(d => d.ativo !== false && d.data >= dataDespacho)
+                    .map(({ id, idUnicoDocumento, titulo, tipo, data }) =>
+                        ({ id, idUnicoDocumento, titulo, tipo, data }));
                 let expedientesPosDespacho = await buscaExpedientesPosData(idProc, data) || null
                 dados.push({despacho, timelinePosDespacho, expedientesPosDespacho, partes})
                 
