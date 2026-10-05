@@ -115,15 +115,16 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                 }
                 console.log('%c[Rota PJE]%c dadosPrimeiroAssistente: ' + JSON.stringify(dadosPrimeiroAssistente), LOG.teste, 'color:inherit')
                 let primeiroAssistente = '6abfbef177acca97cae0ea20'
-                let respostaPrimeiroAssistente = await rota_IAConsulta(primeiroAssistente, JSON.stringify(dadosPrimeiroAssistente, null, 2))
+                let respostaPrimeiroAssistente = await rota_IAConsulta(primeiroAssistente, JSON.stringify(dadosPrimeiroAssistente, null, 2)) || null
                 // SEGUNDO ASSISTENTE
-                let timelineSegundoAssistente = timeline.filter(d => normalizar(d?.participacaoProcesso).includes('perito') && new Date(d?.data) >= dataMaisAntiga)
+                let timelineSegundoAssistente = timeline.filter(d => normalizar(d?.participacaoProcesso).includes('perito') && new Date(d?.data) >= new Date(dataMaisAntiga))
                 let segundoAssistente = '6ac3a3d9bb98490b4bf122cb'
                 let manifestacoesPerito = []
                 for (let manifestacao of timelineSegundoAssistente){
                     let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, manifestacao.id) || '')
-                    let ({id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso})
-                    manifestacoesPerito.push({id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso, teor})
+                    let anexos = (manifestacao?.anexos ?? []).map(d => ({ id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo }));
+                    let {id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso} = manifestacao
+                    manifestacoesPerito.push({id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso, teor, anexos: anexos})
                 }
                 
                 let dadosSegundoAssistente = {dadosProcessuais:
@@ -133,13 +134,15 @@ async function tramitaIASecaoDamPeritoDecide(elementoAncestral, ancestralLimpar,
                         numero: dadosSimples?.numero,
                         timeline: timelinePrimeiroAssistente,
                         manifestacoesPerito,
-                        respostaPrimeiroAssistente,
+                        respostaPrimeiroAssistente: chatJTLimpaJSON(respostaPrimeiroAssistente),
                     }
                 }
                 dadosSegundoAssistentePush.push(dadosSegundoAssistente)
-                
+                let respostaSegundoAssistente = await rota_IAConsulta(segundoAssistente, JSON.stringify(dadosSegundoAssistente, null, 2)) || null
+                dados.push(respostaSegundoAssistente)
             }
             _baixarArquivo(JSON.stringify(dadosSegundoAssistentePush, null, 2), 'EEISL.json', 'application/json')
+            _baixarArquivo(JSON.stringify(dados, null, 2), 'resultadoFinal.json', 'application/json')
             
             
         }

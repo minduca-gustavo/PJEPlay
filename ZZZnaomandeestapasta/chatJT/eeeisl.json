@@ -1,0 +1,2140 @@
+[
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 2456750,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "ANA LUCIA CASSIOLATO",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "PROTEGE  PROTECAO E TRANSPORTE DE VALORES LTDA",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000385-36.2014.5.15.0091",
+      "timeline": [
+        {
+          "id": 310270787,
+          "idUnicoDocumento": "d525f42",
+          "tipo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "titulo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "data": "2026-09-29T17:15:47.653656",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 309797681,
+          "idUnicoDocumento": "3f29b62",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-09-25T10:25:23.433865",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 309097150,
+          "idUnicoDocumento": "a3acf07",
+          "tipo": "Manifestação",
+          "titulo": "Manifestação",
+          "data": "2026-09-21T10:04:15.229651",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 308184915,
+          "idUnicoDocumento": "123d4ff",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-09-14T00:44:34.42378"
+        },
+        {
+          "id": 308184914,
+          "idUnicoDocumento": "958237e",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-09-14T00:44:34.110301"
+        },
+        {
+          "id": 307908069,
+          "idUnicoDocumento": "27c73a2",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-09-10T14:03:24.693246",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 307908061,
+          "idUnicoDocumento": "4387548",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-09-10T14:03:24.693246",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 307861949,
+          "idUnicoDocumento": "af4b4d2",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-09-10T14:02:24.693246",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306828391,
+          "idUnicoDocumento": "1db6faa",
+          "tipo": "Embargos à Execução",
+          "titulo": "Embargos a Execução - Protege",
+          "data": "2026-09-01T17:22:16.183879",
+          "participacaoProcesso": "RÉU, Advogado"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 2456750,\n    \"numero\": \"0000385-36.2014.5.15.0091\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 306828391,\n      \"idUnicoDocumento\": \"1db6faa\",\n      \"data\": \"2026-09-01T17:22:16.183879\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"Embargos a Execução - Protege\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"PROTEGE PROTEÇÃO E TRANSPORTE DE VALORES LTDA\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão de julgamento dos embargos na timeline; os documentos posteriores (id af4b4d2, id a3acf07, id d525f42) referem-se a despachos e manifestações de andamento.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 309097150,\n          \"idUnicoDocumento\": \"a3acf07\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da apuração duplicada de horas extras 100%\",\n          \"resumo\": \"A embargante aponta que o perito utilizou a mesma quantidade de horas extras para jornadas distintas (7:33 e 8:48), resultando em apuração duplicada.\",\n          \"fundamento\": \"Cartões de ponto e Súmula 85 do TST\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Trata-se de conferência de critérios de apuração de horas extras baseada nos cartões de ponto.\"\n        },\n        {\n          \"numero\": 2,\n          \"titulo\": \"Da incorreta apuração de horas extras em domingos\",\n          \"resumo\": \"A embargante alega que o perito considerou labor extraordinário em domingos que foram devidamente compensados com folgas durante a semana.\",\n          \"fundamento\": \"Cartões de ponto\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a correta apuração de horas extras considerando a existência de folgas compensatórias.\"\n        },\n        {\n          \"numero\": 3,\n          \"titulo\": \"Da apuração de horas extras além da 8ª diária\",\n          \"resumo\": \"A embargante sustenta que o cálculo homologado apura horas extras além da 8ª diária com adicional, contrariando o julgado que determinaria apenas o adicional para horas em regime de compensação.\",\n          \"fundamento\": \"Súmula 85 do TST e Acórdão de embargos de declaração\",\n          \"natureza\": \"MISTO\",\n          \"justificativaNatureza\": \"Envolve a interpretação do alcance do título executivo e a consequente forma de cálculo das horas extras.\"\n        },\n        {\n          \"numero\": 4,\n          \"titulo\": \"Da indevida apuração de horas de intervalo intrajornada\",\n          \"resumo\": \"A embargante afirma que o perito incluiu horas de intervalo intrajornada sem que houvesse condenação no título executivo.\",\n          \"fundamento\": \"Sentença\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"Discute os limites da coisa julgada quanto à existência de condenação para a parcela.\"\n        },\n        {\n          \"numero\": 5,\n          \"titulo\": \"Da compensação de valores pagos\",\n          \"resumo\": \"A embargante defende que a dedução de valores pagos deve ser integral, independentemente do mês de competência, conforme a OJ 415 da SDI-1 do TST.\",\n          \"fundamento\": \"OJ 415 da SDI-1 do TST\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"Exige decisão sobre o critério jurídico de dedução de valores pagos no curso do contrato.\"\n        },\n        {\n          \"numero\": 6,\n          \"titulo\": \"Da ausência de dedução de valores liberados\",\n          \"resumo\": \"A embargante aponta que a atualização da Contadoria (id 256d2af) omitiu a dedução de R$ 266,76 liberado em 15/12/2023.\",\n          \"fundamento\": \"Alvará (id 256d2af)\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Trata-se de erro aritmético na dedução de valores já liberados nos autos.\"\n        },\n        {\n          \"numero\": 7,\n          \"titulo\": \"Da ausência de dedução de contribuições previdenciárias\",\n          \"resumo\": \"A embargante alega que a Contadoria não deduziu o valor de R$ 2.024,78 referente a contribuições previdenciárias pagas em 30/10/2023.\",\n          \"fundamento\": \"Guia de recolhimento (id aaaf58b)\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a dedução de valores comprovadamente pagos a título de contribuição previdenciária.\"\n        },\n        {\n          \"numero\": 8,\n          \"titulo\": \"Da atualização indevida dos honorários periciais\",\n          \"resumo\": \"A embargante insurge-se contra a atualização dos honorários periciais a partir de 15/12/2023, sustentando que a incidência deve ocorrer apenas a partir da fixação em 12/08/2026.\",\n          \"fundamento\": \"Homologação (id 20007a0)\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute o termo inicial para a atualização monetária de verba honorária.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 2456370,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "SONIA DELY VELHO BERNARDINELLI GOMES DOS SANTOS",
+            "tipo": "Pessoa Física"
+          },
+          {
+            "nome": "UNIÃO FEDERAL (PGF)",
+            "tipo": "Pessoa Jurídica"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "BANCO DO BRASIL SA                                                                                                                                    ",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000507-54.2011.5.15.0091",
+      "timeline": [
+        {
+          "id": 306475178,
+          "idUnicoDocumento": "ff5deb9",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-08-31T00:03:27.652943"
+        },
+        {
+          "id": 306267657,
+          "idUnicoDocumento": "789afd8",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-27T20:32:19.791506",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306100767,
+          "idUnicoDocumento": "ad6ec2f",
+          "tipo": "Correspondência ou Mensagem Eletrônica/E-mail",
+          "titulo": "Resposta Ofício CEF - ATENDE Nº 13430905",
+          "data": "2026-08-26T23:37:31.950827",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 305134830,
+          "idUnicoDocumento": "92255de",
+          "tipo": "Manifestação",
+          "titulo": "Resposta do Banco do Brasil S.A. à Impugnação à Sentença de Liquidação obreira",
+          "data": "2026-08-19T15:10:07.582991",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 305024529,
+          "idUnicoDocumento": "0c53474",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-08-19T00:05:14.459509"
+        },
+        {
+          "id": 304825003,
+          "idUnicoDocumento": "d7ee82e",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-17T20:03:00.729909",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 304330437,
+          "idUnicoDocumento": "0128596",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-08-17T20:02:00.729909",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 304326550,
+          "idUnicoDocumento": "411da39",
+          "tipo": "Certidão",
+          "titulo": "E-mail recebido da Caixa Ec. Federal",
+          "data": "2026-08-13T10:17:12.417575",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 303474284,
+          "idUnicoDocumento": "04523a8",
+          "tipo": "Certidão",
+          "titulo": "E-mail recebido Banco Brasil - comprovante",
+          "data": "2026-08-05T15:07:19.360939",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 303090942,
+          "idUnicoDocumento": "7b32dc9",
+          "tipo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "titulo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "data": "2026-08-03T11:00:36.547505",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 303060319,
+          "idUnicoDocumento": "c28ba39",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-08-03T02:41:26.425928"
+        },
+        {
+          "id": 302778005,
+          "idUnicoDocumento": "b2eea47",
+          "tipo": "Certidão",
+          "titulo": "E-MAIL ENCAMINHADO À CAIXA EC. FEDERAL ",
+          "data": "2026-07-30T12:48:22.107151",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 302775827,
+          "idUnicoDocumento": "10f35f4",
+          "tipo": "Certidão",
+          "titulo": "Cobrança de cumprimento de Ofício",
+          "data": "2026-07-30T12:37:10.76751",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 302255206,
+          "idUnicoDocumento": "58ca294",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-27T00:07:22.992359"
+        },
+        {
+          "id": 302255205,
+          "idUnicoDocumento": "b2ce226",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-27T00:07:22.695509"
+        },
+        {
+          "id": 302124223,
+          "idUnicoDocumento": "9d2d3db",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-24T10:03:06.04832",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 302079534,
+          "idUnicoDocumento": "bd17a78",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-23T18:11:10.10197",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302079530,
+          "idUnicoDocumento": "87cb85e",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-23T18:11:10.10197",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302046068,
+          "idUnicoDocumento": "8819f2f",
+          "tipo": "Decisão",
+          "titulo": "Decisão",
+          "data": "2026-07-23T18:10:10.10197",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 298671659,
+          "idUnicoDocumento": "28c43a1",
+          "tipo": "Certidão",
+          "titulo": "Comprovante recebimento de e-mail ",
+          "data": "2026-06-23T14:10:52.366685",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 298063317,
+          "idUnicoDocumento": "074a45e",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-06-18T05:22:35.372585"
+        },
+        {
+          "id": 297786400,
+          "idUnicoDocumento": "03e438c",
+          "tipo": "Agravo de Petição",
+          "titulo": "APNOSSA - SONIA DELY (TEMPESTIVIDADE ISL DATA DA CIÊNCIA DA GARANTIA DA EXECUÇÃO)",
+          "data": "2026-06-16T14:50:56.909378",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 296813527,
+          "idUnicoDocumento": "97cac79",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-09T01:26:00.921559"
+        },
+        {
+          "id": 296813526,
+          "idUnicoDocumento": "8976fd2",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-09T01:26:00.629455"
+        },
+        {
+          "id": 296470214,
+          "idUnicoDocumento": "44ee904",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-03T13:14:39.241633",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 296470202,
+          "idUnicoDocumento": "e885a2e",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-03T13:14:39.241633",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 296102905,
+          "idUnicoDocumento": "76313bd",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-06-03T13:13:39.241633",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 296444193,
+          "idUnicoDocumento": "de74a17",
+          "tipo": "Certidão",
+          "titulo": "Cópia Alvarás cumpridos",
+          "data": "2026-06-03T11:03:25.011341",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 296231763,
+          "idUnicoDocumento": "c72609b",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-02T06:09:29.979336"
+        },
+        {
+          "id": 296231762,
+          "idUnicoDocumento": "a7e500b",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-02T06:09:29.66075"
+        },
+        {
+          "id": 296101457,
+          "idUnicoDocumento": "5d153c2",
+          "tipo": "Certidão",
+          "titulo": "Comprovante e-mail encaminhado Banco Brasil",
+          "data": "2026-06-01T13:01:28.07521",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 296013125,
+          "idUnicoDocumento": "0dae28f",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-05-30T13:22:07.82493",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 296013123,
+          "idUnicoDocumento": "338d731",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-05-30T13:22:07.82493",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 295370570,
+          "idUnicoDocumento": "377fd50",
+          "tipo": "Sentença",
+          "titulo": "Sentença",
+          "data": "2026-05-30T13:21:07.82493",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 295067702,
+          "idUnicoDocumento": "298b2ef",
+          "tipo": "Impugnação à Sentença de Liquidação",
+          "titulo": "Impugnação à Sentença de Liquidação",
+          "data": "2026-05-22T14:25:57.838062",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 294619933,
+          "idUnicoDocumento": "16f904b",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-05-20T05:32:16.807101"
+        },
+        {
+          "id": 294619932,
+          "idUnicoDocumento": "876c86f",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-05-20T05:32:16.518099"
+        },
+        {
+          "id": 294470134,
+          "idUnicoDocumento": "fea3f2e",
+          "tipo": "Certidão",
+          "titulo": "EXPEDIÇÃO DE ALVARÁS",
+          "data": "2026-05-19T11:38:03.150689",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 294377820,
+          "idUnicoDocumento": "9fef0b5",
+          "tipo": "Manifestação",
+          "titulo": "PETIÇÃO - SONIA DELY VELHO BERNARDINELLI GOMES (INDICAÇÃO DADOS CONTA CORRENTE)",
+          "data": "2026-05-18T16:44:42.603076",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 294126545,
+          "idUnicoDocumento": "de83983",
+          "tipo": "Manifestação",
+          "titulo": "Petição do Banco do Brasil S.A. informando dados para levantamento de valores",
+          "data": "2026-05-15T11:12:52.430049",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 293924387,
+          "idUnicoDocumento": "aa29c85",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-05-13T17:04:21.966455",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 292698452,
+          "idUnicoDocumento": "9ad16a6",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-05-13T17:03:21.966455",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 290181761,
+          "idUnicoDocumento": "0c836f2",
+          "tipo": "Manifestação",
+          "titulo": "Pagamento - Saldo Residual",
+          "data": "2026-04-10T09:27:24.905925",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 289671745,
+          "idUnicoDocumento": "b0af705",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-04-07T00:45:05.022979"
+        },
+        {
+          "id": 289671744,
+          "idUnicoDocumento": "8608443",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-04-07T00:45:04.634202"
+        },
+        {
+          "id": 289293488,
+          "idUnicoDocumento": "f0221f7",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-31T18:22:18.690842",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 289293486,
+          "idUnicoDocumento": "98f4c8f",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-31T18:22:18.690842",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 289274829,
+          "idUnicoDocumento": "0678352",
+          "tipo": "Decisão",
+          "titulo": "Decisão",
+          "data": "2026-03-31T18:21:18.690842",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 289273952,
+          "idUnicoDocumento": "a58ac87",
+          "tipo": "Planilha de Atualização de Cálculos",
+          "titulo": "Atualização",
+          "data": "2026-03-31T16:36:55.227835",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 289272938,
+          "idUnicoDocumento": "16ecbb9",
+          "tipo": "Certidão",
+          "titulo": "EXTRATO DEPÓSITO RECURSAL",
+          "data": "2026-03-31T16:33:09.52013",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 289263540,
+          "idUnicoDocumento": "17fc8b8",
+          "tipo": "Certidão",
+          "titulo": "Alvará Eletrônico de Pagamento - SISCONDJ-JT",
+          "data": "2026-03-31T15:55:16.606871",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 288880364,
+          "idUnicoDocumento": "71db242",
+          "tipo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "titulo": "Perito - reapres. de laudo, retificado",
+          "data": "2026-03-27T14:47:11.834608",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 286891007,
+          "idUnicoDocumento": "205f758",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-03-12T00:11:58.368379"
+        },
+        {
+          "id": 286891006,
+          "idUnicoDocumento": "798c858",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-03-12T00:11:57.999722"
+        },
+        {
+          "id": 286787473,
+          "idUnicoDocumento": "3cf1818",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-11T13:14:29.351503",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 286702704,
+          "idUnicoDocumento": "dd84318",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-10T20:06:03.745729",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 286229692,
+          "idUnicoDocumento": "040ee17",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-03-10T20:05:03.745729",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 286070398,
+          "idUnicoDocumento": "3774369",
+          "tipo": "Manifestação",
+          "titulo": "Inexistência dos Extratos do FGTS",
+          "data": "2026-03-05T10:55:17.842946",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 284788624,
+          "idUnicoDocumento": "c30e56c",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-02-24T00:22:15.784425"
+        },
+        {
+          "id": 284788623,
+          "idUnicoDocumento": "29be9ae",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-02-24T00:22:15.241242"
+        },
+        {
+          "id": 284586178,
+          "idUnicoDocumento": "7ff8258",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-02-21T12:18:09.835443",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 284586169,
+          "idUnicoDocumento": "1ffb678",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-02-21T12:18:09.835443",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 284363124,
+          "idUnicoDocumento": "2955412",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-02-21T12:17:09.835443",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 284321210,
+          "idUnicoDocumento": "a4ac11f",
+          "tipo": "Impugnação",
+          "titulo": "Manifestação/ Impugnação aos cálculos e esclarecimentos perciais -0000507-54_2011",
+          "data": "2026-02-19T13:49:30.28692",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 283775590,
+          "idUnicoDocumento": "fccf0d0",
+          "tipo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "titulo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "data": "2026-02-11T15:34:14.854271",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 282563406,
+          "idUnicoDocumento": "29425ac",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-02-02T07:44:11.890198",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 282563344,
+          "idUnicoDocumento": "b8a3afc",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-02-02T07:42:24.895311",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 282444478,
+          "idUnicoDocumento": "3d942d9",
+          "tipo": "Impugnação",
+          "titulo": "Imp-0000507-54_2011",
+          "data": "2026-01-30T12:59:16.6386",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 281760666,
+          "idUnicoDocumento": "86f2c18",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-01-26T08:06:12.282208"
+        },
+        {
+          "id": 280937752,
+          "idUnicoDocumento": "0f8764f",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-01-13T17:09:46.798261",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 280118398,
+          "idUnicoDocumento": "e434df4",
+          "tipo": "Manifestação",
+          "titulo": "Concordância ao Laudo Pericial",
+          "data": "2025-12-17T10:26:45.509893",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 279164924,
+          "idUnicoDocumento": "6c97998",
+          "tipo": "Apresentação de Laudo Pericial",
+          "titulo": "Apresentação de Laudo Pericial",
+          "data": "2025-12-08T11:20:44.406165",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 277976148,
+          "idUnicoDocumento": "81097cb",
+          "tipo": "Impugnação",
+          "titulo": "Impugnação aos  cálculos  apresentados  pelo  Réu",
+          "data": "2025-11-25T15:29:22.797691",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 277594078,
+          "idUnicoDocumento": "d648e65",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2025-11-19T11:17:12.20097",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 277503690,
+          "idUnicoDocumento": "c8b04c5",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2025-11-18T15:08:20.622635",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 277503675,
+          "idUnicoDocumento": "f3ab5d4",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2025-11-18T15:08:20.622635",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 277336514,
+          "idUnicoDocumento": "c34b2ed",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2025-11-18T15:07:20.622635",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 277195099,
+          "idUnicoDocumento": "0219405",
+          "tipo": "Apresentação de Cálculos",
+          "titulo": "Cálculos-0000507-54_2011",
+          "data": "2025-11-14T12:48:42.822008",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 277121278,
+          "idUnicoDocumento": "4d39793",
+          "tipo": "Apresentação de Cálculos",
+          "titulo": "Banco do Brasil SA",
+          "data": "2025-11-13T16:33:38.362301",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 275984665,
+          "idUnicoDocumento": "870b38c",
+          "tipo": "Manifestação",
+          "titulo": "Extratos - FGTS",
+          "data": "2025-11-03T10:50:13.599225",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 275875408,
+          "idUnicoDocumento": "5943d79",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2025-10-31T14:17:25.893461",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 275618088,
+          "idUnicoDocumento": "b2a3338",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2025-10-31T14:16:25.893461",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 248448292,
+          "idUnicoDocumento": "cdb4fee",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Certidão de Origem de Documento Eletrônico",
+          "data": "2024-12-13T12:30:00"
+        },
+        {
+          "id": 248448288,
+          "idUnicoDocumento": "f8942aa",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Termo de Remessa ao TRT",
+          "data": "2024-12-13T12:29:58"
+        },
+        {
+          "id": 248448287,
+          "idUnicoDocumento": "c6807b6",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Certidão de Trânsito em Julgado",
+          "data": "2024-12-13T12:29:57"
+        },
+        {
+          "id": 248448286,
+          "idUnicoDocumento": "22e0530",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Certidão de Divulgação/Publicação de Acórdão",
+          "data": "2024-11-14T00:00:00"
+        },
+        {
+          "id": 248448282,
+          "idUnicoDocumento": "efea7a8",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Acórdão",
+          "data": "2024-11-13T18:40:20"
+        },
+        {
+          "id": 248448279,
+          "idUnicoDocumento": "7146ade",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Certidão de Julgamento",
+          "data": "2024-11-13T09:00:00"
+        },
+        {
+          "id": 248448276,
+          "idUnicoDocumento": "9d8151b",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Certidão de Inclusão em Pauta",
+          "data": "2024-10-22T00:00:00"
+        },
+        {
+          "id": 248448273,
+          "idUnicoDocumento": "6b72675",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Visto. À Pauta",
+          "data": "2024-10-18T14:54:09"
+        },
+        {
+          "id": 248448268,
+          "idUnicoDocumento": "ad49516",
+          "tipo": "Informação",
+          "titulo": "TST - Informação CCP",
+          "data": "2024-08-13T14:01:30"
+        },
+        {
+          "id": 248448267,
+          "idUnicoDocumento": "302a340",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Comprovante Interno de Recebimento de Petição Eletrônica",
+          "data": "2024-08-13T14:01:30"
+        },
+        {
+          "id": 248448266,
+          "idUnicoDocumento": "d4753de",
+          "tipo": "Petição (outras)",
+          "titulo": "TST - Petição",
+          "data": "2024-08-13T14:01:29"
+        },
+        {
+          "id": 248448294,
+          "idUnicoDocumento": "d9dc834",
+          "tipo": "Documento Diverso",
+          "titulo": "Capa de Processo",
+          "data": "2023-10-17T10:18:02"
+        },
+        {
+          "id": 248448260,
+          "idUnicoDocumento": "89b16a5",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Termo de Distribuição",
+          "data": "2023-10-17T10:18:02"
+        },
+        {
+          "id": 248448295,
+          "idUnicoDocumento": "51a3691",
+          "tipo": "Documento Diverso",
+          "titulo": "TST - Termo de Autuação ",
+          "data": "2023-10-17T07:03:41"
+        },
+        {
+          "id": 248448259,
+          "idUnicoDocumento": "5125f6b",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Remessa",
+          "data": "2023-08-17T16:12:07.242"
+        },
+        {
+          "id": 248448256,
+          "idUnicoDocumento": "20ad401",
+          "tipo": "Contrarrazões",
+          "titulo": "Contrarrazões ao Recurso de Revista",
+          "data": "2023-07-28T14:04:16.51",
+          "participacaoProcesso": "AUTOR, ADVOGADO"
+        },
+        {
+          "id": 248448242,
+          "idUnicoDocumento": "e5b2336",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-07-14T19:05:33.611"
+        },
+        {
+          "id": 248448235,
+          "idUnicoDocumento": "acfa923",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-07-14T19:05:33.611"
+        },
+        {
+          "id": 248448251,
+          "idUnicoDocumento": "d77a4ce",
+          "tipo": "Decisão",
+          "titulo": "Decisão",
+          "data": "2023-07-14T19:04:33.611"
+        },
+        {
+          "id": 248448232,
+          "idUnicoDocumento": "bd51e96",
+          "tipo": "Recurso de Revista",
+          "titulo": "Recurso de Revista em AP",
+          "data": "2023-06-05T17:32:40.074"
+        },
+        {
+          "id": 248448222,
+          "idUnicoDocumento": "8b45958",
+          "tipo": "Solicitação de Habilitação",
+          "titulo": "Habilitação",
+          "data": "2023-05-30T10:14:41.894"
+        },
+        {
+          "id": 248448225,
+          "idUnicoDocumento": "531836a",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-05-25T16:52:11.277"
+        },
+        {
+          "id": 248448224,
+          "idUnicoDocumento": "8b11d1a",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-05-25T16:52:11.277"
+        },
+        {
+          "id": 248448223,
+          "idUnicoDocumento": "05411ae",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-05-25T16:52:11.277"
+        },
+        {
+          "id": 248448218,
+          "idUnicoDocumento": "2b56b94",
+          "tipo": "Acórdão",
+          "titulo": "Acórdão",
+          "data": "2023-05-25T09:53:48.032"
+        },
+        {
+          "id": 194746264,
+          "idUnicoDocumento": "d6a2021",
+          "tipo": "Contraminuta",
+          "titulo": "CONTRAMINUTAR O AGRAVO DE PETIÇÃO",
+          "data": "2023-02-01T13:03:47.804111",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 194393273,
+          "idUnicoDocumento": "87a93a1",
+          "tipo": "Manifestação",
+          "titulo": "Manifetação juntada de documentos",
+          "data": "2023-01-26T17:49:24.420251",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 193942908,
+          "idUnicoDocumento": "3a296b9",
+          "tipo": "Contraminuta",
+          "titulo": "Banco do Brasil SA",
+          "data": "2023-01-19T11:16:53.365482",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 193908672,
+          "idUnicoDocumento": "57bcfe7",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-01-18T15:45:45.35159",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 193908662,
+          "idUnicoDocumento": "6761772",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2023-01-18T15:45:45.35159",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 193899824,
+          "idUnicoDocumento": "428c679",
+          "tipo": "Decisão",
+          "titulo": "Decisão",
+          "data": "2023-01-18T15:44:45.35159",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 192965921,
+          "idUnicoDocumento": "c456934",
+          "tipo": "Manifestação",
+          "titulo": "Extratos do FGTS",
+          "data": "2022-12-15T11:14:34.233534",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 192807315,
+          "idUnicoDocumento": "eff7864",
+          "tipo": "Agravo de Petição",
+          "titulo": "Agravo de Petição",
+          "data": "2022-12-13T15:55:40.10125",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 192630543,
+          "idUnicoDocumento": "f8452e4",
+          "tipo": "Agravo de Petição",
+          "titulo": "AP da União",
+          "data": "2022-12-11T18:36:53.095",
+          "participacaoProcesso": "Procurador"
+        },
+        {
+          "id": 192045859,
+          "idUnicoDocumento": "6db3ad7",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2022-12-01T09:00:53.889624",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 192045856,
+          "idUnicoDocumento": "9f33fc0",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2022-12-01T09:00:53.889624",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 192045768,
+          "idUnicoDocumento": "e66bd7a",
+          "tipo": "Sentença",
+          "titulo": "Sentença",
+          "data": "2022-12-01T08:59:53.889624",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 188663132,
+          "idUnicoDocumento": "1d0ed41",
+          "tipo": "Manifestação",
+          "titulo": "Contestação à ISL",
+          "data": "2022-10-13T10:05:06.789424",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 188232650,
+          "idUnicoDocumento": "d910588",
+          "tipo": "Impugnação à Sentença de Liquidação",
+          "titulo": "Impugnação da União",
+          "data": "2022-10-05T17:58:58.515",
+          "participacaoProcesso": "Procurador"
+        },
+        {
+          "id": 188016189,
+          "idUnicoDocumento": "9a30802",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2022-10-03T20:20:53.551134",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 188016191,
+          "idUnicoDocumento": "b2e19e6",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2022-10-03T20:20:53.54857",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 188014014,
+          "idUnicoDocumento": "c2f3418",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2022-10-03T20:19:53.543136",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 188013935,
+          "idUnicoDocumento": "1fc595f",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2022-10-03T19:38:16.130841",
+          "participacaoProcesso": "Oficial de justiça"
+        },
+        {
+          "id": 180763745,
+          "idUnicoDocumento": "f9aaace",
+          "tipo": "Impugnação à Sentença de Liquidação",
+          "titulo": "Impugnação à Sentença de Liquidação",
+          "data": "2022-06-30T22:04:19.828",
+          "participacaoProcesso": "AUTOR, Advogado"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 2456370,\n    \"numero\": \"0000507-54.2011.5.15.0091\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 295067702,\n      \"idUnicoDocumento\": \"298b2ef\",\n      \"data\": \"2026-05-22T14:25:57.838062\",\n      \"tipoInformado\": \"Impugnação à Sentença de Liquidação\",\n      \"tituloInformado\": \"Impugnação à Sentença de Liquidação\",\n      \"classificacao\": \"ISL\",\n      \"peticionario\": {\n        \"nome\": \"SONIA DELY VELHO BERNARDINELLI GOMES DOS SANTOS\",\n        \"qualificacao\": \"reclamante\"\n      },\n      \"situacao\": \"JULGADA\",\n      \"motivoSituacao\": \"A petição foi julgada pela Sentença de 30/05/2026 (id 377fd50), posterior à data da impugnação.\",\n      \"documentosDeJulgamento\": [\n        {\n          \"id\": 295370570,\n          \"idUnicoDocumento\": \"377fd50\"\n        }\n      ],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 305134830,\n          \"idUnicoDocumento\": \"92255de\"\n        }\n      ],\n      \"pontos\": []\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 2507241,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "ANTONIO FERNANDO MOSCARDO",
+            "tipo": "Pessoa Física"
+          },
+          {
+            "nome": "UNIÃO FEDERAL (PGF)",
+            "tipo": "Pessoa Jurídica"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "BANCO DO BRASIL SA                                                                                                                                    ",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000574-20.2010.5.15.0005",
+      "timeline": [
+        {
+          "id": 308050854,
+          "idUnicoDocumento": "f554e6d",
+          "tipo": "Correspondência ou Mensagem Eletrônica/E-mail",
+          "titulo": "Resposta Ofício CEF",
+          "data": "2026-09-11T12:36:44.655",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306787150,
+          "idUnicoDocumento": "021f132",
+          "tipo": "Certidão",
+          "titulo": "E-mail encaminha  Ofício ID  328a199- transferência de depósitos recursais ",
+          "data": "2026-09-01T14:52:52.55342",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306723251,
+          "idUnicoDocumento": "ddc6680",
+          "tipo": "Manifestação",
+          "titulo": "Juntada comprovante pgto honorário perita-PJE 0000574-20.2010.5.15.0005",
+          "data": "2026-09-01T09:45:52.698875",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 306518815,
+          "idUnicoDocumento": "328a199",
+          "tipo": "Ofício",
+          "titulo": "Ofício",
+          "data": "2026-08-31T14:08:58.315001",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306519959,
+          "idUnicoDocumento": "7296598",
+          "tipo": "Extrato Bancário",
+          "titulo": "CONTA RECURSAL FGTS  - n. 00000985647  de 11-12-2014 - CSE - _ Empregador ECONOMUS",
+          "data": "2026-08-31T10:43:14.495699",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306519841,
+          "idUnicoDocumento": "9b20b02",
+          "tipo": "Extrato Bancário",
+          "titulo": "CONTA RECURSAL FGTS  - n. 00000874810 DE 05-12-2012 - CSE - _ Empregador ECONOMUS",
+          "data": "2026-08-31T10:42:36.72327",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306510538,
+          "idUnicoDocumento": "b482265",
+          "tipo": "Certidão",
+          "titulo": "Alvará liberacao_judicial_- Recolhimento INSS",
+          "data": "2026-08-31T09:59:07.029342",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306510295,
+          "idUnicoDocumento": "47c952e",
+          "tipo": "Certidão",
+          "titulo": "Alvará de liberacao -  Reclamante e Imposto de Renda",
+          "data": "2026-08-31T09:57:57.407852",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 306480683,
+          "idUnicoDocumento": "e4f39e8",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-08-31T00:32:55.554043"
+        },
+        {
+          "id": 306312280,
+          "idUnicoDocumento": "cb6afe9",
+          "tipo": "Manifestação",
+          "titulo": "VALOR SOERGUIDO - ANTONIO FERNANDO MOSCARDO",
+          "data": "2026-08-28T10:01:27.041832",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 306201582,
+          "idUnicoDocumento": "8bf3a2f",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-27T14:45:15.225953",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306152743,
+          "idUnicoDocumento": "2033f7f",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-08-27T14:44:15.225953",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 305966635,
+          "idUnicoDocumento": "9317be4",
+          "tipo": "Manifestação",
+          "titulo": "Manifestação (indicação de conta)",
+          "data": "2026-08-26T10:19:27.517319",
+          "participacaoProcesso": "Advogado"
+        },
+        {
+          "id": 305208611,
+          "idUnicoDocumento": "f7cb67e",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-08-20T00:53:14.299007"
+        },
+        {
+          "id": 305208610,
+          "idUnicoDocumento": "9343248",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-08-20T00:53:14.007495"
+        },
+        {
+          "id": 305099213,
+          "idUnicoDocumento": "1409e59",
+          "tipo": "Certidão",
+          "titulo": "Mandado de pagamento - Alvará Eletrônico em favor de ANTONIO FERNANDO MOSCARDO - R$ 1.566.813,62.",
+          "data": "2026-08-19T12:43:55.747005",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 305097655,
+          "idUnicoDocumento": "c3e464a",
+          "tipo": "Mandado de Pagamento",
+          "titulo": "Alvará - SISCONDJ-JT - recolhimentos previdenciários reclamada - BANCO DO BRASIL SA (R$ 199.491,47)",
+          "data": "2026-08-19T12:38:47.925507",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 305084821,
+          "idUnicoDocumento": "1d67698",
+          "tipo": "Manifestação",
+          "titulo": "Petição determinando pagamento de honorários",
+          "data": "2026-08-19T11:37:43.028486",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 305077773,
+          "idUnicoDocumento": "64ad239",
+          "tipo": "Certidão",
+          "titulo": "Mandado de Pagamento (alvará eletrônico SISCONDJ) Recolhimento do Imposto de Renda (R$ 102.717,06)",
+          "data": "2026-08-19T11:08:01.207791",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 305076019,
+          "idUnicoDocumento": "684c0ed",
+          "tipo": "Mandado de Pagamento",
+          "titulo": "Alvará - SISCONDJ-JT - ANTONIO FERNANDO MOSCARDO (R$ 1.566.813,62)",
+          "data": "2026-08-19T11:03:06.695845",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 305071077,
+          "idUnicoDocumento": "1a4a5d2",
+          "tipo": "Certidão",
+          "titulo": "Apuração do Imposto de Renda sobre valor incontroverso",
+          "data": "2026-08-19T10:38:15.258269",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 305063658,
+          "idUnicoDocumento": "1fa5fd4",
+          "tipo": "Certidão",
+          "titulo": "Certidão - cálculo do imposto de renda",
+          "data": "2026-08-19T10:31:37.636464",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 304934947,
+          "idUnicoDocumento": "6ee33dd",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-18T14:07:27.398901",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 304472665,
+          "idUnicoDocumento": "ef3e0d1",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-08-18T14:06:27.398901",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302229165,
+          "idUnicoDocumento": "a3b67b9",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-07-25T04:25:28.760544"
+        },
+        {
+          "id": 302134094,
+          "idUnicoDocumento": "5faa525",
+          "tipo": "Manifestação",
+          "titulo": "54. MANIFESTAÇÃO - EXCLUSÃO ECONOMUS - 2 REITERAÇÃO",
+          "data": "2026-07-24T11:05:41.542309",
+          "participacaoProcesso": "Advogado"
+        },
+        {
+          "id": 302046086,
+          "idUnicoDocumento": "7618703",
+          "tipo": "Impugnação",
+          "titulo": "Impugnaçao BB à ISL do reclamante-Antonio Fernando Moscardo",
+          "data": "2026-07-23T15:06:28.089307",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 302032465,
+          "idUnicoDocumento": "90dddef",
+          "tipo": "Contraminuta",
+          "titulo": "CMEE-ANTONIO FERNANDO MOSCARDO",
+          "data": "2026-07-23T13:57:25.823135",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 301916480,
+          "idUnicoDocumento": "0adea46",
+          "tipo": "Manifestação",
+          "titulo": "LIBERAÇÃO + DADOS BANCÁRIOS ANTONIO FERNANDO MOSCARDO",
+          "data": "2026-07-22T15:51:41.312667",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 301505278,
+          "idUnicoDocumento": "242fd5d",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-20T06:20:30.041926"
+        },
+        {
+          "id": 301505277,
+          "idUnicoDocumento": "b2014fd",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-20T06:20:29.740519"
+        },
+        {
+          "id": 300988421,
+          "idUnicoDocumento": "05250a6",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-14T14:31:16.58434",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 300988408,
+          "idUnicoDocumento": "468e669",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-14T14:31:16.58434",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 300988387,
+          "idUnicoDocumento": "ffde469",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-14T14:31:16.58434",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 300959986,
+          "idUnicoDocumento": "39dfec0",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-07-14T14:30:16.58434",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 297042042,
+          "idUnicoDocumento": "e7d4d94",
+          "tipo": "Embargos à Execução",
+          "titulo": "Embargos ExecuçãoBB-Antonio Fernando Moscardo",
+          "data": "2026-06-10T13:42:23.281012",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 294753743,
+          "idUnicoDocumento": "645d54b",
+          "tipo": "Impugnação à Sentença de Liquidação",
+          "titulo": "ISL-ANTONIO FERNANDO MASCARDO",
+          "data": "2026-05-20T16:36:07.584553",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 294641711,
+          "idUnicoDocumento": "8bcacca",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-05-20T07:33:51.643247"
+        },
+        {
+          "id": 294641709,
+          "idUnicoDocumento": "4f0c1f1",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-05-20T07:33:51.325602"
+        },
+        {
+          "id": 294237415,
+          "idUnicoDocumento": "322d997",
+          "tipo": "Impugnação à Sentença de Liquidação",
+          "titulo": "Impugnação Sentença de Liquidação UNIÃO",
+          "data": "2026-05-16T11:09:41.664",
+          "participacaoProcesso": "Procurador"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 2507241,\n    \"numero\": \"0000574-20.2010.5.15.0005\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 297042042,\n      \"idUnicoDocumento\": \"e7d4d94\",\n      \"data\": \"2026-06-10T13:42:23.281012\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"Embargos ExecuçãoBB-Antonio Fernando Moscardo\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"BANCO DO BRASIL SA\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior a 10/06/2026 na timeline; os atos subsequentes referem-se a liberação de valores incontroversos e alvarás.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 302032465,\n          \"idUnicoDocumento\": \"90dddef\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Do período de cálculo das horas extras\",\n          \"resumo\": \"A embargante sustenta que o laudo apurou indevidamente horas extras e intervalos no período de 07/05/2005 a 30/09/2005, contrariando a coisa julgada (id db04823) que reconheceu a veracidade dos cartões de ponto (id 8509185), devendo os cálculos iniciarem em 01/10/2005.\",\n          \"fundamento\": \"Coisa julgada (id db04823) e cartões de ponto (id 8509185)\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute o período abrangido pelo apurado em relação aos parâmetros definidos no título executivo.\"\n        },\n        {\n          \"numero\": 2,\n          \"titulo\": \"Dos reflexos em aviso prévio\",\n          \"resumo\": \"A executada aponta excesso por ter sido apurado reflexos das horas extras e da intrajornada em aviso prévio indenizado (90 dias), argumentando que o exequente aderiu ao PDV e estava dispensado do aviso, além de a verba ter sido expressamente indeferida na sentença.\",\n          \"fundamento\": \"TRCT (id 8509185) e sentença (id db04823)\",\n          \"natureza\": \"MISTO\",\n          \"justificativaNatureza\": \"Envolve a análise jurídica da incidência de verba indeferida/dispensada e o consequente reflexo numérico nos cálculos.\"\n        }\n      ]\n    },\n    {\n      \"id\": 294753743,\n      \"idUnicoDocumento\": \"645d54b\",\n      \"data\": \"2026-05-20T16:36:07.584553\",\n      \"tipoInformado\": \"Impugnação à Sentença de Liquidação\",\n      \"tituloInformado\": \"ISL-ANTONIO FERNANDO MASCARDO\",\n      \"classificacao\": \"ISL\",\n      \"peticionario\": {\n        \"nome\": \"ANTONIO FERNANDO MOSCARDO\",\n        \"qualificacao\": \"reclamante\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior a 20/05/2026 na timeline julgando a impugnação.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 302046086,\n          \"idUnicoDocumento\": \"7618703\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da integração das comissões pagas\",\n          \"resumo\": \"O reclamante aponta a ausência de apuração dos reflexos das comissões pagas no FGTS acrescido da multa de 40%, observando a prescrição trintenária a partir de 05/05/1980, conforme determinado no V. Acórdão Regional.\",\n          \"fundamento\": \"V. Acórdão Regional\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Trata da inclusão de reflexos de verbas já reconhecidas no acórdão sobre a base de cálculo e períodos definidos.\"\n        },\n        {\n          \"numero\": 2,\n          \"titulo\": \"Das diferenças de comissões\",\n          \"resumo\": \"O exequente sustenta a ausência de apuração das diferenças de comissões e seus reflexos em 13º salários, férias com 1/3, aviso prévio, DSRs, gratificação de cargo, anuênios e FGTS com 40%, inclusive com observância da prescrição trintenária.\",\n          \"fundamento\": \"R. Sentença e V. Acórdão Regional\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a inclusão de diferenças e reflexos devidos conforme os parâmetros do título executivo.\"\n        },\n        {\n          \"numero\": 3,\n          \"titulo\": \"Da base de cálculo das horas extras\",\n          \"resumo\": \"O reclamante sustenta que o perito não integrou na base de cálculo das horas extras e intervalares as verbas relativas a diferenças de comissões, diferença de comissões em gratificação de função, em anuênios e em DSR, em afronta à Súmula 264 do TST e à r. sentença.\",\n          \"fundamento\": \"Súmula 264 do C. TST e r. sentença\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute quais parcelas salariais integram a base de cálculo das horas extras apuradas.\"\n        }\n      ]\n    },\n    {\n      \"id\": 294237415,\n      \"idUnicoDocumento\": \"322d997\",\n      \"data\": \"2026-05-16T11:09:41.664\",\n      \"tipoInformado\": \"Impugnação à Sentença de Liquidação\",\n      \"tituloInformado\": \"Impugnação Sentença de Liquidação UNIÃO\",\n      \"classificacao\": \"ISL\",\n      \"peticionario\": {\n        \"nome\": \"UNIÃO FEDERAL (PGF)\",\n        \"qualificacao\": \"uniao\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior a 16/05/2026 na timeline julgando a impugnação da União.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da alíquota do SAT para o cálculo das contribuições previdenciárias\",\n          \"resumo\": \"A União sustenta que o cálculo homologado utilizou incorretamente a alíquota de 2% para o SAT em todo o período, sendo correta a aplicação da alíquota de 3% com base na atividade principal (CNAE 64.22-1-00) e na tabela do Anexo I da IN RFB nº 2110/2022.\",\n          \"fundamento\": \"Anexo I da IN RFB nº 2110/2022 e CNAE da reclamada\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a correta aplicação de alíquota e enquadramento normativo para apuração do valor devido de contribuição previdenciária.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 2509362,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "AIRES TADEU ANEQUINE",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000799-74.2013.5.15.0089",
+      "timeline": [
+        {
+          "id": 303847122,
+          "idUnicoDocumento": "dac8d1e",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-08-09T04:27:56.40415"
+        },
+        {
+          "id": 303037932,
+          "idUnicoDocumento": "3bbf07c",
+          "tipo": "Manifestação",
+          "titulo": "Manifestação",
+          "data": "2026-08-02T15:49:51.581357",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 302858887,
+          "idUnicoDocumento": "b7c7dae",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-31T00:01:10.070802"
+        },
+        {
+          "id": 302705835,
+          "idUnicoDocumento": "ef50333",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-29T20:37:35.959426",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302705834,
+          "idUnicoDocumento": "d1f615e",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-29T20:37:35.959426",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302705833,
+          "idUnicoDocumento": "53cf9e9",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-29T20:37:35.959426",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302647215,
+          "idUnicoDocumento": "1fc7226",
+          "tipo": "Despacho",
+          "titulo": "Processamento de ISL",
+          "data": "2026-07-29T20:36:35.959426",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 301456970,
+          "idUnicoDocumento": "ad49d37",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-20T01:35:18.725868"
+        },
+        {
+          "id": 301412463,
+          "idUnicoDocumento": "c1dd2e8",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-07-18T04:18:35.76398"
+        },
+        {
+          "id": 301117187,
+          "idUnicoDocumento": "f5e8d0d",
+          "tipo": "Impugnação à Sentença de Liquidação",
+          "titulo": "50.0 - ISL - Aires Tadeu Anequine",
+          "data": "2026-07-15T14:36:01.433723",
+          "participacaoProcesso": "AUTOR, Advogado"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 2509362,\n    \"numero\": \"0000799-74.2013.5.15.0089\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 301117187,\n      \"idUnicoDocumento\": \"f5e8d0d\",\n      \"data\": \"2026-07-15T14:36:01.433723\",\n      \"tipoInformado\": \"Impugnação à Sentença de Liquidação\",\n      \"tituloInformado\": \"50.0 - ISL - Aires Tadeu Anequine\",\n      \"classificacao\": \"ISL\",\n      \"peticionario\": {\n        \"nome\": \"AIRES TADEU ANEQUINE\",\n        \"qualificacao\": \"reclamante\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior à petição; o despacho de processamento (id 1fc7226) de 29/07/2026 indica que a matéria ainda está em fase de processamento.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da limitação temporal das progressões horizontais\",\n          \"resumo\": \"O reclamante insurge-se contra a limitação da contabilização das progressões horizontais por antiguidade (PHA) até setembro de 2005, sustentando que o título executivo determina a aplicação do PCCS/1995 durante todo o pacto laboral, tratando-se de obrigação de trato sucessivo.\",\n          \"fundamento\": \"V. Acórdão 059713/2014-PATR e PCCS/1995\",\n          \"natureza\": \"MISTO\",\n          \"justificativaNatureza\": \"Envolve a interpretação do alcance da coisa julgada (jurídico) e a consequente necessidade de recálculo das parcelas vencidas e vincendas (cálculo).\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 3779862,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "FERNANDO CANDIDO BAPTISTA TIBURCIO",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000847-30.2013.5.15.0090",
+      "timeline": [
+        {
+          "id": 301493653,
+          "idUnicoDocumento": "b80f0a4",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-20T05:20:51.867203"
+        },
+        {
+          "id": 301310966,
+          "idUnicoDocumento": "bf74749",
+          "tipo": "Manifestação",
+          "titulo": "64.0 - Manifestação - Fernando Cândido Baptista Tibúrcio",
+          "data": "2026-07-17T09:53:51.55604",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 300791585,
+          "idUnicoDocumento": "cafdd92",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-13T11:57:05.464326",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 299353877,
+          "idUnicoDocumento": "693c580",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-07-13T11:56:05.464326",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 298880604,
+          "idUnicoDocumento": "4ccebb6",
+          "tipo": "Manifestação",
+          "titulo": "60.0 - Manifestação - Fernando Cândido Baptista Tibúrcio",
+          "data": "2026-06-24T15:55:43.433415",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 296982901,
+          "idUnicoDocumento": "c7973c1",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-10T01:22:46.249728"
+        },
+        {
+          "id": 296675933,
+          "idUnicoDocumento": "2cb8773",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-08T10:50:27.465622",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 296474084,
+          "idUnicoDocumento": "c1e9a2a",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-06-08T10:49:27.465622",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 288949351,
+          "idUnicoDocumento": "4d727c9",
+          "tipo": "Manifestação",
+          "titulo": "Manifestação",
+          "data": "2026-03-28T09:22:05.8829",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 288329445,
+          "idUnicoDocumento": "003472e",
+          "tipo": "Impugnação",
+          "titulo": "57.0 - Impugnação ao EE - Fernando Cândido Baptista Tibúrcio",
+          "data": "2026-03-24T10:39:35.510483",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 287779586,
+          "idUnicoDocumento": "2ffd1d9",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-03-19T00:23:16.820984"
+        },
+        {
+          "id": 287557974,
+          "idUnicoDocumento": "d57e757",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-17T17:05:29.160211",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 287557972,
+          "idUnicoDocumento": "a2f565c",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-17T17:05:29.160211",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 287557964,
+          "idUnicoDocumento": "118bab0",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-03-17T17:05:29.160211",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 287125147,
+          "idUnicoDocumento": "091ba5a",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-03-17T17:04:29.160211",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 280617224,
+          "idUnicoDocumento": "0c71140",
+          "tipo": "Embargos à Execução",
+          "titulo": "Embargos à Execução",
+          "data": "2026-01-06T10:08:56.048",
+          "participacaoProcesso": "Procurador"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 3779862,\n    \"numero\": \"0000847-30.2013.5.15.0090\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 280617224,\n      \"idUnicoDocumento\": \"0c71140\",\n      \"data\": \"2026-01-06T10:08:56.048\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"Embargos à Execução\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior à petição; a timeline registra apenas manifestações e despachos de andamento, como o despacho de 17/03/2026 (id 091ba5a).\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 288329445,\n          \"idUnicoDocumento\": \"003472e\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da evolução salarial e progressões\",\n          \"resumo\": \"A embargante sustenta que o perito aplicou progressões em épocas impróprias e desconsiderou os limites salariais do cargo de Carteiro III previstos no PCCS/95.\",\n          \"fundamento\": \"PCCS/95 (item 8.2.10.7 e 10.2)\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a aplicação de critérios de progressão e limites salariais já definidos no título sobre o cálculo homologado.\"\n        },\n        {\n          \"numero\": 2,\n          \"titulo\": \"Das progressões do PCCS/2008\",\n          \"resumo\": \"A embargante defende que as progressões baseadas no PCCS/2008 devem ser excluídas da evolução salarial por serem inaplicáveis ao autor.\",\n          \"fundamento\": \"Título executivo\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Trata-se de erro na composição da evolução salarial utilizada no cálculo.\"\n        },\n        {\n          \"numero\": 3,\n          \"titulo\": \"Dos reflexos em RSR\",\n          \"resumo\": \"A embargante alega que, por ser o autor mensalista, os reflexos em RSR já estão embutidos no salário, sendo indevido o pagamento extra.\",\n          \"fundamento\": \"Art. 7º, § 2º da Lei nº 605/1949\",\n          \"natureza\": \"MISTO\",\n          \"justificativaNatureza\": \"Envolve a interpretação jurídica da natureza do salário e o reflexo direto no valor apurado.\"\n        },\n        {\n          \"numero\": 4,\n          \"titulo\": \"Da correção monetária e juros\",\n          \"resumo\": \"A embargante aponta erro na aplicação dos índices de correção e juros, sustentando a necessidade de revisão da data de aplicação da taxa SELIC conforme a ADC 58.\",\n          \"fundamento\": \"ADC 58 do STF\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"Exige decisão judicial sobre a correta aplicação de índices de correção e juros de mora.\"\n        },\n        {\n          \"numero\": 5,\n          \"titulo\": \"Dos honorários periciais\",\n          \"resumo\": \"A embargante insurge-se contra o valor dos honorários periciais, alegando inobservância dos limites da Resolução nº 66 do CSJT e do art. 790-B da CLT.\",\n          \"fundamento\": \"Resolução nº 66 do CSJT e art. 790-B da CLT\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"Questão jurídica sobre a responsabilidade e limites legais para fixação de honorários.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 3763194,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "AFFONSO GEMIGNANI FILHO",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000853-37.2013.5.15.0090",
+      "timeline": [
+        {
+          "id": 300359868,
+          "idUnicoDocumento": "d663462",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-07-07T04:26:56.206728"
+        },
+        {
+          "id": 300159824,
+          "idUnicoDocumento": "4b67dca",
+          "tipo": "Manifestação",
+          "titulo": "Manifestação",
+          "data": "2026-07-05T22:02:56.231558",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 299849608,
+          "idUnicoDocumento": "8003b30",
+          "tipo": "Impugnação",
+          "titulo": "71.0 - Impugnação ao EE após AP - Sonia Leite Nunes Gemignani",
+          "data": "2026-07-02T15:57:27.428453",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 299407653,
+          "idUnicoDocumento": "637fe01",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-30T01:21:17.68171"
+        },
+        {
+          "id": 299205760,
+          "idUnicoDocumento": "7da7c05",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-26T17:42:25.36057",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 299205755,
+          "idUnicoDocumento": "0e339dd",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-26T17:42:25.36057",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 299205743,
+          "idUnicoDocumento": "9b12d9b",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-26T17:42:25.36057",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 298080665,
+          "idUnicoDocumento": "e9ca531",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-06-26T17:41:25.36057",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 293252003,
+          "idUnicoDocumento": "8a8b2d9",
+          "tipo": "Embargos à Execução",
+          "titulo": "Embargos à Execução",
+          "data": "2026-05-07T21:08:03.542",
+          "participacaoProcesso": "Procurador"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 3763194,\n    \"numero\": \"0000853-37.2013.5.15.0090\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 293252003,\n      \"idUnicoDocumento\": \"8a8b2d9\",\n      \"data\": \"2026-05-07T21:08:03.542\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"Embargos à Execução\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão de julgamento após 07/05/2026; a timeline posterior registra apenas despacho (id e9ca531) e impugnação da parte contrária (id 8003b30).\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 299849608,\n          \"idUnicoDocumento\": \"8003b30\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Excesso de execução nos cálculos homologados\",\n          \"resumo\": \"A embargante sustenta que os cálculos homologados contêm incorreções e divergem dos parâmetros fixados no título executivo, apontando excesso de execução conforme parecer técnico anexo.\",\n          \"fundamento\": \"Parecer técnico e título executivo judicial\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a exatidão dos valores apurados frente aos parâmetros já definidos no título executivo.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 3764439,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "EMERSON CAMILO",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0000885-42.2013.5.15.0090",
+      "timeline": [
+        {
+          "id": 300359867,
+          "idUnicoDocumento": "80b2cbc",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-07-07T04:26:52.828228"
+        },
+        {
+          "id": 299850869,
+          "idUnicoDocumento": "f1f8234",
+          "tipo": "Impugnação",
+          "titulo": "69.0 - Impugnação ao EE após AP - Emerson Camilo",
+          "data": "2026-07-02T16:02:27.46095",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 299437769,
+          "idUnicoDocumento": "301e84d",
+          "tipo": "Manifestação",
+          "titulo": "Esclarecimentos ao laudo pericial",
+          "data": "2026-06-30T10:29:16.330995",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 299407575,
+          "idUnicoDocumento": "cebf5d8",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-30T01:20:53.681118"
+        },
+        {
+          "id": 299205962,
+          "idUnicoDocumento": "a6eb2b1",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-26T17:43:07.95435",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 299205957,
+          "idUnicoDocumento": "c3fd55b",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-26T17:43:07.95435",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 299205951,
+          "idUnicoDocumento": "0c2bbd3",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-26T17:43:07.95435",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 298102305,
+          "idUnicoDocumento": "4fd89a9",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-06-26T17:42:07.95435",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 292398388,
+          "idUnicoDocumento": "68aa092",
+          "tipo": "Embargos à Execução",
+          "titulo": "Embargos à Execução",
+          "data": "2026-04-30T12:37:26.989",
+          "participacaoProcesso": "Procurador"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 3764439,\n    \"numero\": \"0000885-42.2013.5.15.0090\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 292398388,\n      \"idUnicoDocumento\": \"68aa092\",\n      \"data\": \"2026-04-30T12:37:26.989\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"Embargos à Execução\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"EMPRESA BRASILEIRA DE CORREIOS E TELEGRAFOS\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior à petição; os documentos na timeline posteriores (como o despacho id 4fd89a9 e a manifestação id f1f8234) indicam andamento e resposta, mas não julgamento dos embargos.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 299850869,\n          \"idUnicoDocumento\": \"f1f8234\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da evolução salarial e data da primeira concessão\",\n          \"resumo\": \"A embargante aponta excesso na execução, sustentando que a perícia não observou as diretrizes do julgado ao considerar a admissão em 19/05/2005 e fixar a primeira concessão em 09/2008.\",\n          \"fundamento\": \"Decisão judicial e termos da admissão\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a correta apuração temporal da evolução salarial conforme os parâmetros definidos no título executivo.\"\n        },\n        {\n          \"numero\": 2,\n          \"titulo\": \"Das progressões aplicadas em épocas impróprias\",\n          \"resumo\": \"A embargante sustenta que o perito aplicou progressões em épocas impróprias no mês de março, com interstício inferior a 3 anos, afirmando que o correto seria a aplicação no mês de setembro.\",\n          \"fundamento\": \"Regras de interstício e progressões salariais\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Trata de conferência de cálculos e datas de aplicação das progressões salariais.\"\n        },\n        {\n          \"numero\": 3,\n          \"titulo\": \"Da exclusão das progressões do PCCS/2008\",\n          \"resumo\": \"A embargante defende que, por decisão nos autos, ao reclamante não se aplica o PCCS/2008, devendo ser desconsideradas todas as promoções concedidas com base nele para evitar regramento híbrido.\",\n          \"fundamento\": \"Decisão proferida nos autos e princípio do conglobamento\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"Envolve a interpretação do alcance do título executivo quanto à aplicabilidade ou não do PCCS/2008.\"\n        },\n        {\n          \"numero\": 4,\n          \"titulo\": \"Dos reflexos das diferenças salariais em Repouso Semanal Remunerado (RSR)\",\n          \"resumo\": \"A embargante sustenta que são indevidos reflexos das diferenças salariais no RSR, pois a diferença apurada refere-se a mensalista, cujos DSRs já se encontram embutidos no salário mensal.\",\n          \"fundamento\": \"Art. 7º, § 2º, da Lei nº 605/1949\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a incidência de reflexos salariais sobre parcela já remunerada pelo salário mensal, matéria de apuração da conta.\"\n        },\n        {\n          \"numero\": 5,\n          \"titulo\": \"Dos honorários advocatícios\",\n          \"resumo\": \"A embargante sustenta que são indevidos os honorários advocatícios calculados pelo perito, por não terem sido deferidos nos autos.\",\n          \"fundamento\": \"Decisão e comandos do título executivo\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"Exige verificar se há condenação em honorários no título executivo, configurando questão jurídica.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 435238,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "JOSE EDUARDO DA SILVA",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "FUNDACAO CENTRO DE ATENDIMENTO SOCIOEDUCATIVO AO ADOLESCENTE - FUNDACAO CASA - SP",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0010005-44.2015.5.15.0089",
+      "timeline": [
+        {
+          "id": 307840919,
+          "idUnicoDocumento": "433bda3",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-09-10T03:38:55.904341"
+        },
+        {
+          "id": 307840918,
+          "idUnicoDocumento": "0d9e44c",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-09-10T03:38:55.591065"
+        },
+        {
+          "id": 307457227,
+          "idUnicoDocumento": "17a7aec",
+          "tipo": "Certidão",
+          "titulo": "Certidão Automática de Ciência por Domicílio Eletrônico",
+          "data": "2026-09-08T03:59:57.562154"
+        },
+        {
+          "id": 306855501,
+          "idUnicoDocumento": "daa1ad6",
+          "tipo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "titulo": "Esclarecimentos Periciais - JOSE EDUARDO DA SILVA - 0010005-44.2015.5.15.0089",
+          "data": "2026-09-01T21:50:54.952649",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 306680947,
+          "idUnicoDocumento": "50fa44f",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-09-01T00:03:13.358122"
+        },
+        {
+          "id": 306471051,
+          "idUnicoDocumento": "4d2a365",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-30T19:54:24.856418",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306471050,
+          "idUnicoDocumento": "016bc7d",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-30T19:54:24.856418",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306471035,
+          "idUnicoDocumento": "2b9fb59",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-30T19:54:24.856418",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306304113,
+          "idUnicoDocumento": "990c321",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-08-30T19:53:24.856418",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 306304256,
+          "idUnicoDocumento": "385e2dc",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-08-28T08:58:53.185469",
+          "participacaoProcesso": "Servidor"
+        },
+        {
+          "id": 302150231,
+          "idUnicoDocumento": "906e5a2",
+          "tipo": "Embargos à Execução",
+          "titulo": "EMB EXEC _ FCASA",
+          "data": "2026-07-24T12:39:43.742",
+          "participacaoProcesso": "Procurador"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 435238,\n    \"numero\": \"0010005-44.2015.5.15.0089\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 302150231,\n      \"idUnicoDocumento\": \"906e5a2\",\n      \"data\": \"2026-07-24T12:39:43.742\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"EMB EXEC _ FCASA\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"FUNDAÇÃO CENTRO DE ATENDIMENTO SOCIOEDUCATIVO AO ADOLESCENTE - FUNDAÇÃO CASA/SP\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"PENDENTE\",\n      \"motivoSituacao\": \"Não há sentença ou acórdão posterior à petição; a timeline registra apenas despachos e intimações de andamento (id 990c321) e esclarecimentos periciais (id daa1ad6).\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da redução dos honorários periciais\",\n          \"resumo\": \"A embargante sustenta que o valor arbitrado aos honorários periciais é excessivo e superior aos parâmetros do CSJT, requerendo sua adequação ao teto de R$ 1.000,00 ou, subsidiariamente, a redução para R$ 1.500,00 com base em jurisprudência.\",\n          \"fundamento\": \"Art. 790-B, § 1º, da CLT e Resolução 247/2019 do CSJT\",\n          \"natureza\": \"JURIDICO\",\n          \"justificativaNatureza\": \"A controvérsia exige decisão judicial sobre a fixação de honorários periciais e interpretação de limites legais e normativos.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  },
+  {
+    "dadosProcessuais": {
+      "idDoProcesso": 3860045,
+      "partes": {
+        "ativo": [
+          {
+            "nome": "ROMARIO RODRIGUES GOMES PEREIRA",
+            "tipo": "Pessoa Física"
+          }
+        ],
+        "passivo": [
+          {
+            "nome": "USINA SANTA ISABEL S/A",
+            "tipo": "Pessoa Jurídica"
+          },
+          {
+            "nome": "SANTA LUIZA AGRO PECUARIA LTDA",
+            "tipo": "Pessoa Jurídica"
+          }
+        ]
+      },
+      "numero": "0010063-55.2024.5.15.0049",
+      "timeline": [
+        {
+          "id": 302258310,
+          "idUnicoDocumento": "e5f006a",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-27T00:23:08.72795"
+        },
+        {
+          "id": 302258309,
+          "idUnicoDocumento": "4cca10d",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-27T00:23:08.433943"
+        },
+        {
+          "id": 302187324,
+          "idUnicoDocumento": "ca23bc5",
+          "tipo": "Apresentação de Esclarecimentos ao Laudo Pericial",
+          "titulo": "Apresentação de Esclarecimentos ao Laudo Pericial Contábil",
+          "data": "2026-07-24T15:38:49.637119",
+          "participacaoProcesso": "Perito"
+        },
+        {
+          "id": 302052300,
+          "idUnicoDocumento": "492e3f7",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-23T15:38:06.901504",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 302052291,
+          "idUnicoDocumento": "00f1650",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-07-23T15:38:06.901504",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 301303560,
+          "idUnicoDocumento": "8c4b1ed",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-07-23T15:37:06.901504",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 300735911,
+          "idUnicoDocumento": "e0ff236",
+          "tipo": "Contestação",
+          "titulo": "CONTESTAÇÃO AOS EMBARGOS à EXECUÇÃO",
+          "data": "2026-07-11T16:24:01.834695",
+          "participacaoProcesso": "AUTOR, Advogado"
+        },
+        {
+          "id": 299926805,
+          "idUnicoDocumento": "9710519",
+          "tipo": "Manifestação",
+          "titulo": "Juntada",
+          "data": "2026-07-03T10:03:29.80058",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 299762578,
+          "idUnicoDocumento": "f8ae6cb",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-02T06:38:21.801765"
+        },
+        {
+          "id": 299762577,
+          "idUnicoDocumento": "bbe5266",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-07-02T06:38:21.52004"
+        },
+        {
+          "id": 299566812,
+          "idUnicoDocumento": "855a78a",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-30T20:26:09.426628",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 299507236,
+          "idUnicoDocumento": "a193b17",
+          "tipo": "Despacho",
+          "titulo": "Processamento de EE",
+          "data": "2026-06-30T20:25:09.426628",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 298945933,
+          "idUnicoDocumento": "ef84fb1",
+          "tipo": "Manifestação",
+          "titulo": "Juntada",
+          "data": "2026-06-25T08:02:24.560148",
+          "participacaoProcesso": "RÉU, Advogado"
+        },
+        {
+          "id": 298207602,
+          "idUnicoDocumento": "10d6980",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-19T00:02:50.366211"
+        },
+        {
+          "id": 298207600,
+          "idUnicoDocumento": "e03a2d0",
+          "tipo": "Certidão",
+          "titulo": "Certidão de Publicação no DJEN",
+          "data": "2026-06-19T00:02:49.982611"
+        },
+        {
+          "id": 298038910,
+          "idUnicoDocumento": "db9b9da",
+          "tipo": "Intimação",
+          "titulo": "Intimação",
+          "data": "2026-06-17T21:42:46.666688",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 297571903,
+          "idUnicoDocumento": "98967b3",
+          "tipo": "Despacho",
+          "titulo": "Despacho",
+          "data": "2026-06-17T21:41:46.666688",
+          "participacaoProcesso": "Magistrado"
+        },
+        {
+          "id": 296497185,
+          "idUnicoDocumento": "abe800d",
+          "tipo": "Embargos à Execução",
+          "titulo": "01 Embargos a execução",
+          "data": "2026-06-03T14:55:21.815126",
+          "participacaoProcesso": "RÉU, Advogado"
+        }
+      ],
+      "manifestacoesPerito": [],
+      "respostaPrimeiroAssistente": "{\n  \"processo\": {\n    \"idDoProcesso\": 3860045,\n    \"numero\": \"0010063-55.2024.5.15.0049\"\n  },\n  \"peticoes\": [\n    {\n      \"id\": 296497185,\n      \"idUnicoDocumento\": \"abe800d\",\n      \"data\": \"2026-06-03T14:55:21.815126\",\n      \"tipoInformado\": \"Embargos à Execução\",\n      \"tituloInformado\": \"01 Embargos a execução\",\n      \"classificacao\": \"EE\",\n      \"peticionario\": {\n        \"nome\": \"USINA SANTA ISABEL S/A\",\n        \"qualificacao\": \"reclamada\"\n      },\n      \"situacao\": \"INCERTA\",\n      \"motivoSituacao\": \"Embora tenha havido despacho de processamento (id a193b17) e manifestação do autor (id e0ff236), houve posterior apresentação de esclarecimentos pelo perito (id ca23bc5) em 24/07/2026, sem que tenha ocorrido sentença de julgamento dos embargos até o momento.\",\n      \"documentosDeJulgamento\": [],\n      \"respostasNaTimeline\": [\n        {\n          \"id\": 300735911,\n          \"idUnicoDocumento\": \"e0ff236\"\n        }\n      ],\n      \"pontos\": [\n        {\n          \"numero\": 1,\n          \"titulo\": \"Da duplicidade no cálculo do adicional noturno\",\n          \"resumo\": \"A embargante sustenta que o perito incluiu o adicional noturno na base de cálculo das horas extras e, simultaneamente, apurou o adicional noturno em apartado, gerando pagamento em duplicidade.\",\n          \"fundamento\": \"OJ 97 da SBDI-1 do TST\",\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Trata-se de erro na metodologia de cálculo que resulta em duplicidade de verbas.\"\n        },\n        {\n          \"numero\": 2,\n          \"titulo\": \"Da falta de dedução de horas normais quitadas\",\n          \"resumo\": \"A embargante aponta que o perito calculou horas extras sobre todo o período após a 6ª hora, sem abater as horas normais já pagas em holerite referentes ao intervalo entre a 6ª e a 7h20.\",\n          \"fundamento\": null,\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Discute a correta dedução de valores pagos sob rubricas específicas já quitadas.\"\n        },\n        {\n          \"numero\": 3,\n          \"titulo\": \"Do erro na unidade de medida das horas extras 100%\",\n          \"resumo\": \"A embargante alega que o perito utilizou salário mensal como base, mas quantificou as parcelas em horas em vez de dias, gerando erro de proporcionalidade.\",\n          \"fundamento\": null,\n          \"natureza\": \"CALCULO\",\n          \"justificativaNatureza\": \"Refere-se a erro aritmético e de critério de conversão de base de cálculo.\"\n        }\n      ]\n    }\n  ],\n  \"alertas\": []\n}"
+    }
+  }
+]
