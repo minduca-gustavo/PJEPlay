@@ -1,6 +1,33 @@
 async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada = false, dadosRechamada) {
+    let idMostrador = id('tramitaIA', 'mostraResultadoRemoverPEC')
     if (rechamada){
-        _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeDamPerito.json', 'application/json')
+        let rolanteFilhos = [...document.getElementById(ancestralLimpar).children]
+        let excluir = rolanteFilhos.map(d=> {
+            if (d?.id != elementoAncestral){
+                d?.remove()
+            }
+        })
+        let rolante = document.getElementById(ancestralLimpar)
+        rolante.style.overflowY = ''
+        if (!Array.isArray(dadosRechamada)){
+            mostraResultadosBuscaSimples(ancestralLimpar, 'O resultado da busca foi baixado. Ocorreu um erro na apresentação.', idMostrador)
+            _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeDamPerito.json', 'application/json')
+            return
+        }
+        let resultado = dadosRechamada.map(d => formataResultado(d))
+
+        function formataResultado(linha){
+            let res = []
+            let lido = linha?.lido || false
+            let resultado = linha?.resultado
+            res.push(
+                {
+                    id: lido ? resultado?.id : 'Ocorreu um erro de formatação. Verifique a resposta da IA na última coluna.',
+                    
+                }
+            )
+        }
+
         return
     }
     let el = document.getElementById(elementoAncestral)
@@ -36,7 +63,6 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
         texto: 'Remover processos intimados do PEC.'
     })
     async function removerPEC(modo){
-        let idMostrador = id('tramitaIA', 'mostraResultadoRemoverPEC')
         let limpar = [...document.getElementById(ancestralLimpar).children].filter(d => d?.id !== elementoAncestral).map(d => d.remove())
         if (modo === 'lista'){
             rota_avisoObrigatorio('Não implementado', 5)
@@ -63,15 +89,16 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
             let promessas = []
             let resultado = []
             let tamanhoDoLote = 10
+            let mostra = 0
             for (let i = 0; i < processos?.ids?.length; i++) {
                 
+                if (i == 0) mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
                 promessas.push(requisicoesEmPareleloRemoverPEC(i))
                 if ((i + 1) % 10 === 0 || (i + 1) === processos?.ids?.length){
                     let resultados = await Promise.all(promessas)
                     resultado.push(...resultados)
                     promessas = []
                 }
-                mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
 
                 async function requisicoesEmPareleloRemoverPEC(i){
                     let idProc = processos?.ids[i]
@@ -107,6 +134,8 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                     let dadosAssistente = {idProc, numero, despacho, timelinePosDespacho, expedientesPosDespacho, partes}
                     let assistente = '6abfbef177acca97cae0ea20'
                     let respostaIA = await rota_IAConsulta(assistente, JSON.stringify(dadosAssistente, null, 2))
+                    mostra++
+                    mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (mostra) + ' de ' + processos?.ids?.length, idMostrador)
                     return chatJTLimpaJSON(respostaIA)
                 }
                 
@@ -129,68 +158,12 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                     }
                 }
 
-                
-                // até aqui, filtrei todos os processos que tem perito, que tem embargos ou ISL.
-                // Agora vou pegar a petição de EE ou ISL, e salvar o conteúdo para o primeiro robô.
-                // Já salvei a DATA mais antiga entre as petições encontradas
-                //let timelinePrimeiroAssistente = timeline.filter(d => d?.data >= dataMaisAntiga).map(c => {
-                //    return {id: c?.id, idUnicoDocumento: c?.idUnicoDocumento, tipo: c?.tipo, titulo: c?.titulo, data: c?.data, participacaoProcesso: c?.participacaoProcesso}
-                //})
-                //let peticoesPrimeiroAssistente = []
-                //for (let peticao of embargosIsl) {
-                //    if (![16, 733].includes(peticao?.idTipo)) continue
-                //    let { id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso } = peticao
-                //    let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, peticao.id) || '')
-                //    peticoesPrimeiroAssistente.push({ id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso, teor })
-                //}
-                //let dadosPrimeiroAssistente = {
-                //    dadosProcessuais:{
-                //        idDoProcesso: idProc,
-                //        partes: partes,
-                //        numero: dadosSimples?.numero,
-                //        dataMaisAntiga,
-                //        peticoesParaAnalise: peticoesPrimeiroAssistente,
-                //        timeline: timelinePrimeiroAssistente
-                //    }
-                //}
-                //console.log('%c[Rota PJE]%c dadosPrimeiroAssistente: ' + JSON.stringify(dadosPrimeiroAssistente), LOG.teste, 'color:inherit')
-                //let primeiroAssistente = '6abfbef177acca97cae0ea20'
-                //let respostaPrimeiroAssistente = await rota_IAConsulta(primeiroAssistente, JSON.stringify(dadosPrimeiroAssistente, null, 2)) || null
-                //// SEGUNDO ASSISTENTE
-                //let timelineSegundoAssistente = timeline.filter(d => normalizar(d?.participacaoProcesso).includes('perito') && new Date(d?.data) >= new Date(dataMaisAntiga))
-                //let segundoAssistente = '6ac3a3d9bb98490b4bf122cb'
-                //let manifestacoesPerito = []
-                //for (let manifestacao of timelineSegundoAssistente){
-                //    let teor = normalizarTeor(await rota_extrairTeorDocumento(idProc, manifestacao.id) || '')
-                //    let anexos = (manifestacao?.anexos ?? []).map(d => ({ id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo }));
-                //    let {id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso} = manifestacao
-                //    manifestacoesPerito.push({id, idUnicoDocumento, data, titulo, tipo, tipoPolo, participacaoProcesso, teor, anexos: anexos})
-                //}
-                //
-                //let dadosSegundoAssistente = {dadosProcessuais:
-                //    {
-                //        idDoProcesso: idProc,
-                //        partes: partes,
-                //        numero: dadosSimples?.numero,
-                //        timeline: timelinePrimeiroAssistente,
-                //        manifestacoesPerito,
-                //        respostaPrimeiroAssistente: chatJTLimpaJSON(respostaPrimeiroAssistente),
-                //    }
-                //}
-                //dadosSegundoAssistentePush.push(dadosSegundoAssistente)
-                //let respostaSegundoAssistente = await rota_IAConsulta(segundoAssistente, JSON.stringify(dadosSegundoAssistente, null, 2)) || null
-                //dados.push(chatJTLimpaJSON(respostaSegundoAssistente))
             }
-            //_baixarArquivo(JSON.stringify(dados, null, 2), 'PEC.json', 'application/json')
-            _baixarArquivo(JSON.stringify(resultado, null, 2), 'PECresultado.json', 'application/json')
-
+            tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, true, resultado)
+            //_baixarArquivo(JSON.stringify(resultado, null, 2), 'PECresultado.json', 'application/json')
             //_baixarArquivo(JSON.stringify(dados, null, 2), 'resultadoFinal.json', 'application/json')
-            
-            
         }
-
     }
-    
 }
 
 /*
