@@ -67,6 +67,7 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                 mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
                 let idProc = processos?.ids[i]
                 let dadosSimples = processos?.t[i]
+                let {numero} = dadosSimples
                 let processoPartes = await buscarProcesso(idProc, '/partes?apenasComPartePrincipal=false') || {}
                 let partes = {
                     ativo: processoPartes?.ATIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica'})),
@@ -93,7 +94,8 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                     .map(({ id, idUnicoDocumento, titulo, tipo, data }) =>
                         ({ id, idUnicoDocumento, titulo, tipo, data }));
                 let expedientesPosDespacho = await buscaExpedientesPosData(idProc, data) || null
-                dados.push({despacho, timelinePosDespacho, expedientesPosDespacho, partes})
+                dados.push({numero, despacho, timelinePosDespacho, expedientesPosDespacho, partes})
+
                 
                 async function buscaExpedientesPosData(id, data){
                     let processoExpedientes = await buscarProcesso(id, '/expedientes?pagina=1&tamanhoPagina=100&instancia=1') || {}
