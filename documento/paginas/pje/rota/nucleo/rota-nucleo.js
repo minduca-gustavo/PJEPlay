@@ -794,13 +794,28 @@ function rota_blobParaBase64(blob){
 
 /** Extrai o JSON da resposta da IA; se não houver, devolve o texto para conferência. */
 function chatJTLimpaJSON(texto){
-	if(texto && typeof texto === 'object') return { lido: true, resultado: texto }
-	let s = String(texto ?? '')
-	let ini = s.indexOf('{'), fim = s.lastIndexOf('}')
-	if(ini !== -1 && fim > ini){
-		try{ return { lido: true, resultado: JSON.parse(s.slice(ini, fim + 1)) } } catch(e){}
-	}
-	return { lido: false, resultado: s || 'sem resposta' }
+    if(texto && typeof texto === 'object') return { lido: true, resultado: texto }
+
+    let s = String(texto ?? '').trim()
+    if(!s) return { lido: false, resultado: 'sem resposta' }
+
+    // remove cercas ```json ... ``` se houver
+    s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+
+    // 1) tenta o texto inteiro
+    try{ return { lido: true, resultado: JSON.parse(s) } } catch(e){}
+
+    // 2) recorta a partir do primeiro { ou [ (o que vier antes)
+    const candidatos = [['{', '}'], ['[', ']']]
+        .map(([a, f]) => ({ ini: s.indexOf(a), fim: s.lastIndexOf(f) }))
+        .filter(c => c.ini !== -1 && c.fim > c.ini)
+        .sort((x, y) => x.ini - y.ini)
+
+    for(const { ini, fim } of candidatos){
+        try{ return { lido: true, resultado: JSON.parse(s.slice(ini, fim + 1)) } } catch(e){}
+    }
+
+    return { lido: false, resultado: s }
 }
 
 

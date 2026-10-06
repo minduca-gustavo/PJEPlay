@@ -60,42 +60,55 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
             }
             console.log('%c[Rota PJE]%c processos: ' + JSON.stringify(processos), LOG.mb, 'color:inherit', processos)
             let dados = []
-            let execucao = Date.now()
-            let a = 0
+            let promessas = []
+            let resultado = []
+            let tamanhoDoLote = 10
             for (let i = 0; i < processos?.ids?.length; i++) {
-                if(i===10) break
+                
+                promessas.push(requisicoesEmPareleloRemoverPEC(i))
+                if ((i + 1) % 10 === 0 || (i + 1) === processos?.ids?.length){
+                    let resultados = await Promise.all(promessas)
+                    resultado.push(...resultados)
+                    promessas = []
+                }
                 mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
-                let idProc = processos?.ids[i]
-                let dadosSimples = processos?.t[i]
-                let {numero} = dadosSimples
-                let processoPartes = await buscarProcesso(idProc, '/partes?apenasComPartePrincipal=false') || {}
-                let partes = {
-                    ativo: processoPartes?.ATIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica'})),
-                    passivo: processoPartes?.PASSIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica'})),
-                    terceiros: processoPartes?.TERCEIROS?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica'})),
-                }
-                let timeline = await buscarDocumentos(idProc) || []
-                let ultimoDespacho = timeline?.find(d => ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.tipo).includes(c) || normalizar(d?.titulo).includes(c))) || {}
-                if (!ultimoDespacho?.id) continue
-                let teorUltimoDespacho = await rota_extrairTeorDocumento(idProc, ultimoDespacho?.id)
-                let {id, idUnicoDocumento, titulo, tipo, data} = ultimoDespacho
-                let despacho = {
-                    id,
-                    idUnicoDocumento,
-                    titulo,
-                    tipo,
-                    data,
-                    teor: teorUltimoDespacho
-                }
-                let dataDespacho = despacho.data;
 
-                let timelinePosDespacho = timeline
-                    .filter(d => d.ativo !== false && d.data >= dataDespacho)
-                    .map(({ id, idUnicoDocumento, titulo, tipo, data }) =>
-                        ({ id, idUnicoDocumento, titulo, tipo, data }));
-                let expedientesPosDespacho = await buscaExpedientesPosData(idProc, data) || null
-                dados.push({numero, despacho, timelinePosDespacho, expedientesPosDespacho, partes})
+                async function requisicoesEmPareleloRemoverPEC(i){
+                    let idProc = processos?.ids[i]
+                    let dadosSimples = processos?.t[i]
+                    let {numero} = dadosSimples
+                    let processoPartes = await buscarProcesso(idProc, '/partes?apenasComPartePrincipal=false') || {}
+                    if (!processoPartes?.ATIVO) return 'Erro na busca de partes do processo.'
+                    let partes = {
+                        ativo: processoPartes?.ATIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica', participacaoProcesso: d?.participacaoProcesso})),
+                        passivo: processoPartes?.PASSIVO?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica', participacaoProcesso: d?.participacaoProcesso})),
+                        terceiros: processoPartes?.TERCEIROS?.map(d => ({nome: d?.nome, tipo: d?.tipoDocumento == 'CPF' ? 'Pessoa Física' : 'Pessoa Jurídica', participacaoProcesso: d?.participacaoProcesso})),
+                    }
+                    let timeline = await buscarDocumentos(idProc) || []
+                    let ultimoDespacho = timeline?.find(d => ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.tipo).includes(c) || normalizar(d?.titulo).includes(c))) || {}
+                    if (!ultimoDespacho?.id) return 'Não encontrado último despacho'
+                    let teorUltimoDespacho = await rota_extrairTeorDocumento(idProc, ultimoDespacho?.id) || ''
+                    let {id, idUnicoDocumento, titulo, tipo, data} = ultimoDespacho
+                    let despacho = {
+                        id,
+                        idUnicoDocumento,
+                        titulo,
+                        tipo,
+                        data,
+                        teor: teorUltimoDespacho
+                    }
+                    let dataDespacho = despacho.data;
 
+                    let timelinePosDespacho = timeline
+                        .filter(d => d.ativo !== false && d.data >= dataDespacho)
+                        .map(({ id, idUnicoDocumento, titulo, tipo, data }) =>
+                            ({ id, idUnicoDocumento, titulo, tipo, data }));
+                    let expedientesPosDespacho = await buscaExpedientesPosData(idProc, data) || []
+                    let dadosAssistente = {idProc, numero, despacho, timelinePosDespacho, expedientesPosDespacho, partes}
+                    let assistente = '6abfbef177acca97cae0ea20'
+                    let respostaIA = await rota_IAConsulta(assistente, JSON.stringify(dadosAssistente, null, 2))
+                    return chatJTLimpaJSON(respostaIA)
+                }
                 
                 async function buscaExpedientesPosData(id, data){
                     let processoExpedientes = await buscarProcesso(id, '/expedientes?pagina=1&tamanhoPagina=100&instancia=1') || {}
@@ -105,7 +118,7 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                         return expedientes.filter(d=> confereData(d, data))
                     }
                     for (let i = 2; i <= processoExpedientes?.qtdPaginas; i++){
-                        let processosDois = await buscarProcesso(id, '/expedientes?pagina=' + i + '&tamanhoPagina=100&instancia=1')
+                        let processoDois = await buscarProcesso(id, '/expedientes?pagina=' + i + '&tamanhoPagina=100&instancia=1')
                         let expedientesDois = processoDois?.resultado?.filter(d=> confereData(d, data))
                         expedientes.push(...expedientesDois)
                         if (!confereData(expedientes[expedientes.length - 1], data)) break
@@ -168,7 +181,9 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                 //let respostaSegundoAssistente = await rota_IAConsulta(segundoAssistente, JSON.stringify(dadosSegundoAssistente, null, 2)) || null
                 //dados.push(chatJTLimpaJSON(respostaSegundoAssistente))
             }
-            _baixarArquivo(JSON.stringify(dados, null, 2), 'PEC.json', 'application/json')
+            //_baixarArquivo(JSON.stringify(dados, null, 2), 'PEC.json', 'application/json')
+            _baixarArquivo(JSON.stringify(resultado, null, 2), 'PECresultado.json', 'application/json')
+
             //_baixarArquivo(JSON.stringify(dados, null, 2), 'resultadoFinal.json', 'application/json')
             
             
