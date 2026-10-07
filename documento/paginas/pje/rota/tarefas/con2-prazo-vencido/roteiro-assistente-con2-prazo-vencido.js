@@ -301,7 +301,7 @@ Clique para fixar/desafixar.`,
         
         for (let caso of secao?.casos){
             let ancestral = id(tarefaNome, secao?.label, 'recolhe')
-            let checkBox = criaCheckBox({
+            let checkBox = await criaCheckBox({
                 id: id(tarefaNome, secao?.label, 'checkbox', caso?.id),
                 textoAoLado: caso?.texto,
                 ancestral: ancestral,
@@ -389,7 +389,7 @@ Clique para fixar/desafixar.`,
                 console.log('%c[Rota PJE]%c emailsArmazenados: ' + JSON.stringify(emailsArmazenados), LOG.erro, 'color:inherit')
                 for (let email of emailsArmazenados[idDiv]){
                     let idCheckbox = id('checkEMail')
-                    let checkBox = criaCheckBox({
+                    let checkBox = await criaCheckBox({
                         id: idCheckbox,
                         ancestral: idDiv,
                         textoAoLado: email

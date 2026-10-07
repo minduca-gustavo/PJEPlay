@@ -21,10 +21,11 @@
 
 // Resolve o nome da tarefa para o objeto da tarefa (1 requisição).
 async function resolverTarefa(nomeTarefa) {
+    console.log('%c[Rota PJE]%c nomeTarefa resolver: ' + JSON.stringify(nomeTarefa), LOG.aviso, 'color:inherit')
     let tarefasAtivas = await rota_fetch(
         location.origin + '/pje-comum-api/api/agrupamentotarefas/tarefas/todos'
     )
-    let tarefa = tarefasAtivas.filter(t => t.nome === nomeTarefa)
+    let tarefa = tarefasAtivas.filter(t => normalizar(t.nome).includes(normalizar(nomeTarefa)))
     if (!tarefa[0]) {
         relatar('Tarefa não encontrada: ' + nomeTarefa, '', 'erro')
         return null

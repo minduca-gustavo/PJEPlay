@@ -86,6 +86,10 @@ function tramitaIACriaSecoes({elemento = null}){
             nome: 'removerPEC',
             funcao: 'tramitaIARemoverPEC'
         },
+        {
+            nome: 'confereFerramentasEXE',
+            funcao: 'tramitaIAConfereFerramentasEXE'
+        },
         //{
         //    nome: 'damPeritoDecide',
         //    funcao: 'tramitaIASecaoDamPeritoDecide'
@@ -94,6 +98,7 @@ function tramitaIACriaSecoes({elemento = null}){
     let mapaFuncoes = {
         tramitaIASecaoRis, // está no arquivo ris.js
         tramitaIARemoverPEC, // está no arquivo removerPEC.js
+        tramitaIAConfereFerramentasEXE, // está no arquivo tramitaIAConfereFerramentasEXE.js
     }
     for (let secao of secoes){
         let idDiv = elemento + '_' + secao?.nome
@@ -115,4 +120,18 @@ function mostraResultadosBuscaSimples(idAncestral, contador, idMostrador){
         || criaSubTitulo({ id: idConteudo, ancestral: idDiv, texto: '' })
     conteudo.textContent = contador === 0 ? 'Iniciando buscas.' : String(contador)
     conteudo.style.fontSize = '16px'
+}
+
+function tramitaIAcriaBotaoNovaBusca(idBotao, ancestralLimpar){
+    let botao = criaBotaoLaranja({
+        id: idBotao,
+        ancestral: ancestralLimpar,
+        texto: 'Nova busca',
+        acao: () => {
+            document.getElementById(ancestralLimpar).replaceChildren()
+            tramitaIACriaSecoes({elemento: ancestralLimpar})
+        }
+    })
+    botao.style.width = 'fit-content'
+    return
 }

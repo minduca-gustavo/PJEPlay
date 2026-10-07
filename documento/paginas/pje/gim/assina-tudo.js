@@ -143,7 +143,7 @@ async function rotaAssinaTudo() {
         })
         let idCheck = id('assinaTudo', 'check')
         let idCheckTodos = idCheck + '_selecionaTodos'
-        let checkTodos = criaCheckBox({
+        let checkTodos = await criaCheckBox({
             id: idCheckTodos,
             ancestral: idSubCabecalho
         })
@@ -366,7 +366,7 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
             rowColumn: 'row-reverse'
         })
         let idCheckBoxProcesso = idCheck + '_' + idProcesso
-        let checkBoxProcesso = criaCheckBox({
+        let checkBoxProcesso = await criaCheckBox({
             id: idCheckBoxProcesso,
             ancestral: idDivRodapeProcesso
         })

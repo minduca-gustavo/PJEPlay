@@ -89,6 +89,11 @@ async function busca_FilaPainelGlobal(){
     let dataDesconsiderar = ''
     let cliques = [desde, prioridade]
     for(let clique of cliques){
+        let elDesde = [...document.querySelectorAll('.th-container-class')].find(d=> d.textContent.includes('Desde'))
+        if (elDesde.querySelector('[aria-label*=ascendente]') && clique == desde){
+            dataDesconsiderar = new Date(datas[0].dataEntradaTarefa).toLocaleDateString('pt-BR')
+            continue
+        }
         await clicar(clique)
         let datas = await busca_posicao_filaMudancaDaMetaTag(conteudoAtual)
         conteudoAtual = datas
@@ -120,6 +125,7 @@ async function busca_FilaPainelGlobal(){
 }
 
 async function busca_posicao_filaMudancaDaMetaTag(conteudo) {
+    console.log('%c[Rota PJE]%c conteudo: ', LOG.info, 'color:inherit', conteudo)
     let jsonInicial = JSON.stringify(conteudo)
     let conteudoAtual
     for(let i = 0; i < 100; i++){

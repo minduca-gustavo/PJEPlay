@@ -72,7 +72,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
         },
     ]
     for(let t of tipos){
-        let checkBox = criaCheckBox({
+        let checkBox = await criaCheckBox({
             id: 'rota_leituraDinamica_check_' + t?.tipo, 
             textoAoLado: t?.label, 
             ancestral: 'rota_leituraDinamica',

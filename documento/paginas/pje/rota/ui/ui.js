@@ -994,60 +994,53 @@ function criaInputAnotacao({ id, textoEmCima = '', ancestral, placeholder = '' }
 //
 // criaCheckBox({ id, textoAoLado, ancestral })
 
-function criaCheckBox({ id, textoAoLado = '', ancestral }) {
+async function criaCheckBox({ id, textoAoLado = '', ancestral, salvar = false }) {
     const linha = _ui_el('div', {
-        display:    'flex',
-        alignItems: 'center',
-        gap:        '8px',
-        cursor:     'pointer',
-        marginBottom:'4px',
+        display: 'flex', alignItems: 'center', gap: '8px',
+        cursor: 'pointer', marginBottom: '4px',
     })
     linha.id = id
 
     const chk = _ui_el('div', {
-        width:          '16px',
-        height:         '16px',
-        flexShrink:     '0',
-        border:         '2px solid ' + UI_CORES.borda,
-        borderRadius:   '4px',
-        background:     UI_CORES.branco,
-        display:        'flex',
-        alignItems:     'center',
-        justifyContent: 'center',
-        transition:     'all 0.15s',
-        fontSize:       '11px',
+        width: '16px', height: '16px', flexShrink: '0',
+        border: '2px solid ' + UI_CORES.borda, borderRadius: '4px',
+        background: UI_CORES.branco, display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.15s', fontSize: '11px',
     })
-    chk.id              = id + '-caixa'
-    linha.dataset.marcado = '0'
+    chk.id = id + '-caixa'
 
     const label = _ui_el('span', {
-        fontSize:  '12px',
-        color:     UI_CORES.texto,
-        fontFamily:"var(--extensao-rotapje-fonte)",
-        userSelect:'none',
+        fontSize: '12px', color: UI_CORES.texto,
+        fontFamily: 'var(--extensao-rotapje-fonte)', userSelect: 'none',
     })
     label.textContent = textoAoLado
 
-    function alternar() {
-        if (linha.dataset.marcado === '1') {
-            linha.dataset.marcado  = '0'
-            chk.style.background = UI_CORES.branco
-            chk.style.borderColor= UI_CORES.borda
-            chk.textContent      = ''
-        } else {
-            linha.dataset.marcado  = '1'
-            chk.style.background = UI_CORES.azul
-            chk.style.borderColor= UI_CORES.azul
-            chk.textContent      = '✓'
-            chk.style.color      = '#ffffff'
-        }
+    function aplicarVisual(marcado) {
+        linha.dataset.marcado = marcado ? '1' : '0'
+        chk.style.background  = marcado ? UI_CORES.azul : UI_CORES.branco
+        chk.style.borderColor = marcado ? UI_CORES.azul : UI_CORES.borda
+        chk.style.color       = '#ffffff'
+        chk.textContent       = marcado ? '✓' : ''
     }
 
-    linha.addEventListener('click', alternar)
+    async function alternar() {
+        const novoEstado = linha.dataset.marcado !== '1'
+        aplicarVisual(novoEstado)
+        if (salvar) await armazenar({ [id]: novoEstado })
+    }
 
+    aplicarVisual(false)
+    linha.addEventListener('click', alternar)
     linha.appendChild(chk)
     linha.appendChild(label)
     _ui_inserir(linha, ancestral)
+
+    if (salvar) {
+        const armazenamento = await obterArmazenamento(id)
+        if (armazenamento?.[id]) aplicarVisual(true)
+    }
+
     return linha
 }
 
@@ -2282,7 +2275,7 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
     return div
 }
 
-function apresentaResultados({array, nome, ancestral = document.body, embutido = false, aoVoltar = null}){
+function apresentaResultados({array, nome, ancestral = document.body, embutido = false, aoVoltar = null, baixarResultadoBruto = null}){
     let divId = id(nome)
     let div = criaDiv({
         id: divId,
@@ -2406,9 +2399,15 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
             texto: 'Baixar em formato JSON',
             ancestral: id(nome, 'linha' + i),
         },
+        {
+            id: id(nome, 'baixarResultadoBrutoFuncao'),
+            texto: 'Baixar resultado Bruto',
+            ancestral: id(nome, 'linha' + i),
+        },
     ]
     for (let k = 0; k < botoesFinais.length; k++) {
         let botaoConfig = botoesFinais[k]
+        if (!baixarResultadoBruto && botaoConfig.id.includes('baixarResultadoBruto')) continue
         let funcaoBotao = k % 2 === 0 ? criaBotaoAzul : criaBotaoLaranja
         funcaoBotao({
             id: botaoConfig.id,
@@ -2430,7 +2429,7 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
     //    não o que já foi renderizado na tela ─────────────────────
     function extrairResultado(tipo){
         let nomeFuncao = tipo.split('_').pop()
-        let funcoes = { copiar, baixarJSON, baixarTexto }
+        let funcoes = { copiar, baixarJSON, baixarTexto, baixarResultadoBrutoFuncao }
         funcoes[nomeFuncao]?.()
 
         function copiar(){
@@ -2443,6 +2442,9 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
 
         function baixarJSON(){
             _baixarArquivo(JSON.stringify(array, null, 2), 'resultado.json', 'application/json')
+        }
+        function baixarResultadoBrutoFuncao(){
+            _baixarArquivo(JSON.stringify(baixarResultadoBruto, null, 2), 'resultado.json', 'application/json')
         }
     }
 }

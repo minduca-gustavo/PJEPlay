@@ -1,5 +1,5 @@
 {
-	"version":					"2.2.7",
+	"version":					"2.2.10",
 	"short_name":				"RotaPJE",
 	"name":							"Rota PJE",
 	"description":			"Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -171,6 +171,7 @@
 				"documento/paginas/pje/rota/tramitaIA/ris.js",
 				"documento/paginas/pje/rota/tramitaIA/damPeritoDecide.js",
 				"documento/paginas/pje/rota/tramitaIA/removerPEC.js",
+				"documento/paginas/pje/rota/tramitaIA/tramitaIAConfereFerramentasEXE.js",
 				"documento/paginas/pje/rota/botao/fita-superior-detalhes.js",
 				"documento/paginas/pje/rota/nucleo/sigeo.js",
 				"documento/paginas/pje/rota/nucleo/gigs.js",

@@ -285,7 +285,7 @@ async function montarQuadro(idRolante, dados) {
         })
 
         let idCPC = idSecao + '-cpc'
-        let chkCPC = criaCheckBox({
+        let chkCPC = await criaCheckBox({
             id: idCPC,
             textoAoLado: 'Considerar a suspensão de prazos processuais (art. 220 do CPC - 07 a 20 de janeiro)',
             ancestral: idRecolhe

@@ -602,6 +602,10 @@ function removeQuebras(texto) {
 	return typeof texto === 'string' ? texto.replace(/[\s\u0085]+/g, ' ').trim() : texto
 }
 
+function garanteNaoArray(variavel){
+	return [].concat(variavel ?? []).filter(Boolean).join(' / ')
+}
+
 
 // ── Chat JT (ia.jt.jus.br) ────────────────────────────────────
 // As requisições rodam no segundo plano (mensagens `requisicao` e

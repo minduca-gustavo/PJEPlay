@@ -8,24 +8,40 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
             }
         })
         let rolante = document.getElementById(ancestralLimpar)
-        rolante.style.overflowY = ''
+        //rolante.style.overflowY = ''
         if (!Array.isArray(dadosRechamada)){
             mostraResultadosBuscaSimples(ancestralLimpar, 'O resultado da busca foi baixado. Ocorreu um erro na apresentação.', idMostrador)
-            _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'testeDamPerito.json', 'application/json')
+            _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'PECResultado.json', 'application/json')
             return
         }
+        
+        _baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'Rechamada.json', 'application/json')
         let resultado = dadosRechamada.map(d => formataResultado(d))
-
+        apresentaResultados({
+            array: resultado,
+            nome: 'tramitaIA_resultadoRemoverPEC',
+            ancestral: ancestralLimpar,
+            embutido: true,
+            aoVoltar: () => {
+                rolante.replaceChildren()
+                rolante.style.overflowY = 'auto'
+                tramitaIACriaSecoes({elemento: ancestralLimpar})
+            },
+            baixarResultadoBruto: dadosRechamada
+        })
+        
+        //_baixarArquivo(JSON.stringify(dadosRechamada, null, 2), 'PECResultado.json', 'application/json')
         function formataResultado(linha){
-            let res = []
-            let lido = linha?.lido || false
-            let resultado = linha?.resultado
-            res.push(
-                {
-                    id: lido ? resultado?.id : 'Ocorreu um erro de formatação. Verifique a resposta da IA na última coluna.',
-                    
-                }
-            )
+            let {lido, resultado, numero, idProc} = linha
+            let res = {
+                'Número':     removeQuebras(numero),
+                'Id':         removeQuebras(idProc),
+                'Conclusão':  lido ? removeQuebras(garanteNaoArray(resultado?.conclusao)) : 'Ocorreu um erro de formatação. Verifique a resposta da IA na última coluna.',
+                'Resumo':     lido ? removeQuebras(garanteNaoArray(resultado?.resumo)) : '',
+                'Alertas':    lido ? removeQuebras(garanteNaoArray(resultado?.alertas)) : removeQuebras(resultado)
+            }
+            
+            return res
         }
 
         return
@@ -133,10 +149,11 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
                     let expedientesPosDespacho = await buscaExpedientesPosData(idProc, data) || []
                     let dadosAssistente = {idProc, numero, despacho, timelinePosDespacho, expedientesPosDespacho, partes}
                     let assistente = '6abfbef177acca97cae0ea20'
-                    let respostaIA = await rota_IAConsulta(assistente, JSON.stringify(dadosAssistente, null, 2))
+                    let consulta = await rota_IAConsulta(assistente, JSON.stringify(dadosAssistente, null, 2))
+                    let {lido, resultado} = chatJTLimpaJSON(consulta)
                     mostra++
                     mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (mostra) + ' de ' + processos?.ids?.length, idMostrador)
-                    return chatJTLimpaJSON(respostaIA)
+                    return {lido, resultado, idProc, numero}
                 }
                 
                 async function buscaExpedientesPosData(id, data){
