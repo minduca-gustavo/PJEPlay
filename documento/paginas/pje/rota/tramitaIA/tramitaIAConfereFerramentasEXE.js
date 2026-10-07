@@ -133,6 +133,7 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
                     teorManifestacoesPartes.push({teor, id, idUnicoDocumento, titulo, tipo, participacaoProcesso})
                 }
                 let documentosUsuarioInternos = timelineExecucao.filter(d => d?.usuarioInterno && !['intimacao', 'notificacao'].some(c => d?.titulo.includes(c)))
+                let teordocumentosUsuarioInternos = []
                 for (let documento of documentosUsuarioInternos){
                     let teor = await rota_extrairTeorDocumento(idProc, documento?.id)
                     let {id, idUnicoDocumento, titulo, tipo, participacaoProcesso} = documento
