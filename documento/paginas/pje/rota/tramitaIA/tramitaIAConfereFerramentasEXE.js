@@ -121,59 +121,32 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
                 let {numero} = dadosSimples
                 let timeline = await buscarDocumentosEMovimentos(idProc) || []
                 let inicio = timeline.find(d=> normalizar(d?.titulo).includes('termo de abertura de ') || normalizar(d?.titulo).includes('iniciada a exec')).data
-                console.log('%c[Rota PJE]%c inicio: ' + JSON.stringify(inicio), LOG.teste, 'color:inherit')
-                return
-
-                let ultimoDespacho = timeline?.find(d => ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.tipo).includes(c) || normalizar(d?.titulo).includes(c))) || {}
-                if (!ultimoDespacho?.id) return 'Não encontrado último despacho'
-                let teorUltimoDespacho = await rota_extrairTeorDocumento(idProc, ultimoDespacho?.id) || ''
-                let {id, idUnicoDocumento, titulo, tipo, data} = ultimoDespacho
-                let despacho = {
-                    id,
-                    idUnicoDocumento,
-                    titulo,
-                    tipo,
-                    data,
-                    teor: teorUltimoDespacho
+                console.log('%c[Rota PJE]%c inicio: ' + JSON.stringify(inicio), LOG.info, 'color:inherit')
+                let timelineExecucao = timeline.filter(d => d?.data >= inicio)
+                console.log('%c[Rota PJE]%c timelineExecucao: ' + JSON.stringify(timelineExecucao), LOG.teste, 'color:inherit')
+                let manifestacoesPartes = timelineExecucao.filter(d => ['autor', 'reu'].some(c=> normalizar(d?.participacaoProcesso).includes(c))) || []
+                console.log('%c[Rota PJE]%c manifestacoesPartes: ' + JSON.stringify(manifestacoesPartes), LOG.aviso, 'color:inherit')
+                let teorManifestacoesPartes = []
+                for (let manifestacao of manifestacoesPartes){
+                    let teor = await rota_extrairTeorDocumento(idProc, manifestacao?.id)
+                    let {id, idUnicoDocumento, titulo, tipo, participacaoProcesso} = manifestacao
+                    teorManifestacoesPartes.push({teor, id, idUnicoDocumento, titulo, tipo, participacaoProcesso})
                 }
-                let dataDespacho = despacho.data;
+                let documentosUsuarioInternos = timelineExecucao.filter(d => d?.usuarioInterno && !['intimacao', 'notificacao'].some(c => d?.titulo.includes(c)))
+                for (let documento of documentosUsuarioInternos){
+                    let teor = await rota_extrairTeorDocumento(idProc, documento?.id)
+                    let {id, idUnicoDocumento, titulo, tipo, participacaoProcesso} = documento
+                    teordocumentosUsuarioInternos.push({teor, id, idUnicoDocumento, titulo, tipo, participacaoProcesso})
+                }
+                console.log('%c[Rota PJE]%c teorManifestacoesPartes: ' + numero, LOG.rosa, 'color:inherit', teorManifestacoesPartes)
+                return teorManifestacoesPartes
 
-                let timelinePosDespacho = timeline
-                    .filter(d => d.ativo !== false && d.data >= dataDespacho)
-                    .map(({ id, idUnicoDocumento, titulo, tipo, data }) =>
-                        ({ id, idUnicoDocumento, titulo, tipo, data }));
-                let expedientesPosDespacho = await buscaExpedientesPosData(idProc, data) || []
-                let dadosAssistente = {idProc, numero, despacho, timelinePosDespacho, expedientesPosDespacho, partes}
-                let assistente = '6abfbef177acca97cae0ea20'
-                let consulta = await rota_IAConsulta(assistente, JSON.stringify(dadosAssistente, null, 2))
-                let {lido, resultado} = chatJTLimpaJSON(consulta)
-                mostra++
-                mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (mostra) + ' de ' + processos?.ids?.length, idMostrador)
-                return {lido, resultado, idProc, numero}
             }
             
-            async function buscaExpedientesPosData(id, data){
-                let processoExpedientes = await buscarProcesso(id, '/expedientes?pagina=1&tamanhoPagina=100&instancia=1') || {}
-                if (!processoExpedientes?.qtdPaginas) return null
-                let expedientes = processoExpedientes?.resultado
-                if (!confereData(expedientes[expedientes.length - 1], data)){
-                    return expedientes.filter(d=> confereData(d, data))
-                }
-                for (let i = 2; i <= processoExpedientes?.qtdPaginas; i++){
-                    let processoDois = await buscarProcesso(id, '/expedientes?pagina=' + i + '&tamanhoPagina=100&instancia=1')
-                    let expedientesDois = processoDois?.resultado?.filter(d=> confereData(d, data))
-                    expedientes.push(...expedientesDois)
-                    if (!confereData(expedientes[expedientes.length - 1], data)) break
-                }
-                return expedientes
-                function confereData(expediente, dataConfere){
-                    return new Date(expediente?.dataCriacao) >= new Date(dataConfere)
-                }
-            }
 
         }
-        tramitaIAconfereFerramentasEXE(elementoAncestral, ancestralLimpar, true, resultado)
-        //_baixarArquivo(JSON.stringify(resultado, null, 2), 'PECresultado.json', 'application/json')
+        
+        //tramitaIAconfereFerramentasEXE(elementoAncestral, ancestralLimpar, true, resultado)
         //_baixarArquivo(JSON.stringify(dados, null, 2), 'resultadoFinal.json', 'application/json')
         
     }
