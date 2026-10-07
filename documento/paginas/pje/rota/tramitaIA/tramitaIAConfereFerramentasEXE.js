@@ -109,7 +109,7 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
             
             if (i == 0) mostraResultadosBuscaSimples(ancestralLimpar, 'Aguarde. Buscando ' + (i + 1) + ' de ' + processos?.ids?.length, idMostrador)
             promessas.push(requisicoesEmPareleloconfereFerramentasEXE(i))
-            if ((i + 1) % 10 === 0 || (i + 1) === processos?.ids?.length){
+            if ((i + 1) % tamanhoDoLote === 0 || (i + 1) === processos?.ids?.length){
                 let resultados = await Promise.all(promessas)
                 resultado.push(...resultados)
                 promessas = []
@@ -122,7 +122,7 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
                 let timeline = await buscarDocumentosEMovimentos(idProc) || []
                 let inicio = timeline.find(d=> normalizar(d?.titulo).includes('termo de abertura de ') || normalizar(d?.titulo).includes('iniciada a exec')).data
                 console.log('%c[Rota PJE]%c inicio: ' + JSON.stringify(inicio), LOG.info, 'color:inherit')
-                let timelineExecucao = timeline.filter(d => d?.data >= inicio)
+                let timelineExecucao = timeline.filter(d => d?.data >= inicio && d?.documento)
                 console.log('%c[Rota PJE]%c timelineExecucao: ' + JSON.stringify(timelineExecucao), LOG.teste, 'color:inherit')
                 let manifestacoesPartes = timelineExecucao.filter(d => ['autor', 'reu'].some(c=> normalizar(d?.participacaoProcesso).includes(c))) || []
                 console.log('%c[Rota PJE]%c manifestacoesPartes: ' + JSON.stringify(manifestacoesPartes), LOG.aviso, 'color:inherit')
@@ -139,7 +139,7 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
                     teordocumentosUsuarioInternos.push({teor, id, idUnicoDocumento, titulo, tipo, participacaoProcesso})
                 }
                 console.log('%c[Rota PJE]%c teorManifestacoesPartes: ' + numero, LOG.rosa, 'color:inherit', teorManifestacoesPartes)
-                return teorManifestacoesPartes
+                return {teorManifestacoesPartes, teordocumentosUsuarioInternos}
 
             }
             
@@ -148,6 +148,7 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
         
         //tramitaIAconfereFerramentasEXE(elementoAncestral, ancestralLimpar, true, resultado)
         //_baixarArquivo(JSON.stringify(dados, null, 2), 'resultadoFinal.json', 'application/json')
+        _baixarArquivo(JSON.stringify(resultado, null, 2), 'resultadoFinal.json', 'application/json')
         
     }
 }
