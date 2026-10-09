@@ -1612,19 +1612,28 @@ function criaTooltip({ id, texto = '', elemento }) {
     }
 }
 
-function criaBotaoFechar({id, ancestral, elementoFechar}){
+function criaBotaoFechar({id, ancestral, elementoFechar, esconder = false}){
     let botao = criaBotaoAzul({
         id: id,
         ancestral: ancestral,
         texto: '✕',
         acao: () => {
-            document.getElementById(elementoFechar)?.remove()
+            esconder(elementoFechar)
             return
         }
     })
     botao.style.padding = '0px 4px'
     botao.style.width = 'fit-content'
     botao.style.height = 'fit-content'
+    function esconder(esconder){
+        if (esconder){
+            let elemento = document.getElementById(elementoFechar)
+            if (elemento) elemento.style.display = 'none'
+            return
+        }
+        document.getElementById(elementoFechar)?.remove()
+        return
+    }
     return botao
 }
 

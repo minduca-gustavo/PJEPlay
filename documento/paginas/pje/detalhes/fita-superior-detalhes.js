@@ -407,17 +407,17 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
     let ojs = [
         {
             oj: 'CON1',
-            funcao: 'tramitaIAResumoRapidoCON1'
+            funcao: 'tramitaIAResumoRapidoCON1',
         }
     ]
     let mapaFuncoes = {
         tramitaIAResumoRapidoCON1
     }
-    let funcao = ''
+    let funcao = null
     for(let oj of ojs){
         let ojAtual = document.querySelector('section.oj-cargo').textContent
         if(ojAtual.includes(oj?.oj)){
-            funcao = oj?.funcao
+            funcao = oj?.funcao || null
         }
     }
     if (!funcao) {
@@ -425,68 +425,109 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
         document.getElementById(idBotao).disabled = false
         return
     }
-    console.log('%c[Rota PJE]%c funcao' + JSON.stringify(funcao), LOG.aviso, 'color:inherit')
-    let resumo = await mapaFuncoes[funcao]()
-    montarResumo(resumo)
+    let resumo = montarResumo('carregando')
+    if (resumo) {
+        document.getElementById(idBotao).disabled = false
+        return
+    }
+    let resposta = await mapaFuncoes[funcao]()
+    console.log('%c[Rota PJE]%c resumos: ' + JSON.stringify(resposta), LOG.teste, 'color:inherit')
+    montarResumo(resposta)
     document.getElementById(idBotao).disabled = false
     return
 
-    async function tramitaIAResumoRapidoCON1() {
-        let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
-        let idURL = idURLMatch?.[1]
-        let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
-        let timelineLimpa = timeline.map(d => {
-            return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
+    
+    function montarResumo(dados){
+        let idDiv = id('tramitaIA', 'resumos')
+        if (document.getElementById(idDiv)){
+            if (document.getElementById(idDiv).style.display == 'none'){
+                document.getElementById(idDiv).style.display = 'flex'
+                return true
+            } else {
+                document.getElementById(idDiv)?.remove()
+            }
+        }
+        let div = criaDiv({
+            id: idDiv,
+            ancestral: document.body
         })
-        let dataMaior = null
-        let atas = timelineLimpa.filter(d=> normalizar(d?.titulo).includes('ata da audiencia')) || []
-        let teorAtas = []
-        for (let ata of atas){
-            let teor = await rota_extrairTeorDocumento(idURL, ata?.id) || ''
-            teorAtas.push({id: ata?.id, informacoes: ata, teor})
-            dataMaior = dataMaior > new Date(ata?.data) ? dataMaior : ata?.data
+        formataDiv(div, 'branco', '70%', '70%', 'fixed')
+        let cabecalho = criaDiv({
+            id: idDiv + '_cabecalho',
+            ancestral: idDiv,
+            rowColumn: 'row-reverse'
+        })
+        criaBotaoFechar({
+            id: idDiv + '_fechar',
+            ancestral: idDiv + '_cabecalho',
+            elementoFechar: idDiv,
+            esconder: true
+        })
+        let titulo = criaTitulo({
+            id: idDiv + '_cabecalho_titulo',
+            texto: 'Tramita IA',
+            ancestral: idDiv + '_cabecalho',
+        })
+        titulo.style.width = '100%'
+        let idCarregando = idDiv + '_carregando'
+        if (dados === 'carregando'){
+            let subtitulo = criaSubTitulo({
+                id: idCarregando + '_texto',
+                texto: 'Aguarde. Fazendo a consulta ao Chat-JT',
+                ancestral: idDiv
+            })
+            subtitulo.style.fontSize = '20px'
+            return null
+        } else {
+            document.getElementById(idCarregando)?.remove()
         }
-        let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c))) || []
-        let teorDespachos = []
-        for (let despacho of despachos){
-            let teor = await rota_extrairTeorDocumento(idURL, despacho?.id) || ''
-            teorDespachos.push({id: despacho?.id, informacoes: despacho, teor})
-            dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
+        let idFundo = idDiv + '_fundo'
+        let divFundo = criaDiv({
+            id: idFundo,
+            ancestral: idDiv,
+            rowColumn: 'row'
+        })
+        divFundo.style.height = '100%'
+        let idRolante = idDiv + '_rolante'
+        let divRolante = criaDiv({
+            id: idRolante,
+            ancestral: idFundo,
+        })
+        divRolante.style.overflowY = 'auto'
+        divRolante.style.width = '95%'
+        divRolante.style.height = '95%'
+        divRolante.style.left = '5px'
+        let idDireita = idDiv + '_direita'
+        let divDireita = criaDiv({
+            id: idDireita,
+            ancestral: idFundo
+        })
+        let rodape = criaDiv({
+            id: idDiv + '_rodape',
+            ancestral: idDiv
+        })
+        let i = 0
+        for(let dado of dados){
+            let {resposta, titulo} = dado
+            criaSubTitulo({
+                id: idDiv + '_titulo_' + i,
+                texto: titulo,
+                ancestral: idRolante
+            })
+            criaTexto({
+                id: idDiv + '_resumo_' + i,
+                ancestral: idRolante,
+                texto: resposta
+            })
+            criaBotaoAzul({
+                id: idDiv + '_botao_' + i,
+                texto: titulo, 
+                ancestral: idDireita,
+                acao: () => document.getElementById(idDiv + '_titulo_' + i)?.scrollIntoView({block: 'nearest'})
+            })
+            i++
         }
-        let documentosPartes = timelineLimpa.filter(d=>{
-            let partes = ['perito', 'autor', 'reu'].some(c=> normalizar(d?.participacaoProcesso).includes(c) && d?.participacaoProcesso)
-            let data = new Date(d?.data) > dataMaior
-            if(partes && data) return d
-        }) || []
-        let teorDocumentosPartes = []
-        for (let documento of documentosPartes){
-            let teor = await rota_extrairTeorDocumento(idURL, documento?.id) || ''
-            teorDocumentosPartes.push({id: documento?.id, informacoes: documento, teor})
-        }
-        let primeiroAssistente = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
-        let assistente = '6ac138f2bb98490b4befd0e7'
-        let resposta = await rota_IAConsulta(assistente, JSON.stringify(primeiroAssistente))
-        if (!resposta){
-            fitaSuperiorErro('Faça o login no ChatJT.')
-            return
-        }
-        let processo = interceptador_lerProcesso() || await buscarProcesso(idURL) || {}
-        if (!processo?.numero) {
-            fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente.')
-            return
-        }
-        let gigs = interceptador_lerGigs() || await buscarGigs(processo?.numero) || []
-        gigs = gigs.map(d => ({prazo: d?.dataPrazo, observacao: d?.observacao, tipoAtividade: d?.tipoAtividade?.descricao, statusAtividade: d?.statusAtividade}))
-        let tarefa = interceptador_lerTarefaMaisRecente() || await buscarTarefaMaisRecente(idURL) || null
-        if (!tarefa) {
-            fitaSuperiorErro('Ocorreu um erro. Atualize a página e tente novamente.')
-            return
-        }
-        _baixarArquivo(JSON.stringify({primeiroAssistente, resposta}, null, 2), 'resumoRapidoCON1.json', 'application/json')
-        rota_avisoObrigatorio(resposta, 120)
-    }
-    function montarResumo(){
-
+        return null
     }
 }
 
