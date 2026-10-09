@@ -336,10 +336,11 @@ async function triagem_inicial_acoesDespachar(){
     let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
     let tiposAudiencia = {
         'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
-        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
+        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM',
+        'Una por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM',
     }
-    let modelosDespacho = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
-    let modeloDespacho = modelosDespacho?.despacho || ''
+    //let modelosDespacho = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
+    let modeloDespacho = ''
     console.log('%c[Rota PJE]%c modeloDespacho: ' + JSON.stringify(modeloDespacho), LOG.teste, 'color:inherit')
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo), LOG.info, 'color:inherit')
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo[tipoAudiencia]), LOG.info, 'color:inherit')

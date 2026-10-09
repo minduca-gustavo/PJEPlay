@@ -270,6 +270,7 @@ async function rota_aoAbrir(){
 	if(location.search.includes('rotapje_sessao=')){
 		pinturaInicio().catch(e => relatar('Pintura:', e, 'erro'))
 		rota_injetarWidget().catch(e => relatar('Widget:', e, 'erro'))
+		rota_interfacePorContexto()
 		return
 	}
 
@@ -283,6 +284,7 @@ async function rota_aoAbrir(){
 			relatar('Janela filha recarregada — restaurando widget…', '', 'execucao')
 			pinturaInicio().catch(e => relatar('Pintura:', e, 'erro'))
 			rota_injetarWidget(ctxSalvo).catch(e => relatar('Widget (restaurado):', e, 'erro'))
+			rota_interfacePorContexto()
 			return
 		}
 	}
@@ -315,7 +317,7 @@ async function rota_aoAbrir(){
 function rota_interfacePorContexto(){
 
 	// botao/fita-superior-detalhes.js
-	remover('#rotapje-busca-posicao-fila-div-barra')
+	remover('#rotapje_fita_superior')
 	confereCriaFitaSuperior()
 	buscaPosicaoFilaPainelGlobal()
 
@@ -387,6 +389,7 @@ function rota_observarNavegacaoSPA(){
 				if(!ctxSalvo) return
 				relatar('Widget (SPA sem parâmetros) — restaurando…', '', 'execucao')
 				rota_injetarWidget(ctxSalvo).catch(e => relatar('Widget (SPA restaurado):', e, 'erro'))
+				rota_interfacePorContexto()   // ← falta
 			})
 			return
 		}

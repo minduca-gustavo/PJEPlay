@@ -3,14 +3,14 @@
 // ____________________________________
 
 async function criaFitaSuperior() {
-    let retira = await selecionar('#rotapje-busca-posicao-fila-div-barra')
+    let retira = await selecionar('#rotapje_fita_superior')
     if (retira) retira.remove()
     let barra = await aguardarElementoNovo('detalhesDoProcessoBarraSuperior')
     let corToolbar = barra
         ? getComputedStyle(barra).backgroundColor
         : '#1565C0'
     let div = criaDiv({
-        id: 'rotapje-busca-posicao-fila-div-barra',
+        id: 'rotapje_fita_superior',
         ancestral: 'ffff'
     })
     
@@ -19,6 +19,10 @@ async function criaFitaSuperior() {
     // Insere a div no DOM antes de criar os botões,
     // pois criaBotaoAzul busca o ancestral pelo id
     insereFitaSuperior(barra, div)
+    if (confereJanela(JANELA.pericias)){
+        await peritosPreferidos('rotapje_fita_superior')
+        return
+    }
     
     await busca_filaCriaBotao()
     await busca_pautaEletronicaCriaBotao()
@@ -40,7 +44,12 @@ function formataFitaSuperior(elemento, cor){
 }
 
 async function confereCriaFitaSuperior(){
-    let janela = confereJanela(JANELA.detalhes)
+    console.log('%c[Rota PJE]%c confere: ' + JSON.stringify(43), LOG.rosa, 'color:inherit')
+    let janela = confereJanela(
+        JANELA.detalhes,
+        JANELA.pericias
+    )
+    console.log('%c[Rota PJE]%c fita superior janela: ' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return
     await criaFitaSuperior()
 }
@@ -58,7 +67,7 @@ function insereFitaSuperior(elemento, inserir){
 async function busca_filaCriaBotao(){
     let botao = await criaBotaoAzul({
         id: 'rotapje-busca-posicao-fila-botao-busca',
-        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje_fita_superior',
         acao: () => busca_posicao_filaConsultar(),
         texto: 'Busca posição do processo na fila.'
     })
@@ -196,7 +205,7 @@ function busca_posicao_filaNavegar(url) {
 async function busca_pautaEletronicaCriaBotao() {
     let botao = await criaBotaoLaranja({
         id: id('buscaPautaEletronica', 'botao'),
-        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje_fita_superior',
         acao: () => busca_pautaEletronica(),
         texto: 'Pauta Eletrônica'
     })
@@ -298,7 +307,7 @@ async function abre_tarefa_rotaCriaBotao() {
     let nomeTarefaAtiva = await abre_tarefa_rotaNomeTarefaAtiva()
     let botaoTarefa = await criaBotaoAzul({
         id: 'rotapje-abre-tarefa-rota-botao',
-        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje_fita_superior',
         acao: () => abre_tarefa_rotaAbrirEmModoJanelas(),
         texto: 'tarefa: ' + nomeTarefaAtiva
     })
@@ -336,7 +345,7 @@ async function irParaAOJDesteProcessoCriaBotao() {
     let id = 'rotapje-irParaAOJDesteProcesso' 
     let botaoTarefa = await criaBotaoLaranja({
         id: id + '_botao',
-        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje_fita_superior',
         acao: () => irParaAOJDesteProcesso(),
         texto: 'Ir para a OJ deste processo'
     })
@@ -390,7 +399,7 @@ async function tramitaIAResumoRapido() {
     let idBotao = id('tramitaIAResumoRapido', 'botao')
     let botao = await criaBotaoAzul({
         id: idBotao,
-        ancestral: 'rotapje-busca-posicao-fila-div-barra',
+        ancestral: 'rotapje_fita_superior',
         acao: () => tramitaIAResumoRapidoBusca(idBotao),
         texto: 'Tramita IA - Resumo rápido'
     })
@@ -540,4 +549,48 @@ function estiloBotaoFitaSuperior(botao){
     botao.style.lineHeight = '14px'
     botao.style.padding    = '0 8px'
     botao.style.zIndex = '9999999'
+}
+
+async function peritosPreferidos(ancestral) {
+    let idBotaoConfigura = id('fita_superior', 'peritosPreferidos')
+    let botaoConfigura = criaBotaoAzul({
+        id: idBotaoConfigura,
+        texto: 'Cadastrar peritos preferidos',
+        ancestral,
+        acao: () => cadastrarPeritosPreferidos()
+    })
+    estiloBotaoFitaSuperior(botaoConfigura)
+    
+    async function cadastrarPeritosPreferidos(){
+        let peritos = await obterArmazenamento(idBotaoConfigura) || []
+        let divId = id('peritosPreferidos', 'cadastro')
+        let div = criaDiv({
+            id: divId,
+            ancestral: document.body
+        })
+        formataDiv(div, 'branco', '50%', '50%')
+        let divCabecalho = criaDiv({
+            id: divId + '_cabecalho',
+            ancestral: divId,
+            rowColumn: 'row-reverse'
+        })
+        criaBotaoFechar({
+            id: divId + '_botaoFechar',
+            ancestral: divId,
+            elementoFechar: divId,
+        })
+        criaTitulo({
+            id: divId + '_titulo',
+            ancestral: divId,
+            texto: 'Cadastre seus peritos mais usados'
+        })
+        let textArea = criaInputAnotacao({
+            id: divId + '_input',
+            textoEmCima: 'Cadastre seus peritos mais usados, com respectivas especialidades, um por linha, separando a especialidade por vírgula.',
+            ancestral: divId
+        })
+        textArea.style.width = '100%'
+        if (peritos[idBotaoConfigura].length) alert(peritos)
+
+    }
 }

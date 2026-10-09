@@ -914,6 +914,7 @@ async function _rota_buscarIdProcesso(numero){
 	let dadosBasicos = await buscarIdPeloNumeroCNJ(numero)
 	let id = dadosBasicos?.id || dadosBasicos?.idProcesso
 	if(!id) return null
+	console.log('%c[Rota PJE]%c 917: ' + JSON.stringify(917), LOG.info, 'color:inherit')
 
 	// Reaproveita dadosBasicos: evita uma segunda consulta à API
 	let ojCheck = await _rota_garantirOJCorreta(numero, dadosBasicos)
@@ -954,7 +955,7 @@ async function _rota_buscarIdProcesso(numero){
 // uma troca recusada gerava reload → retomada → nova tentativa → loop.
 
 async function _rota_garantirOJCorreta(numero, dadosBasicos = null){
-
+	console.log('%c[Rota PJE]%c 957: ' + JSON.stringify(957), LOG.aviso, 'color:inherit')
 	try {
 
 		dadosBasicos ??= await buscarIdPeloNumeroCNJ(numero)
