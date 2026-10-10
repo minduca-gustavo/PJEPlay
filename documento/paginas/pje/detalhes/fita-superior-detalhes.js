@@ -617,7 +617,16 @@ async function peritosPreferidos(ancestral) {
     async function salvarAlteracoes(elemento){
         let peritos = await obterArmazenamento(idBotaoConfigura) || {}
         let peritosCadastrados = peritos[idBotaoConfigura] || []
-        let peritosNovos = /*tratarDados*/(document.getElementById(elemento).value)
-        alert (peritosNovos)
+        let peritosNovos = tratarDados(document.getElementById(elemento).value)
+        //alert (peritosNovos)
+    }
+    function tratarDados(texto){
+        let linhas = texto.split(/\r?\n/)
+        let peritos = []
+        for (let linha of linhas){
+            let dados = linha.split(',')
+            peritos.push({perito: dados[0].trim(), especialidade: dados[1].trim()})
+        }
+        alert(JSON.stringify(peritos))
     }
 }
