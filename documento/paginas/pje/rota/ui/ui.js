@@ -1823,7 +1823,7 @@ function rota_avisoObrigatorio(msg = '', segundos = 60) {
     })
 
     const texto = document.createElement('div')
-    Object.assign(texto.style, { fontSize: '14px', lineHeight: '1.5', color: '#2c3e50' })
+    Object.assign(texto.style, { fontSize: '14px', lineHeight: '1.5', color: '#2c3e50', whiteSpace: 'pre-wrap' })
     texto.textContent = msg
 
     const rodape = document.createElement('div')

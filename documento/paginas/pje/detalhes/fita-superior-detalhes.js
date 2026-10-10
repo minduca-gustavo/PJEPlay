@@ -553,6 +553,7 @@ function estiloBotaoFitaSuperior(botao){
 
 async function peritosPreferidos(ancestral) {
     let idBotaoConfigura = id('fita_superior', 'peritosPreferidos')
+    document.getElementById(idBotaoConfigura)?.remove()
     let botaoConfigura = criaBotaoAzul({
         id: idBotaoConfigura,
         texto: 'Cadastrar peritos mais usados',
@@ -599,6 +600,9 @@ async function peritosPreferidos(ancestral) {
         textArea.style.height = '80%'
         textArea.textarea.style.height = '100%'
         textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista\nCiclano de tal, ADMINISTRADOR,\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
+        if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length){
+            textArea.textarea.value = JSON.stringify(peritos[idBotaoConfigura])
+        }
         let divRodape = criaDiv({
             id: divId + '_rodape',
             ancestral: divId,
@@ -611,22 +615,38 @@ async function peritosPreferidos(ancestral) {
             ancestral: divId + '_rodape',
             acao: () => salvarAlteracoes(divId + '_input')
         })
-        if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length) alert(peritos)
+        if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length) alert(JSON.stringify(peritos[idBotaoConfigura]))
 
     }
     async function salvarAlteracoes(elemento){
         let peritos = await obterArmazenamento(idBotaoConfigura) || {}
         let peritosCadastrados = peritos[idBotaoConfigura] || []
         let peritosNovos = tratarDados(document.getElementById(elemento).value)
-        //alert (peritosNovos)
+        await armazenar({[idBotaoConfigura]: peritosNovos?.peritos})
+        if(peritosNovos?.erros?.length){
+            rota_avisoObrigatorio(
+                `Os seguintes peritos não foram cadastrados, pois foi encontrado erro na formatação (vírgula ausente, mais de uma vírgula, etc.):\n` +
+                peritosNovos?.erros.join('\n'), 8
+            )
+        } else {
+            rota_avisoObrigatorio('Cadastro efetuado com sucesso', 8)
+        }
+        peritosPreferidos('rotapje_fita_superior')
+        return
     }
     function tratarDados(texto){
         let linhas = texto.split(/\r?\n/)
         let peritos = []
+        let erros = []
         for (let linha of linhas){
             let dados = linha.split(',')
-            peritos.push({perito: dados[0].trim(), especialidade: dados[1].trim()})
+            console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados), LOG.aviso, 'color:inherit')
+            if (dados.length != 2){
+                erros.push(linha)
+                continue
+            }
+            peritos.push({perito: dados[0].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || '', especialidade: dados[1].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || ''})
         }
-        alert(JSON.stringify(peritos))
+        return {peritos, erros}
     }
 }
