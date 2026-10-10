@@ -555,9 +555,13 @@ async function peritosPreferidos(ancestral) {
     let idBotaoConfigura = id('fita_superior', 'peritosPreferidos')
     let botaoConfigura = criaBotaoAzul({
         id: idBotaoConfigura,
-        texto: 'Cadastrar peritos preferidos',
+        texto: 'Cadastrar peritos mais usados',
         ancestral,
         acao: () => cadastrarPeritosPreferidos()
+    })
+    let tooltip = criaTooltip({
+        id: idBotaoConfigura + '_tooltip',
+        texto: 'Cria botões com os peritos mais usados, para escolher/nomear com um clique.'
     })
     estiloBotaoFitaSuperior(botaoConfigura)
     
@@ -574,23 +578,28 @@ async function peritosPreferidos(ancestral) {
             ancestral: divId,
             rowColumn: 'row-reverse'
         })
+        divCabecalho.style.marginBottom = '0px'
         criaBotaoFechar({
             id: divId + '_botaoFechar',
-            ancestral: divId,
+            ancestral: divId + '_cabecalho',
             elementoFechar: divId,
         })
-        criaTitulo({
+        let titulo = criaTitulo({
             id: divId + '_titulo',
-            ancestral: divId,
+            ancestral: divId + '_cabecalho',
             texto: 'Cadastre seus peritos mais usados'
         })
+        titulo.style.width = '100%'
         let textArea = criaInputAnotacao({
             id: divId + '_input',
-            textoEmCima: 'Cadastre seus peritos mais usados, com respectivas especialidades, um por linha, separando a especialidade por vírgula.',
+            textoEmCima: 'Cadastre seus peritos mais usados, com respectivas especialidades, um por linha, separando a especialidade por vírgula ou tabulação.',
             ancestral: divId
         })
-        textArea.style.width = '100%'
-        if (peritos[idBotaoConfigura].length) alert(peritos)
+        textArea.style.width = 'auto'
+        textArea.style.height = '80%'
+        textArea.textarea.style.height = '100%'
+        textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista\nCiclano de tal, ADMINISTRADOR,\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
+        if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length) alert(peritos)
 
     }
 }

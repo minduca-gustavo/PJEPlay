@@ -982,6 +982,7 @@ function criaInputAnotacao({ id, textoEmCima = '', ancestral, placeholder = '' }
         textarea.style.height = textarea.scrollHeight + 'px'
     })
 
+    container.textarea = textarea
     container.appendChild(textarea)
     _ui_inserir(container, ancestral)
     return container
@@ -1618,14 +1619,14 @@ function criaBotaoFechar({id, ancestral, elementoFechar, esconder = false}){
         ancestral: ancestral,
         texto: '✕',
         acao: () => {
-            esconder(elementoFechar)
+            fechar(elementoFechar)
             return
         }
     })
     botao.style.padding = '0px 4px'
     botao.style.width = 'fit-content'
     botao.style.height = 'fit-content'
-    function esconder(esconder){
+    function fechar(elementoFechar){
         if (esconder){
             let elemento = document.getElementById(elementoFechar)
             if (elemento) elemento.style.display = 'none'
