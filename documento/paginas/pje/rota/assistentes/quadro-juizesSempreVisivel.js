@@ -31,6 +31,7 @@ let QJ_AJUSTE_TOPO = [
     { trecho: 'assinar',        topo: -8, banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
     { trecho: 'tarefa',         topo: 0,  banner: 'pje-cabecalho-tarefa .cabecalho-tarefa', quebra: true},
     { trecho: 'detalhe',        topo: -7, banner: '.resumo-processo', quebra: true},
+    { trecho: 'pericias',        topo: -7, banner: '.resumo-processo', quebra: true},
     { trecho: 'pjekz/processo', topo: 36, banner: 'pje-cabecalho div[role="banner"]', quebra: true},
 ]
 

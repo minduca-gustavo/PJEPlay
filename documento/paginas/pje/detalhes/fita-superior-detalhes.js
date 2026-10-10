@@ -566,7 +566,7 @@ async function peritosPreferidos(ancestral) {
     estiloBotaoFitaSuperior(botaoConfigura)
     
     async function cadastrarPeritosPreferidos(){
-        let peritos = await obterArmazenamento(idBotaoConfigura) || []
+        let peritos = await obterArmazenamento(idBotaoConfigura) || {}
         let divId = id('peritosPreferidos', 'cadastro')
         let div = criaDiv({
             id: divId,
@@ -599,7 +599,25 @@ async function peritosPreferidos(ancestral) {
         textArea.style.height = '80%'
         textArea.textarea.style.height = '100%'
         textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista\nCiclano de tal, ADMINISTRADOR,\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
+        let divRodape = criaDiv({
+            id: divId + '_rodape',
+            ancestral: divId,
+            rowColumn: 'row-reverse'
+        })
+        divRodape.style.marginBottom = '0px'
+        criaBotaoAzul({
+            id: divId + '_botaoSalvar',
+            texto: 'Salvar alterações',
+            ancestral: divId + '_rodape',
+            acao: () => salvarAlteracoes(divId + '_input')
+        })
         if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length) alert(peritos)
 
+    }
+    async function salvarAlteracoes(elemento){
+        let peritos = await obterArmazenamento(idBotaoConfigura) || {}
+        let peritosCadastrados = peritos[idBotaoConfigura] || []
+        let peritosNovos = /*tratarDados*/(document.getElementById(elemento).value)
+        alert (peritosNovos)
     }
 }
