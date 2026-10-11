@@ -562,9 +562,40 @@ async function peritosPreferidos(ancestral) {
     })
     let tooltip = criaTooltip({
         id: idBotaoConfigura + '_tooltip',
-        texto: 'Cria botões com os peritos mais usados, para escolher/nomear com um clique.'
+        texto: 'Cria botões com os peritos mais usados, para escolher/nomear com um clique.',
+        elemento: idBotaoConfigura
     })
     estiloBotaoFitaSuperior(botaoConfigura)
+    let peritos = await obterArmazenamento(idBotaoConfigura) || {}
+    if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length) {
+        let peritosArmazenados = peritos[idBotaoConfigura]
+        let i = 0
+        for (let perito of peritosArmazenados){
+            let funcoes = [
+                'criaBotaoLaranja',
+                'criaBotaoAzul'
+            ]
+            let mFuncoes = {
+                criaBotaoAzul,
+                criaBotaoLaranja
+            }
+            console.log('%c[Rota PJE]%c mFuncoes[funcoes[i % 2]]' + JSON.stringify(mFuncoes[funcoes[(i % 2)]]), LOG.info, 'color:inherit')
+            let funcao = funcoes[i % 2]
+            let botao = mFuncoes[funcao]({
+                id: idBotaoConfigura + '_botaoPerito_' + i,
+                ancestral: 'rotapje_fita_superior',
+                texto: perito?.perito.split(' ')[0] + ' ' + perito?.perito.split(' ').pop(),
+                acao: () => nomearPerito(perito)
+            })
+            criaTooltip({
+                id: idBotaoConfigura + '_botaoPerito_tooltip_' + i,
+                texto: 'Intimar perito ' + perito?.perito + ' - ' + perito?.especialidade + '.',
+                elemento: idBotaoConfigura + '_botaoPerito_' + i
+            })
+            estiloBotaoFitaSuperior(botao)
+            i++
+        }
+    }
     
     async function cadastrarPeritosPreferidos(){
         let peritos = await obterArmazenamento(idBotaoConfigura) || {}
@@ -601,7 +632,8 @@ async function peritosPreferidos(ancestral) {
         textArea.textarea.style.height = '100%'
         textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista\nCiclano de tal, ADMINISTRADOR,\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
         if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length){
-            textArea.textarea.value = JSON.stringify(peritos[idBotaoConfigura])
+            let texto = peritos[idBotaoConfigura].map(d => d?.perito + ', ' + d?.especialidade).join('\n')
+            textArea.textarea.value = texto
         }
         let divRodape = criaDiv({
             id: divId + '_rodape',
@@ -615,8 +647,32 @@ async function peritosPreferidos(ancestral) {
             ancestral: divId + '_rodape',
             acao: () => salvarAlteracoes(divId + '_input')
         })
-        if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length) alert(JSON.stringify(peritos[idBotaoConfigura]))
 
+    }
+    async function nomearPerito(dadosPerito){
+        aguardarElemento('button[mattooltip^="Incluir per"]')
+        await suspender()
+        let botaoIncluir = document.querySelector('button[mattooltip^="Incluir per"]')
+        clicar(botaoIncluir)
+        aguardarElemento('.input-profissao input')
+        await suspender()
+        let inputProfissao = document.querySelector('.input-profissao input')
+        clicar(inputProfissao)
+        aguardarElemento('mat-option')
+        await suspender()
+        let opcoesEspecialidades = [...document.querySelectorAll('mat-option')]
+        let opcaoEspecialidade = opcoesEspecialidades.find(d => normalizar(d?.textContent).includes(normalizar(dadosPerito?.especialidade)))
+        clicar(opcaoEspecialidade)
+        aguardarElemento('pje-seletor-perito .fa-check')
+        await suspender()
+        let inputPerito = document.querySelector('pje-seletor-perito input')
+        clicar(inputPerito)
+        aguardarElemento('mat-option')
+        await suspender()
+        let opcoesPeritos = [...document.querySelectorAll('mat-option')]
+        let opcaoPerito = opcoesPeritos.find(d => normalizar(d?.textContent).includes(normalizar(dadosPerito?.perito)))
+        clicar(opcaoPerito)
+        //alert (JSON.stringify(dadosPerito))
     }
     async function salvarAlteracoes(elemento){
         let peritos = await obterArmazenamento(idBotaoConfigura) || {}
@@ -631,7 +687,7 @@ async function peritosPreferidos(ancestral) {
         } else {
             rota_avisoObrigatorio('Cadastro efetuado com sucesso', 8)
         }
-        peritosPreferidos('rotapje_fita_superior')
+        criaFitaSuperior()
         return
     }
     function tratarDados(texto){
