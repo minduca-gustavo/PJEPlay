@@ -27,12 +27,16 @@ async function criaFitaSuperior() {
         await despachosPreferidos('rotapje_fita_superior')
         return
     }
+    if (confereJanela(JANELA.conclusao)){
+        await escolheMagistrado('rotapje_fita_superior')
+        return
+    }
     
     await busca_filaCriaBotao()
     await busca_pautaEletronicaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
-    await tramitaIAResumoRapido()
+    //await tramitaIAResumoRapido()
     //await fitaDocumento()
     
 }
@@ -57,7 +61,8 @@ async function confereCriaFitaSuperior(){
     let janela = confereJanela(
         JANELA.detalhes,
         JANELA.pericias,
-        JANELA.minutar
+        JANELA.minutar,
+        JANELA.conclusao
     )
     console.log('%c[Rota PJE]%c fita superior janela: ' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return

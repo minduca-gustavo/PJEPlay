@@ -85,6 +85,7 @@ var JANELA = {
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
 	certificar:             /\/pjekz\/processo\/\d*\/documento\/anexar/,
 	minutar:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/minutar/,
+	conclusao:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/conclusao/,
 	pautaEletronica:		/pautaeletronica\/pautaAudiencia/,
 	pec:                    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
 	pericias:               /\/pjekz\/processo\/\d*\/pericias/,
@@ -836,4 +837,30 @@ function rota_juntaResultados(enviados, retornados = []){
 		...item,
 		...semIndice(retornados.find(r => r.indice === i))
 	}))
+}
+
+async function inserirModelo(modelo){
+	await aguardarElemento('.editor-container')
+	await suspender(500)
+	let editor = document.querySelector('pje-editor .conteudo').children[2]
+	focar(editor.querySelector('[contenteditable]'))
+	await aguardarElemento('.mat-tab-label')
+	await suspender(500)
+	let abas = [...document.querySelectorAll('.mat-tab-label')]
+	let abaModelos = abas.find(a => normalizar(a.textContent).includes('modelos'))
+	clicar(abaModelos)
+	await aguardarElemento('#inputFiltro[data-placeholder^="Buscar modelos"]')
+	await suspender(500)
+	let inputModelos = document.querySelector('#inputFiltro[data-placeholder^="Buscar modelos"]')
+	focar(inputModelos)
+	console.log('%c[Rota PJE]%c modelo' + JSON.stringify(modelo), LOG.info, 'color:inherit')
+	digitarNoInput(inputModelos, modelo)
+	let opcaoModelo = await selecionarOpcaoDeModelo(modelo, 15)
+	if (!opcaoModelo) {
+		rota_avisoObrigatorio('Modelo "' + modelo + '" não encontrado.', 8)
+		return
+	}
+	await suspender(500)
+	let botaoInserir = await esperarEClicar('elaborarDespachoInserirModelo')
+	return
 }

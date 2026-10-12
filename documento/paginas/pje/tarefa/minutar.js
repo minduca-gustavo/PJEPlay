@@ -130,3 +130,4 @@ async function despachosPreferidos(ancestral){
         return {despachos, erros}
     }
 }
+

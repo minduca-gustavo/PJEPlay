@@ -257,7 +257,7 @@ async function extrairTextoTeste(idProcesso, idDocumento) {
 async function buscarGigs(numProc) {
 	
 	let dados = await rota_fetch(
-		location.origin + '/pje-gigs-api/api/relatorioatividades/?&numeroProcesso=' + numProc
+		location.origin + '/pje-gigs-api/api/relatorioatividades/?&tamanhoPagina=500&numeroProcesso=' + numProc
 	)
 	if (!Array.isArray(dados)) dados = dados?.resultado || []
 	return dados

@@ -175,6 +175,7 @@
 				"documento/paginas/pje/detalhes/tramitaIA.js",
 				"documento/paginas/pje/detalhes/fita-superior-detalhes.js",
 				"documento/paginas/pje/tarefa/minutar.js",
+				"documento/paginas/pje/tarefa/conclusao.js",
 				"documento/paginas/pje/rota/nucleo/sigeo.js",
 				"documento/paginas/pje/rota/nucleo/gigs.js",
 				"documento/paginas/pje/rota/nucleo/gig-copia-atendimento.js",
