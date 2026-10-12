@@ -23,12 +23,18 @@ async function criaFitaSuperior() {
         await peritosPreferidos('rotapje_fita_superior')
         return
     }
+    if (confereJanela(JANELA.minutar)){
+        await despachosPreferidos('rotapje_fita_superior')
+        return
+    }
     
     await busca_filaCriaBotao()
     await busca_pautaEletronicaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
     await tramitaIAResumoRapido()
+    //await fitaDocumento()
+    
 }
 
 function formataFitaSuperior(elemento, cor){
@@ -36,18 +42,22 @@ function formataFitaSuperior(elemento, cor){
     elemento.style.gap = '0px'
     elemento.style.padding = '0px'
     elemento.style.marginBottom = '0px'
-    elemento.style.height = '14px'
+    elemento.style.minHeight = '14px'   // antes era height fixo
+    elemento.style.height = 'auto'      // cresce conforme as linhas
     elemento.style.zIndex = '9999999'
     elemento.style.display = 'flex'
     elemento.style.flexDirection = 'row'
+    elemento.style.flexWrap = 'wrap'    // quebra de linha
     elemento.style.alignItems = 'center'
+    elemento.style.alignContent = 'flex-start'
 }
 
 async function confereCriaFitaSuperior(){
     console.log('%c[Rota PJE]%c confere: ' + JSON.stringify(43), LOG.rosa, 'color:inherit')
     let janela = confereJanela(
         JANELA.detalhes,
-        JANELA.pericias
+        JANELA.pericias,
+        JANELA.minutar
     )
     console.log('%c[Rota PJE]%c fita superior janela: ' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return
@@ -624,15 +634,15 @@ async function peritosPreferidos(ancestral) {
         titulo.style.width = '100%'
         let textArea = criaInputAnotacao({
             id: divId + '_input',
-            textoEmCima: 'Cadastre seus peritos mais usados, com respectivas especialidades, um por linha, separando a especialidade por vírgula ou tabulação.',
+            textoEmCima: 'Cadastre seus peritos mais usados, com respectivas especialidades, e data em dias ou data certa(opcionais), um por linha, separando a especialidade e data (se houver) por vírgula ou tabulação.',
             ancestral: divId
         })
         textArea.style.width = 'auto'
         textArea.style.height = '80%'
         textArea.textarea.style.height = '100%'
-        textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista\nCiclano de tal, ADMINISTRADOR,\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
+        textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista, 30\nCiclano de tal, ADMINISTRADOR, 28/02/2027\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
         if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length){
-            let texto = peritos[idBotaoConfigura].map(d => d?.perito + ', ' + d?.especialidade).join('\n')
+            let texto = peritos[idBotaoConfigura].map(d => d?.perito + ', ' + d?.especialidade + ', ' + d?.dataOuDias).join('\n')
             textArea.textarea.value = texto
         }
         let divRodape = criaDiv({
@@ -649,7 +659,7 @@ async function peritosPreferidos(ancestral) {
         })
 
     }
-    async function nomearPerito(dadosPerito){
+    async function nomearPerito({perito = '', especialidade = '', dataOuDias = 0}){
         aguardarElemento('button[mattooltip^="Incluir per"]')
         await suspender()
         let botaoIncluir = document.querySelector('button[mattooltip^="Incluir per"]')
@@ -661,7 +671,11 @@ async function peritosPreferidos(ancestral) {
         aguardarElemento('mat-option')
         await suspender()
         let opcoesEspecialidades = [...document.querySelectorAll('mat-option')]
-        let opcaoEspecialidade = opcoesEspecialidades.find(d => normalizar(d?.textContent).includes(normalizar(dadosPerito?.especialidade)))
+        let opcaoEspecialidade = opcoesEspecialidades.find(d => normalizar(d?.textContent).includes(normalizar(especialidade)))
+        if(!opcaoEspecialidade){
+            rota_avisoObrigatorio('Não foi encontrada a especialidade ' + especialidade + '.', 5)
+            return
+        }
         clicar(opcaoEspecialidade)
         aguardarElemento('pje-seletor-perito .fa-check')
         await suspender()
@@ -670,8 +684,29 @@ async function peritosPreferidos(ancestral) {
         aguardarElemento('mat-option')
         await suspender()
         let opcoesPeritos = [...document.querySelectorAll('mat-option')]
-        let opcaoPerito = opcoesPeritos.find(d => normalizar(d?.textContent).includes(normalizar(dadosPerito?.perito)))
+        let opcaoPerito = opcoesPeritos.find(d => normalizar(d?.textContent).includes(normalizar(perito)))
+        if(!opcaoPerito){
+            rota_avisoObrigatorio('Não foi encontrado o perito ' + perito + '. Verifique a especialidade', 5)
+            return
+        }
         clicar(opcaoPerito)
+        if (dataOuDias){
+            await suspender()
+            let inputData = document.querySelector('input[data-mat-calendar]')
+            if (dataOuDias.match(/\d{2}\/\d{2}\/\d{4}/)){
+                preencher(inputData, dataOuDias)
+            }
+            if (typeof Number(dataOuDias) == 'number'){
+                let idURLMatch = location.href.match(/processo\/(\d+)\/pericias/)
+                let idURL = idURLMatch?.[1]
+                let processo = interceptador_lerProcesso() || await buscarProcesso(idURL) || {}
+                if (!processo?.orgaoJulgador) return
+                let data = await rota_fetch(location.origin + '/pje-gigs-api/api/atividade/retorna-prazo/' + dataOuDias + '?idOj=' + processo?.orgaoJulgador?.id + '&dataInicio=' + new Date().toISOString().slice(0, 10))
+                let dataPreencher = new Date(data?.DATA).toLocaleDateString()
+                console.log('%c[Rota PJE]%c data' + JSON.stringify(data), LOG.rosa, 'color:inherit')
+                preencher(inputData, dataPreencher)
+            }
+        }
         //alert (JSON.stringify(dadosPerito))
     }
     async function salvarAlteracoes(elemento){
@@ -681,7 +716,7 @@ async function peritosPreferidos(ancestral) {
         await armazenar({[idBotaoConfigura]: peritosNovos?.peritos})
         if(peritosNovos?.erros?.length){
             rota_avisoObrigatorio(
-                `Os seguintes peritos não foram cadastrados, pois foi encontrado erro na formatação (vírgula ausente, mais de uma vírgula, etc.):\n` +
+                `Os seguintes peritos não foram cadastrados, pois foi encontrado erro na formatação (vírgula ausente, mais vírgulas do que o necessário, etc.):\n` +
                 peritosNovos?.erros.join('\n'), 8
             )
         } else {
@@ -696,13 +731,51 @@ async function peritosPreferidos(ancestral) {
         let erros = []
         for (let linha of linhas){
             let dados = linha.split(',')
-            console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados), LOG.aviso, 'color:inherit')
-            if (dados.length != 2){
-                erros.push(linha)
+            console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados.length), LOG.aviso, 'color:inherit')
+            if (dados.length != 2 && dados.length != 3){
+                if (linha.match(/[A-Za-zÀ-ÿ\s]+/)?.[0]) erros.push(linha)
                 continue
             }
-            peritos.push({perito: dados[0].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || '', especialidade: dados[1].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || ''})
+            peritos.push({
+                perito: dados[0].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || '', 
+                especialidade: dados[1].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || '',
+                dataOuDias: dados[2].trim() || ''
+            })
         }
         return {peritos, erros}
     }
+}
+
+
+async function fitaDocumento() {
+    let retira = await selecionar('#rotapje_fita_documentos')
+    if (retira) retira.remove()
+    let barra = await aguardarElemento('#documento')
+    let documento = document.querySelector('#documento').children[0]
+    let corToolbar = barra
+        ? getComputedStyle(barra).backgroundColor
+        : '#fafafa'
+    let div = criaDiv({
+        id: 'rotapje_fita_documentos',
+        ancestral: document.body
+    })
+    formataFitaSuperior(div, corToolbar)
+    insereFitaSuperior(documento, div)
+    await buscaPeritoNoDocumento('rotapje_fita_documentos')
+}
+
+async function buscaPeritoNoDocumento(ancestral) {
+    let idBusca = id('buscaPeritoNoDocumento')
+    let botao = await criaBotaoAzul({
+        id: idBusca,
+        ancestral: ancestral,
+        acao: () => buscaPeritoNoDocumentoEIntima(),
+        texto: 'Busca perito e designa perícia'
+    })
+    criaTooltip({
+        id: idBusca + '_tooltip',
+        texto: 'Busca perito no documento usando IA e designa a perícia. A resposta do ChatJT pode ser demorada.',
+        elemento: idBusca
+    })
+    estiloBotaoFitaSuperior(botao)
 }

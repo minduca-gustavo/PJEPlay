@@ -36,9 +36,16 @@ async function resolverTarefa(nomeTarefa) {
 
 // Busca uma única página de processos de uma tarefa (1 requisição).
 async function buscarProcessosPorTarefaPagina(idTarefa, pagina, param = '') {
+    let ojElemento = document.querySelector('.papel-usuario').textContent || ''
+    if (!ojElemento){
+        rota_avisoObrigatorio('Não foi possível identificar a OJ atual. Atualize a página e tente novamente.')
+        return
+    }
+    let ojApi = await rota_fetch(location.origin + '/pje-administracao-api/api/orgaosjulgadores/') || []
+    let oj = ojApi?.find(d => d?.descricao.includes(ojElemento))?.id
     let paginacao = await rota_fetch(
         location.origin + '/pje-administracao-api/api/consultaprocessosadm?pagina=' + pagina +
-        '&idTarefa=' + idTarefa + param + '&tamanhoPagina=100'
+        '&idTarefa=' + idTarefa + param + '&tamanhoPagina=100&idsOrgaosJulgadores=' + oj
     )
     let paginas   = paginacao?.qtdPaginas || 1
     let resultado = paginacao?.resultado || []

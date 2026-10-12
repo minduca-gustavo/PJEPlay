@@ -193,7 +193,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
             // ── 1. Lista processos por CNPJ/CPF (Tarefa) ─────────
             {
                 id: id(secao, 'botao', 'cnpjcpf_tarefa'),
-                texto: 'Lista processos por CNPJ/CPF — por Tarefa',
+                texto: 'Lista processos por CNPJ/CPF - com indicação de apenas órgão público — por Tarefa',
                 inputs: [
                     {
                         id: id(secao, 'input', 'cnpjcpf_tarefa_nome'),
@@ -226,14 +226,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         let r2 = await buscarProcesso(ids[idx], '/partes')
                         let numero = t[idx]?.numero || ''
                         let autor  = t[idx]?.autor  || ''
+                        let orgaoPublico = r2?.PASSIVO.filter(d=> d?.tipoPessoa == 'O').length == r2?.PASSIVO.length ? 'Sim' : 'Não'
                         for (let j of r2?.PASSIVO || []) {
                             let maisReclamadas = r2?.PASSIVO.length === 1 ? 'Não' : 'Sim'
                             d.push({
-                                documento:         j?.documento || '',
-                                processo:          numero,
-                                reclamada:         j?.nome,
-                                reclamante:        autor,
-                                Outras_Reclamadas: maisReclamadas,
+                                'Documento':            j?.documento || '',
+                                'Processo':             numero,
+                                'Reclamada':            j?.nome,
+                                'Reclamante':           autor,
+                                'Outras Reclamadas':    maisReclamadas,
+                                'Apenas órgão público': orgaoPublico
+
                             })
                         }
                     }

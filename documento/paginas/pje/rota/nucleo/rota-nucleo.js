@@ -84,6 +84,7 @@ var JANELA = {
 	escaninho:              /\/pjekz\/escaninho/,
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
 	certificar:             /\/pjekz\/processo\/\d*\/documento\/anexar/,
+	minutar:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/minutar/,
 	pautaEletronica:		/pautaeletronica\/pautaAudiencia/,
 	pec:                    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
 	pericias:               /\/pjekz\/processo\/\d*\/pericias/,
