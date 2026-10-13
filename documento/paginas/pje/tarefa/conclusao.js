@@ -5,11 +5,6 @@ async function escolheMagistrado(ancestral, vara) {
     
     let botoes = [
         {
-            tipo: 'configura',
-            texto: 'CONFIGURA SELEÇÃO DE JUÍZES',            
-            parametro: 'configura'
-        },
-        {
             tipo: 'simetria',
             texto: 'SIMETRIA',            
             parametro: 'juizSimetria'
@@ -71,8 +66,21 @@ async function escolheMagistrado(ancestral, vara) {
         acao: () => escolheMagistradoConfigura()
     })
     estiloBotaoFitaSuperior(botaoConfigura)
+    let mFuncoes = {
+        criaBotaoAzul,
+        criaBotaoLaranja
+    }
+    let i = 0
     for (let botao of botoes){
-
+        let funcao = i % 2 == 0 ? 'criaBotaoLaranja' : 'criaBotaoAzul'
+        let bot = mFuncoes[funcao]({
+            id: idMagistrado + '_botao_' + botao.tipo,
+            texto: botao.texto,
+            ancestral,
+            acao: () => alert()
+        })
+        i++
+        estiloBotaoFitaSuperior(bot)
     }
     async function escolheMagistradoConfigura(){
         let divId = id('escolheMagistrados', 'configura')
@@ -124,6 +132,7 @@ async function escolheMagistrado(ancestral, vara) {
                 if (check.id.includes('caixa')) continue
                 if (check.id != idCheck && check.dataset.marcado == 1 && document.getElementById(idCheck).dataset.marcado == 1) clicar('#' + check.id)
             }
+            await armazenar({[idMagistrado]: document.getElementById(idCheck).dataset.tipo})
         }
         
     }
