@@ -700,8 +700,7 @@ async function peritosPreferidos(ancestral) {
             let inputData = document.querySelector('input[data-mat-calendar]')
             if (dataOuDias.match(/\d{2}\/\d{2}\/\d{4}/)){
                 preencher(inputData, dataOuDias)
-            }
-            if (typeof Number(dataOuDias) == 'number'){
+            } else if (typeof Number(dataOuDias) == 'number'){
                 let idURLMatch = location.href.match(/processo\/(\d+)\/pericias/)
                 let idURL = idURLMatch?.[1]
                 let processo = interceptador_lerProcesso() || await buscarProcesso(idURL) || {}
@@ -710,6 +709,9 @@ async function peritosPreferidos(ancestral) {
                 let dataPreencher = new Date(data?.DATA).toLocaleDateString()
                 console.log('%c[Rota PJE]%c data' + JSON.stringify(data), LOG.rosa, 'color:inherit')
                 preencher(inputData, dataPreencher)
+            } else {
+                rota_avisoObrigatorio('O formato de data deve ser DD/MM/AAAA ou então número de dias.')
+                return
             }
         }
         //alert (JSON.stringify(dadosPerito))
