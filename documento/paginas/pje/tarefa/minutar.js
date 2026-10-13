@@ -116,8 +116,9 @@ async function despachosPreferidos(ancestral){
         let despachos = []
         let erros = []
         for (let linha of linhas){
+            if (!linha.length) continue
             let dados = linha.split(',')
-            console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados.length), LOG.aviso, 'color:inherit')
+            console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados), LOG.aviso, 'color:inherit')
             if (dados.length != 1 && dados.length != 2){
                 if (linha.match(/[A-Za-zÀ-ÿ\s]+/)?.[0]) erros.push(linha)
                 continue

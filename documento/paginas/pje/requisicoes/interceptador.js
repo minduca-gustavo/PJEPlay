@@ -10,6 +10,7 @@
 // ============================================================
 
 const INTERCEPTADOR_URL = {
+    magistrados:                    /\/pje-comum-api\/api\/processos\/id\/\d+\/tarefas\/\d+\/conclusao\/magistrados/,
     agrupamentoTarefasProcessos:    /\/pje-comum-api\/api\/agrupamentotarefas(?:\/\d+)?\/processos/i,
     audiencias:                     /\/pje-comum-api\/api\/processos\/id\/\d+\/audiencias/i,
     chips:                          /\/pje-etiquetas-api\/api\/processos\/\d+\/etiquetas/,
@@ -54,6 +55,7 @@ const INTERCEPTADOR_ROTULO = {
     horariosVagos:                  'horarios_vagos',
     modelosDocumentos:              'modelos_documentos',
     orgaosJulgadores:               'orgaos_julgadores',
+    magistrados:                    'magistrados',
     pauta:                          'pauta',
     perfisSeguranca:                'perfis_seguranca',
     perfis:                         'perfis',
