@@ -416,14 +416,33 @@ function _criarExecCheckbox(ativo = true) {
 }
 
 function _setExecCheckbox(el, ativo) {
-    el.dataset.ativo    = ativo ? '1' : '0'
-    el.style.background = ativo ? _comp_cor('laranja') : _comp_cor('branco')
-    el.style.border     = `1.5px solid ${ativo ? _comp_cor('laranja') : _comp_cor('borda')}`
-    el.innerHTML        = ativo
-        ? `<svg width="7" height="5" viewBox="0 0 7 5" fill="none">
-             <path d="M1 2.5L2.8 4.2L6 1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-           </svg>`
-        : ''
+    el.dataset.ativo    = ativo ? '1' : '0';
+    el.style.background = ativo ? _comp_cor('laranja') : _comp_cor('branco');
+    el.style.border     = `1.5px solid ${ativo ? _comp_cor('laranja') : _comp_cor('borda')}`;
+
+    if (ativo) {
+        // Cria o elemento SVG no namespace correto
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '7');
+        svg.setAttribute('height', '5');
+        svg.setAttribute('viewBox', '0 0 7 5');
+        svg.setAttribute('fill', 'none');
+
+        // Cria o path
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', 'M1 2.5L2.8 4.2L6 1');
+        path.setAttribute('stroke', 'white');
+        path.setAttribute('stroke-width', '1.5');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+
+        svg.appendChild(path);
+        
+        // Substitui o conteúdo anterior de forma segura
+        el.replaceChildren(svg);
+    } else {
+        el.replaceChildren(); // Limpa o conteúdo
+    }
 }
 
 function _criarCelulaExecutar(aoClicar) {

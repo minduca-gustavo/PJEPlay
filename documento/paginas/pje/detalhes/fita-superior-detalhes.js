@@ -27,10 +27,6 @@ async function criaFitaSuperior() {
         await despachosPreferidos('rotapje_fita_superior')
         return
     }
-    if (confereJanela(JANELA.conclusao)){
-        await escolheMagistrado('rotapje_fita_superior')
-        return
-    }
     
     await busca_filaCriaBotao()
     await busca_pautaEletronicaCriaBotao()

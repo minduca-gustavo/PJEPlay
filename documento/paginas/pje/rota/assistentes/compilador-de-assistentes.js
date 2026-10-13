@@ -31,12 +31,6 @@ async function _compiladorMontar() {
             ],
         },
         {
-            id: 'assistente-assinatura',
-            titulo: 'Assistente de assinatura',
-            funcao: 'assistenteAssinaturaDocumentos',
-            janelas: [JANELA.analisarEAssinar],
-        },
-        {
             id: 'filtros-novos',
             titulo: 'Super Filtros',
             funcao: 'filtrosNovos',
@@ -61,7 +55,6 @@ async function _compiladorMontar() {
         armazenarRecolhido: true
     })
     let mapaFuncoes = {
-        assistenteAssinaturaDocumentos,
         consultaQualquerOJ,
         leituraDinamicaDocumentos,
         filtrosNovos,
