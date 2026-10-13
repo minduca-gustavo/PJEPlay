@@ -130,6 +130,12 @@ const ROTA_TIPOS_JANELA = {
 		montarUrl: (id) =>
 			location.origin + '/pjekz/obrigacao-pagar/' + id,
 	},
+	'pagamento': {
+		label:    'Pagamentos',
+		requerTarefa: false,
+		montarUrl: (id) =>
+			location.origin + '/pjekz/pagamento/' + id,
+	},
 	'retificaAutuacao': {
 		label:    'Retificação da Autuação',
 		requerTarefa: false,

@@ -20,6 +20,7 @@ const TIPOS_JANELA = [
 	{ valor:'gigs', label:'GIGS do Processo' },
 	{ valor:'homologacaoAcordo', label:'Homologação do Acordo' },
 	{ valor:'obrigacao_de_pagar', label:'Obrigações de Pagar' },
+	{ valor:'pagamento', label:'Pagamentos' },
 	{ valor:'pericias', label:'Perícias' },
 	{ valor:'retificaAutuacao', label:'Retificação da Autuação' },
 	{ valor:'sif', label:'SIF' },
