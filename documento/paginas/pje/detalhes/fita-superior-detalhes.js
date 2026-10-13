@@ -665,15 +665,15 @@ async function peritosPreferidos(ancestral) {
 
     }
     async function nomearPerito({perito = '', especialidade = '', dataOuDias = 0}){
-        aguardarElemento('button[mattooltip^="Incluir per"]')
+        await aguardarElemento('button[mattooltip^="Incluir per"]')
         await suspender()
         let botaoIncluir = document.querySelector('button[mattooltip^="Incluir per"]')
         clicar(botaoIncluir)
-        aguardarElemento('.input-profissao input')
+        await ('.input-profissao input')
         await suspender()
         let inputProfissao = document.querySelector('.input-profissao input')
         clicar(inputProfissao)
-        aguardarElemento('mat-option')
+        await aguardarElemento('mat-option')
         await suspender()
         let opcoesEspecialidades = [...document.querySelectorAll('mat-option')]
         let opcaoEspecialidade = opcoesEspecialidades.find(d => normalizar(d?.textContent).includes(normalizar(especialidade)))
@@ -682,11 +682,11 @@ async function peritosPreferidos(ancestral) {
             return
         }
         clicar(opcaoEspecialidade)
-        aguardarElemento('pje-seletor-perito .fa-check')
+        await aguardarElemento('pje-seletor-perito .fa-check')
         await suspender()
         let inputPerito = document.querySelector('pje-seletor-perito input')
         clicar(inputPerito)
-        aguardarElemento('mat-option')
+        await aguardarElemento('mat-option')
         await suspender()
         let opcoesPeritos = [...document.querySelectorAll('mat-option')]
         let opcaoPerito = opcoesPeritos.find(d => normalizar(d?.textContent).includes(normalizar(perito)))
@@ -738,6 +738,7 @@ async function peritosPreferidos(ancestral) {
         let erros = []
         for (let linha of linhas){
             let dados = linha.split(',')
+            
             console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados.length), LOG.aviso, 'color:inherit')
             if (dados.length != 2 && dados.length != 3){
                 if (linha.match(/[A-Za-zÀ-ÿ\s]+/)?.[0]) erros.push(linha)
@@ -746,7 +747,7 @@ async function peritosPreferidos(ancestral) {
             peritos.push({
                 perito: dados[0].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || '', 
                 especialidade: dados[1].trim().match(/[A-Za-zÀ-ÿ\s]+/)?.[0] || '',
-                dataOuDias: dados[2].trim() || ''
+                dataOuDias: dados?.[2] ? dados?.[2].trim() : null
             })
         }
         return {peritos, erros}
