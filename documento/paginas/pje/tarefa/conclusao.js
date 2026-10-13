@@ -41,6 +41,11 @@ async function escolheMagistrado(ancestral, vara) {
     }
     async function defineJuizPlanilha(vara, processo) {
         let anoProcesso = processo.slice(11, 15)
-        let final = Number(anoProcesso) < 2010
+        let final = Number(anoProcesso) < 2010 ? processo.slice(4, 5) : processo.slice(6, 7)
+        let git = await lerGit('rotapje_finais.json') || []
+        let varasObjetos = git.filter(d => d?.Vara == vara) || []
+        let varaDigito = varasObjetos.find(d => d?.Dígitos.includes(final)) || {}
+        let juiz = varaDigito.Magistrado || null
+        return juiz ?? null
     }
 }
