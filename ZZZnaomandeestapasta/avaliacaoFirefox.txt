@@ -1,0 +1,66 @@
+Testes gerais
+0 erro, 16 alertas, 0 notícia
+Unsupported "/background/service_worker" manifest property is ignored by Firefox.
+
+Alerta: The "/background/service_worker" manifest property is unsupported and ignored on Firefox. Please make sure "/background/scripts" or "/background/page" properties are providing appropriate Firefox compatibility. See https://mzl.la/4r6SF1L for more information.
+manifest.json
+Manifest key not supported by the specified minimum Firefox for Android version
+
+Alerta: "strict_min_version" requires Firefox for Android 140, which was released before version 142 introduced support for "browser_specific_settings.gecko.data_collection_permissions".
+manifest.json
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/rota/nucleo/componentes.js linha 422 coluna 5
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/rota/assistentes/assistente-assinatura.js linha 514 coluna 17
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/rota/assistentes/assistente-assinatura.js linha 664 coluna 9
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/rota/assistentes/leitura_dinamica_documentos.js linha 858 coluna 9
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/rota/botao/botao-rota.js linha 181 coluna 2
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/rota/botao/botao-rota.js linha 760 coluna 4
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/aud/aud.js linha 381 coluna 13
+Unsafe assignment to innerHTML
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+documento/paginas/pje/gim/assina-tudo.js linha 361 coluna 9
+Unsafe call to import for argument 0
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+navegador/segundo-plano.js linha 323 coluna 20
+Unsafe call to import for argument 0
+
+Alerta: Due to both security and performance concerns, this may not be set using dynamic values which have not been adequately sanitized. This can lead to security issues or fairly serious performance degradation.
+utils/pdfjs.mjs linha 3767 coluna 28
+The Function constructor is eval.
+
+Alerta: Evaluation of strings as code can lead to security vulnerabilities and performance issues, even in the most innocuous of circumstances. Please avoid using `eval` and the `Function` constructor when at all possible.
+utils/pdfjs.mjs linha 13107 coluna 47
+The Function constructor is eval.
+
+Alerta: Evaluation of strings as code can lead to security vulnerabilities and performance issues, even in the most innocuous of circumstances. Please avoid using `eval` and the `Function` constructor when at all possible.
+utils/pdfjs.mjs linha 16420 coluna 5
+The Function constructor is eval.
+
+Alerta: Evaluation of strings as code can lead to security vulnerabilities and performance issues, even in the most innocuous of circumstances. Please avoid using `eval` and the `Function` constructor when at all possible.
+utils/pdfjs.worker.mjs linha 495 coluna 5
+The Function constructor is eval.
+
+Alerta: Evaluation of strings as code can lead to security vulnerabilities and performance issues, even in the most innocuous of circumstances. Please avoid using `eval` and the `Function` constructor when at all possible.
+utils/pdfjs.worker.mjs linha 28155 coluna 16
