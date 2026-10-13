@@ -2,6 +2,7 @@
 // quadro-juizesSempreVisivel para economizar uma requisição ao historicodeslocamentos
 
 async function escolheMagistrado(ancestral, vara) {
+    
     let botoes = [
         {
             tipo: 'configura',
@@ -61,23 +62,25 @@ async function escolheMagistrado(ancestral, vara) {
         let sugeridos = interceptado?.magistradosSugeridos || []
         let juizObjeto = sugeridos.find(j => normalizar(j?.destaques).includes(parametro)) || null
         return (juizObjeto?.nome)
-        console.log('%c[Rota PJE]%c interceptado', LOG.teste, 'color:inherit', interceptado)
     }
     let idMagistrado = id('escolheMagistrado', 'botao')
-    criaBotaoAzul({
+    let botaoConfigura = criaBotaoAzul({
         id: idMagistrado,
         ancestral,
         texto: 'Configura escolha de magistrados.',
         acao: () => escolheMagistradoConfigura()
     })
+    estiloBotaoFitaSuperior(botaoConfigura)
+    for (let botao of botoes){
+
+    }
     async function escolheMagistradoConfigura(){
-        let despachos = await obterArmazenamento(idBotaoConfigura) || {}
-        let divId = id('despachosPreferidos', 'cadastro')
+        let divId = id('escolheMagistrados', 'configura')
         let div = criaDiv({
             id: divId,
             ancestral: document.body
         })
-        formataDiv(div, 'branco', '50%', '50%')
+        formataDiv(div, 'branco', '30%', '30%')
         let divCabecalho = criaDiv({
             id: divId + '_cabecalho',
             ancestral: divId,
@@ -92,33 +95,36 @@ async function escolheMagistrado(ancestral, vara) {
         let titulo = criaTitulo({
             id: divId + '_titulo',
             ancestral: divId + '_cabecalho',
-            texto: 'Cadastre seus despachos mais usados'
+            texto: 'Configure a escolha de magistrados.'
         })
         titulo.style.width = '100%'
-        let textArea = criaInputAnotacao({
-            id: divId + '_input',
-            textoEmCima: 'Cadastre seus despachos mais usados, um por linha, com o nome a buscar e o título do botão (opcional), separados por vírgula. DICA: salve seu modelo acrescentando o número do ID do modelo (disponível na tela de edição de modelos), e use o número do ID no nome a buscar.',
+        let texto = criaTexto({
+            id: divId + '_textoEscolha',
+            texto: 'Caso queira que seja atribuído automaticamente o Juiz ao abrir a página, escolha a fonte da escolha:',
             ancestral: divId
         })
-        textArea.style.width = 'auto'
-        textArea.style.height = '80%'
-        textArea.textarea.style.height = '100%'
-        textArea.textarea.placeholder = 'Ex:\nDesigna aud instrução, INSTRUÇÃO\nNomeação de perito, perito\nSentença de liquidação - órgão público'
-        if (despachos[idBotaoConfigura] && despachos[idBotaoConfigura].length){
-            let texto = despachos[idBotaoConfigura].map(d => d?.modelo + ', ' + d?.textoBotao).join('\n')
-            textArea.textarea.value = texto
+        for (let botao of botoes){
+            let idCheck = divId + '_check_' + botao.tipo
+            if (botao.tipo == 'configura') continue
+            let check = await criaCheckBox({
+                id: idCheck,
+                textoAoLado: botao.texto,
+                ancestral: divId,
+                salvar: true
+            })
+            check.dataset.tipo = botao.tipo
+            check.addEventListener('click', () => alternarESalvar(idCheck))
         }
-        let divRodape = criaDiv({
-            id: divId + '_rodape',
-            ancestral: divId,
-            rowColumn: 'row-reverse'
-        })
-        divRodape.style.marginBottom = '0px'
-        criaBotaoAzul({
-            id: divId + '_botaoSalvar',
-            texto: 'Salvar alterações',
-            ancestral: divId + '_rodape',
-            acao: () => salvarAlteracoes(divId + '_input')
-        })
+        async function alternarESalvar(idCheck) {
+            console.log('%c[Rota PJE]%c 115 alternar: ' + JSON.stringify(115), LOG.aviso, 'color:inherit')
+            let checks = [...document.querySelectorAll('[id^="' + divId + '_check_"')]
+            for (let check of checks){
+                console.log('%c[Rota PJE]%c check.id: ' + JSON.stringify(check.id), LOG.mb, 'color:inherit')
+                console.log('%c[Rota PJE]%c idCheck: ' + JSON.stringify(idCheck), LOG.info, 'color:inherit')
+                if (check.id.includes('caixa')) continue
+                if (check.id != idCheck && check.dataset.marcado == 1 && document.getElementById(idCheck).dataset.marcado == 1) clicar('#' + check.id)
+            }
+        }
+        
     }
 }

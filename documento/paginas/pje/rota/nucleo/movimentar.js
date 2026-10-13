@@ -351,7 +351,7 @@ async function selecionarOpcaoDeModelo(modelo, tempoEmSegundos = 30){
   for(let i = 0; i < tempoEmSegundos * 2; i++){
     await suspender(500)
     let opcoesModelo = [...(await sel('elaborarDespachoOpcaoDeModelo', '', true))]
-    opcaoModelo = opcoesModelo.find(o => normalizar(o.textContent).includes(modelo))
+    opcaoModelo = opcoesModelo.find(o => normalizar(o.textContent).includes(normalizar(modelo)))
     
     if (opcaoModelo) {
       break
