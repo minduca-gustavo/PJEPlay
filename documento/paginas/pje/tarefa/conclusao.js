@@ -3,7 +3,18 @@
 
 async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     if (juizAEscolher){
-        alert (juizAEscolher)
+        let inputJuiz = document.querySelector('mat-select[placeholder="Magistrado"]')
+        clicar(inputJuiz)
+        await aguardarElemento('mat-option')
+        await suspender()
+        let opcoesJuizes = [...document.querySelectorAll('mat-option')]
+        let opcaoJuiz = opcoesJuizes.find(d => normalizar(d?.textContent).includes(normalizar(juizAEscolher)))
+        if(!opcaoJuiz){
+            rota_avisoObrigatorio('Não foi encontrado o juiz ' + juizAEscolher + '. Tente novamente', 5)
+            return
+        }
+        clicar(opcaoJuiz)
+        //alert (juizAEscolher)
         return
     }
     
@@ -92,15 +103,21 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
         let funcao = i % 2 == 0 ? 'criaBotaoLaranja' : 'criaBotaoAzul'
         let parametro = botao.parametro
         let juiz = juizes[botao.parametro]
+        if(!juiz) continue
         let bot = mFuncoes[funcao]({
             id: idMagistrado + '_botao_' + botao.tipo,
-            texto: botao.texto,
+            texto: botao.texto + ': ' + juiz,
             ancestral,
             acao: () => escolheMagistrado('', '', juiz)
         })
         i++
         estiloBotaoFitaSuperior(bot)
     }
+    let armazenamento = await obterArmazenamento(idMagistrado) || {}
+    let opcao = armazenamento[idMagistrado] || ''
+    if(!document.querySelector('#' + idMagistrado + '_botao_' + opcao)) return
+    if(opcao) clicar('#' + idMagistrado + '_botao_' + opcao)
+    console.log('%c[Rota PJE]%c opcao' + JSON.stringify(opcao), LOG.erro, 'color:inherit')
     async function escolheMagistradoConfigura(){
         let divId = id('escolheMagistrados', 'configura')
         let div = criaDiv({
@@ -108,6 +125,7 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
             ancestral: document.body
         })
         formataDiv(div, 'branco', '30%', '30%')
+        div.style.overflowY = 'auto'
         let divCabecalho = criaDiv({
             id: divId + '_cabecalho',
             ancestral: divId,
@@ -151,7 +169,8 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
                 if (check.id.includes('caixa')) continue
                 if (check.id != idCheck && check.dataset.marcado == 1 && document.getElementById(idCheck).dataset.marcado == 1) clicar('#' + check.id)
             }
-            await armazenar({[idMagistrado]: document.getElementById(idCheck).dataset.tipo})
+            let armazenado = (document.getElementById(idCheck).dataset.marcado == 1) ? document.getElementById(idCheck).dataset.tipo : ''
+            await armazenar({[idMagistrado]: armazenado})
         }
         
     }
