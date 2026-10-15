@@ -59,6 +59,10 @@ async function criaWidgetLeituraDinamica(ancestral) {
     })
     let tipos = [
         {
+            tipo: 'inicial',
+            label: 'Petição Inicial',
+        },
+        {
             tipo: 'peticao',
             label: 'Petições não apreciadas',
         },
@@ -643,6 +647,10 @@ async function criaWidgetLeituraDinamica(ancestral) {
         console.log('%c[Rota PJE]%c seletores: ' + JSON.stringify(valor), LOG.aviso, 'color:inherit')
         let tipos = 
             {
+                inicial: {
+                    busca: 'tipo',
+                    valor: 'Petição Inicial'
+                },
                 peticao: {
                     busca: 'documentoApreciavel',
                     valor: true
