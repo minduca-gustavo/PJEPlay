@@ -175,10 +175,13 @@ async function mostraVaraDeOrigem(banner) {
     let vara = historico
         .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
         ?.orgaoJulgadorOrigem?.descricao || ''
+    let idOrigem = id('origem', 'plaquinha')
+    if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado)){
+        levaGigs(idOrigem, historico)
+    }
     if (confereJanela(JANELA.conclusao)){
         escolheMagistrado('rotapje_fita_superior', vara)
     }
-    let idOrigem = id('origem', 'plaquinha')
     removerComLimpezaDeAncora(idOrigem)
 
     let plaquinha = criaPlaquinha({

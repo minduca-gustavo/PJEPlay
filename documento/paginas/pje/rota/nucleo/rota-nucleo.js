@@ -81,6 +81,7 @@ var JANELA = {
 	tarefaAssinar:          /\/pjekz\/processo\/\d*\/tarefa\/\d*\/assinar/,
 	tarefa:                 /\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	documentosConteudo:     /\/pjekz\/processo\/\d*\/detalhe\/documento\/\d*\/conteudo*/,
+	encaminharPostoAvancado:/\/pjekz\/processo\/\d*\/tarefa\/\d*\/posto-avancado\/encaminhar/,
 	escaninho:              /\/pjekz\/escaninho/,
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
 	certificar:             /\/pjekz\/processo\/\d*\/documento\/anexar/,

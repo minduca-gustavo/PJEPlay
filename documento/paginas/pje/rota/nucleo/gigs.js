@@ -140,3 +140,7 @@ function adicionarBotoesDevolverGig() {
         btnTrash.insertAdjacentElement('afterend', btn)
     })
 }
+
+async function levaGigs(){
+    return
+}

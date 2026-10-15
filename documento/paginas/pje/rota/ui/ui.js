@@ -2266,7 +2266,7 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
 }
 
 function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', position = 'absolute', top = '50%', left = '50%', transform = 'translate(-50%, -50%)') {
-    let bgCor = UI_CORES[cor] || UI_CORES.branco
+    let bgCor = cor.includes('#') ? cor : UI_CORES[cor] || UI_CORES.branco
     Object.assign(div.style,{
         position:       position,
         top:            top,

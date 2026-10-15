@@ -160,7 +160,7 @@ const SELETORES_218 = {
     },
     elaborarDespachoBotaoEnviarParaAssinatura:{
       seletor: '[aria-label*="Enviar para assinatura"]',
-      ancestral: 'botoes-acoes'
+      ancestral: '.botoes-acoes'
     },
     detalhesDoProcessoBotaoNovaAtividadeGigs:{
       seletor: '#nova-atividade',
