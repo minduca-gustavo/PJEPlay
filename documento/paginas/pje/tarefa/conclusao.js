@@ -59,11 +59,14 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     }
     async function defineJuizSimetria(processo) {
         let gigs = await buscarGigs(processo) || []
-        if (!gigs) return null
-        let gigSimetria = gigs.find(d => d?.tipoAtividade?.descricaoConsulta.includes('GABINETE'))
-        if (!gigSimetria) return null
-        let juiz = gigSimetria.tipoAtividade.descricaoConsulta.split(/JUIZ[A]?/)[1].trim()
-        return juiz ?? null
+        console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.erro, 'color:inherit')
+        if (!gigs.length) return null
+        let gigSimetria = gigs.find(d => d?.tipoAtividade?.descricaoConsulta.includes('GABINETE D'))
+        console.log('%c[Rota PJE]%c gigSimetria.length' + JSON.stringify(gigSimetria), LOG.erro, 'color:inherit', gigSimetria)
+        if (!gigSimetria.tipoAtividade) return null
+        let juizAtividade = gigSimetria.tipoAtividade.descricaoConsulta.split(/JUIZ[A]?/)
+        let juiz = juizAtividade[1] ? juizAtividade[1].trim() : null
+        return juiz
     }
     async function defineJuizPlanilha(vara, processo) {
         let anoProcesso = processo.slice(11, 15)
