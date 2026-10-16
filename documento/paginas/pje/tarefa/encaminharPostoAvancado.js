@@ -59,9 +59,10 @@ async function encaminharPostoAvancadoGigs(historico){
     let idEncaminha = id('encaminhaComGig')
     let armazenamento = await obterArmazenamento(idEncaminha) || {}
     let estado = armazenamento[idEncaminha] || null
-    if (estado?.leva) {
-        await obterGigsDestaOJ()
-        verificarBotoesEIncluirListeners()
+    let gigs = []
+    if (estado?.leva || estado?.continua) {
+        gigs = estado?.leva ? await obterGigsDestaOJ() : []
+        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua) 
     }
     let botaoLeva = criaBotaoLaranja({
         id: idEncaminha + '_botao_' + '_leva',
