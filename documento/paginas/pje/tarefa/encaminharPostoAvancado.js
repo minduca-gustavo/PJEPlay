@@ -51,8 +51,8 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(historico){
-    return
-    let janela = confereJanela(JANELA.encaminharPostoAvancado)
+    //return
+    let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
     let fita = aguardarElemento('#' + ancestral)
@@ -86,14 +86,29 @@ async function encaminharPostoAvancadoGigs(historico){
         return gigs
     }
     async function verificarBotoesEIncluirListeners(leva, continua, gigs){
+        
         let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
         let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
-        
+        if (continua){
+
+        }
+        if (leva){
+            if (!gigs.length) return
+        }
+        if(confereJanela(JANELA.analise)){
+            let botoes = [...document.querySelectorAll('pje-botoes-transicao button')]
+            if (!botoes.length) return
+            let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
+            if (!botao) return
+
+            return
+        }
         for (botao of botoes){
             let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
             if(!perfil) continue
             //botao.addEventListener('click', () => )
         }
+        return
         //console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.mb, 'color:inherit')
         //alert (botoes.map(d => d.textContent).join('\n'))
     }

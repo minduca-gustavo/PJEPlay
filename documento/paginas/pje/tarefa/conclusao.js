@@ -61,9 +61,9 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
         let gigs = await buscarGigs(processo) || []
         console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.erro, 'color:inherit')
         if (!gigs.length) return null
-        let gigSimetria = gigs.find(d => d?.tipoAtividade?.descricaoConsulta.includes('GABINETE D'))
+        let gigSimetria = gigs.find(d => d?.tipoAtividade?.descricaoConsulta.includes('GABINETE D') || d?.tipoAtividade?.descricaoConsulta.includes('GAB. JUIZ'))
         console.log('%c[Rota PJE]%c gigSimetria.length' + JSON.stringify(gigSimetria), LOG.erro, 'color:inherit', gigSimetria)
-        if (!gigSimetria.tipoAtividade) return null
+        if (!gigSimetria?.tipoAtividade) return null
         let juizAtividade = gigSimetria.tipoAtividade.descricaoConsulta.split(/JUIZ[A]?/)
         let juiz = juizAtividade[1] ? juizAtividade[1].trim() : null
         return juiz

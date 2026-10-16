@@ -169,6 +169,7 @@ async function criaVisualizador(banner) {
 // ------------------------------------------------------------
 
 async function mostraVaraDeOrigem(banner) {
+    console.log('Mostrar vara de origem Chamou.')
     let idProcesso = location.href.match(/pjekz\/processo\/(\d+)/)?.[1]
     if (!idProcesso) return
     let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
@@ -176,12 +177,12 @@ async function mostraVaraDeOrigem(banner) {
         .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
         ?.orgaoJulgadorOrigem?.descricao || ''
     let idOrigem = id('origem', 'plaquinha')
-    if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado)){
+    if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado, JANELA.analise)){
         levaGigs(idOrigem, historico)
         encaminharPostoAvancadoGigs(historico)
     }
     if (confereJanela(JANELA.conclusao)){
-        escolheMagistrado('rotapje_fita_superior', vara)
+        await escolheMagistrado('rotapje_fita_superior', vara)
     }
     removerComLimpezaDeAncora(idOrigem)
 

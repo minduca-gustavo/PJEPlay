@@ -27,7 +27,11 @@ async function criaFitaSuperior() {
         await despachosPreferidos('rotapje_fita_superior')
         return
     }
-    if (confereJanela(JANELA.conclusao, JANELA.encaminharPostoAvancado)){
+    if (confereJanela(JANELA.conclusao, JANELA.encaminharPostoAvancado, JANELA.analise)){
+        return
+    }
+    if(confereJanela(JANELA.gigsRelatorios, JANELA.painelGlobal, JANELA.escaninho)){
+        acertaChipTelaGig('rotapje_fita_superior')
         return
     }
     
@@ -36,9 +40,25 @@ async function criaFitaSuperior() {
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
     await abrirTarefaChipEmCima('rotapje_fita_superior')
+    
     //await tramitaIAResumoRapido()
     //await fitaDocumento()
     
+}
+
+function acertaChipTelaGig(ancestral){
+    let janela = confereJanela(JANELA.gigsRelatorios, JANELA.painelGlobal, JANELA.escaninho)
+    if (!janela) return
+    let botao = criaBotaoAzul({
+        id: id('acertaChipTelaGig'),
+        texto: 'Ajustar filtros',
+        ancestral,
+        acao: () => {
+            if (!document.querySelector('.mat-chip-list-wrapper')) return
+            let w = [...document.querySelector('.mat-chip-list-wrapper').children].map(d=>d.style.flexWrap = 'wrap')
+        }
+    })
+    estiloBotaoFitaSuperior(botao)
 }
 
 function formataFitaSuperior(elemento, cor){
@@ -73,11 +93,15 @@ async function abrirTarefaChipEmCima(ancestral){
 async function confereCriaFitaSuperior(){
     console.log('%c[Rota PJE]%c confere: ' + JSON.stringify(43), LOG.rosa, 'color:inherit')
     let janela = confereJanela(
+        JANELA.analise,
         JANELA.detalhes,
         JANELA.pericias,
         JANELA.minutar,
         JANELA.conclusao,
-        JANELA.encaminharPostoAvancado
+        JANELA.encaminharPostoAvancado,
+        JANELA.gigsRelatorios,
+        JANELA.painelGlobal,
+        JANELA.escaninho
     )
     console.log('%c[Rota PJE]%c fita superior janela: ' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return
