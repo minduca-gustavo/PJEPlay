@@ -101,16 +101,20 @@ async function encaminharPostoAvancadoGigs(historico){
             let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
             if (!botao) return
 
-            botao.addEventListener('click', )
+            botao.addEventListener('click', levaGigSegueTarefa)
             return
         }
         for (botao of botoes){
             let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
             if(!perfil) continue
 
-            botao.addEventListener('click', )
+            botao.addEventListener('click', levaGigSegueTarefa)
         }
         return
+
+        function levaGigSegueTarefa(){
+            alert('OK')
+        }
         //console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.mb, 'color:inherit')
         //alert (botoes.map(d => d.textContent).join('\n'))
     }
