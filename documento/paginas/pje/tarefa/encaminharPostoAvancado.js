@@ -51,7 +51,7 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(historico){
-    return
+    //return
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
@@ -101,6 +101,7 @@ async function encaminharPostoAvancadoGigs(historico){
             let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
             if (!botao) return
 
+            botao.addEventListener('click', )
             return
         }
         for (botao of botoes){
