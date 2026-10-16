@@ -51,6 +51,7 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(historico){
+    return
     let janela = confereJanela(JANELA.encaminharPostoAvancado)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
@@ -62,7 +63,7 @@ async function encaminharPostoAvancadoGigs(historico){
     let gigs = []
     if (estado?.leva || estado?.continua) {
         gigs = estado?.leva ? await obterGigsDestaOJ() : []
-        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua) 
+        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs) 
     }
     let botaoLeva = criaBotaoLaranja({
         id: idEncaminha + '_botao_' + '_leva',
@@ -80,10 +81,21 @@ async function encaminharPostoAvancadoGigs(historico){
     estiloBotaoFitaSuperior(botaoContinua)
     
     async function obterGigsDestaOJ(){
-        
+        let processo = document.querySelector('pje-descricao-processo [role="button"]').textContent.trim()
+        let gigs = await buscarGigs(processo) || []
+        return gigs
     }
-    function verificarBotoesEIncluirListeners(){
-
+    async function verificarBotoesEIncluirListeners(leva, continua, gigs){
+        let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
+        let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
+        
+        for (botao of botoes){
+            let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
+            if(!perfil) continue
+            //botao.addEventListener('click', () => )
+        }
+        //console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.mb, 'color:inherit')
+        //alert (botoes.map(d => d.textContent).join('\n'))
     }
     async function alternarEstadoESalvar(idFim){
         let botao = document.getElementById(idEncaminha + '_botao_' + '_' + idFim)
@@ -93,6 +105,8 @@ async function encaminharPostoAvancadoGigs(historico){
             let estado = armazenamento[idEncaminha]
             estado[idFim]= true
             await armazenar({[idEncaminha]: estado})
+            gigs = estado?.leva ? await obterGigsDestaOJ() : []
+            verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs) 
         } else {
             botao.textContent = botao.textContent.replace('ATIVADO', 'DESATIVADO')
             let armazenamento = await obterArmazenamento([idEncaminha])

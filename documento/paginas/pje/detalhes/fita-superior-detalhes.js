@@ -35,6 +35,7 @@ async function criaFitaSuperior() {
     await busca_pautaEletronicaCriaBotao()
     await abre_tarefa_rotaCriaBotao()
     await irParaAOJDesteProcessoCriaBotao()
+    await abrirTarefaChipEmCima('rotapje_fita_superior')
     //await tramitaIAResumoRapido()
     //await fitaDocumento()
     
@@ -53,6 +54,20 @@ function formataFitaSuperior(elemento, cor){
     elemento.style.flexWrap = 'wrap'    // quebra de linha
     elemento.style.alignItems = 'center'
     elemento.style.alignContent = 'flex-start'
+}
+
+async function abrirTarefaChipEmCima(ancestral){
+    let janela = confereJanela(JANELA.detalhes)
+    if (!janela) return
+    let botao = criaBotaoAzul({
+        id: id('abrirTarefaChipEmCima'),
+        texto: 'Abrir Tarefa',
+        ancestral,
+        acao: () => {
+            let botao = document.querySelector('.descricao-tarefa button')?.click()
+        }
+    })
+    estiloBotaoFitaSuperior(botao)
 }
 
 async function confereCriaFitaSuperior(){
