@@ -51,7 +51,7 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(historico){
-    //return
+    return
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
@@ -93,7 +93,7 @@ async function encaminharPostoAvancadoGigs(historico){
 
         }
         if (leva){
-            if (!gigs.length) return
+            
         }
         if(confereJanela(JANELA.analise)){
             let botoes = [...document.querySelectorAll('pje-botoes-transicao button')]
@@ -106,7 +106,8 @@ async function encaminharPostoAvancadoGigs(historico){
         for (botao of botoes){
             let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
             if(!perfil) continue
-            //botao.addEventListener('click', () => )
+
+            botao.addEventListener('click', )
         }
         return
         //console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.mb, 'color:inherit')

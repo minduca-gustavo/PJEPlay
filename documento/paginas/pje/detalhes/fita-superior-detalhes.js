@@ -58,6 +58,11 @@ function acertaChipTelaGig(ancestral){
             let w = [...document.querySelector('.mat-chip-list-wrapper').children].map(d=>d.style.flexWrap = 'wrap')
         }
     })
+    criaTooltip({
+        id: id('acertaChipTelaGig', 'tooltip'),
+        texto: 'Ajustar filtros para evitar a rolagem da tela para os lados.',
+        elemento: id('acertaChipTelaGig')
+    })
     estiloBotaoFitaSuperior(botao)
 }
 
