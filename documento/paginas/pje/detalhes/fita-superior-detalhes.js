@@ -27,7 +27,7 @@ async function criaFitaSuperior() {
         await despachosPreferidos('rotapje_fita_superior')
         return
     }
-    if (confereJanela(JANELA.conclusao)){
+    if (confereJanela(JANELA.conclusao, JANELA.encaminharPostoAvancado)){
         return
     }
     
@@ -61,7 +61,8 @@ async function confereCriaFitaSuperior(){
         JANELA.detalhes,
         JANELA.pericias,
         JANELA.minutar,
-        JANELA.conclusao
+        JANELA.conclusao,
+        JANELA.encaminharPostoAvancado
     )
     console.log('%c[Rota PJE]%c fita superior janela: ' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return

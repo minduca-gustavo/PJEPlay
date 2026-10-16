@@ -178,6 +178,7 @@ async function mostraVaraDeOrigem(banner) {
     let idOrigem = id('origem', 'plaquinha')
     if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado)){
         levaGigs(idOrigem, historico)
+        encaminharPostoAvancadoGigs(historico)
     }
     if (confereJanela(JANELA.conclusao)){
         escolheMagistrado('rotapje_fita_superior', vara)

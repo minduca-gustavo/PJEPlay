@@ -7,7 +7,10 @@ async function guardaContraOJIncorreta(){
     let armazenamento = await obterArmazenamento(divId)
     //if (!armazenamento[divId]) return
     let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
-    let botoesErrados = botoes.filter(d => !normalizar(d.textContent).includes('bauru')) || []
+    let botoesErrados = botoes.filter(d => 
+        !normalizar(d.textContent).includes('bauru') && 
+        !normalizar(d.textContent).includes('nucleo')
+    ) || []
     if (botoesErrados.length){
         let div = criaDiv({
             id: divId,
@@ -37,12 +40,65 @@ async function guardaContraOJIncorreta(){
             texto: 'Fechando em 5.'
         })
         textoContagem.style.color = '#000000'
-        div.addEventListener('click', d => {document.getElementById('divId').remove(d)})
+        div.addEventListener('click', d => {document.getElementById(divId).remove(d)})
         for (let i = 0; i < 5; i++){
             await suspender (1000)
             textoContagem.textContent = 'Fechando em ' + (4 - i) + '.'
         }
         document.getElementById(divId).remove()
+    }
+
+}
+
+async function encaminharPostoAvancadoGigs(historico){
+    let janela = confereJanela(JANELA.encaminharPostoAvancado)
+    if (!janela) return
+    let ancestral = 'rotapje_fita_superior'
+    let fita = aguardarElemento('#' + ancestral)
+    if (!fita) return
+    let idEncaminha = id('encaminhaComGig')
+    let armazenamento = await obterArmazenamento(idEncaminha) || {}
+    let estado = armazenamento[idEncaminha] || null
+    if (estado?.leva) {
+        await obterGigsDestaOJ()
+        verificarBotoesEIncluirListeners()
+    }
+    let botaoLeva = criaBotaoLaranja({
+        id: idEncaminha + '_botao_' + '_leva',
+        ancestral,
+        texto: 'Leva os GIGs para a próxima OJ' + (estado?.leva ? ' - ATIVADO' : ' - DESATIVADO'),
+        acao: () => alternarEstadoESalvar('leva')
+    })
+    estiloBotaoFitaSuperior(botaoLeva)
+    let botaoContinua = criaBotaoAzul({
+        id: idEncaminha + '_botao_' + '_continua',
+        ancestral,
+        texto: 'Quero continuar na tarefa da próxima OJ' + (estado?.continua ? ' - ATIVADO' : ' - DESATIVADO'),
+        acao: () => alternarEstadoESalvar('continua')
+    })
+    estiloBotaoFitaSuperior(botaoContinua)
+    
+    async function obterGigsDestaOJ(){
+        
+    }
+    function verificarBotoesEIncluirListeners(){
+
+    }
+    async function alternarEstadoESalvar(idFim){
+        let botao = document.getElementById(idEncaminha + '_botao_' + '_' + idFim)
+        if (botao.textContent.includes('DES')){
+            botao.textContent = botao.textContent.replace('DESATIVADO', 'ATIVADO')
+            let armazenamento = await obterArmazenamento([idEncaminha])
+            let estado = armazenamento[idEncaminha]
+            estado[idFim]= true
+            await armazenar({[idEncaminha]: estado})
+        } else {
+            botao.textContent = botao.textContent.replace('ATIVADO', 'DESATIVADO')
+            let armazenamento = await obterArmazenamento([idEncaminha])
+            let estado = armazenamento[idEncaminha]
+            estado[idFim]= false
+            await armazenar({[idEncaminha]: estado})
+        }
     }
 
 }
