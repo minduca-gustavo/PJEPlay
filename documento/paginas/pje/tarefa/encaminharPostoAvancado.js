@@ -60,10 +60,16 @@ async function encaminharPostoAvancadoGigs(historico){
     let idEncaminha = id('encaminhaComGig')
     let armazenamento = await obterArmazenamento(idEncaminha) || {}
     let estado = armazenamento[idEncaminha] || null
+    console.log('%c[Rota PJE]%c estado' + JSON.stringify(estado), LOG.aviso, 'color:inherit')
+    if (!estado){
+        await armazenar({[idEncaminha]:{leva: false, continua: false}})
+    }
     let gigs = []
     if (estado?.leva || estado?.continua) {
         gigs = estado?.leva ? await obterGigsDestaOJ() : []
         verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs, historico) 
+    } else {
+
     }
     let botaoLeva = criaBotaoLaranja({
         id: idEncaminha + '_botao_' + '_leva',
@@ -103,16 +109,17 @@ async function encaminharPostoAvancadoGigs(historico){
 
             botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
             return
-        }
-        for (let botao of botoes){
-            let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
-            if(!perfil) continue
+        } else {
+            for (let botao of botoes){
+                let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
+                if(!perfil) continue
 
-            botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
-        }
+                botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
+        }}
         return
         
-        function levaGigSegueTarefa(parametroDoBotao) {
+        function levaGigSegueTarefa(leva, continua) {
+            console.log('%c[Rota PJE]%c listener' + JSON.stringify(125), LOG.rosa, 'color:inherit')
             
             return async function listenerTemporario(e) {
                 let botao = e.currentTarget;
@@ -125,13 +132,13 @@ async function encaminharPostoAvancadoGigs(historico){
                 // --- SEU CÓDIGO AQUI ---
                 console.log('Botão clicado recebeu o parâmetro:', parametroDoBotao);
                 
-                botao.click()
+                //botao.click()
             };
         }
       
-        function levaGigSegueTarefa(){
-            alert('OK')
-        }
+        //function levaGigSegueTarefa(){
+        //    //alert('OK')
+        //}
         //console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.mb, 'color:inherit')
         //alert (botoes.map(d => d.textContent).join('\n'))
     }
@@ -151,6 +158,7 @@ async function encaminharPostoAvancadoGigs(historico){
             let estado = armazenamento[idEncaminha]
             estado[idFim]= false
             await armazenar({[idEncaminha]: estado})
+            verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs) 
         }
     }
 
