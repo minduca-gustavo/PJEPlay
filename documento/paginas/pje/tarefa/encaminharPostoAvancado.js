@@ -63,7 +63,7 @@ async function encaminharPostoAvancadoGigs(historico){
     let gigs = []
     if (estado?.leva || estado?.continua) {
         gigs = estado?.leva ? await obterGigsDestaOJ() : []
-        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs) 
+        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs, historico) 
     }
     let botaoLeva = criaBotaoLaranja({
         id: idEncaminha + '_botao_' + '_leva',
@@ -85,7 +85,7 @@ async function encaminharPostoAvancadoGigs(historico){
         let gigs = await buscarGigs(processo) || []
         return gigs
     }
-    async function verificarBotoesEIncluirListeners(leva, continua, gigs){
+    async function verificarBotoesEIncluirListeners(leva, continua, gigs, historico){
         
         let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
         let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
@@ -101,17 +101,40 @@ async function encaminharPostoAvancadoGigs(historico){
             let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
             if (!botao) return
 
-            botao.addEventListener('click', levaGigSegueTarefa)
+            botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
             return
         }
-        for (botao of botoes){
+        for (let botao of botoes){
             let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
             if(!perfil) continue
 
-            botao.addEventListener('click', levaGigSegueTarefa)
+            botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
         }
         return
+        
+        function levaGigSegueTarefa() {
+            
+            return async function listenerTemporario(e) {
+                let botao = e.currentTarget;
 
+                e.stopImmediatePropagation();
+                e.preventDefault();
+
+                botao.removeEventListener('click', listenerTemporario, { capture: true });
+
+                // --- SEU CÓDIGO AQUI ---
+                console.log('Botão clicado recebeu o parâmetro:', parametroDoBotao);
+                // -----------------------
+
+                // Redispara o evento para o listener original da página rodar
+                e.dispatchEvent(new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                }));
+            };
+        }
+      
         function levaGigSegueTarefa(){
             alert('OK')
         }
