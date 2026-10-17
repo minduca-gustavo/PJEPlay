@@ -112,7 +112,7 @@ async function encaminharPostoAvancadoGigs(historico){
         }
         return
         
-        function levaGigSegueTarefa() {
+        function levaGigSegueTarefa(parametroDoBotao) {
             
             return async function listenerTemporario(e) {
                 let botao = e.currentTarget;
@@ -124,14 +124,8 @@ async function encaminharPostoAvancadoGigs(historico){
 
                 // --- SEU CÓDIGO AQUI ---
                 console.log('Botão clicado recebeu o parâmetro:', parametroDoBotao);
-                // -----------------------
-
-                // Redispara o evento para o listener original da página rodar
-                e.dispatchEvent(new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                }));
+                
+                botao.click()
             };
         }
       
