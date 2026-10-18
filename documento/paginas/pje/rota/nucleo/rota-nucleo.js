@@ -842,7 +842,13 @@ function rota_juntaResultados(enviados, retornados = []){
 }
 
 async function postTrocaDeOJ(perfil){
-	let troca = await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
+	let url = location.origin + '/pje-seguranca/api/token/perfis/trocar'
+	let configuracoes = {id_perfil: perfil}
+	let resultado = await postGeral(url, configuracoes)
+}
+
+async function postGeral(url, configuracoes){
+	let resultado = await fetch(url, {
         method: 'POST',
         mode: 'cors',
         credentials: 'include',
@@ -851,9 +857,9 @@ async function postTrocaDeOJ(perfil){
             'Accept': 'application/json, text/plain, */*',
             'X-XSRF-TOKEN': cookie_obter('Xsrf-Token') || cookie_obter('XSRF-TOKEN'),
         },
-        body: JSON.stringify({ id_perfil: perfil.idPerfil })
+        body: JSON.stringify(configuracoes)
     })
-	return troca
+	return resultado
 }
 
 async function inserirModelo(modelo){
