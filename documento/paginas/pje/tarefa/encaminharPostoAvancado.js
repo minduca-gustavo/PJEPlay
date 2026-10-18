@@ -64,10 +64,8 @@ async function encaminharPostoAvancadoGigs(historico){
     if (!estado){
         await armazenar({[idEncaminha]:{leva: false, continua: false}})
     }
-    let gigs = []
     if (estado?.leva || estado?.continua) {
-        gigs = estado?.leva ? await obterGigsDestaOJ() : []
-        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, gigs, historico) 
+        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, historico) 
     } else {
 
     }
@@ -91,34 +89,28 @@ async function encaminharPostoAvancadoGigs(historico){
         let gigs = await buscarGigs(processo) || []
         return gigs
     }
-    async function verificarBotoesEIncluirListeners(leva, continua, gigs, historico){
-        
-        let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
-        let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
-        if (continua){
-
-        }
-        if (leva){
-            
-        }
+    async function verificarBotoesEIncluirListeners(leva, continua, historico){
         if(confereJanela(JANELA.analise)){
             let botoes = [...document.querySelectorAll('pje-botoes-transicao button')]
             if (!botoes.length) return
             let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
             if (!botao) return
-
-            botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
+            
+            botao.addEventListener('click', levaGigSegueTarefa(leva, continua, historico), { capture: true });
             return
         } else {
+            let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
+            let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
             for (let botao of botoes){
                 let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
                 if(!perfil) continue
 
-                botao.addEventListener('click', levaGigSegueTarefa(), { capture: true });
-        }}
+                botao.addEventListener('click', levaGigSegueTarefa(leva, continua, historico, perfil), { capture: true })
+            }
+        }
         return
         
-        function levaGigSegueTarefa(leva, continua) {
+        function levaGigSegueTarefa(leva, continua, historico, perfil = null) {
             console.log('%c[Rota PJE]%c listener' + JSON.stringify(125), LOG.rosa, 'color:inherit')
             
             return async function listenerTemporario(e) {
@@ -130,8 +122,11 @@ async function encaminharPostoAvancadoGigs(historico){
                 botao.removeEventListener('click', listenerTemporario, { capture: true });
 
                 // --- SEU CÓDIGO AQUI ---
-                console.log('Botão clicado recebeu o parâmetro:', parametroDoBotao);
-                
+                let gigs = leva ? await obterGigsDestaOJ() : []
+                let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
+                let idURL = idURLMatch?.[1]
+                console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.aviso, 'color:inherit')
+
                 //botao.click()
             };
         }

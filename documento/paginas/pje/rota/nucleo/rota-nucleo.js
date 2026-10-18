@@ -841,6 +841,21 @@ function rota_juntaResultados(enviados, retornados = []){
 	}))
 }
 
+async function postTrocaDeOJ(perfil){
+	let troca = await fetch(location.origin + '/pje-seguranca/api/token/perfis/trocar', {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json, text/plain, */*',
+            'X-XSRF-TOKEN': cookie_obter('Xsrf-Token') || cookie_obter('XSRF-TOKEN'),
+        },
+        body: JSON.stringify({ id_perfil: perfil.idPerfil })
+    })
+	return troca
+}
+
 async function inserirModelo(modelo){
 	await aguardarElemento('.editor-container')
 	await suspender(500)
@@ -865,4 +880,51 @@ async function inserirModelo(modelo){
 	await suspender(500)
 	let botaoInserir = await esperarEClicar('elaborarDespachoInserirModelo')
 	return
+}
+
+function getXsrfToken() {
+  const m = document.cookie.match(/(?:^|;\s*)Xsrf-Token=([^;]+)/i);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+async function criarAtividadeGigs(idProcesso, opcoes = {}) {
+	const {
+		tipoAtividade = {
+		id: 7189,
+		descricao: "acordo - liquidação",
+		descricaoConsulta: "ACORDO LIQUIDACAO",
+		},
+		observacao = null,
+		destaque = false,
+		tipoDiaPrazo = "U", // U = dias úteis
+		reabrir = false,
+	} = opcoes;
+
+	const token = getXsrfToken();
+	if (!token) throw new Error("Cookie Xsrf-Token não encontrado (sessão expirada?)");
+
+	const resp = await fetch(`${location.origin}/pje-gigs-api/api/atividade`, {
+		method: "POST",
+		credentials: "same-origin",
+		headers: {
+		"Accept": "application/json, text/plain, */*",
+		"Content-Type": "application/json",
+		"X-XSRF-TOKEN": token,
+		},
+		body: JSON.stringify({
+		reabrir,
+		tipoAtividade,
+		observacao,
+		destaque,
+		tipoDiaPrazo,
+		idProcesso: String(idProcesso),
+		}),
+	});
+
+	if (!resp.ok) {
+		const texto = await resp.text().catch(() => "");
+		throw new Error(`Falha ao criar atividade (${resp.status}): ${texto}`);
+	}
+
+	return resp.json().catch(() => null);
 }
