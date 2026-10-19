@@ -51,11 +51,9 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(vara){
-    //return
     let nomeJanela = window.name
     if (nomeJanela.includes('rotapje_levaGigs')){
         await insereGigsOJAnterior()
-        return
     }
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
@@ -91,10 +89,32 @@ async function encaminharPostoAvancadoGigs(vara){
     
     async function insereGigsOJAnterior() {
         let armazenamento = await obterArmazenamento('rotapje_levaGigs') || {}
-        let gigs = armazenamento[gigs] || []
-        if(gigs.length) return
+        let gigsAnteriores = armazenamento?.rotapje_levaGigs?.gigs || []
+        let continua = armazenamento?.rotapje_levaGigs?.continua || false
+        let perfilAtual = armazenamento?.rotapje_levaGigs?.perfil
+        console.log('%c[Rota PJE]%c perfilAtual: ' + JSON.stringify(perfilAtual), LOG.aviso, 'color:inherit')
         let gigsAtuais = await obterGigsDestaOJ()
-        _baixarArquivo(JSON.stringify({gigs, gigsAtuais}), 'gigsTeste.json', 'application/json')
+        for (let gigAnterior of gigsAnteriores){
+            if (
+                gigsAtuais.some(d=> 
+                    d?.tipoAtividade?.id == gigAnterior?.tipoAtividade?.id &&
+                    d?.observacao == gigAnterior?.observacao &&
+                    d?.dataPrazo == gigAnterior?.dataPrazo
+                )
+            ){
+                continue
+            }
+            let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
+            let idURL = idURLMatch?.[1]
+            await criarAtividadeGigs (idURL, gigAnterior)
+        }
+        await aguardarElemento('.oj-cargo')
+        await suspender(500)
+        let mostraOJ = document.querySelector('.oj-cargo')
+        if (!normalizar(mostraOJ.textContent).includes(normalizar(perfilAtual?.orgaoJulgador))) mostraOJ.textContent = perfilAtual?.orgaoJulgador + ' / Juiz do Trabalho Titular'
+        await removerArmazenamento('rotapje_levaGigs')
+        window.name = ''
+        if (!continua) window.close()
     }
 
     async function obterGigsDestaOJ(){
@@ -112,8 +132,8 @@ async function encaminharPostoAvancadoGigs(vara){
             if (!botao) return
             //PERFIL AQUI
             let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
-            let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(vara)))?.idPerfil || ''
-            if (!perfil) return
+            let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(vara))) || {}
+            if (!perfil?.idPerfil) return
             console.log('%c[Rota PJE]%c perfil' + JSON.stringify(perfil), LOG.aviso, 'color:inherit')
             botao.addEventListener('click', levaGigSegueTarefa(leva, continua, true, perfil), { capture: true });
             return
@@ -121,8 +141,8 @@ async function encaminharPostoAvancadoGigs(vara){
             let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
             let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
             for (let botao of botoes){
-                let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
-                if(!perfil) continue
+                let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))
+                if(!perfil?.idPerfil) continue
 
                 botao.addEventListener('click', levaGigSegueTarefa(leva, continua, false, perfil), { capture: true })
             }
@@ -145,34 +165,22 @@ async function encaminharPostoAvancadoGigs(vara){
                 let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
                 let idURL = idURLMatch?.[1]
                 let url = analise ? location.origin + '/pjekz/processo/' + idURL + '/tarefa/553/transicao' : location.origin + '/pjekz/processo/' + idURL + '/tarefa/122/transicao'
-                console.log('%c[Rota PJE]%c url' + JSON.stringify(url), LOG.erro, 'color:inherit')
-                console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.aviso, 'color:inherit')
-                if (leva || continua) await postTrocaDeOJ(perfil)
+                if (leva || continua) await postTrocaDeOJ(perfil?.idPerfil)
                 await suspender(300)
                 let nomeJanela = window.name
                 if (leva) {
                     window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
-                    await armazenar({rotapje_levaGigs: gigs})
+                    await armazenar({rotapje_levaGigs: {gigs, continua, perfil}})
                 }
                 botao.click()
                 await suspender (100)
+                await aguardarElemento('.mat-progress-spinner')
                 if (!leva && !continua) return
-                console.log('%c[Rota PJE]%c url' + JSON.stringify(url), LOG.rosa, 'color:inherit')
                 location.href = url
-                if (leva){
-
-                }
-                if(!continua){
-                    window.close()
-                }
             };
         }
       
-        //function levaGigSegueTarefa(){
-        //    //alert('OK')
-        //}
-        //console.log('%c[Rota PJE]%c perfis: ' + JSON.stringify(perfis), LOG.mb, 'color:inherit')
-        //alert (botoes.map(d => d.textContent).join('\n'))
+        
     }
     async function alternarEstadoESalvar(idFim){
         let botao = document.getElementById(idEncaminha + '_botao_' + '_' + idFim)

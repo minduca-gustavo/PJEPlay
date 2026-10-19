@@ -177,7 +177,7 @@ async function mostraVaraDeOrigem(banner) {
         .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
         ?.orgaoJulgadorOrigem?.descricao || ''
     let idOrigem = id('origem', 'plaquinha')
-    if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado, JANELA.analise)){
+    if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado, JANELA.analise, JANELA.triagem_inicial)){
         levaGigs(idOrigem, historico)
         encaminharPostoAvancadoGigs(vara)
     }

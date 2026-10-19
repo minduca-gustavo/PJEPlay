@@ -82,6 +82,7 @@ var JANELA = {
 	tarefa:                 /\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	documentosConteudo:     /\/pjekz\/processo\/\d*\/detalhe\/documento\/\d*\/conteudo*/,
 	analise:				/\/pjekz\/processo\/\d*\/tarefa\/553\/transicao/,
+	triagem_inicial:		/\/pjekz\/processo\/\d*\/tarefa\/122\/transicao/,
 	encaminharPostoAvancado:/\/pjekz\/processo\/\d*\/tarefa\/\d*\/posto-avancado\/encaminhar/,
 	escaninho:              /\/pjekz\/escaninho/,
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
@@ -901,22 +902,27 @@ async function criarAtividadeGigs(
 			descricao: '',
 			descricaoConsulta: ''
 		},
+		idUsuarioDestinatario: '',
+		dataInicioPrazo: '',
+		dataPrazo: '',
 		observacao: '',
-		destaque: '',
-		tipoDiaPrazo: '',
-		reabrir: ''
+		destaque: false,
+		tipoDiaPrazo: 'U',
+		reabrir: false
 	}
 ) {
 	let url = location.origin + '/pje-gigs-api/api/atividade'
-
-	let body= JSON.stringify({
-		reabrir,
-		tipoAtividade,
-		observacao,
-		destaque,
-		tipoDiaPrazo,
+	let body= {
+		idUsuarioDestinatario: opcoes.idUsuarioDestinatario,
+		dataInicioPrazo: opcoes.dataInicioPrazo,
+		dataPrazo: opcoes.dataPrazo,
+		reabrir: opcoes.reabrir,
+		tipoAtividade: opcoes.tipoAtividade,
+		observacao: opcoes.observacao,
+		destaque: opcoes.destaque,
+		tipoDiaPrazo: opcoes.tipoDiaPrazo,
 		idProcesso: String(idProcesso),
-	})
+	}
 
 	const resp = await postGeral(url, body)
 
