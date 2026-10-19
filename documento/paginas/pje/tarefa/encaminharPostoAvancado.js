@@ -50,7 +50,7 @@ async function guardaContraOJIncorreta(){
 
 }
 
-async function encaminharPostoAvancadoGigs(historico){
+async function encaminharPostoAvancadoGigs(vara){
     //return
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
@@ -65,7 +65,7 @@ async function encaminharPostoAvancadoGigs(historico){
         await armazenar({[idEncaminha]:{leva: false, continua: false}})
     }
     if (estado?.leva || estado?.continua) {
-        verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, historico) 
+        await verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, vara) 
     } else {
 
     }
@@ -89,14 +89,20 @@ async function encaminharPostoAvancadoGigs(historico){
         let gigs = await buscarGigs(processo) || []
         return gigs
     }
-    async function verificarBotoesEIncluirListeners(leva, continua, historico){
+    async function verificarBotoesEIncluirListeners(leva, continua, vara){
+        await aguardarElemento('pje-botoes-transicao button')
+        await suspender(500)
         if(confereJanela(JANELA.analise)){
             let botoes = [...document.querySelectorAll('pje-botoes-transicao button')]
             if (!botoes.length) return
             let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
             if (!botao) return
             //PERFIL AQUI
-            botao.addEventListener('click', levaGigSegueTarefa(leva, continua, historico), { capture: true });
+            let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
+            let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(vara)))?.idPerfil || ''
+            if (!perfil) return
+            console.log('%c[Rota PJE]%c perfil' + JSON.stringify(perfil), LOG.aviso, 'color:inherit')
+            botao.addEventListener('click', levaGigSegueTarefa(leva, continua, true, perfil), { capture: true });
             return
         } else {
             let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
@@ -105,12 +111,12 @@ async function encaminharPostoAvancadoGigs(historico){
                 let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))?.idPerfil || ''
                 if(!perfil) continue
 
-                botao.addEventListener('click', levaGigSegueTarefa(leva, continua, historico, perfil), { capture: true })
+                botao.addEventListener('click', levaGigSegueTarefa(leva, continua, false, perfil), { capture: true })
             }
         }
         return
         
-        function levaGigSegueTarefa(leva, continua, historico, perfil = null) {
+        function levaGigSegueTarefa(leva, continua, analise, perfil = null) {
             console.log('%c[Rota PJE]%c listener' + JSON.stringify(125), LOG.rosa, 'color:inherit')
             
             return async function listenerTemporario(e) {
@@ -125,11 +131,14 @@ async function encaminharPostoAvancadoGigs(historico){
                 let gigs = leva ? await obterGigsDestaOJ() : []
                 let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
                 let idURL = idURLMatch?.[1]
-                let url = perfil ? location.origin + '/pjekz/processo/' + idURL + '/tarefa/122/transicao' : location.origin + '/pjekz/processo/' + idURL + '/tarefa/553/transicao'
+                let url = analise ? location.origin + '/pjekz/processo/' + idURL + '/tarefa/553/transicao' : location.origin + '/pjekz/processo/' + idURL + '/tarefa/122/transicao'
                 console.log('%c[Rota PJE]%c url' + JSON.stringify(url), LOG.erro, 'color:inherit')
                 console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.aviso, 'color:inherit')
-                if (perfil) await postTrocaDeOJ(perfil)
+                if (leva || continua) await postTrocaDeOJ(perfil)
+                await suspender(300)
                 botao.click()
+                await suspender (100)
+                if (!leva && !continua) return
                 console.log('%c[Rota PJE]%c url' + JSON.stringify(url), LOG.rosa, 'color:inherit')
                 location.href = url
                 if (leva){
