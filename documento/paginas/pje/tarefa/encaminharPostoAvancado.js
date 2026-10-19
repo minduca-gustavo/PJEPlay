@@ -51,7 +51,12 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(vara){
-    return
+    //return
+    let nomeJanela = window.name
+    if (nomeJanela.includes('rotapje_levaGigs')){
+        await insereGigsOJAnterior()
+        return
+    }
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
@@ -84,6 +89,14 @@ async function encaminharPostoAvancadoGigs(vara){
     })
     estiloBotaoFitaSuperior(botaoContinua)
     
+    async function insereGigsOJAnterior() {
+        let armazenamento = await obterArmazenamento('rotapje_levaGigs') || {}
+        let gigs = armazenamento[gigs] || []
+        if(gigs.length) return
+        let gigsAtuais = await obterGigsDestaOJ()
+        _baixarArquivo(JSON.stringify({gigs, gigsAtuais}), 'gigsTeste.json', 'application/json')
+    }
+
     async function obterGigsDestaOJ(){
         let processo = document.querySelector('pje-descricao-processo [role="button"]').textContent.trim()
         let gigs = await buscarGigs(processo) || []
@@ -136,6 +149,11 @@ async function encaminharPostoAvancadoGigs(vara){
                 console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.aviso, 'color:inherit')
                 if (leva || continua) await postTrocaDeOJ(perfil)
                 await suspender(300)
+                let nomeJanela = window.name
+                if (leva) {
+                    window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
+                    await armazenar({rotapje_levaGigs: gigs})
+                }
                 botao.click()
                 await suspender (100)
                 if (!leva && !continua) return
@@ -177,3 +195,23 @@ async function encaminharPostoAvancadoGigs(vara){
     }
 
 }
+
+
+
+/* CEJUSC É OUTRA TELA
+            let botoes = [...document.querySelectorAll('pje-botoes-transicao button')]
+            if (!botoes.length) return
+            let botoesFiltrados = botoes.filter(d=> normalizar(d?.textContent).includes('vara de origem') || normalizar(d?.textContent).includes('cejusc')) || null
+            if (!botoesFiltrados) return
+            //PERFIL AQUI
+            let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
+            let perfil = perfis.filter(d=> normalizar(d?.orgaoJulgador).includes(normalizar(vara)) || normalizar(d?.orgaoJulgador).includes('cejusc'))?.idPerfil || ''
+            if (!perfil) return
+            for (let botao of botoesFiltrados){
+                let perfil = normalizar(botao.textContent).includes('cejusc') ?
+                    perfis.find(d=> normalizar(d?.orgaoJulgador).includes('cejusc')) || '' :
+                    perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent))) || ''
+                if (!perfil) return
+                botao.addEventListener('click', levaGigSegueTarefa(leva, continua, true, perfil), { capture: true })
+            }
+*/
