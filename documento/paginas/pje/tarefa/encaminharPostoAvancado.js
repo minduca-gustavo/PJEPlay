@@ -51,7 +51,7 @@ async function guardaContraOJIncorreta(){
 }
 
 async function encaminharPostoAvancadoGigs(vara){
-    //return
+    return
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
