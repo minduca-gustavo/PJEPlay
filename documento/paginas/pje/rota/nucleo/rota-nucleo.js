@@ -81,7 +81,7 @@ var JANELA = {
 	tarefaAssinar:          /\/pjekz\/processo\/\d*\/tarefa\/\d*\/assinar/,
 	tarefa:                 /\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	documentosConteudo:     /\/pjekz\/processo\/\d*\/detalhe\/documento\/\d*\/conteudo*/,
-	analise:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/transicao/,
+	analise:				/\/pjekz\/processo\/\d*\/tarefa\/553\/transicao/,
 	encaminharPostoAvancado:/\/pjekz\/processo\/\d*\/tarefa\/\d*\/posto-avancado\/encaminhar/,
 	escaninho:              /\/pjekz\/escaninho/,
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
@@ -888,44 +888,37 @@ async function inserirModelo(modelo){
 	return
 }
 
-function getXsrfToken() {
-  const m = document.cookie.match(/(?:^|;\s*)Xsrf-Token=([^;]+)/i);
-  return m ? decodeURIComponent(m[1]) : null;
-}
+//function getXsrfToken() {
+//  const m = document.cookie.match(/(?:^|;\s*)Xsrf-Token=([^;]+)/i);
+//  return m ? decodeURIComponent(m[1]) : null;
+//}
 
-async function criarAtividadeGigs(idProcesso, opcoes = {}) {
-	const {
-		tipoAtividade = {
-		id: 7189,
-		descricao: "acordo - liquidação",
-		descricaoConsulta: "ACORDO LIQUIDACAO",
+async function criarAtividadeGigs(
+	idProcesso, 
+	opcoes = {
+		tipoAtividade:{
+			id: '',
+			descricao: '',
+			descricaoConsulta: ''
 		},
-		observacao = null,
-		destaque = false,
-		tipoDiaPrazo = "U", // U = dias úteis
-		reabrir = false,
-	} = opcoes;
+		observacao: '',
+		destaque: '',
+		tipoDiaPrazo: '',
+		reabrir: ''
+	}
+) {
+	let url = location.origin + '/pje-gigs-api/api/atividade'
 
-	const token = getXsrfToken();
-	if (!token) throw new Error("Cookie Xsrf-Token não encontrado (sessão expirada?)");
-
-	const resp = await fetch(`${location.origin}/pje-gigs-api/api/atividade`, {
-		method: "POST",
-		credentials: "same-origin",
-		headers: {
-		"Accept": "application/json, text/plain, */*",
-		"Content-Type": "application/json",
-		"X-XSRF-TOKEN": token,
-		},
-		body: JSON.stringify({
+	let body= JSON.stringify({
 		reabrir,
 		tipoAtividade,
 		observacao,
 		destaque,
 		tipoDiaPrazo,
 		idProcesso: String(idProcesso),
-		}),
-	});
+	})
+
+	const resp = await postGeral(url, body)
 
 	if (!resp.ok) {
 		const texto = await resp.text().catch(() => "");
@@ -934,3 +927,45 @@ async function criarAtividadeGigs(idProcesso, opcoes = {}) {
 
 	return resp.json().catch(() => null);
 }
+
+//async function criarAtividadeGigs(idProcesso, opcoes = {}) {
+//	const {
+//		tipoAtividade = {
+//		id: 7189,
+//		descricao: "acordo - liquidação",
+//		descricaoConsulta: "ACORDO LIQUIDACAO",
+//		},
+//		observacao = null,
+//		destaque = false,
+//		tipoDiaPrazo = "U", // U = dias úteis
+//		reabrir = false,
+//	} = opcoes;
+//
+//	const token = getXsrfToken();
+//	if (!token) throw new Error("Cookie Xsrf-Token não encontrado (sessão expirada?)");
+//
+//	const resp = await fetch(`${location.origin}/pje-gigs-api/api/atividade`, {
+//		method: "POST",
+//		credentials: "same-origin",
+//		headers: {
+//		"Accept": "application/json, text/plain, */*",
+//		"Content-Type": "application/json",
+//		"X-XSRF-TOKEN": token,
+//		},
+//		body: JSON.stringify({
+//		reabrir,
+//		tipoAtividade,
+//		observacao,
+//		destaque,
+//		tipoDiaPrazo,
+//		idProcesso: String(idProcesso),
+//		}),
+//	});
+//
+//	if (!resp.ok) {
+//		const texto = await resp.text().catch(() => "");
+//		throw new Error(`Falha ao criar atividade (${resp.status}): ${texto}`);
+//	}
+//
+//	return resp.json().catch(() => null);
+//}

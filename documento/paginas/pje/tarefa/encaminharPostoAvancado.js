@@ -95,7 +95,7 @@ async function encaminharPostoAvancadoGigs(historico){
             if (!botoes.length) return
             let botao = botoes.find(d=> normalizar(d?.textContent).includes('vara de origem')) || null
             if (!botao) return
-            
+            //PERFIL AQUI
             botao.addEventListener('click', levaGigSegueTarefa(leva, continua, historico), { capture: true });
             return
         } else {
@@ -125,9 +125,19 @@ async function encaminharPostoAvancadoGigs(historico){
                 let gigs = leva ? await obterGigsDestaOJ() : []
                 let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
                 let idURL = idURLMatch?.[1]
+                let url = perfil ? location.origin + '/pjekz/processo/' + idURL + '/tarefa/122/transicao' : location.origin + '/pjekz/processo/' + idURL + '/tarefa/553/transicao'
+                console.log('%c[Rota PJE]%c url' + JSON.stringify(url), LOG.erro, 'color:inherit')
                 console.log('%c[Rota PJE]%c gigs' + JSON.stringify(gigs), LOG.aviso, 'color:inherit')
+                if (perfil) await postTrocaDeOJ(perfil)
+                botao.click()
+                console.log('%c[Rota PJE]%c url' + JSON.stringify(url), LOG.rosa, 'color:inherit')
+                location.href = url
+                if (leva){
 
-                //botao.click()
+                }
+                if(!continua){
+                    window.close()
+                }
             };
         }
       
