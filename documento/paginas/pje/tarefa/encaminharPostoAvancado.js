@@ -100,6 +100,9 @@ async function encaminharPostoAvancadoGigs(vara){
         let gigsAnteriores = armazenamento?.rotapje_levaGigs?.gigs || []
         let continua = armazenamento?.rotapje_levaGigs?.continua || false
         let perfilAtual = armazenamento?.rotapje_levaGigs?.perfil
+        console.log('%c[Rota PJE]%c gigsAnteriores: ' + JSON.stringify(gigsAnteriores), LOG.info, 'color:inherit')
+        console.log('%c[Rota PJE]%c continua: ' + JSON.stringify(continua), LOG.info, 'color:inherit')
+        console.log('%c[Rota PJE]%c perfilAtual: ' + JSON.stringify(perfilAtual), LOG.info, 'color:inherit')
         await aguardarElemento('.oj-cargo')
         await suspender(500)
         let mostraOJ = document.querySelector('.oj-cargo')
@@ -124,7 +127,7 @@ async function encaminharPostoAvancadoGigs(vara){
         }
         await removerArmazenamento('rotapje_levaGigs')
         window.name = ''
-        if (!continua) window.close()
+        //if (!continua) window.close()
     }
 
     async function obterGigsDestaOJ(){
@@ -181,8 +184,11 @@ async function encaminharPostoAvancadoGigs(vara){
                 if (leva || continua) await postTrocaDeOJ(perfil?.idPerfil)
                 await suspender(300)
                 let nomeJanela = window.name
-                if (leva) window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
-                if (leva) await armazenar({rotapje_levaGigs: {gigs, continua, perfil}})
+                if (leva || continua) {
+                    window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
+                    let gigsLeva = leva ? gigs : []
+                    await armazenar({rotapje_levaGigs: {gigs: gigsLeva, continua, perfil}})
+                }
                 botao.click()
                 await suspender (100)
                 await aguardarElemento('.mat-progress-spinner')

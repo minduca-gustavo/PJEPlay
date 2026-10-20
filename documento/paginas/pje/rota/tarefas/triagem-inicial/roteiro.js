@@ -337,7 +337,7 @@ async function triagem_inicial_acoesDespachar(){
     let tiposAudiencia = {
         'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
         'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM',
-        'Una por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM',
+        'Una por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_UNA',
     }
     //let modelosDespacho = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
     let modeloDespacho = ''
