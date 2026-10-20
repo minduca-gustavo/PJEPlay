@@ -76,12 +76,22 @@ async function encaminharPostoAvancadoGigs(vara){
         texto: 'Leva os GIGs para a próxima OJ' + (estado?.leva ? ' - ATIVADO' : ' - DESATIVADO'),
         acao: () => alternarEstadoESalvar('leva')
     })
+    criaTooltip({
+        id: idEncaminha + '_tooltip_' + '_leva',
+        texto: 'Ative esta opção para levar os GIGs para a próxima OJ.',
+        elemento: botaoLeva
+    })
     estiloBotaoFitaSuperior(botaoLeva)
     let botaoContinua = criaBotaoAzul({
         id: idEncaminha + '_botao_' + '_continua',
         ancestral,
         texto: 'Quero continuar na tarefa da próxima OJ' + (estado?.continua ? ' - ATIVADO' : ' - DESATIVADO'),
         acao: () => alternarEstadoESalvar('continua')
+    })
+    criaTooltip({
+        id: idEncaminha + '_tooltip_' + '_continua',
+        texto: 'Ative esta opção para que a tarefa não feche após o clique.',
+        elemento: botaoContinua
     })
     estiloBotaoFitaSuperior(botaoContinua)
     
