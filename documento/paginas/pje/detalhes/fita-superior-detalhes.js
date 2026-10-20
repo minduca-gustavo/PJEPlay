@@ -23,8 +23,9 @@ async function criaFitaSuperior() {
         await peritosPreferidos('rotapje_fita_superior')
         return
     }
-    if (confereJanela(JANELA.minutar)){
+    if (confereJanela(JANELA.minutar, JANELA.tarefaAssinar)){
         await despachosPreferidos('rotapje_fita_superior')
+        await liquidAICriaBotoes()
         return
     }
     if (confereJanela(JANELA.conclusao, JANELA.encaminharPostoAvancado, JANELA.analise)){
