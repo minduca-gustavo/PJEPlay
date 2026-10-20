@@ -691,7 +691,10 @@ async function peritosPreferidos(ancestral) {
         textArea.textarea.style.height = '100%'
         textArea.textarea.placeholder = 'Ex:\nFULANO DE TAL, economista, 30\nCiclano de tal, ADMINISTRADOR, 28/02/2027\nbeltrano de tal\tcontador (separado por TAB - colado de uma planilha)'
         if (peritos[idBotaoConfigura] && peritos[idBotaoConfigura].length){
-            let texto = peritos[idBotaoConfigura].map(d => d?.perito + ', ' + d?.especialidade + ', ' + d?.dataOuDias).join('\n')
+            let texto = peritos[idBotaoConfigura].map(d => {
+                let {perito, especialidade, dataOuDias} = d
+                return [perito, especialidade, dataOuDias].join(', ')
+            }).join('\n')
             textArea.textarea.value = texto
         }
         let divRodape = criaDiv({
@@ -709,11 +712,19 @@ async function peritosPreferidos(ancestral) {
 
     }
     async function nomearPerito({perito = '', especialidade = '', dataOuDias = 0}){
+        if (!perito){
+            rota_avisoObrigatorio('Não foi informado o nome do perito. Verifique se foi salvo corretamente.', 5)
+            return
+        }
+        if (!especialidade){
+            rota_avisoObrigatorio('Não foi informada a especialidade do perito. Verifique se foi salvo corretamente.', 5)
+            return
+        }
         await aguardarElemento('button[mattooltip^="Incluir per"]')
         await suspender()
         let botaoIncluir = document.querySelector('button[mattooltip^="Incluir per"]')
         clicar(botaoIncluir)
-        await ('.input-profissao input')
+        await aguardarElemento('.input-profissao input')
         await suspender()
         let inputProfissao = document.querySelector('.input-profissao input')
         clicar(inputProfissao)
