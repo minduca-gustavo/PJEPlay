@@ -58,20 +58,17 @@ async function encaminharPostoAvancadoGigs(vara){
     let janela = confereJanela(JANELA.encaminharPostoAvancado, JANELA.analise)
     if (!janela) return
     let ancestral = 'rotapje_fita_superior'
-    let fita = aguardarElemento('#' + ancestral)
+    let fita = await aguardarElemento('#' + ancestral)
     if (!fita) return
     let idEncaminha = id('encaminhaComGig')
     let armazenamento = await obterArmazenamento(idEncaminha) || {}
     let estado = armazenamento[idEncaminha] || null
-    console.log('%c[Rota PJE]%c estado' + JSON.stringify(estado), LOG.aviso, 'color:inherit')
+    
     if (!estado){
         await armazenar({[idEncaminha]:{leva: false, continua: false}})
     }
-    if (estado?.leva || estado?.continua) {
-        await verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, vara) 
-    } else {
+    verificarBotoesEIncluirListeners(vara) 
 
-    }
     let botaoLeva = criaBotaoLaranja({
         id: idEncaminha + '_botao_' + '_leva',
         ancestral,
@@ -90,31 +87,29 @@ async function encaminharPostoAvancadoGigs(vara){
     async function insereGigsOJAnterior() {
         let armazenamento = await obterArmazenamento('rotapje_levaGigs') || {}
         let gigsAnteriores = armazenamento?.rotapje_levaGigs?.gigs || []
-        console.log('%c[Rota PJE]%c Anteriores: ' + JSON.stringify(gigsAnteriores), LOG.info, 'color:inherit')
         let continua = armazenamento?.rotapje_levaGigs?.continua || false
-        //console.log('%c[Rota PJE]%c continua: ' + JSON.stringify(continua), LOG.info, 'color:inherit')
         let perfilAtual = armazenamento?.rotapje_levaGigs?.perfil
         await aguardarElemento('.oj-cargo')
         await suspender(500)
         let mostraOJ = document.querySelector('.oj-cargo')
         if (!normalizar(mostraOJ.textContent).includes(normalizar(perfilAtual?.orgaoJulgador))) mostraOJ.textContent = perfilAtual?.orgaoJulgador + ' / Juiz do Trabalho Titular'
-        console.log('%c[Rota PJE]%c perfilAtual: ' + JSON.stringify(perfilAtual), LOG.aviso, 'color:inherit')
         await aguardarElemento('pje-descricao-processo [role="button"]')
-        let gigsAtuais = await obterGigsDestaOJ()
-        console.log('%c[Rota PJE]%c Atuais: ' + JSON.stringify(gigsAtuais), LOG.teste, 'color:inherit')
-        for (let gigAnterior of gigsAnteriores){
-            if (
-                gigsAtuais.some(d=> 
-                    d?.tipoAtividade?.id == gigAnterior?.tipoAtividade?.id &&
-                    d?.observacao == gigAnterior?.observacao &&
-                    d?.dataPrazo == gigAnterior?.dataPrazo
-                )
-            ){
-                continue
+        if (gigsAnteriores?.length) {
+            let gigsAtuais = await obterGigsDestaOJ()
+            for (let gigAnterior of gigsAnteriores){
+                if (
+                    gigsAtuais.some(d=> 
+                        d?.tipoAtividade?.id == gigAnterior?.tipoAtividade?.id &&
+                        d?.observacao == gigAnterior?.observacao &&
+                        d?.dataPrazo == gigAnterior?.dataPrazo
+                    )
+                ){
+                    continue
+                }
+                let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
+                let idURL = idURLMatch?.[1]
+                await criarAtividadeGigs (idURL, gigAnterior)
             }
-            let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
-            let idURL = idURLMatch?.[1]
-            await criarAtividadeGigs (idURL, gigAnterior)
         }
         await removerArmazenamento('rotapje_levaGigs')
         window.name = ''
@@ -127,7 +122,7 @@ async function encaminharPostoAvancadoGigs(vara){
         let gigs = await rota_fetch(location.origin + '/pje-gigs-api/api/atividade/processo/' + idURL) || []
         return gigs
     }
-    async function verificarBotoesEIncluirListeners(leva, continua, vara){
+    async function verificarBotoesEIncluirListeners(vara){
         await aguardarElemento('pje-botoes-transicao button')
         await suspender(500)
         if(confereJanela(JANELA.analise)){
@@ -139,8 +134,8 @@ async function encaminharPostoAvancadoGigs(vara){
             let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
             let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(vara))) || {}
             if (!perfil?.idPerfil) return
-            console.log('%c[Rota PJE]%c perfil' + JSON.stringify(perfil), LOG.aviso, 'color:inherit')
-            botao.addEventListener('click', levaGigSegueTarefa(leva, continua, true, perfil), { capture: true });
+            
+            botao.addEventListener('click', levaGigSegueTarefa(true, perfil), { capture: true });
             return
         } else {
             let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
@@ -149,15 +144,12 @@ async function encaminharPostoAvancadoGigs(vara){
                 let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))
                 if(!perfil?.idPerfil) continue
 
-                botao.addEventListener('click', levaGigSegueTarefa(leva, continua, false, perfil), { capture: true })
+                botao.addEventListener('click', levaGigSegueTarefa(false, perfil), { capture: true })
             }
         }
         return
         
-        function levaGigSegueTarefa(leva, continua, analise, perfil = null) {
-            console.log('%c[Rota PJE]%c listener' + JSON.stringify(125), LOG.rosa, 'color:inherit')
-            console.log('%c[Rota PJE]%c leva: ' + JSON.stringify(leva), LOG.teste, 'color:inherit')
-            console.log('%c[Rota PJE]%c continua: ' + JSON.stringify(continua), LOG.teste, 'color:inherit')
+        function levaGigSegueTarefa(analise, perfil = null) {
             
             return async function listenerTemporario(e) {
                 let botao = e.currentTarget;
@@ -168,22 +160,24 @@ async function encaminharPostoAvancadoGigs(vara){
                 botao.removeEventListener('click', listenerTemporario, { capture: true });
 
                 // --- SEU CÓDIGO AQUI ---
-                let gigs = await obterGigsDestaOJ() || []
-                console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs), LOG.rosa, 'color:inherit')
+                let armazenamento = await obterArmazenamento([idEncaminha])
+                let leva = armazenamento?.[idEncaminha]?.leva || false
+                let continua = armazenamento?.[idEncaminha]?.continua || false
+                let gigs = leva ? await obterGigsDestaOJ() || [] : null
                 let idURLMatch = location.href.match(/processo\/(\d+)\/tarefa\/\d+/)
                 let idURL = idURLMatch?.[1]
                 let url = analise ? location.origin + '/pjekz/processo/' + idURL + '/tarefa/553/transicao' : location.origin + '/pjekz/processo/' + idURL + '/tarefa/122/transicao'
                 if (leva || continua) await postTrocaDeOJ(perfil?.idPerfil)
                 await suspender(300)
                 let nomeJanela = window.name
-                window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
-                await armazenar({rotapje_levaGigs: {gigs, continua, perfil}})
+                if (leva) window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
+                if (leva) await armazenar({rotapje_levaGigs: {gigs, continua, perfil}})
                 botao.click()
                 await suspender (100)
                 await aguardarElemento('.mat-progress-spinner')
                 if (!leva && !continua) return
                 location.href = url
-            };
+            }
         }
       
         
@@ -195,17 +189,13 @@ async function encaminharPostoAvancadoGigs(vara){
             let armazenamento = await obterArmazenamento([idEncaminha])
             let estado = armazenamento[idEncaminha]
             estado[idFim]= true
-            console.log('%c[Rota PJE]%c estado: ' + JSON.stringify(estado), LOG.teste, 'color:inherit', estado)
             await armazenar({[idEncaminha]: estado})
-            verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, vara) 
         } else {
             botao.textContent = botao.textContent.replace('ATIVADO', 'DESATIVADO')
             let armazenamento = await obterArmazenamento([idEncaminha])
             let estado = armazenamento[idEncaminha]
             estado[idFim]= false
-            console.log('%c[Rota PJE]%c estado: ' + JSON.stringify(estado), LOG.teste, 'color:inherit', estado)
             await armazenar({[idEncaminha]: estado})
-            verificarBotoesEIncluirListeners(estado?.leva, estado?.continua, vara) 
         }
     }
 
