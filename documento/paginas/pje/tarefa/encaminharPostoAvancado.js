@@ -9,7 +9,8 @@ async function guardaContraOJIncorreta(){
     let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
     let botoesErrados = botoes.filter(d => 
         !normalizar(d.textContent).includes('bauru') && 
-        !normalizar(d.textContent).includes('nucleo')
+        !normalizar(d.textContent).includes('nucleo') &&
+        !normalizar(d.textContent).includes('posto avancado')
     ) || []
     if (botoesErrados.length){
         let div = criaDiv({
