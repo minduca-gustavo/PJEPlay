@@ -25,7 +25,8 @@ async function criaFitaSuperior() {
     }
     if (confereJanela(JANELA.minutar, JANELA.tarefaAssinar)){
         await despachosPreferidos('rotapje_fita_superior')
-        await liquidAICriaBotoes()
+        console.log('%c[Rota PJE]%c 2: ' + JSON.stringify(2), LOG.info, 'color:inherit')
+        liquidAICriaBotoes()
         return
     }
     if (confereJanela(JANELA.conclusao, JANELA.encaminharPostoAvancado, JANELA.analise)){
@@ -103,6 +104,7 @@ async function confereCriaFitaSuperior(){
         JANELA.detalhes,
         JANELA.pericias,
         JANELA.minutar,
+        JANELA.tarefaAssinar,
         JANELA.conclusao,
         JANELA.encaminharPostoAvancado,
         JANELA.gigsRelatorios,
