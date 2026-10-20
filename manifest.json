@@ -159,6 +159,8 @@
 				
 				"documento/paginas/chatJT/chatJT.js",
 				"documento/paginas/pje/gim/assina-tudo.js",
+				"documento/paginas/pje/liquidAI/liquidAI.js",
+				"documento/paginas/pje/liquidAI/municipios.js",
 				"documento/paginas/pje/rota/botao/pintura.js",
 				"documento/paginas/pje/rota/botao/janelas.js",
 				"documento/paginas/pje/rota/botao/botao-rota.js",
