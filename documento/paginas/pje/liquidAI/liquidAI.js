@@ -69,6 +69,7 @@ async function liquidAIConfigurar(parametro) {
 }
 
 async function liquidAIExtraiDadosPJE(){
+    
     return({
         dadosProcesso:{
             reclamante,
