@@ -1,3 +1,36 @@
+async function liquidAIgerarPJC(){
+    let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIextraiDadosPJE()
+    let textoSentenca = liquidAIextraiTextoEditor()
+    let configuracoes = await liquidAIconfigurar('extrair')
+    let dataCalculo = new Date().setHours(0,0,0,0)
+    let indice = 0
+    let versao = 0
+    let ordem = 0
+    // gprec parcitipa, é o primeiro
+    let gprec = liquidAIcriaGprec(dadosProcesso, dataCalculo)
+    // dadosEstruturados participa, é o segundo
+    let dadosEstruturados = liquidAIcriaDadosEstruturados(dataCalculo)
+    // os parametros entram, mas o retorno são variáveis separadas.
+    let parametros = liquidAIcriaParametrosIniciais(
+        {
+            id: ++indice, 
+            versao: ++versao, 
+            dataCriacao: dataCalculo,
+            dataDeLiquidacao: dataCalculo,
+            versaoDoSistema: versaoDoPJECalc,
+        },
+        textoSentenca,
+        dadosProcesso,
+        configuracoes,
+    )
+    // processo entra e é uma variável só
+    let processoPJECalc = liquidAIcriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, ++versao, ++indice)
+    // município tem uma externalRef que é da tabela TOM da receita federal
+    let municipioTOM = liquidAIdefineMunicipio({municipio})
+    // restante trará tudo que não foi mapeado, de acordo com CalculoCalculistaSemVerbasSemHistorico.xml
+    let restante = naoMapeados()
+}
+
 function liquidAIextraiTextoEditor(){
     return({
         dataAdmissao,
@@ -66,31 +99,6 @@ async function liquidAIextraiDadosPJE(){
     })
 }
 
-async function liquidAIgerarPJC(){
-    let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await extraiDadosPJE()
-    let textoSentenca = extraiTextoEditor()
-    let configuracoes = await configurar('extrair')
-    let dataCalculo = new Date().setHours(0,0,0,0)
-    let indice = 0
-    let versao = 0
-    let ordem = 0
-    let gprec = criaGprec(dadosProcesso, dataCalculo)
-    let dadosEstruturados = criaDadosEstruturados(dataCalculo)
-    let parametros = criaParametrosIniciais(
-        {
-            id: ++indice, 
-            versao: ++versao, 
-            dataCriacao: dataCalculo,
-            dataDeLiquidacao: dataCalculo,
-            versaoDoSistema: versaoDoPJECalc,
-        },
-        textoSentenca,
-        dadosProcesso,
-        configuracoes,
-    )
-    let processoPJECalc = criaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, ++versao, ++indice)
-    let municipioTOM = defineMunicipio({municipio})
-}
 
 function liquidAIcriaDadosProcessuaisPJECalc(
     {
@@ -171,7 +179,7 @@ function liquidAIcriaParametrosIniciais(
         versao,
         dataCriacao= new Date().setHours(0,0,0,0),
         dataDeLiquidacao = new Date().setHours(0,0,0,0)
-    }, // vem do gerarPJC
+    }, // vem do liquidAIgerarPJC
     {
         dataAdmissao,
         dataDemissao,
@@ -196,18 +204,18 @@ function liquidAIcriaParametrosIniciais(
         processoInformadoManualmente= 'false',
         comentarios= 'null',
         diaFechamentoMes= '31',
-    }, // vem do extraiTextoEditor
+    }, // vem do liquidAIextraiTextoEditor
     {
         dataAjuizamento,
         cpfUsuarioCriador,
         idSetor
-    }, // vem do extraiDadosPJE - dadosProcesso
+    }, // vem do liquidAIextraiDadosPJE - dadosProcesso
     {
         versaoDoSistema
-    }, // vem do configurar
+    }, // vem do liquidAIconfigurar
     {
 
-    } // vem do extraiDadosPJE - dadosProcessuaisPJECalc
+    } // vem do liquidAIextraiDadosPJE - dadosProcessuaisPJECalc
 ){
     let parametros = {
         id: id,
@@ -308,11 +316,11 @@ function liquidAIJsonToXml(objeto) {
         if (Array.isArray(objeto[propriedade])) {
             for (var array in objeto[propriedade]) {
                 xml += "<" + propriedade + ">"
-                xml += JsonToXml(objeto[propriedade][array])
+                xml += liquidAIJsonToXml(objeto[propriedade][array])
                 xml += "</" + propriedade + ">"
             }
         } else if (typeof objeto[propriedade] == "object") {
-            xml += JsonToXml(objeto[propriedade])
+            xml += liquidAIJsonToXml(objeto[propriedade])
         } else {
             xml += objeto[propriedade]
         }

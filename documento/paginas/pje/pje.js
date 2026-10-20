@@ -339,6 +339,9 @@ function rota_interfacePorContexto(){
 	// documento/paginas/pje/rota/tramitaIA/tramitaIA.js - cria o botão de menu Tramita IA
 	tramitaIAFuncoes()
 
+ 	// documento/paginas/pje/liquidAI/botoes.js
+	liquidAICriaBotoes()
+
 	//
 	guardaContraOJIncorreta()
 
