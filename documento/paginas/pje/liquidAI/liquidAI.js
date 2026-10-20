@@ -1,17 +1,17 @@
-async function liquidAIgerarPJC(){
-    let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIextraiDadosPJE()
-    let textoSentenca = liquidAIextraiTextoEditor()
-    let configuracoes = await liquidAIconfigurar('extrair')
+async function liquidAIGerarPJC(){
+    let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIExtraiDadosPJE()
+    let textoSentenca = liquidAIExtraiTextoEditor()
+    let configuracoes = await liquidAIConfigurar('extrair')
     let dataCalculo = new Date().setHours(0,0,0,0)
     let indice = 0
     let versao = 0
     let ordem = 0
     // gprec parcitipa, é o primeiro
-    let gprec = liquidAIcriaGprec(dadosProcesso, dataCalculo)
+    let gprec = liquidAICriaGprec(dadosProcesso, dataCalculo)
     // dadosEstruturados participa, é o segundo
-    let dadosEstruturados = liquidAIcriaDadosEstruturados(dataCalculo)
+    let dadosEstruturados = liquidAICriaDadosEstruturados(dataCalculo)
     // os parametros entram, mas o retorno são variáveis separadas.
-    let parametros = liquidAIcriaParametrosIniciais(
+    let parametros = liquidAICriaParametrosIniciais(
         {
             id: ++indice, 
             versao: ++versao, 
@@ -24,14 +24,14 @@ async function liquidAIgerarPJC(){
         configuracoes,
     )
     // processo entra e é uma variável só
-    let processoPJECalc = liquidAIcriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, ++versao, ++indice)
+    let processoPJECalc = liquidAICriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, ++versao, ++indice)
     // município tem uma externalRef que é da tabela TOM da receita federal
-    let municipioTOM = liquidAIdefineMunicipio({municipio})
+    let municipioTOM = liquidAIDefineMunicipio({municipio})
     // restante trará tudo que não foi mapeado, de acordo com CalculoCalculistaSemVerbasSemHistorico.xml
     let restante = naoMapeados()
 }
 
-function liquidAIextraiTextoEditor(){
+function liquidAIExtraiTextoEditor(){
     return({
         dataAdmissao,
         dataDemissao,
@@ -57,7 +57,7 @@ function liquidAIextraiTextoEditor(){
     })
 }
 
-async function liquidAIconfigurar(parametro) {
+async function liquidAIConfigurar(parametro) {
     if(parametro === 'extrair'){
         let versaoDoPJECalc = await obterVersao()
         return({versaoDoSistema: versaoDoPJECalc})
@@ -68,7 +68,7 @@ async function liquidAIconfigurar(parametro) {
     }
 }
 
-async function liquidAIextraiDadosPJE(){
+async function liquidAIExtraiDadosPJE(){
     return({
         dadosProcesso:{
             reclamante,
@@ -100,7 +100,7 @@ async function liquidAIextraiDadosPJE(){
 }
 
 
-function liquidAIcriaDadosProcessuaisPJECalc(
+function liquidAICriaDadosProcessuaisPJECalc(
     {
         valorDaCausa = '0.00',
         dataAutuacao = new Date().setHours(0,0,0,0),
@@ -173,13 +173,13 @@ function liquidAIcriaDadosProcessuaisPJECalc(
 }
 
 
-function liquidAIcriaParametrosIniciais(
+function liquidAICriaParametrosIniciais(
     {
         id,
         versao,
         dataCriacao= new Date().setHours(0,0,0,0),
         dataDeLiquidacao = new Date().setHours(0,0,0,0)
-    }, // vem do liquidAIgerarPJC
+    }, // vem do liquidAIGerarPJC
     {
         dataAdmissao,
         dataDemissao,
@@ -204,18 +204,18 @@ function liquidAIcriaParametrosIniciais(
         processoInformadoManualmente= 'false',
         comentarios= 'null',
         diaFechamentoMes= '31',
-    }, // vem do liquidAIextraiTextoEditor
+    }, // vem do liquidAIExtraiTextoEditor
     {
         dataAjuizamento,
         cpfUsuarioCriador,
         idSetor
-    }, // vem do liquidAIextraiDadosPJE - dadosProcesso
+    }, // vem do liquidAIExtraiDadosPJE - dadosProcesso
     {
         versaoDoSistema
-    }, // vem do liquidAIconfigurar
+    }, // vem do liquidAIConfigurar
     {
 
-    } // vem do liquidAIextraiDadosPJE - dadosProcessuaisPJECalc
+    } // vem do liquidAIExtraiDadosPJE - dadosProcessuaisPJECalc
 ){
     let parametros = {
         id: id,
@@ -265,7 +265,7 @@ function liquidAIcriaParametrosIniciais(
     }
 }
 
-function liquidAIcriaDadosEstruturados(dataCalculo){
+function liquidAICriaDadosEstruturados(dataCalculo){
     let dadosEstruturados = {
         dataLiquidacao: dataCalculo,
         hashLiquidacao,
@@ -288,7 +288,7 @@ function liquidAIcriaDadosEstruturados(dataCalculo){
     }
 }
 
-function liquidAIcriaGprec({reclamante, cpfReclamante}, dataCalculo){
+function liquidAICriaGprec({reclamante, cpfReclamante}, dataCalculo){
     let gprec = {
         dataCalculo: dataCalculo,
         nomeBeneficiario: reclamante,
@@ -305,7 +305,7 @@ function liquidAIcriaGprec({reclamante, cpfReclamante}, dataCalculo){
     return {gprec}
 }
 
-function liquidAIdefineMunicipio({cidade}){
+function liquidAIDefineMunicipio({cidade}){
     return {municipio: {Municipio: externalRef}}
 }
 
