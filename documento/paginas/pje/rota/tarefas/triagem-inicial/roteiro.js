@@ -949,11 +949,12 @@ async function triagem_inicial_acoesIntimar(){
         })
         return
     }
+    let modelo = ''
     if (linkIntimar){
         await suspender(1000)
         await preencherCKEditorExecCommand(editorConteudo, dados.texto)
     } else {
-        let modelo = modeloIntimacao 
+        modelo = modeloIntimacao 
                   || dados.tipos.find(t => tipoAudienciaIntimar.toLowerCase().includes(t.tipo))?.modelo 
                   || null
         await digitarNoInput(inputModelo, modelo)
@@ -963,8 +964,28 @@ async function triagem_inicial_acoesIntimar(){
     }
     await suspender(1000)
     await aguardarElemento('.botoes-acoes [aria-label="Finalizar minuta"]')
-    await suspender(1000)
-    clicar('.botoes-acoes [aria-label="Finalizar minuta"]')
+    let todosPreenchidos = ![...document.querySelectorAll('pje-editor-documento [contenteditable]')].some(d=> d.innerText == '\n')
+    if(todosPreenchidos){
+        await suspender(1000)
+        clicar('.botoes-acoes [aria-label="Finalizar minuta"]')
+    } else {
+        await navigator.clipboard.writeText(JSON.stringify(modelo))
+        rota_avisoObrigatorio('Houve um erro. O nome do modelo está salvo no CTRL + C. Utilize-o para inserir o modelo no editor e prossiga com a intimação das partes. Após finalizar, clique em "Próximo", no widget criado.', 15)
+        await criaDivFlutuante({
+            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante_erro_editor',
+            titulo: 'Complete a intimação, e clique em próximo.'
+        })
+        await criaBotaoLaranja({
+            texto: '▶️ Próximo',
+            id: 'rota_triagem_inicial_acoes_conjuntas_flutuante_botao_erro_editor',
+            ancestral: 'rota_triagem_inicial_acoes_conjuntas_flutuante_erro_editor',
+            acao: () => {
+                comandar(dados.proximoPasso.comando, dados.proximoPasso.parametros)
+                window.close()
+            }
+        })
+        return
+    }
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto: dados.textoConfirmacaoAto})
     let i = 0
     while (await sel('prepararExpedientesMensagemModeloInserido')){
