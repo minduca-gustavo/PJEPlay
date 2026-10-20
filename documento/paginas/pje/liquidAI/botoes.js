@@ -1,4 +1,5 @@
 async function liquidAICriaBotoes(){
+    return
     console.log('%c[Rota PJE]%c 2 Liquidai: ' + JSON.stringify(2), LOG.info, 'color:inherit')
     await aguardarElemento('pje-editor-documento')
     let elementoInserirAntes = document.querySelector('pje-editor-documento').children[0]
@@ -8,5 +9,12 @@ async function liquidAICriaBotoes(){
         ancestral: document.body
     })
     insereFitaSuperior(elementoInserirAntes, div)
+    let botao = criaBotaoLaranja({
+        id: idDiv + '_botao_gerarPjc',
+        ancestral: idDiv,
+        texto: 'Gerar PJC',
+        acao: () => liquidAIgerarPJC()
+    })
+    estiloBotaoFitaSuperior(botao)
     return
 }
