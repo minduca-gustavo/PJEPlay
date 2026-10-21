@@ -1,4 +1,713 @@
 {
+    "processopartes": {
+        "ATIVO": [
+            {
+                "id": 23893201,
+                "polo": "ativo",
+                "principal": true,
+                "enderecoDesconhecido": false,
+                "tipo": "AUTOR",
+                "idTipoParte": 65,
+                "nome": "LUIZ CARLOS DE LIMA",
+                "nomeOuIniciais": "LUIZ CARLOS DE LIMA",
+                "documento": "027.659.518-10",
+                "tipoDocumento": "CPF",
+                "representantes": [
+                    {
+                        "id": 23893202,
+                        "polo": "ativo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "ISABELLA NUNES PEREIRA",
+                        "documento": "470.447.708-86",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP469964",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "advisabellanunesp@gmail.com"
+                        ],
+                        "idPessoa": 4308291,
+                        "tipoPessoa": "F",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "470.447.708-86",
+                        "autoridade": false,
+                        "sexo": "FEMININO",
+                        "dddCelular": "14",
+                        "numeroCelular": "981483688",
+                        "email": "advisabellanunesp@gmail.com"
+                    }
+                ],
+                "idPessoa": 3084380,
+                "tipoPessoa": "F",
+                "status": "A",
+                "situacao": "Ativo",
+                "endereco": {
+                    "id": 10202496,
+                    "logradouro": "211B",
+                    "numero": "87SI SIMOGHETTT",
+                    "bairro": "CONDOMINIO PEDRA BRANCA",
+                    "idMunicipio": 439,
+                    "municipio": "AVAI",
+                    "municipioIbge": "3504305",
+                    "estado": {
+                        "id": 26,
+                        "sigla": "SP",
+                        "descricao": "SÃO PAULO"
+                    },
+                    "pais": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "nroCep": "16680-000",
+                    "idPessoa": 3084380,
+                    "correspondencia": false,
+                    "situacao": "P",
+                    "classificacoesEndereco": [
+                        "R"
+                    ],
+                    "idUsuarioCadastrador": 4308291,
+                    "dtAlteracao": "2025-05-22T18:36:05.044745"
+                },
+                "cpf": "027.659.518-10",
+                "ordem": 1,
+                "autoridade": false,
+                "pessoaFisica": {
+                    "id": 3084380,
+                    "nome": "LUIZ CARLOS DE LIMA",
+                    "situacao": true,
+                    "login": "02765951810",
+                    "estadoCivil": 1,
+                    "escolaridade": 1,
+                    "codigoSexo": "M",
+                    "sexo": "Masculino",
+                    "dataNascimento": "1964-07-12",
+                    "nomeGenitor": "OLIVEIRA  TOMAZ DE LIMA",
+                    "nomeGenitora": "ANA LUNA DE LIMA",
+                    "paisNascimento": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "podeUsarCelularParaMensagem": false
+                },
+                "sexo": "MASCULINO"
+            }
+        ],
+        "PASSIVO": [
+            {
+                "id": 23893231,
+                "polo": "passivo",
+                "principal": true,
+                "enderecoDesconhecido": false,
+                "tipo": "RÉU",
+                "idTipoParte": 66,
+                "nome": "JOSE DONIZETE GIATTI",
+                "nomeOuIniciais": "JOSE DONIZETE GIATTI",
+                "documento": "825.981.008-59",
+                "tipoDocumento": "CPF",
+                "representantes": [
+                    {
+                        "id": 24975412,
+                        "polo": "passivo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "LUIZ FERNANDO PICCIRILLI",
+                        "documento": "293.036.608-70",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP374498",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "fernando.picci@hotmail.com"
+                        ],
+                        "idPessoa": 1160794,
+                        "tipoPessoa": "F",
+                        "dataHabilitacao": "2025-10-20T12:44:18.671974",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "293.036.608-70",
+                        "autoridade": false,
+                        "sexo": "MASCULINO",
+                        "dddCelular": "14",
+                        "numeroCelular": "30106500",
+                        "email": "fernando.picci@hotmail.com"
+                    },
+                    {
+                        "id": 24975413,
+                        "polo": "passivo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "WELLINGTON APARECIDO AUGUSTO",
+                        "documento": "381.997.878-05",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP431775",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "w.augusto.adv@gmail.com"
+                        ],
+                        "idPessoa": 2707492,
+                        "tipoPessoa": "F",
+                        "dataHabilitacao": "2025-10-20T12:44:18.778745",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "381.997.878-05",
+                        "autoridade": false,
+                        "sexo": "MASCULINO",
+                        "dddCelular": "14",
+                        "numeroCelular": "997320424",
+                        "email": "w.augusto.adv@gmail.com"
+                    }
+                ],
+                "idPessoa": 4757649,
+                "tipoPessoa": "F",
+                "status": "A",
+                "situacao": "Ativo",
+                "endereco": {
+                    "id": 10202509,
+                    "logradouro": "WASNI DE ALMEIDA SILVA",
+                    "numero": "230",
+                    "bairro": "CENTRO",
+                    "idMunicipio": 365,
+                    "municipio": "AREALVA",
+                    "municipioIbge": "3503406",
+                    "estado": {
+                        "id": 26,
+                        "sigla": "SP",
+                        "descricao": "SÃO PAULO"
+                    },
+                    "pais": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "nroCep": "17160-053",
+                    "idPessoa": 4757649,
+                    "correspondencia": true,
+                    "situacao": "V",
+                    "classificacoesEndereco": [
+                        "R"
+                    ],
+                    "idUsuarioCadastrador": 4308291,
+                    "dtAlteracao": "2025-05-22T18:38:03.550452"
+                },
+                "cpf": "825.981.008-59",
+                "ordem": 2,
+                "autoridade": false,
+                "pessoaFisica": {
+                    "id": 4757649,
+                    "nome": "JOSE DONIZETE GIATTI",
+                    "situacao": true,
+                    "login": "82598100859",
+                    "codigoSexo": "M",
+                    "sexo": "Masculino",
+                    "dataNascimento": "1956-06-08",
+                    "nomeGenitora": "DAICY APARECIDA GIATTI",
+                    "podeUsarCelularParaMensagem": false,
+                    "situacaoCpfReceitaFederal": {
+                        "id": 0,
+                        "descricao": "REGULAR"
+                    }
+                },
+                "sexo": "MASCULINO"
+            },
+            {
+                "id": 23893234,
+                "polo": "passivo",
+                "principal": true,
+                "enderecoDesconhecido": false,
+                "tipo": "RÉU",
+                "idTipoParte": 66,
+                "nome": "MOACIR DAVINIO GIATTI",
+                "nomeOuIniciais": "MOACIR DAVINIO GIATTI",
+                "documento": "068.125.738-50",
+                "tipoDocumento": "CPF",
+                "representantes": [
+                    {
+                        "id": 24975412,
+                        "polo": "passivo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "LUIZ FERNANDO PICCIRILLI",
+                        "documento": "293.036.608-70",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP374498",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "fernando.picci@hotmail.com"
+                        ],
+                        "idPessoa": 1160794,
+                        "tipoPessoa": "F",
+                        "dataHabilitacao": "2025-10-20T12:44:18.671974",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "293.036.608-70",
+                        "autoridade": false,
+                        "sexo": "MASCULINO",
+                        "dddCelular": "14",
+                        "numeroCelular": "30106500",
+                        "email": "fernando.picci@hotmail.com"
+                    },
+                    {
+                        "id": 24975413,
+                        "polo": "passivo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "WELLINGTON APARECIDO AUGUSTO",
+                        "documento": "381.997.878-05",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP431775",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "w.augusto.adv@gmail.com"
+                        ],
+                        "idPessoa": 2707492,
+                        "tipoPessoa": "F",
+                        "dataHabilitacao": "2025-10-20T12:44:18.778745",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "381.997.878-05",
+                        "autoridade": false,
+                        "sexo": "MASCULINO",
+                        "dddCelular": "14",
+                        "numeroCelular": "997320424",
+                        "email": "w.augusto.adv@gmail.com"
+                    }
+                ],
+                "idPessoa": 4757651,
+                "tipoPessoa": "F",
+                "status": "A",
+                "situacao": "Ativo",
+                "endereco": {
+                    "id": 10382214,
+                    "logradouro": "RUA JACINTO RIBEIRO DE BARROS ",
+                    "numero": "498",
+                    "bairro": "CENTRO",
+                    "idMunicipio": 365,
+                    "municipio": "AREALVA",
+                    "municipioIbge": "3503406",
+                    "estado": {
+                        "id": 26,
+                        "sigla": "SP",
+                        "descricao": "SÃO PAULO"
+                    },
+                    "pais": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "nroCep": "17160-013",
+                    "idPessoa": 4757651,
+                    "correspondencia": true,
+                    "situacao": "V",
+                    "classificacoesEndereco": [
+                        "R"
+                    ],
+                    "idUsuarioCadastrador": 4668935,
+                    "dtAlteracao": "2025-06-25T10:27:14.05004"
+                },
+                "cpf": "068.125.738-50",
+                "ordem": 3,
+                "autoridade": false,
+                "pessoaFisica": {
+                    "id": 4757651,
+                    "nome": "MOACIR DAVINIO GIATTI",
+                    "situacao": true,
+                    "login": "06812573850",
+                    "codigoSexo": "M",
+                    "sexo": "Masculino",
+                    "dataNascimento": "1963-12-02",
+                    "nomeGenitora": "DAICY APARECIDA GIATTI",
+                    "podeUsarCelularParaMensagem": false,
+                    "situacaoCpfReceitaFederal": {
+                        "id": 0,
+                        "descricao": "REGULAR"
+                    }
+                },
+                "sexo": "MASCULINO"
+            },
+            {
+                "id": 23914694,
+                "polo": "passivo",
+                "principal": true,
+                "enderecoDesconhecido": false,
+                "tipo": "RÉU",
+                "idTipoParte": 66,
+                "nome": "ANTONIO WILSON GIATTI",
+                "nomeOuIniciais": "ANTONIO WILSON GIATTI",
+                "documento": "825.980.968-00",
+                "tipoDocumento": "CPF",
+                "representantes": [
+                    {
+                        "id": 24975412,
+                        "polo": "passivo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "LUIZ FERNANDO PICCIRILLI",
+                        "documento": "293.036.608-70",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP374498",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "fernando.picci@hotmail.com"
+                        ],
+                        "idPessoa": 1160794,
+                        "tipoPessoa": "F",
+                        "dataHabilitacao": "2025-10-20T12:44:18.671974",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "293.036.608-70",
+                        "autoridade": false,
+                        "sexo": "MASCULINO",
+                        "dddCelular": "14",
+                        "numeroCelular": "30106500",
+                        "email": "fernando.picci@hotmail.com"
+                    },
+                    {
+                        "id": 24975413,
+                        "polo": "passivo",
+                        "principal": false,
+                        "enderecoDesconhecido": false,
+                        "tipo": "ADVOGADO",
+                        "idTipoParte": 7,
+                        "nome": "WELLINGTON APARECIDO AUGUSTO",
+                        "documento": "381.997.878-05",
+                        "tipoDocumento": "CPF",
+                        "numeroOab": "SP431775",
+                        "situacaoOab": "REGULAR",
+                        "emails": [
+                            "w.augusto.adv@gmail.com"
+                        ],
+                        "idPessoa": 2707492,
+                        "tipoPessoa": "F",
+                        "dataHabilitacao": "2025-10-20T12:44:18.778745",
+                        "status": "A",
+                        "situacao": "Ativo",
+                        "cpf": "381.997.878-05",
+                        "autoridade": false,
+                        "sexo": "MASCULINO",
+                        "dddCelular": "14",
+                        "numeroCelular": "997320424",
+                        "email": "w.augusto.adv@gmail.com"
+                    }
+                ],
+                "idPessoa": 4760989,
+                "tipoPessoa": "F",
+                "status": "A",
+                "situacao": "Ativo",
+                "endereco": {
+                    "id": 10670599,
+                    "logradouro": "RUA ARTHUR ROBTON ",
+                    "numero": "498",
+                    "bairro": "CENTRO",
+                    "idMunicipio": 365,
+                    "municipio": "AREALVA",
+                    "municipioIbge": "3503406",
+                    "estado": {
+                        "id": 26,
+                        "sigla": "SP",
+                        "descricao": "SÃO PAULO"
+                    },
+                    "pais": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "nroCep": "17160-023",
+                    "idPessoa": 4760989,
+                    "correspondencia": true,
+                    "situacao": "V",
+                    "idUsuarioCadastrador": 66946,
+                    "dtAlteracao": "2025-09-01T21:57:32.579767"
+                },
+                "cpf": "825.980.968-00",
+                "ordem": 1,
+                "autoridade": false,
+                "pessoaFisica": {
+                    "id": 4760989,
+                    "nome": "ANTONIO WILSON GIATTI",
+                    "situacao": true,
+                    "login": "82598096800",
+                    "codigoSexo": "M",
+                    "sexo": "Masculino",
+                    "dataNascimento": "1959-08-20",
+                    "nomeGenitora": "DAICY APARECIDA GIATTI",
+                    "podeUsarCelularParaMensagem": false,
+                    "situacaoCpfReceitaFederal": {
+                        "id": 0,
+                        "descricao": "REGULAR"
+                    }
+                },
+                "sexo": "MASCULINO"
+            }
+        ],
+        "TERCEIROS": [
+            {
+                "id": 24989257,
+                "polo": "outros",
+                "principal": true,
+                "enderecoDesconhecido": false,
+                "tipo": "PERITO",
+                "idTipoParte": 75,
+                "nome": "CARLOS AUGUSTO ANGELICI",
+                "nomeOuIniciais": "CARLOS AUGUSTO ANGELICI",
+                "documento": "828.126.678-34",
+                "tipoDocumento": "CPF",
+                "emails": [
+                    "carlosangelici@yahoo.com.br",
+                    "carlosangelici@yahoo.com.br"
+                ],
+                "idPessoa": 864430,
+                "tipoPessoa": "F",
+                "status": "A",
+                "situacao": "Ativo",
+                "endereco": {
+                    "id": 8825644,
+                    "logradouro": "Rua Guainumbis",
+                    "numero": "496",
+                    "bairro": "Jardim Itamaraty",
+                    "idMunicipio": 2769,
+                    "municipio": "LENCOIS PAULISTA",
+                    "municipioIbge": "3526803",
+                    "estado": {
+                        "id": 26,
+                        "sigla": "SP",
+                        "descricao": "SÃO PAULO"
+                    },
+                    "pais": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "nroCep": "18682-450",
+                    "idPessoa": 864430,
+                    "correspondencia": true,
+                    "situacao": "V",
+                    "classificacoesEndereco": [
+                        "A"
+                    ],
+                    "idUsuarioCadastrador": 0,
+                    "dtAlteracao": "2024-02-20T04:30:15.426434"
+                },
+                "cpf": "828.126.678-34",
+                "ordem": 1,
+                "autoridade": false,
+                "pessoaFisica": {
+                    "id": 864430,
+                    "nome": "CARLOS AUGUSTO ANGELICI",
+                    "situacao": true,
+                    "login": "82812667834",
+                    "email": "carlosangelici@yahoo.com.br",
+                    "escolaridade": 6,
+                    "codigoSexo": "M",
+                    "sexo": "Masculino",
+                    "dataNascimento": "1953-07-06",
+                    "nomeGenitora": "ELZA GODOY ANGELICI",
+                    "ufNascimento": {
+                        "id": 26,
+                        "sigla": "SP",
+                        "descricao": "SÃO PAULO"
+                    },
+                    "naturalidade": {
+                        "id": 507,
+                        "nome": "BARRA BONITA",
+                        "idEstado": 26,
+                        "estado": {
+                            "id": 26,
+                            "sigla": "SP",
+                            "descricao": "SÃO PAULO"
+                        },
+                        "ativo": true,
+                        "siglaEstado": "SP"
+                    },
+                    "paisNascimento": {
+                        "id": 25,
+                        "codigo": "076",
+                        "descricao": "Brasil"
+                    },
+                    "dddCelular": "  ",
+                    "dddResidencial": "14",
+                    "numeroResidencial": "32630915",
+                    "dddComercial": "14",
+                    "numeroComerc-ial": "997918384",
+                    "podeUsarCelularParaMensagem": false
+                },
+                "sexo": "MASCULINO",
+                "dddCelular": "  ",
+                "email": "carlosangelici@yahoo.com.br"
+            }
+        ]
+    },
+    "interceptador": {
+        "id": 4415409,
+        "numero": "0010892-37.2025.5.15.0005",
+        "classeJudicial": {
+            "id": 535,
+            "codigo": "985",
+            "descricao": "Ação Trabalhista - Rito Ordinário",
+            "sigla": "ATOrd",
+            "requerProcessoReferenciaCodigo": "NE",
+            "controlaValorCausa": true,
+            "podeIncluirAutoridade": false,
+            "pisoValorCausa": 64840.01,
+            "ativo": true,
+            "idClasseJudicialPai": 593,
+            "possuiFilhos": false
+        },
+        "autuadoEm": "2025-05-27T00:05:24.581739",
+        "numeroIdentificacaoJustica": 515,
+        "distribuidoEm": "2025-05-27T00:05:24.581738",
+        "valorDaCausa": 161326.62,
+        "codigoClasseJudicialInicial": "I",
+        "labelClasseJudicialInicial": "Inicial",
+        "codigoStatusProcesso": "D",
+        "labelStatusProcesso": "Distribuído",
+        "segredoDeJustica": false,
+        "justicaGratuita": true,
+        "tutelaOuLiminar": false,
+        "juizoDigital": true,
+        "perspectivaDeGenero": false,
+        "instancia": 1,
+        "localizacaoInicial": {
+            "id": 335347,
+            "descricao": "ISABELLA NUNES PEREIRA (470.447.708-86)",
+            "ativo": true,
+            "endereco": {
+                "id": 8912273,
+                "logradouro": "SALVADOR FILARDI Q 015",
+                "numero": "36",
+                "bairro": "VILA SOUTO",
+                "idMunicipio": 565,
+                "municipio": "BAURU",
+                "municipioIbge": "3506003",
+                "estado": {
+                    "id": 26,
+                    "sigla": "SP",
+                    "descricao": "SÃO PAULO"
+                },
+                "pais": {
+                    "id": 25,
+                    "codigo": "076",
+                    "descricao": "Brasil"
+                },
+                "nroCep": "17051-110",
+                "idPessoa": 4308291,
+                "correspondencia": false,
+                "situacao": "P",
+                "idUsuarioCadastrador": 4308291
+            },
+            "estruturada": false
+        },
+        "codigoApreciadoSegredo": "N",
+        "labelApreciadoSegredo": "Apreciado",
+        "orgaoJulgador": {
+            "id": 349,
+            "descricao": "CON2 - Bauru",
+            "cejusc": false,
+            "ativo": true,
+            "sigla": "ASC2-BAU",
+            "postoAvancado": true,
+            "siglaEnvioDejt": "ASC2-BAU",
+            "idLocalizacao": 300051,
+            "idJurisdicao": 69,
+            "dataCriacao": "2023-02-02",
+            "novoOrgaoJulgador": false,
+            "codigoOrigem": "419 ",
+            "instancia": "1",
+            "numeroVara": 102,
+            "idAplicacaoClasse": 1,
+            "email": "ae8baurugarca.scbauru@trt15.jus.br",
+            "codigoServentiaCnj": 86166,
+            "codigoIBGE": "3506003",
+            "exibeRetornoPosRecurso": false,
+            "codigoTipo": "POSTO-AVANCADO"
+        },
+        "orgaoJulgadorCargo": {
+            "id": 602,
+            "descricao": "Juiz do Trabalho Titular",
+            "siglaCargo": "JTT",
+            "idCargo": 1,
+            "dsCargo": "Juiz do Trabalho Titular",
+            "idGrupoCargoJudicial": 1,
+            "dsGrupoCargoJudicial": "Grupo Geral",
+            "ativo": true,
+            "recebeDistribuicao": false,
+            "auxiliar": false,
+            "valorPeso": 1,
+            "idOrgaoJulgador": 349,
+            "dsOrgaoJulgador": "CON2 - Bauru",
+            "pesoDistribuicao": 0,
+            "acumulaMediaDosCargosEspecializados": false,
+            "compensacaoPorProdutividadePorClasse": false
+        },
+        "jurisdicao": {
+            "id": 69,
+            "descricao": "Bauru",
+            "ativo": true,
+            "inibeLixeiraGigs": false,
+            "codigoOrigem": 29,
+            "estado": "SÃO PAULO",
+            "idEstado": 26,
+            "instancia": 1,
+            "idRegional": 15,
+            "descricaoRegional": "TRT da 15ª Região",
+            "idRamoJustica": 5,
+            "descricaoRamoJustica": "Justiça do Trabalho",
+            "tipoEqualizacao": {
+                "codigo": "N",
+                "descricao": "Não participa da equalização"
+            }
+        },
+        "apreciadoTutelaLiminar": false,
+        "codigoApreciadoSigilo": "S",
+        "labelApreciadoSigilo": "Apreciado",
+        "mandadoDevolvido": false,
+        "codigoFaseProcessual": 2,
+        "labelFaseProcessual": "Conhecimento",
+        "dataInicio": "2025-05-22T18:31:23.583316",
+        "usuarioCadastroProcesso": {
+            "id": 4308291,
+            "nome": "ISABELLA NUNES PEREIRA",
+            "login": "47044770886"
+        },
+        "selecionadoPauta": false,
+        "revisado": false,
+        "outraInstancia": false,
+        "selecionadoJulgamento": false,
+        "apreciadoJusticaGratuita": false,
+        "incidente": false,
+        "deveMarcarAudiencia": false,
+        "inRevisao": false,
+        "faseProcessual": "CONHECIMENTO",
+        "processoJT": {
+            "id": 4415409,
+            "idProcesso": 4415409,
+            "atividade": {
+                "id": 1500,
+                "nome": "SERVIÇOS DOMÉSTICOS"
+            },
+            "municipio": {
+                "id": 439,
+                "nome": "AVAI",
+                "idEstado": 26,
+                "ativo": true
+            }
+        },
+        "codigoFluxo": "FGPJE",
+        "temAssociacao": false
+    },
     "perfis": [
         {
             "idPerfil": 379657,

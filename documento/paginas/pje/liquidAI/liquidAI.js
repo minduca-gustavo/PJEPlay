@@ -1,5 +1,8 @@
 async function liquidAIGerarPJC(){
     let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIExtraiDadosPJE()
+    console.log('%c[Rota PJE]%c dadosProcesso' + JSON.stringify(dadosProcesso), LOG.aviso, 'color:inherit')
+    console.log('%c[Rota PJE]%c dadosProcessuaisPJECalc' + JSON.stringify(dadosProcessuaisPJECalc), LOG.aviso, 'color:inherit'),
+    console.log('%c[Rota PJE]%c municipio' + JSON.stringify(municipio), LOG.aviso, 'color:inherit')
     let textoSentenca = liquidAIExtraiTextoEditor()
     let configuracoes = await liquidAIConfigurar('extrair')
     let dataCalculo = new Date().setHours(0,0,0,0)
@@ -59,40 +62,56 @@ function liquidAIExtraiTextoEditor(){
 
 async function liquidAIConfigurar(parametro) {
     if(parametro === 'extrair'){
-        let versaoDoPJECalc = await obterVersao()
+        let versaoDoPJECalc = await liquidAIObterVersao()
         return({versaoDoSistema: versaoDoPJECalc})
     }
-    async function liquidAIobterVersao() {
+    async function liquidAIObterVersao() {
         let versao = ''
         return ({versao})
     }
 }
 
 async function liquidAIExtraiDadosPJE(){
+    let interceptadorProcesso = interceptador_lerProcesso()
+    let {numero, valorDaCausa, autuadoEm} = interceptadorProcesso
+    let numeroPonto = numero.split('.')
+    let numeroTraco = numeroPonto[0].split('-')
+    let municipio = interceptadorProcesso?.processoJT?.municipio?.nome
     
+    let interceptadorPartes = interceptador_lerPartes()
+    let dadosReclamante = interceptadorPartes?.ATIVO[0]
+    let reclamante = dadosReclamante?.nome
+    let tipoDocumentoFiscalReclamante = dadosReclamante?.tipoDocumento
+    let numeroDocumentoFiscalReclamante = dadosReclamante?.documento
+    let dadosReclamado = interceptadorPartes?.PASSIVO[0]
+    let reclamado = dadosReclamado?.nome
+    let tipoDocumentoFiscalReclamado = dadosReclamado?.tipoDocumento
+    let numeroDocumentoFiscalReclamado = dadosReclamante?.documento
+    console.log('%c[Rota PJE]%c interceptadorProcesso' + JSON.stringify(interceptadorProcesso), LOG.aviso, 'color:inherit', interceptadorProcesso)
+    console.log('%c[Rota PJE]%c interceptadorPartes' + JSON.stringify(interceptadorPartes), LOG.aviso, 'color:inherit', interceptadorPartes)
     return({
         dadosProcesso:{
             reclamante,
-            cpfReclamante,
-            dataAjuizamento,
-            cpfUsuarioCriador,
-            idSetor
+            cpfReclamante: numeroDocumentoFiscalReclamante,
+            dataAjuizamento: autuadoEm.slice(0,10),
+            cpfUsuarioCriador: '', // falta
+            idSetor: '' // falta
         },
         dadosProcessuaisPJECalc:{
             valorDaCausa,
-            dataAutuacao,
-            numero,
-            ano,
-            justica,
-            regiao,
-            vara,
-            digito,
-            tipoDocumentoPrevidenciarioReclamante,
-            numeroDocumentoPrevidenciarioReclamante,
-            nomeReclamante,
+            dataAutuacao: autuadoEm.slice(0,10),
+            numero: numeroTraco[0],
+            ano: numeroPonto[1],
+            justica: numeroPonto[2],
+            regiao: numeroPonto[3],
+            vara: numeroPonto[4],
+            digito: numeroTraco[1],
+            tipoDocumentoPrevidenciarioReclamante: '',
+            numeroDocumentoPrevidenciarioReclamante: '',
+            nomeReclamante: reclamante,
             tipoDocumentoFiscalReclamante,
             numeroDocumentoFiscalReclamante,
-            nomeReclamado,
+            nomeReclamado: reclamado,
             tipoDocumentoFiscalReclamado,
             numeroDocumentoFiscalReclamado,
         },
@@ -307,6 +326,7 @@ function liquidAICriaGprec({reclamante, cpfReclamante}, dataCalculo){
 }
 
 function liquidAIDefineMunicipio({cidade}){
+    let externalRef = municipioTOM.find(d => normalizar(d?.nome).includes(normalizar(cidade)))?.codigo
     return {municipio: {Municipio: externalRef}}
 }
 
