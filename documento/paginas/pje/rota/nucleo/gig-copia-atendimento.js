@@ -7,7 +7,6 @@ async function gig_copiaAtendimento(){
 
 function criaBotaoCopiaAtendimento(botao){
     let ancestrais = [... document.querySelectorAll('.actions')]
-    console.log('%c[Rota PJE]%c ancestrais' + JSON.stringify(ancestrais), LOG.info, 'color:inherit', ancestrais)
     let remover = [...document.querySelectorAll('.btn-copia_atendimento')].map(el => el.remove())
     let i = 0
     for (let ancestral of ancestrais) {
@@ -17,7 +16,6 @@ function criaBotaoCopiaAtendimento(botao){
         botaoCopia.textContent = '📋'
         botaoCopia.className = 'btn-copia_atendimento mat-focus-indicator mat-tooltip-trigger icone-clicavel mat-icon-button mat-button-base'
         botaoCopia.style.cssText = 'min-width: 20px !important; width: 20px !important; height: 0px !important; padding: 0 !important; margin: 0 !important; line-height: 20px !important;'
-        console.log('%c[Rota PJE]%c botao: ' + JSON.stringify(botao), LOG.info, 'color:inherit', botao)
         botaoCopia.addEventListener('click', () => copiaDadosAtendimento(botaoCopia))
         ancestral.appendChild(botaoCopia)
         criaTooltip({

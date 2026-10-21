@@ -422,10 +422,10 @@ async function gestao_inicializar() {
                 let inputEl = document.getElementById(id('gestao', 'grade', col.chave, String(i)))
                 let val = inputEl?.value?.trim() ?? ''
                 if (val) temValor = true
-                if (chavesArray.has(col.chave)) {
-                    obj[col.chave] = val ? val.split(',').map(s => s.trim()) : []
+                if (chavesArray.has(col.label)) {          // era col.chave
+                    obj[col.label] = val ? val.split(',').map(s => s.trim()) : []   // era obj[col.chave]
                 } else {
-                    obj[col.chave] = val
+                    obj[col.label] = val                   // era obj[col.chave]
                 }
             }
             // Ignora linhas completamente vazias
@@ -450,8 +450,7 @@ async function gestao_inicializar() {
         // Dados
         for (let obj of _dadosGit) {
             let linha = _colunasAtivas.map(col => {
-                console.log(col)
-                let v = obj[col.chave]
+                let v = obj[col.label]   // era col.chave
                 return Array.isArray(v) ? v.join(',') : (v ?? '')
             })
             linhas.push(linha.join('\t'))

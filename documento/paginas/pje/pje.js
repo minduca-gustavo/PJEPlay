@@ -182,6 +182,7 @@ function rota_iniciarPermanentes(){
 	// uma vez por documento, nunca dentro do ciclo de URL.
 	rotaRegistrarMutacao({ seletor: '#gigs',    callback: () => gig_copiaAtendimento() })
 	rotaRegistrarMutacao({ seletor: '.actions', callback: () => gig_copiaAtendimento() })
+	rotaRegistrarMutacao({ seletor: 'mat-dialog-container', callback: () => favoritarGigs() })
 
 	// Observador central — depois dos registros, por clareza.
 	// A ordem não é obrigatória: o callback lê ROTA_MUTACOES na hora.
