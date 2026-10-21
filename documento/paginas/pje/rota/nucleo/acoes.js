@@ -16,7 +16,7 @@
 
 // ── Utilitário interno ────────────────────────────────────────
 
-async function inserirGigsNaTelaDeDetalhesDoProcesso(tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao'){
+async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao', corridosOuUteis = 'diasUteis', destaque = false}){
     let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
     if (!novaAtividade) return
     await clicar(novaAtividade)
@@ -45,15 +45,39 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso(tipoAtividade = 'Prazo', da
         await suspender (200)
         await preencherRota(inputObservacao, observacao)
     }
+    if (corridosOuUteis !== 'diasUteis'){
+        await aguardarElemento('pje-gigs-lista-atividades #diasUteis')
+        await suspender (200)
+        await clicar('pje-gigs-lista-atividades #diasUteis')
+        await suspender (200)
+    }
+    if (destaque){
+        await aguardarElemento('pje-gigs-lista-atividades #destaque')
+        await suspender (200)
+        await clicar('pje-gigs-lista-atividades #destaque')
+        await suspender (200)
+    }
     if (salvar === 'sim'){
         let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
         await suspender (200)
         await clicar(botaoSalvar)
         await suspender (2000)
     }
+    
     return
 
 }
+
+/*
+corridosOuUteis: "diasUteis"
+​dataInicio: "02/09/2026"
+​dataPrazo: null
+​destaque: false
+​dias: "16"
+​nomeBotao: "Teste1"
+​observacao: "Acompanhamento - Triagem Inicial"
+​responsavel: "GUSTAVO MARIANO COUTINHO DE SOUZA"
+*/
 
 async function _acao_fetch(url = '', metodo = 'GET', corpo = null) {
     const token    = cookie_obter('Xsrf-Token') || cookie_obter('XSRF-TOKEN')

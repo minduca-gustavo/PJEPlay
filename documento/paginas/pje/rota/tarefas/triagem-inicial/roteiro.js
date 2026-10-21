@@ -670,7 +670,7 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
         clicar(mostrarOuEsconder)
     }
     await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
-    await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
+    await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'Audiência', dataPrazo: dataGig, dias: '', responsavel: usuario.trim().toUpperCase(), observacao: 'Acompanhamento - Triagem Inicial', salvar: 'sim'})
     //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
     await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_gig' })
 }

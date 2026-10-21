@@ -68,7 +68,7 @@ async function favoritarGigs() {
         console.log('%c[Rota PJE]%c 70: ' + JSON.stringify(70), LOG.info, 'color:inherit')
         let botoesAcoes = criaDiv({
             id: idBotao + '_botoesAcoes',
-            ancestral: idBotao + '_div',
+            ancestral: idBotao + '_corpo',
             rowColumn: 'row'
         })
         console.log('%c[Rota PJE]%c 76: ' + JSON.stringify(76), LOG.info, 'color:inherit')
@@ -100,6 +100,7 @@ async function favoritarGigs() {
             let gigsSalvos = armazenamento?.[idBotao] || []
             console.log('%c[Rota PJE]%c gigsSalvos: ' + JSON.stringify(gigsSalvos), LOG.info, 'color:inherit')
             let dial = document.querySelector('pje-gigs-cadastro-atividades')
+            let tipoAtividade = dial.querySelector('#tipoAtividade').value
             let corridosOuUteis = dial.querySelector('mat-radio-group .mat-radio-checked').id
             let dataInicio = dial.querySelector('#dataInicio').value || ''
             let dataPrazo = tipo == 'dataPrazo' ? dial.querySelector('#dataPrazo').value : null
@@ -107,9 +108,17 @@ async function favoritarGigs() {
             let responsavel = dial.querySelector('#responsavel').value
             let observacao = dial.querySelector('#observacao').value
             let destaque = dial.querySelector('#destaque.mat-checkbox-checked') ?? false
-            let gig = {nomeBotao, corridosOuUteis, dataInicio, dataPrazo, dias, responsavel, observacao, destaque}
+            let gig = {tipoAtividade, nomeBotao, corridosOuUteis, dataInicio, dataPrazo, dias, responsavel, observacao, destaque}
             gigsSalvos.push(gig)
             await armazenar({[idBotao]: gigsSalvos})
+            document.getElementById(idBotao + '_corpo').replaceChildren()
+            let salvo = criaSubTitulo({
+                id: idBotao + '_salvo',
+                ancestral: idBotao + '_corpo',
+                texto: 'Salvo com sucesso'
+            })
+            await suspender(2000)
+            document.getElementById(idBotao + '_div').remove()
         }
     }
     async function criarBarraGigsFavoritos(idBotao) {
@@ -126,9 +135,28 @@ async function favoritarGigs() {
         let botao = criaBotaoLaranja({
             id: idDiv + '_botao_excluir',
             ancestral: idDiv,
-            texto: 'Excluir botões de GIGs favoritos',
+            texto: 'Configurar botões de GIGs favoritos',
             acao: () => alert('Vamos ver.')
         })
         estiloBotaoFitaSuperior(botao)
+        let armazenamento = await obterArmazenamento(idBotao)
+        let botoes = armazenamento?.[idBotao] || []
+        let mFuncoes = {
+            criaBotaoLaranja,
+            criaBotaoAzul
+        }
+        for (let i = 0; i < botoes.length; i++){
+            let funcao = i % 2 == 0 ? 'criaBotaoLaranja' : 'criaBotaoAzul'
+            let botao = botoes[i]
+            let b = mFuncoes[funcao]({
+                id: idBotao + '_' + i,
+                texto: botao?.nomeBotao,
+                ancestral: idDiv,
+                acao: () => inserirGigsNaTelaDeDetalhesDoProcesso(botao)
+            })
+            estiloBotaoFitaSuperior(b)
+        }
+
     }
+    
 }
