@@ -463,6 +463,7 @@ function criaBotaoAzul({ id, texto = 'OK', ancestral, acao }) {
     const btn = _ui_el('button', _ui_estiloBotao(UI_CORES.azul, UI_CORES.azulHover))
     btn.id          = id
     btn.textContent = texto
+    btn.type = 'button'
     _ui_hoverBotao(btn, UI_CORES.azul, UI_CORES.azulHover)
     if (typeof acao === 'function') btn.addEventListener('click', acao)
     if (ancestral) _ui_inserir(btn, ancestral)
@@ -480,6 +481,7 @@ function criaBotaoLaranja({ id, texto = 'OK', ancestral, acao }) {
     const btn = _ui_el('button', _ui_estiloBotao(UI_CORES.laranja, UI_CORES.laranjaHover))
     btn.id          = id
     btn.textContent = texto
+    btn.type = 'button'
     _ui_hoverBotao(btn, UI_CORES.laranja, UI_CORES.laranjaHover)
     if (typeof acao === 'function') btn.addEventListener('click', acao)
     _ui_inserir(btn, ancestral)
@@ -539,6 +541,7 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
     })
     btn.id          = id
     btn.textContent = texto
+    btn.type = 'button'
     _ui_hoverBotao(btn, cor, corHover)
     if (typeof acao === 'function') btn.addEventListener('click', acao)
 
@@ -879,6 +882,7 @@ function _ui_botaoComInput({ id, idInput, texto, textoEmCima, ancestral, acao, c
     })
     btn.id          = id
     btn.textContent = texto
+    btn.type = 'button'
     _ui_hoverBotao(btn, cor, corHover)
     if (typeof acao === 'function') btn.addEventListener('click', acao)
 
@@ -1384,6 +1388,7 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     })
     btnEncerrar.id          = id + '-encerrar'
     btnEncerrar.textContent = '■ Encerrar'
+    btnEncerrar.type = 'button'
     btnEncerrar.addEventListener('mouseenter', () => btnEncerrar.style.background = '#ececec')
     btnEncerrar.addEventListener('mouseleave', () => btnEncerrar.style.background = UI_CORES.fundo)
 
@@ -1394,6 +1399,7 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     })
     btnProximo.id          = id + '-proximo'
     btnProximo.textContent = '▶ Próximo'
+    btnProximo.type = 'button'
     _ui_hoverBotao(btnProximo, UI_CORES.laranja, UI_CORES.laranjaHover)
 
     // Lê a sessão no momento do clique para garantir o valor atual
