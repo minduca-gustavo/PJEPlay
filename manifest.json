@@ -182,6 +182,7 @@
 				"documento/paginas/pje/tarefa/conclusao.js",
 				"documento/paginas/pje/tarefa/encaminharPostoAvancado.js",
 				"documento/paginas/pje/rota/nucleo/sigeo.js",
+				"documento/paginas/pje/detalhes/pje-gigs-cadastro-atividades.js",
 				"documento/paginas/pje/rota/nucleo/gigs.js",
 				"documento/paginas/pje/rota/nucleo/gig-copia-atendimento.js",
 

@@ -450,6 +450,7 @@ async function gestao_inicializar() {
         // Dados
         for (let obj of _dadosGit) {
             let linha = _colunasAtivas.map(col => {
+                console.log(col)
                 let v = obj[col.chave]
                 return Array.isArray(v) ? v.join(',') : (v ?? '')
             })

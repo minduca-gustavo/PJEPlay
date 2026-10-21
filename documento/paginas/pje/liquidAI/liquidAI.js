@@ -1,8 +1,5 @@
 async function liquidAIGerarPJC(){
     let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIExtraiDadosPJE()
-    console.log('%c[Rota PJE]%c dadosProcesso' + JSON.stringify(dadosProcesso), LOG.aviso, 'color:inherit')
-    console.log('%c[Rota PJE]%c dadosProcessuaisPJECalc' + JSON.stringify(dadosProcessuaisPJECalc), LOG.aviso, 'color:inherit'),
-    console.log('%c[Rota PJE]%c municipio' + JSON.stringify(municipio), LOG.aviso, 'color:inherit')
     let textoSentenca = liquidAIExtraiTextoEditor()
     let configuracoes = await liquidAIConfigurar('extrair')
     let dataCalculo = new Date().setHours(0,0,0,0)
