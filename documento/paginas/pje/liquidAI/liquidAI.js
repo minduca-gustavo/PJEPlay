@@ -14,49 +14,120 @@ async function liquidAIGerarPJC(){
     // dadosEstruturados participa, é o segundo
     let dadosEstruturados = liquidAICriaDadosEstruturados(dataCalculo)
     // os parametros entram, mas o retorno são variáveis separadas.
+    let internalRef = ++indice
     let parametros = liquidAICriaParametrosIniciais(
         {
-            id: ++indice, 
-            versao: ++versao, 
+            id: internalRef, 
+            versao, 
             dataCriacao: dataCalculo,
             dataDeLiquidacao: dataCalculo,
-            versaoDoSistema: versaoDoPJECalc,
+            versaoDoSistema: configuracoes,
         },
         textoSentenca,
         dadosProcesso,
         configuracoes,
     )
     // processo entra e é uma variável só
-    let processoPJECalc = liquidAICriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, ++versao, ++indice)
+    let processoPJECalc = liquidAICriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, versao, internalRef)
     // município tem uma externalRef que é da tabela TOM da receita federal
-    let municipioTOM = liquidAIDefineMunicipio({municipio})
+    municipio = liquidAIDefineMunicipio({municipio})
     // restante trará tudo que não foi mapeado, de acordo com CalculoCalculistaSemVerbasSemHistorico.xml
     let restante = naoMapeados()
+    let resultado = {Calculo: {gprec, dadosEstruturados, ...parametros, ...processoPJECalc, ...municipio, ...restante}}
+    let xml = liquidAIJsonToXml(resultado)
+    await _baixarPjc('<?xml version="1.0" encoding="ISO-8859-1"?>' + xml, 'liquidAI')
+}
+
+function naoMapeados(){
+    return{
+        verbas: {
+            Set:''
+        },
+        historicosSalariais: {
+            Set:''
+        },
+        listaDeFerias: {
+            Set:''
+        },
+        apuracoesDeJuros: {
+            Set:''
+        },
+        excecoesDaCargaHoraria: {
+            Set:''
+        },
+        excecoesDoSabado: {
+            Set:''
+        },
+        faltas: {
+            Set:''
+        },
+        fgts: {
+            Fgts:''
+        },
+        inss: '',
+        previdenciaPrivada: '',
+        pensaoAlimenticia: '',
+        parametrosDeAtualizacao: '',
+        multas: {
+            Set:''
+        },
+        honorarios: {
+            Set:''
+        },
+        irpf: '',
+        custasJudiciais: '',
+        seguroDesemprego: '',
+        salarioFamilia: '',
+        pontosFacultativos: {
+            Set:''
+        },
+        historicosValidacao: {
+            Set:''
+        },
+        historicosValidacaoAtualizacao: {
+            Set:''
+        },
+        cartoesDePonto: {
+            Set:''
+        },
+        pagamentos: {
+            Set:''
+        },
+        apuracoesCartaoDePonto: {
+            Set:''
+        },
+        apuracoesDiariasCartaoDePonto: {
+            Set:''
+        },
+        excecoesDoFechamentoDeCartaoDePonto: {
+            Set:''
+        },
+    }
 }
 
 function liquidAIExtraiTextoEditor(){
     return({
-        dataAdmissao,
-        dataDemissao,
-        valorUltimaRemuneracao,
-        valorMaiorRemuneracao,
-        sabadoDiaUtil,
-        projetaAvisoIndenizado,
-        consideraFeriadoEstadual,
-        prescricaoFgts,
-        prescricaoQuinquenal,
-        limitarAvosAoPeriodoDoCalculo,
-        zeraValorNegativo,
-        consideraFeriadoMunicipal,
-        prazoFeriasProporcional,
-        regimeDoContrato,
-        indicesAcumulados,
-        apuracaoPrazoDoAvisoPrevio,
-        prazoAvisoInformado,
-        ativo,
-        processoInformadoManualmente,
-        comentarios,
-        diaFechamentoMes,
+        dataAdmissao: '1672542000000', // ficticios, para teste
+        dataDemissao: '1688180400000', // ficticios, para teste
+        valorUltimaRemuneracao: 1000, // ficticios, para teste
+        valorMaiorRemuneracao: 1000, // ficticios, para teste
+        sabadoDiaUtil: 'true',
+        projetaAvisoIndenizado: 'true',
+        consideraFeriadoEstadual: 'true',
+        prescricaoFgts: 'false',
+        prescricaoQuinquenal: 'false',
+        limitarAvosAoPeriodoDoCalculo: 'false',
+        zeraValorNegativo: 'false',
+        consideraFeriadoMunicipal: 'true',
+        prazoFeriasProporcional: 'null',
+        regimeDoContrato: 'INTEGRAL',
+        indicesAcumulados: 'MES_SUBSEQUENTE_AO_VENCIMENTO',
+        apuracaoPrazoDoAvisoPrevio: 'APURACAO_CALCULADA',
+        prazoAvisoInformado: 'null',
+        ativo: 'true',
+        processoInformadoManualmente: 'true',
+        comentarios: 'Gerado por LiquidAI',
+        diaFechamentoMes: '31',
     })
 }
 
@@ -66,48 +137,49 @@ async function liquidAIConfigurar(parametro) {
         return({versaoDoSistema: versaoDoPJECalc})
     }
     async function liquidAIObterVersao() {
-        let versao = ''
-        return ({versao})
+        let versao = '2.16.0'
+        return (versao)
     }
 }
 
 async function liquidAIExtraiDadosPJE(){
     let interceptadorProcesso = interceptador_lerProcesso()
     let {numero, valorDaCausa, autuadoEm} = interceptadorProcesso
+    autuadoEm = new Date(autuadoEm).setHours(0, 0, 0, 0)
     let numeroPonto = numero.split('.')
     let numeroTraco = numeroPonto[0].split('-')
     let municipio = interceptadorProcesso?.processoJT?.municipio?.nome
-    
+    console.log('%c[Rota PJE]%c municipio: ' + JSON.stringify(municipio), LOG.info, 'color:inherit')
     let interceptadorPartes = interceptador_lerPartes()
     let dadosReclamante = interceptadorPartes?.ATIVO[0]
-    let reclamante = dadosReclamante?.nome
+    let reclamante = dadosReclamante?.nome.trim()
     let tipoDocumentoFiscalReclamante = dadosReclamante?.tipoDocumento
-    let numeroDocumentoFiscalReclamante = dadosReclamante?.documento
+    let numeroDocumentoFiscalReclamante = dadosReclamante?.documento.replace(/\.*\-*\/*/g, '')
     let dadosReclamado = interceptadorPartes?.PASSIVO[0]
-    let reclamado = dadosReclamado?.nome
+    let reclamado = dadosReclamado?.nome.trim()
     let tipoDocumentoFiscalReclamado = dadosReclamado?.tipoDocumento
-    let numeroDocumentoFiscalReclamado = dadosReclamante?.documento
-    console.log('%c[Rota PJE]%c interceptadorProcesso' + JSON.stringify(interceptadorProcesso), LOG.aviso, 'color:inherit', interceptadorProcesso)
-    console.log('%c[Rota PJE]%c interceptadorPartes' + JSON.stringify(interceptadorPartes), LOG.aviso, 'color:inherit', interceptadorPartes)
+    let numeroDocumentoFiscalReclamado = dadosReclamado?.documento.replace(/\.*\-*\/*/g, '')
+    let idSetor = interceptador_ler('historico_deslocamentos').find(h => normalizar(h?.orgaoJulgadorOrigem?.descricao).includes('vara do trabalho'))?.orgaoJulgadorOrigem?.id || ''
+    console.log('%c[Rota PJE]%c idSetor: ' + JSON.stringify(idSetor), LOG.info, 'color:inherit')
     return({
         dadosProcesso:{
             reclamante,
             cpfReclamante: numeroDocumentoFiscalReclamante,
-            dataAjuizamento: autuadoEm.slice(0,10),
-            cpfUsuarioCriador: '', // falta
-            idSetor: '' // falta
+            dataAjuizamento: autuadoEm,
+            cpfUsuarioCriador: 32656400864, // falta
+            idSetor,
         },
         dadosProcessuaisPJECalc:{
             valorDaCausa,
-            dataAutuacao: autuadoEm.slice(0,10),
-            numero: numeroTraco[0],
-            ano: numeroPonto[1],
-            justica: numeroPonto[2],
-            regiao: numeroPonto[3],
-            vara: numeroPonto[4],
-            digito: numeroTraco[1],
-            tipoDocumentoPrevidenciarioReclamante: '',
-            numeroDocumentoPrevidenciarioReclamante: '',
+            dataAutuacao: autuadoEm,
+            numero: Number(numeroTraco[0]),
+            ano: Number(numeroPonto[1]),
+            justica: Number(numeroPonto[2]),
+            regiao: Number(numeroPonto[3]),
+            vara: Number(numeroPonto[4]),
+            digito: Number(numeroTraco[1]),
+            tipoDocumentoPrevidenciarioReclamante: 'null',
+            numeroDocumentoPrevidenciarioReclamante: 'null',
             nomeReclamante: reclamante,
             tipoDocumentoFiscalReclamante,
             numeroDocumentoFiscalReclamante,
@@ -182,10 +254,10 @@ function liquidAICriaDadosProcessuaisPJECalc(
                     }
                 },
                 advogadosReclamante:{
-                    List
+                    List:''
                 },
                 advogadosReclamado:{
-                    List
+                    List:''
                 }
             }
         }
@@ -201,29 +273,29 @@ function liquidAICriaParametrosIniciais(
         dataDeLiquidacao = new Date().setHours(0,0,0,0)
     }, // vem do liquidAIGerarPJC
     {
-        dataAdmissao,
-        dataDemissao,
-        valorUltimaRemuneracao,
-        valorMaiorRemuneracao,
+        dataAdmissao = '',
+        dataDemissao = '',
+        valorUltimaRemuneracao = '',
+        valorMaiorRemuneracao = '',
         valorCargaHorariaPadrao = '220',
-        sabadoDiaUtil= 'true',
-        projetaAvisoIndenizado= 'true',
-        consideraFeriadoEstadual= 'true',
-        prescricaoFgts= 'false',
-        prescricaoQuinquenal= 'false',
-        limitarAvosAoPeriodoDoCalculo= 'false',
-        zeraValorNegativo= 'false',
-        consideraFeriadoMunicipal= 'true',
-        tipoCalculo= 'VARA',
-        prazoFeriasProporcional= 'null',
-        regimeDoContrato= 'INTEGRAL',
-        indicesAcumulados= 'MES_SUBSEQUENTE_AO_VENCIMENTO',
-        apuracaoPrazoDoAvisoPrevio= 'APURACAO_CALCULADA',
-        prazoAvisoInformado= 'null',
-        ativo= 'true',
-        processoInformadoManualmente= 'false',
-        comentarios= 'null',
-        diaFechamentoMes= '31',
+        sabadoDiaUtil = 'true',
+        projetaAvisoIndenizado = 'true',
+        consideraFeriadoEstadual = 'true',
+        prescricaoFgts = 'false',
+        prescricaoQuinquenal = 'false',
+        limitarAvosAoPeriodoDoCalculo = 'false',
+        zeraValorNegativo = 'false',
+        consideraFeriadoMunicipal = 'true',
+        tipoCalculo = 'VARA',
+        prazoFeriasProporcional = 'null',
+        regimeDoContrato = 'INTEGRAL',
+        indicesAcumulados = 'MES_SUBSEQUENTE_AO_VENCIMENTO',
+        apuracaoPrazoDoAvisoPrevio = 'APURACAO_CALCULADA',
+        prazoAvisoInformado = 'null',
+        ativo = 'true',
+        processoInformadoManualmente = 'true',
+        comentarios = 'Gerado por LiquidAI',
+        diaFechamentoMes = '31',
     }, // vem do liquidAIExtraiTextoEditor
     {
         dataAjuizamento,
@@ -232,22 +304,22 @@ function liquidAICriaParametrosIniciais(
     }, // vem do liquidAIExtraiDadosPJE - dadosProcesso
     {
         versaoDoSistema
-    }, // vem do liquidAIConfigurar
-    {
-
-    } // vem do liquidAIExtraiDadosPJE - dadosProcessuaisPJECalc
+    }//, // vem do liquidAIConfigurar
+    //{
+//
+    //} // vem do liquidAIExtraiDadosPJE - dadosProcessuaisPJECalc
 ){
-    let parametros = {
+    return {
         id: id,
         versao: versao,
         atualizacao: 'null',
-        hashCodeLiquidacao,
+        hashCodeLiquidacao: '',
         dataCriacao,
-        dataAdmissao,
-        dataDemissao,
+        dataAdmissao, // falta
+        dataDemissao, // falta
         dataAjuizamento,
-        valorUltimaRemuneracao,
-        valorMaiorRemuneracao,
+        valorUltimaRemuneracao, // falta
+        valorMaiorRemuneracao, // falta
         dataInicioCalculo: 'null',
         dataTerminoCalculo: 'null',
         valorCargaHorariaPadrao,
@@ -286,9 +358,9 @@ function liquidAICriaParametrosIniciais(
 }
 
 function liquidAICriaDadosEstruturados(dataCalculo){
-    let dadosEstruturados = {
+    return {
         dataLiquidacao: dataCalculo,
-        hashLiquidacao,
+        hashLiquidacao: '',
         contrSocialDezPorcento: '0',
         contrSocialMeioPorcento: '0',
         custasReclamado: '0',
@@ -303,13 +375,13 @@ function liquidAICriaDadosEstruturados(dataCalculo){
         jurosPrevidenciaPrivada:'null',
         valorPrincipal: '0',
         tipoRegistroCalculo: 'CALCULO',
-        multas,
-        honorarios,
+        multas: '',
+        honorarios: '',
     }
 }
 
 function liquidAICriaGprec({reclamante, cpfReclamante}, dataCalculo){
-    let gprec = {
+    return {
         dataCalculo: dataCalculo,
         nomeBeneficiario: reclamante,
         documentoFiscalBeneficiario: cpfReclamante,
@@ -319,15 +391,15 @@ function liquidAICriaGprec({reclamante, cpfReclamante}, dataCalculo){
         impostoRenda: '0',
         depositoFgts: '0',
         custasJudiciais: '0',
-        honorariosReclamante,
-        honorariosReclamado,
+        honorariosReclamante: '',
+        honorariosReclamado: '',
     }
-    return {gprec}
 }
 
-function liquidAIDefineMunicipio({cidade}){
-    let externalRef = municipioTOM.find(d => normalizar(d?.nome).includes(normalizar(cidade)))?.codigo
-    return {municipio: {Municipio: externalRef}}
+function liquidAIDefineMunicipio({municipio}){
+    
+    let externalRef = municipiosTOM.find(d => normalizar(d?.nome).includes(normalizar(municipio)))?.codigo
+    return {municipio: {Municipio: {externalRef}}}
 }
 
 function liquidAIJsonToXml(objeto) {

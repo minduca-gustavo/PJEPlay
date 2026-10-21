@@ -1,5 +1,5 @@
 {
-	"version":					"2.2.29",
+	"version":					"2.2.30",
 	"short_name":				"RotaPJE",
 	"name":							"Rota PJE",
 	"description":			"Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -159,6 +159,7 @@
 				
 				"documento/paginas/chatJT/chatJT.js",
 				"documento/paginas/pje/gim/assina-tudo.js",
+				"documento/paginas/pje/liquidAI/pjc.js",
 				"documento/paginas/pje/liquidAI/liquidAI.js",
 				"documento/paginas/pje/liquidAI/municipios.js",
 				"documento/paginas/pje/liquidAI/botoes.js",

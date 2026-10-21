@@ -173,6 +173,7 @@ async function mostraVaraDeOrigem(banner) {
     let idProcesso = location.href.match(/pjekz\/processo\/(\d+)/)?.[1]
     if (!idProcesso) return
     let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+    interceptador_salvarMetaTag('historico_deslocamentos', JSON.stringify(historico))
     let vara = historico
         .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
         ?.orgaoJulgadorOrigem?.descricao || ''
@@ -539,5 +540,7 @@ function formataValor(valor) {
         return texto.split('Vara do Trabalho de ').pop()
             + (/\d/.test(texto) ? ' - ' + texto.split(' ')[0] : '')
     }
+    console.log('%c[Rota PJE]%c : ' + JSON.stringify(texto.split(',').length), LOG.info, 'color:inherit')
+    if (texto.split(',').length > 1) return texto
     return texto.split(' ')[0] + ' ' + texto.split(' ').pop()
 }
