@@ -113,6 +113,22 @@ async function favoritarGigs() {
         }
     }
     async function criarBarraGigsFavoritos(idBotao) {
-        
+        await aguardarElemento('pje-gigs-lista-atividades')
+        let elementoInserirAntes = document.querySelector('pje-gigs-lista-atividades #lista-atividades')
+        let idDiv = idBotao + '_barra'
+        let remover = document.getElementById(idDiv)?.remove()
+        let div = criaDiv({
+            id: idDiv,
+            ancestral: document.body
+        })
+        formataFitaSuperior(div)
+        insereFitaSuperior(elementoInserirAntes, div)
+        let botao = criaBotaoLaranja({
+            id: idDiv + '_botao_excluir',
+            ancestral: idDiv,
+            texto: 'Excluir botões de GIGs favoritos',
+            acao: () => alert('Vamos ver.')
+        })
+        estiloBotaoFitaSuperior(botao)
     }
 }

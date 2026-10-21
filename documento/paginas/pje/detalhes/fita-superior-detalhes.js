@@ -69,13 +69,13 @@ function acertaChipTelaGig(ancestral){
 }
 
 function formataFitaSuperior(elemento, cor){
-    elemento.style.backgroundColor = cor
+    elemento.style.backgroundColor = cor ?? '#ffffff'
     elemento.style.gap = '0px'
     elemento.style.padding = '0px'
     elemento.style.marginBottom = '0px'
     elemento.style.minHeight = '14px'   // antes era height fixo
     elemento.style.height = 'auto'      // cresce conforme as linhas
-    elemento.style.zIndex = '9999999'
+    elemento.style.zIndex = '1'
     elemento.style.display = 'flex'
     elemento.style.flexDirection = 'row'
     elemento.style.flexWrap = 'wrap'    // quebra de linha
@@ -610,7 +610,7 @@ function estiloBotaoFitaSuperior(botao){
     botao.style.height     = '14px'
     botao.style.lineHeight = '14px'
     botao.style.padding    = '0 8px'
-    botao.style.zIndex = '9999999'
+    botao.style.zIndex = '1'
 }
 
 async function peritosPreferidos(ancestral) {
