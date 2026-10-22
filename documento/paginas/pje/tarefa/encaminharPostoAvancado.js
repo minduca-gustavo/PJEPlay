@@ -100,6 +100,7 @@ async function encaminharPostoAvancadoGigs(vara){
         let gigsAnteriores = armazenamento?.rotapje_levaGigs?.gigs || []
         let continua = armazenamento?.rotapje_levaGigs?.continua || false
         let perfilAtual = armazenamento?.rotapje_levaGigs?.perfil
+        let perfilAnterior = armazenamento?.rotapje_levaGigs?.perfilAnterior
         console.log('%c[Rota PJE]%c gigsAnteriores: ' + JSON.stringify(gigsAnteriores), LOG.info, 'color:inherit')
         console.log('%c[Rota PJE]%c continua: ' + JSON.stringify(continua), LOG.info, 'color:inherit')
         console.log('%c[Rota PJE]%c perfilAtual: ' + JSON.stringify(perfilAtual), LOG.info, 'color:inherit')
@@ -127,7 +128,10 @@ async function encaminharPostoAvancadoGigs(vara){
         }
         await removerArmazenamento('rotapje_levaGigs')
         window.name = ''
-        //if (!continua) window.close()
+        if (!continua) {
+            await postTrocaDeOJ(perfilAnterior?.idPerfil)
+            window.close()
+        }
     }
 
     async function obterGigsDestaOJ(){
@@ -148,22 +152,23 @@ async function encaminharPostoAvancadoGigs(vara){
             let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis') || []
             let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(vara))) || {}
             if (!perfil?.idPerfil) return
-            
-            botao.addEventListener('click', levaGigSegueTarefa(true, perfil), { capture: true });
+            let perfilAnterior = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(document.querySelector('.oj-cargo').textContent.split('/')[0].trim()))) || {}
+            botao.addEventListener('click', levaGigSegueTarefa(true, perfil, perfilAnterior), { capture: true });
             return
         } else {
             let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
             let perfis = await rota_fetch(location.origin + '/pje-seguranca/api/token/perfis')
             for (let botao of botoes){
                 let perfil = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(botao.textContent)))
+                let perfilAnterior = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(document.querySelector('.oj-cargo').textContent.split('/')[0].trim()))) || {}
                 if(!perfil?.idPerfil) continue
 
-                botao.addEventListener('click', levaGigSegueTarefa(false, perfil), { capture: true })
+                botao.addEventListener('click', levaGigSegueTarefa(false, perfil, perfilAnterior), { capture: true })
             }
         }
         return
         
-        function levaGigSegueTarefa(analise, perfil = null) {
+        function levaGigSegueTarefa(analise, perfil = null, perfilAnterior) {
             
             return async function listenerTemporario(e) {
                 let botao = e.currentTarget;
@@ -187,7 +192,7 @@ async function encaminharPostoAvancadoGigs(vara){
                 if (leva || continua) {
                     window.name = !nomeJanela.includes('rotapje_levaGigs') ? nomeJanela + 'rotapje_levaGigs' : nomeJanela
                     let gigsLeva = leva ? gigs : []
-                    await armazenar({rotapje_levaGigs: {gigs: gigsLeva, continua, perfil}})
+                    await armazenar({rotapje_levaGigs: {gigs: gigsLeva, continua, perfil, perfilAnterior}})
                 }
                 botao.click()
                 await suspender (100)

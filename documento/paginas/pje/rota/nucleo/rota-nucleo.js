@@ -866,7 +866,7 @@ async function postGeral(url, configuracoes){
 async function inserirModelo(modelo){
 	await aguardarElemento('.editor-container')
 	await suspender(500)
-	let editor = document.querySelector('pje-editor .conteudo').children[2]
+	let editor = [...document.querySelectorAll('pje-editor .conteudo >div')].find(d=> d.innerText.includes('Fundamenta'))
 	focar(editor.querySelector('[contenteditable]'))
 	await aguardarElemento('.mat-tab-label')
 	await suspender(500)

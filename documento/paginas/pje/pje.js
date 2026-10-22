@@ -180,14 +180,19 @@ function rota_iniciarPermanentes(){
 
 	// gigs — botão de copiar atendimento. Registros de mutação:
 	// uma vez por documento, nunca dentro do ciclo de URL.
-	rotaRegistrarMutacao({ seletor: '#gigs',    callback: () => gig_copiaAtendimento() })
-	rotaRegistrarMutacao({ seletor: '.actions', callback: () => gig_copiaAtendimento() })
+	rotaRegistrarMutacao({ seletor: '#gigs',    callback: () => mutacaoGigs() })
+	rotaRegistrarMutacao({ seletor: '.actions', callback: () => mutacaoGigs() })
 	rotaRegistrarMutacao({ seletor: 'mat-dialog-container', callback: () => favoritarGigs() })
 
 	// Observador central — depois dos registros, por clareza.
 	// A ordem não é obrigatória: o callback lê ROTA_MUTACOES na hora.
 	rotaIniciarObservadorCentral()
 
+}
+
+function mutacaoGigs(){
+	gig_copiaAtendimento()
+	criarBarraGigsFavoritos()
 }
 
 
@@ -347,7 +352,7 @@ function rota_interfacePorContexto(){
 	// gigs — botão de copiar atendimento. Passada de recuperação:
 	// o observador central só vê o que é adicionado depois dele,
 	// então o que já estava na tela depende desta chamada.
-	gig_copiaAtendimento()
+	mutacaoGigs()
 
 	// nucleo/sigeo.js — só atua no sigeo.jt.jus.br, guarda interna
 	sigeoAjJtAoIniciar()

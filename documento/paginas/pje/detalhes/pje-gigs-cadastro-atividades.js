@@ -16,7 +16,6 @@ async function favoritarGigs() {
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
     let idBotao = id('favoritarGig') 
-    await criarBarraGigsFavoritos(idBotao)
     await aguardarElemento('pje-gigs-cadastro-atividades')
     await suspender(100)
     await aguardarElemento('pje-gigs-cadastro-atividades mat-card-actions')
@@ -111,6 +110,10 @@ async function favoritarGigs() {
             }
             let armazenamento = await obterArmazenamento(idBotao)
             let gigsSalvos = armazenamento?.[idBotao] || []
+            if(gigsSalvos.some(d => d?.nomeBotao == nomeBotao)){
+                rota_avisoObrigatorio('Já existe um botão com esse nome.', 5)
+                return
+            }
             let dial = document.querySelector('pje-gigs-cadastro-atividades')
             let tipoAtividade = dial.querySelector('#tipoAtividade').value
             let corridosOuUteis = dial.querySelector('mat-radio-group .mat-radio-checked').id
@@ -129,47 +132,135 @@ async function favoritarGigs() {
                 ancestral: idBotao + '_corpo',
                 texto: 'Salvo com sucesso'
             })
-            criarBarraGigsFavoritos(idBotao)
+            criarBarraGigsFavoritos()
             await suspender(2000)
             let remover = document.getElementById(idBotao + '_div')?.remove()
         }
     }
-    async function criarBarraGigsFavoritos(idBotao) {
-        await aguardarElemento('pje-gigs-lista-atividades')
-        let elementoInserirAntes = document.querySelector('pje-gigs-lista-atividades #lista-atividades')
-        let armazenamento = await obterArmazenamento(idBotao)
-        let botoes = armazenamento?.[idBotao] || []
-        let idDiv = idBotao + '_barra'
-        let remover = document.getElementById(idDiv)?.remove()
-        let div = criaDiv({
-            id: idDiv,
-            ancestral: document.body
-        })
-        formataFitaSuperior(div)
-        insereFitaSuperior(elementoInserirAntes, div)
-        let botao = criaBotaoLaranja({
-            id: idDiv + '_botao_excluir',
-            ancestral: idDiv,
-            texto: 'Configurar botões de GIGs favoritos',
-            acao: () => alert('Vamos ver.')
-        })
-        estiloBotaoFitaSuperior(botao)
-        let mFuncoes = {
-            criaBotaoLaranja,
-            criaBotaoAzul
-        }
-        for (let i = 0; i < botoes.length; i++){
-            let funcao = i % 2 == 0 ? 'criaBotaoAzul' : 'criaBotaoLaranja'
-            let botao = botoes[i]
-            let b = mFuncoes[funcao]({
-                id: idBotao + '_' + i,
-                texto: botao?.nomeBotao,
-                ancestral: idDiv,
-                acao: () => inserirGigsNaTelaDeDetalhesDoProcesso(botao)
-            })
-            estiloBotaoFitaSuperior(b)
-        }
-
-    }
     
+}
+
+async function criarBarraGigsFavoritos() {
+    await aguardarElemento('pje-gigs-lista-atividades')
+    let idGigBarra = id('gig', 'barra', 'favoritos')
+    let gigsArmazenados = id('favoritarGig')
+    let elementoInserirAntes = document.querySelector('pje-gigs-lista-atividades #lista-atividades')
+    let armazenamento = await obterArmazenamento(gigsArmazenados)
+    let botoes = armazenamento?.[gigsArmazenados] || []
+    let remover = document.getElementById(idGigBarra)?.remove()
+    let div = criaDiv({
+        id: idGigBarra,
+        ancestral: document.body
+    })
+    formataFitaSuperior(div)
+    insereFitaSuperior(elementoInserirAntes, div)
+    let botao = criaBotaoLaranja({
+        id: idGigBarra + '_botao_excluir',
+        ancestral: idGigBarra,
+        texto: 'Configurar botões de GIGs favoritos',
+        acao: () => configurarGigsFavoritos(botoes)
+    })
+    estiloBotaoFitaSuperior(botao)
+    let mFuncoes = {
+        criaBotaoLaranja,
+        criaBotaoAzul
+    }
+    for (let i = 0; i < botoes.length; i++){
+        let funcao = i % 2 == 0 ? 'criaBotaoAzul' : 'criaBotaoLaranja'
+        let botao = botoes[i]
+        let b = mFuncoes[funcao]({
+            id: idGigBarra + '_' + i,
+            texto: botao?.nomeBotao,
+            ancestral: idGigBarra,
+            acao: () => inserirGigsNaTelaDeDetalhesDoProcesso(botao)
+        })
+        estiloBotaoFitaSuperior(b)
+    }
+
+}
+
+async function configurarGigsFavoritos(botoes) {
+    let idDiv = id('gigsFavoritos', 'configurar')
+    let remover = [...document.querySelectorAll('#' + idDiv)].map(d => d?.remove())
+    let div = criaDivCentralPadrao({
+        id: idDiv,
+        largura: '30%',
+        altura: '250px',
+        titulo: 'Configurar GIGs favoritos'
+    })
+    div.style.gap = '0px'
+    let input = criaInputAnotacao({
+        id: idDiv + '_input',
+        textoEmCima: 'Para excluir um botão, apague a linha com o nome do botão correspondente e clique em salvar.',
+        ancestral: div?.corpo?.id
+    })
+    let alturaMaxima = div?.corpo.offsetHeight
+    input.style.height = (alturaMaxima * 0.7) + 'px'
+    let alturaMaximaInput = input.offsetHeight
+    console.log('%c[Rota PJE]%c alturaMaxima: ' + JSON.stringify(alturaMaxima), LOG.info, 'color:inherit')
+    input.textarea.style.height = alturaMaximaInput + 'px'
+    input.textarea.style.overflowY = 'auto'
+    input.textarea.style.boxSizing = 'border-box'
+    let botao = criaBotaoAzul({
+        id: idDiv + '_salvar',
+        texto: 'Salvar',
+        ancestral: div?.rodape?.id,
+        acao: () => salvarAlteracoes(botoes)
+    })
+    input.textarea.value = botoes.map(d => d?.nomeBotao).join('\n')
+    return
+    async function salvarAlteracoes(botoes) {
+        let input = document.getElementById(idDiv + '_input')
+        let texto = input?.value
+        let nomes = texto.split(/\r?\n/).filter(l => l.trim())
+        console.log('%c[Rota PJE]%c nomes: ' + JSON.stringify(nomes), LOG.info, 'color:inherit')
+        let botoesSalvar = botoes.filter(d=> nomes.some(c=> d?.nomeBotao == c))
+        console.log('%c[Rota PJE]%c botoesSalvar: ' + JSON.stringify(botoesSalvar), LOG.info, 'color:inherit')
+        await armazenar({[id('favoritarGig')]: botoesSalvar})
+        criarBarraGigsFavoritos()
+        input.value = 'Alterações salvas com sucesso'
+        await suspender (3000)
+        input.value = texto
+        return
+    }
+}
+
+function criaDivCentralPadrao({id, ancestral = document.body, titulo = '', cor = 'branco', largura = '80%', altura = '80%', position = 'absolute', top = '50%', left = '50%', transform = 'translate(-50%, -50%)'}){
+    let div = criaDiv({
+        id: id,
+        ancestral: ancestral
+    })
+    formataDiv(div, cor, largura, altura, position, top, left, transform)
+    let cabecalho = criaDiv({
+        id: id + '_cabecalho',
+        ancestral: id,
+        rowColumn: 'row-reverse'
+    })
+    cabecalho.style.marginBottom = '0px'
+    criaBotaoFechar({
+        id: id + '_fechar',
+        ancestral: id + '_cabecalho',
+        elementoFechar: id
+    })
+    let tituloEl = criaTitulo({
+        id: id + '_fechar',
+        ancestral: id + '_cabecalho',
+        texto: titulo
+    })
+    tituloEl.style.width = '100%'
+    let corpo = criaDiv({
+        id: id + '_corpo',
+        ancestral: id,
+    })
+    corpo.style.marginBottom = '0px'
+    corpo.style.height = '100%'
+    let rodape = criaDiv({
+        id: id + '_rodape',
+        ancestral: id,
+    })
+    rodape.style.marginBottom = '0px'
+    div.corpo = corpo
+    div.cabecalho = cabecalho
+    div.rodape = rodape
+    return div
 }

@@ -41,16 +41,17 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', d
         await suspender (200)
         await preencherRota(inputObservacao, observacao)
     }
-    if (corridosOuUteis !== 'diasUteis'){
-        await aguardarElemento('pje-gigs-lista-atividades #diasUteis')
+    if (corridosOuUteis){
+        await aguardarElemento('pje-gigs-cadastro-atividades #' + corridosOuUteis + ' input')
         await suspender (200)
-        await clicar('pje-gigs-lista-atividades #diasUteis')
+        await clicar('pje-gigs-cadastro-atividades #' + corridosOuUteis + ' input')
         await suspender (200)
     }
+    console.log('%c[Rota PJE]%c 50: ' + JSON.stringify(50), LOG.info, 'color:inherit')
     if (destaque){
-        await aguardarElemento('pje-gigs-lista-atividades #destaque')
+        await aguardarElemento('pje-gigs-cadastro-atividades #destaque')
         await suspender (200)
-        await clicar('pje-gigs-lista-atividades #destaque')
+        await clicar('pje-gigs-cadastro-atividades #destaque')
         await suspender (200)
     }
     let inputTipoAtividade = await aguardarElementoNovo('detalhesDoProcessoInputTipoAtividadeGigs')
