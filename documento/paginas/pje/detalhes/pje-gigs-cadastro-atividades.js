@@ -92,7 +92,7 @@ async function favoritarGigs() {
             })
             botaoDataPrazo.style.width = '50%'
         }
-        if (dias == 0 || dataPrazo == dataInicio){
+        if (dias === 0 || ((!!dataPrazo && !!dataInicio) && (dataPrazo == dataInicio))){
             let botaoHoje = criaBotaoAzul({
                 id: idBotao + '_hoje',
                 ancestral: idBotao + '_botoesAcoes',

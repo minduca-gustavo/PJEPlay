@@ -160,6 +160,8 @@ async function triagem_inicial_atualizaHorariosVagos(p){
 // RETIFICAR PASSO 1 - recebe os dados e abre a tela de retificação
 
 async function triagem_inicial_retificarAutuacao(tipo) {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     let envio = tipo.tipo
     await armazenar({
         'rotapje_triagem_inicial_retificar': dadosTriagemInicial.execucaoAtual,
@@ -262,6 +264,8 @@ async function triagem_inicial_acoesRetificar(){
 // DESPACHAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_despachar(tipo) {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     let envio = tipo.tipo
     await armazenar({
         'rotapje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
@@ -411,6 +415,8 @@ async function buscaModeloTriagem(sala, modo) {
 // DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_designarAudiencia(tipo) {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
@@ -645,6 +651,8 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
 //__________________________________________________
 
 async function triagem_inicial_colocarGigDeAcompanhamento() {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
     if (!audienciaMarcadaHorario){
@@ -683,6 +691,8 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
 // CERTIFICAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_certificar(tipo) {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     let id =            dadosTriagemInicial?.processo?.id
     let audienciasMarcadas = await buscarAudienciasMarcadas(id) || null
     let envio = tipo.tipo
@@ -768,7 +778,7 @@ async function triagem_inicial_acoesCertificar(){
     }
     let dados = certidoes[tipoCertidao]
     await suspender(1000)
-    preencherCampoComEscolhaDeOpcao(tipo, dados.tipo)
+    await preencherCampoComEscolhaDeOpcao(tipo, dados.tipo)
     console.log('%c[Rota PJE]%c tipo 722: ' + JSON.stringify(tipo), LOG.info, 'color:inherit')
     await suspender(1000)
     preencherRota(descricao, dados.descricao)
@@ -781,7 +791,7 @@ async function triagem_inicial_acoesCertificar(){
     } else if (dados.texto){
         let campoTexto = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
         await suspender(1000)
-        preencherCKEditorExecCommand(campoTexto, dados.texto)
+        await preencherCKEditorExecCommand(campoTexto, dados.texto)
     } else {
         rota_avisoObrigatorio('Prossiga manualmente.', 5)
         return
@@ -811,6 +821,8 @@ async function triagem_inicial_acoesCertificar(){
 // INTIMAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_intimar(tipo) {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     let id = dadosTriagemInicial?.processo?.id
     let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
     let envio = tipo?.dados?.tipo
@@ -934,7 +946,7 @@ async function triagem_inicial_acoesIntimar(){
         })
         ?.querySelector('[contenteditable]')
     //let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
-    preencherCKEditorExecCommand(editorAssinatura, '.')
+    await preencherCKEditorExecCommand(editorAssinatura, '.')
     await suspender(2000)
     //let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(editorConteudo)
@@ -952,7 +964,7 @@ async function triagem_inicial_acoesIntimar(){
     let modelo = ''
     if (linkIntimar){
         await suspender(1000)
-        preencherCKEditorExecCommand(editorConteudo, dados.texto)
+        await preencherCKEditorExecCommand(editorConteudo, dados.texto)
     } else {
         modelo = modeloIntimacao 
                   || dados.tipos.find(t => tipoAudienciaIntimar.toLowerCase().includes(t.tipo))?.modelo 
@@ -1037,6 +1049,8 @@ async function triagem_inicial_acoesIntimar(){
 // ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_aguardandoAudiencia(tipo) {
+    let wname = window.name
+    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
     let id =            dadosTriagemInicial?.processo?.id
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''

@@ -19,26 +19,30 @@
 async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao', corridosOuUteis = 'diasUteis', destaque = false, hoje = false}){
     let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
     if (!novaAtividade) return
+    clicar(novaAtividade)
     let dataPrazoPreencher = dataPrazo
+    await aguardarElemento('pje-gigs-cadastro-atividades #dataInicio')
     if (hoje){
         dataPrazoPreencher = document.querySelector('pje-gigs-cadastro-atividades #dataInicio').value
     }
-    clicar(novaAtividade)
+    console.log('%c[Rota PJE]%c dataPrazoPreencher: ' + JSON.stringify(dataPrazoPreencher), LOG.info, 'color:inherit')
     if (dias && !dataPrazoPreencher){
         let inputDias = await aguardarElementoNovo('detalhesDoProcessoInputDiasGigs')
+        console.log('%c[Rota PJE]%c 31: ' + JSON.stringify(31), LOG.teste, 'color:inherit', inputDias)
         await suspender (200)
         preencher(inputDias, dias)
     }
     if (dataPrazoPreencher){
         let inputData = await aguardarElementoNovo('detalhesDoProcessoInputDataPrazoGigs')
+        console.log('%c[Rota PJE]%c 37: ' + JSON.stringify(37), LOG.info, 'color:inherit', inputData)
         await suspender (200)
-        preencher(inputData, dataPrazo)
+        preencher(inputData, dataPrazoPreencher)
     }
     if (responsavel){
         let inputResponsavel = await aguardarElementoNovo('detalhesDoProcessoInputResponsavelGigs')
         await focar(inputResponsavel)
         await suspender (200)
-        preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
+        await preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
     }
     if (observacao){
         let inputObservacao = await aguardarElementoNovo('detalhesDoProcessoInputObservacaoGigs')
@@ -63,7 +67,7 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', d
     let inputTipoAtividade = document.querySelector('pje-gigs-cadastro-atividades #tipoAtividade')
     if (inputTipoAtividade.value != tipoAtividade){
         await focar(inputTipoAtividade)
-        preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
+        await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
     }
     if (salvar === 'sim'){
         let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
