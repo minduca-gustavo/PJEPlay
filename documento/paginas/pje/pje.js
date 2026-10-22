@@ -176,12 +176,11 @@ function rota_iniciarPermanentes(){
 
 	// nucleo/gigs.js — o Angular renderiza a tabela em momentos
 	// imprevisíveis, então este observer é separado do ciclo de URL.
-	rota_observarGigs()
-
+	
 	// gigs — botão de copiar atendimento. Registros de mutação:
 	// uma vez por documento, nunca dentro do ciclo de URL.
-	rotaRegistrarMutacao({ seletor: '#gigs',    callback: () => mutacaoGigs() })
-	rotaRegistrarMutacao({ seletor: '.actions', callback: () => mutacaoGigs() })
+	rotaRegistrarMutacao({ seletor: '#gigs',    callback: async () => await mutacaoGigs() })
+	rotaRegistrarMutacao({ seletor: '.actions', callback: async () => await mutacaoGigs() })
 	rotaRegistrarMutacao({ seletor: 'mat-dialog-container', callback: () => favoritarGigs() })
 
 	// Observador central — depois dos registros, por clareza.
@@ -190,22 +189,14 @@ function rota_iniciarPermanentes(){
 
 }
 
-function mutacaoGigs(){
-	gig_copiaAtendimento()
+async function mutacaoGigs(){
 	criarBarraGigsFavoritos()
+	await devolverGig()
+	gig_copiaAtendimento()
 }
 
 
-function rota_observarGigs(){
 
-	let debounce = null
-
-	new MutationObserver(() => {
-		clearTimeout(debounce)
-		debounce = setTimeout(adicionarBotoesDevolverGig, 300)
-	}).observe(document.body, { childList:true, subtree:true })
-
-}
 
 
 // ============================================================

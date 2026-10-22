@@ -4,7 +4,7 @@
 // ── Constantes ───────────────────────────────────────────────────────────────
 const DEVOLVER_GIG_URL_REGEX = /processo\/\d{7}\/detalhe/
 
-function devolverGig() {
+async function devolverGig() {
     adicionarBotoesDevolverGig()
 }
 
@@ -99,9 +99,10 @@ async function devolverGig_executarDevolucao(btnEditar, nome, descricao) {
 }
 
 function adicionarBotoesDevolverGig() {
+
     if (!DEVOLVER_GIG_URL_REGEX.test(location.pathname)) return
 
-    const tabela = document.getElementById('tabela-atividades')
+    const tabela = document.querySelector('pje-gigs-atividades')
     if (!tabela) return
 
     const linhas = tabela.querySelectorAll('tbody tr')
@@ -112,11 +113,7 @@ function adicionarBotoesDevolverGig() {
         const descricao = devolverGig_extrairDescricao(tr)
         if (!nome) return
 
-        const btnTrash  = tr.querySelector('[id^="excluir-atividade-"]')
-        if (!btnTrash) return
-
-        const btnEditar = tr.querySelector('[id^="editar-atividade-"]')
-        if (!btnEditar) return
+        let actions = tr.querySelector('td.actions')
 
         const btn = document.createElement('button')
         btn.type      = 'button'
@@ -137,7 +134,7 @@ function adicionarBotoesDevolverGig() {
             devolverGig_executarDevolucao(btnEditar, nome, descricao)
         })
 
-        btnTrash.insertAdjacentElement('afterend', btn)
+        actions.appendChild(btn)
     })
 }
 
