@@ -53,7 +53,7 @@ async function con2_prazo_vencido_janelaDetalhes(sessao){
     let sentenca = documentos.filter(p => p.textContent.includes('Sentença('))
     if (!sentenca.length) return
     console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(sentenca), LOG.rosa, 'color:inherit')
-    await clicar(sentenca[0])
+    clicar(sentenca[0])
     sentenca[0].scrollIntoView({ block: 'nearest' })
     await armazenar({rota_con2_prazo_vencido_janelaDetalhes: sessao})
     await removerArmazenamento('rotapje_tarefa')
@@ -143,12 +143,12 @@ async function con2_prazo_vencido_abrirDocumentos(documento) {
             console.log('%c[Rota PJE]%c 139: ' + JSON.stringify(139), LOG.rosa, 'color:inherit')
             return
         }
-        await clicar(botaoPai)
+        clicar(botaoPai)
         await rota_aguardarElemento('[id$="' + documento.id + '"]')
         botao = selecionar('[id$="' + documento.id + '"]')
     }
     console.log('%c[Rota PJE]%c botao.textContent 125: ' + JSON.stringify(botao.textContent), LOG.rosa, 'color:inherit')
-    await clicar(botao)
+    clicar(botao)
     rota_avisoTemporario(JSON.stringify(documento.idUnicoDocumento), '', 4000)
 }
 
@@ -206,7 +206,7 @@ async function con2_prazo_vencido_acoesRetificar(){
         if (!elemento) await suspender(1000)
     }
     if (!elemento) return
-    await clicar(elemento)
+    clicar(elemento)
 }
 
 //__________________________________________________
@@ -290,7 +290,7 @@ async function con2_prazo_vencido_acoesDespachar(){
     })
     if (modeloDespacho !== ''){
         let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
-        await clicar(elaborarDespachoBotaoEnviarParaAssinatura)
+        clicar(elaborarDespachoBotaoEnviarParaAssinatura)
         for(let i = 0; i < 30 * 2; i++){
             let assinar = await sel('tarefaDoProcessoTituloDaTarefa')
             if (assinar.textContent.includes('Assinar despacho')){
@@ -442,7 +442,7 @@ async function con2_prazo_vencido_acoesDesignarAudienciaManual(manualOuErro) {
     let seletorJuiz = await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
     if (seletorJuiz.textContent != sala){
-        await clicar(seletorJuiz)
+        clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == sala)
@@ -451,14 +451,14 @@ async function con2_prazo_vencido_acoesDesignarAudienciaManual(manualOuErro) {
             return
         }
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        await clicar(juizSelecionado)
+        clicar(juizSelecionado)
     }
     rota_avisoObrigatorio(aviso, 15)
     await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
-    await preencher(inputNumeroProcesso, processo)
+    preencher(inputNumeroProcesso, processo)
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
-    await preencher(inputLinkAudiencia, link)
+    preencher(inputLinkAudiencia, link)
     return
 }
 
@@ -467,7 +467,7 @@ async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
     let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
     let metaQuadroDeHorarios
     if (seletorJuiz.textContent != horario.nomeDaSala){
-        await clicar(seletorJuiz)
+        clicar(seletorJuiz)
         await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
@@ -478,7 +478,7 @@ async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
         
         monitorarBody(6000, 100)
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        await clicar(juizSelecionado)
+        clicar(juizSelecionado)
     }
     if (metaQuadroDeHorarios){
         await aguardarElementoMudar(metaQuadroDeHorarios,'content')
@@ -496,12 +496,12 @@ async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
         return
     }
     await suspender(500)
-    await clicar(celula)
+    clicar(celula)
 
     // clicar no botao de designar
 
     let botaoDesignar = await aguardarElementoNovo('pautaDeAudienciaBotaoDesignarAudiencia')
-    await clicar(botaoDesignar)
+    clicar(botaoDesignar)
 
     //preencher dados do processo e da audiencia
     let confirmacaoSala = await aguardarElementoNovo('pautaDeAudienciaConfirmacaoSala')
@@ -510,19 +510,19 @@ async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
         return
     }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
-    await preencher(inputNumeroProcesso, horario.processo)
+    preencher(inputNumeroProcesso, horario.processo)
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
-    await preencher(inputLinkAudiencia, horario.link)
+    preencher(inputLinkAudiencia, horario.link)
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
-    await preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
+    preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
     let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
-    await preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
+    preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
     let pautaDeAudienciaInputTipoDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputTipoDesignarAudiencia')
-    await clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
+    clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
     await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
-    await clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
+    clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
     
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
 
@@ -534,7 +534,7 @@ async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
     }
     await suspender(1000)
     //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
-    await clicar(botaoConfirmar)
+    clicar(botaoConfirmar)
     await aguardarElementoNovo('pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia')
     await suspender(2000)
     await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_designa_audiencia' })
@@ -563,7 +563,7 @@ async function con2_prazo_vencido_colocarGigDeAcompanhamento() {
     let usuarioObter = await obterArmazenamento('rota_usuario')
     let usuario = usuarioObter?.rota_usuario.nome || ''
     let mostrarOuEsconder = await aguardarElementoNovo('detalhesDoProcessoMostrarOuEsconderGigs')
-    if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') await clicar(mostrarOuEsconder)
+    if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') clicar(mostrarOuEsconder)
     await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
     await inserirGigsNaTelaDeDetalhesDoProcesso('Audiência', dataGig, '', usuario.trim().toUpperCase(), 'Acompanhamento - Triagem Inicial', 'sim')
     //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
@@ -626,15 +626,15 @@ async function con2_prazo_vencido_acoesCertificar(){
     let descricao = await sel('detalhesDoProcessoInputDescricaoDeDocumento')
     let modelo = await sel('anexarDocumentosBuscarModelos')
     await suspender(200)
-    await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
+    preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
     await suspender(200)
-    await preencher(descricao, 'Designação de audiência')
+    preencher(descricao, 'Designação de audiência')
     await suspender(200)
     await digitarNoInput(modelo, 'SCBAU_TI_CERT')
     await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
     await esperarEClicar('elaborarDespachoInserirModelo')
     let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
-    await clicar(botaoAssinar)
+    clicar(botaoAssinar)
     monitorarBody(6000, 100)
     window.addEventListener('beforeunload', () => {
         comandar(['con2_prazo_vencido_intimar'], [{tipo: 'con2_prazo_vencido_intimar_designacao'}])
@@ -696,12 +696,12 @@ async function con2_prazo_vencido_acoesIntimar(){
     //logInterceptador = false
     
     let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
-    await clicar(seletor)
+    clicar(seletor)
     await aguardarElementoNovo('prepararExpedientesSeletorTipoDeExpedienteAberto')
     let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes('Notificação inicial'))
-    await clicar(opcao)
+    clicar(opcao)
     let botaoConfeccionar = await aguardarElementoNovo('prepararExpedientesBotaoConfeccionarAtoAgrupado')
-    await clicar(botaoConfeccionar)
+    clicar(botaoConfeccionar)
     await aguardarElementoNovo(
         [
             'elaborarAtoSeletorTipoDeDocumento',
@@ -711,10 +711,10 @@ async function con2_prazo_vencido_acoesIntimar(){
     )
     let descricao = await sel('elaborarAtoInputDescricao')
     let inputModelo = await sel('elaborarDespachoBuscarModelos')
-    await preencher(descricao, 'Notificação Inicial - Designação de audiência')
+    preencher(descricao, 'Notificação Inicial - Designação de audiência')
     await suspender(200)
     let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
-    await preencherCKEditorExecCommand(areaAssinatura, '.')
+    preencherCKEditorExecCommand(areaAssinatura, '.')
     await suspender(200)
     let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(conteudoPrincipal)
@@ -738,7 +738,7 @@ async function con2_prazo_vencido_acoesIntimar(){
     await esperarEClicar('elaborarDespachoInserirModelo')
     await suspender(200)
     let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
-    await clicar(botaoFinalizarMinuta)
+    clicar(botaoFinalizarMinuta)
     
     //monitorarBody(6000, 300, {incluir:{classes:['snack-bar']}})
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Modelo de documento inserido com sucesso no editorX'})
@@ -759,7 +759,7 @@ async function con2_prazo_vencido_acoesIntimar(){
     let botaoPoloAtivo = await aguardarElementoNovo('prepararExpedientesBotaoPoloAtivo')
     //logInterceptador = true
     let metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    await clicar(botaoPoloAtivo)
+    clicar(botaoPoloAtivo)
     //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
     let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto:'Notificação inicialTipo de Expediente'})
     i = 0
@@ -771,12 +771,12 @@ async function con2_prazo_vencido_acoesIntimar(){
     let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')
     let botaoAssinar = (await aguardarElementoNovo('prepararExpedientesBotaoAssinar'))
     
-    await clicar(botaoSalvar)
+    clicar(botaoSalvar)
     let verificarCarregamentoSalvar = await aguardarElementoNovo('prepararExpedientesRodinhaGirando')
     while (verificarCarregamentoSalvar.isConnected){
         await suspender(500)
     }
-    await clicar(botaoAssinar)
+    clicar(botaoAssinar)
     window.addEventListener('beforeunload', () => {
         comandar(['con2_prazo_vencido_aguardando_audiencia'], [{tipo: 'con2_prazo_vencido_aguardando_audiencia'}])
     })

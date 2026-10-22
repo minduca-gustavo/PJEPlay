@@ -165,7 +165,7 @@ async function busca_FilaPainelGlobal(){
             dataDesconsiderar = new Date(datas[0].dataEntradaTarefa).toLocaleDateString('pt-BR')
             continue
         }
-        await clicar(clique)
+        clicar(clique)
         let datas = await busca_posicao_filaMudancaDaMetaTag(conteudoAtual)
         conteudoAtual = datas
         if(clique == prioridade) {

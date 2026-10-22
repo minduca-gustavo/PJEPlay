@@ -537,10 +537,10 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
     await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
     await suspender(1000)
-    await preencherRota(inputNumeroProcesso, processo)
+    preencherRota(inputNumeroProcesso, processo)
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
     await suspender(1000)
-    await preencherRota(inputLinkAudiencia, link)
+    preencherRota(inputLinkAudiencia, link)
     return
 }
 
@@ -604,23 +604,23 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
     await suspender(1000)
-    await preencher(inputNumeroProcesso, horario.processo)
+    preencher(inputNumeroProcesso, horario.processo)
     let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
     let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
     let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
     await suspender(1000)
-    await preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
+    preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
     await suspender(1000)
     let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
     await suspender(1000)
-    await preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
+    preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
     let pautaDeAudienciaInputTipoDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputTipoDesignarAudiencia')
     clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
     await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
     clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
     let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
     await suspender(1000)
-    await preencher(inputLinkAudiencia, horario.link)
+    preencher(inputLinkAudiencia, horario.link)
     
     // clicar no botao de confirmar - alterar depois para CONFIRMAR
 
@@ -768,10 +768,10 @@ async function triagem_inicial_acoesCertificar(){
     }
     let dados = certidoes[tipoCertidao]
     await suspender(1000)
-    await preencherCampoComEscolhaDeOpcao(tipo, dados.tipo)
+    preencherCampoComEscolhaDeOpcao(tipo, dados.tipo)
     console.log('%c[Rota PJE]%c tipo 722: ' + JSON.stringify(tipo), LOG.info, 'color:inherit')
     await suspender(1000)
-    await preencherRota(descricao, dados.descricao)
+    preencherRota(descricao, dados.descricao)
     console.log('%c[Rota PJE]%c : descricao 722: ' + JSON.stringify(descricao), LOG.info, 'color:inherit')
     if (dados.modelo){
         await suspender(1000)
@@ -781,7 +781,7 @@ async function triagem_inicial_acoesCertificar(){
     } else if (dados.texto){
         let campoTexto = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
         await suspender(1000)
-        await preencherCKEditorExecCommand(campoTexto, dados.texto)
+        preencherCKEditorExecCommand(campoTexto, dados.texto)
     } else {
         rota_avisoObrigatorio('Prossiga manualmente.', 5)
         return
@@ -915,7 +915,7 @@ async function triagem_inicial_acoesIntimar(){
     await suspender(1000)
     let descricao = await sel('elaborarAtoInputDescricao')
     let inputModelo = await sel('elaborarDespachoBuscarModelos')
-    await preencherRota(descricao, dados.descricao)
+    preencherRota(descricao, dados.descricao)
     await suspender(1000)
     await aguardarElemento('.editor-container')
     await suspender(1000)
@@ -934,7 +934,7 @@ async function triagem_inicial_acoesIntimar(){
         })
         ?.querySelector('[contenteditable]')
     //let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
-    await preencherCKEditorExecCommand(editorAssinatura, '.')
+    preencherCKEditorExecCommand(editorAssinatura, '.')
     await suspender(2000)
     //let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
     await focar(editorConteudo)
@@ -952,7 +952,7 @@ async function triagem_inicial_acoesIntimar(){
     let modelo = ''
     if (linkIntimar){
         await suspender(1000)
-        await preencherCKEditorExecCommand(editorConteudo, dados.texto)
+        preencherCKEditorExecCommand(editorConteudo, dados.texto)
     } else {
         modelo = modeloIntimacao 
                   || dados.tipos.find(t => tipoAudienciaIntimar.toLowerCase().includes(t.tipo))?.modelo 

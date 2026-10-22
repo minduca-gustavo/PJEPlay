@@ -71,7 +71,10 @@ async function favoritarGigs() {
             rowColumn: 'row'
         })
         console.log('%c[Rota PJE]%c 76: ' + JSON.stringify(76), LOG.info, 'color:inherit')
-        if (!!document.querySelector('pje-gigs-cadastro-atividades #dias').value){
+        let dias = document.querySelector('pje-gigs-cadastro-atividades #dias').value
+        let dataPrazo = document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value
+        let dataInicio = document.querySelector('pje-gigs-cadastro-atividades #dataInicio').value
+        if (!!dias & (dias != 0 || dataPrazo != dataInicio)){
             let botaoDias = criaBotaoAzul({
                 id: idBotao + '_dias',
                 ancestral: idBotao + '_botoesAcoes',
@@ -80,8 +83,8 @@ async function favoritarGigs() {
             })
             botaoDias.style.width = '50%'
         } 
-        if (!!document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value){
-                let botaoDataPrazo = criaBotaoAzul({
+        if (!!dataPrazo){
+            let botaoDataPrazo = criaBotaoAzul({
                 id: idBotao + '_dataPrazo',
                 ancestral: idBotao + '_botoesAcoes',
                 texto: 'Salvar utilizando data certa: ' + document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value,
@@ -89,17 +92,24 @@ async function favoritarGigs() {
             })
             botaoDataPrazo.style.width = '50%'
         }
-        if(
-            !document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value &&
-            !document.querySelector('pje-gigs-cadastro-atividades #dias')
-        ){
+        if (dias == 0 || dataPrazo == dataInicio){
+            let botaoHoje = criaBotaoAzul({
+                id: idBotao + '_hoje',
+                ancestral: idBotao + '_botoesAcoes',
+                texto: 'Salvar com prazo zero (data de hoje).',
+                acao: () => armazenarFavoritos(idBotao, 'hoje')
+            })
+            botaoDataPrazo.style.width = '50%'
+        }
+        if(!dataPrazo && !dias){
             let botaoSalvar = criaBotaoAzul({
                 id: idBotao + '_botaoSalvar',
                 ancestral: idBotao + '_botoesAcoes',
-                texto: 'Salvar sem prazo',
+                texto: 'Salvar sem prazo.',
                 acao: () => armazenarFavoritos(idBotao, null)
             })
         }
+        
         console.log('%c[Rota PJE]%c 90: ' + JSON.stringify(90), LOG.info, 'color:inherit')
         
         async function armazenarFavoritos(idBotao, tipo) {
@@ -116,14 +126,16 @@ async function favoritarGigs() {
             }
             let dial = document.querySelector('pje-gigs-cadastro-atividades')
             let tipoAtividade = dial.querySelector('#tipoAtividade').value
+            console.log('%c[Rota PJE]%c tipoAtividade: ' + JSON.stringify(tipoAtividade), LOG.info, 'color:inherit')
             let corridosOuUteis = dial.querySelector('mat-radio-group .mat-radio-checked').id
             let dataInicio = dial.querySelector('#dataInicio').value || ''
+            let hoje = tipo == 'hoje' ? true : false
             let dataPrazo = tipo == 'dataPrazo' ? dial.querySelector('#dataPrazo').value : null
             let dias = tipo == 'dias'? dial.querySelector('#dias').value : null
             let responsavel = dial.querySelector('#responsavel').value
             let observacao = dial.querySelector('#observacao').value
             let destaque = dial.querySelector('#destaque.mat-checkbox-checked') ?? false
-            let gig = {tipoAtividade, nomeBotao, corridosOuUteis, dataInicio, dataPrazo, dias, responsavel, observacao, destaque}
+            let gig = {hoje, tipoAtividade, nomeBotao, corridosOuUteis, dataInicio, dataPrazo, dias, responsavel, observacao, destaque}
             gigsSalvos.push(gig)
             await armazenar({[idBotao]: gigsSalvos})
             document.getElementById(idBotao + '_corpo').replaceChildren()

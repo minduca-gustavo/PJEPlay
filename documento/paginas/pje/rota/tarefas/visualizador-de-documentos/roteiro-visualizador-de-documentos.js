@@ -53,7 +53,7 @@ async function visualizador_de_documentos_janelaDetalhes(sessao){
     let sentenca = documentos.filter(p => p.textContent.includes('Sentença('))
     if (!sentenca.length) return
     console.log('%c[Rota PJE]%c sentenca' + JSON.stringify(sentenca), LOG.rosa, 'color:inherit')
-    await clicar(sentenca[0])
+    clicar(sentenca[0])
     sentenca[0].scrollIntoView({ block: 'nearest' })
     await armazenar({rota_visualizador_de_documentos_janelaDetalhes: sessao})
     await removerArmazenamento('rotapje_tarefa')
@@ -142,12 +142,12 @@ async function visualizador_de_documentos_abrirDocumentos(documento) {
             console.log('%c[Rota PJE]%c 139: ' + JSON.stringify(139), LOG.rosa, 'color:inherit')
             return
         }
-        await clicar(botaoPai)
+        clicar(botaoPai)
         await aguardarElemento('[id$="' + documento.id + '"]')
         botao = selecionar('[id$="' + documento.id + '"]')
     }
     console.log('%c[Rota PJE]%c botao.textContent 125: ' + JSON.stringify(botao.textContent), LOG.rosa, 'color:inherit')
-    await clicar(botao)
+    clicar(botao)
     rota_avisoTemporario(JSON.stringify(documento.idUnicoDocumento), '', 4000)
 }
 

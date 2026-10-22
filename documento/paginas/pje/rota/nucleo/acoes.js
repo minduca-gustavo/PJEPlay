@@ -16,52 +16,59 @@
 
 // ── Utilitário interno ────────────────────────────────────────
 
-async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao', corridosOuUteis = 'diasUteis', destaque = false}){
+async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao', corridosOuUteis = 'diasUteis', destaque = false, hoje = false}){
     let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
     if (!novaAtividade) return
-    await clicar(novaAtividade)
-    if (dias && !dataPrazo){
+    let dataPrazoPreencher = dataPrazo
+    if (hoje){
+        dataPrazoPreencher = document.querySelector('pje-gigs-cadastro-atividades #dataInicio').value
+    }
+    clicar(novaAtividade)
+    if (dias && !dataPrazoPreencher){
         let inputDias = await aguardarElementoNovo('detalhesDoProcessoInputDiasGigs')
         await suspender (200)
-        await preencher(inputDias, dias)
+        preencher(inputDias, dias)
     }
-    if (dataPrazo){
+    if (dataPrazoPreencher){
         let inputData = await aguardarElementoNovo('detalhesDoProcessoInputDataPrazoGigs')
         await suspender (200)
-        await preencher(inputData, dataPrazo)
+        preencher(inputData, dataPrazo)
     }
     if (responsavel){
         let inputResponsavel = await aguardarElementoNovo('detalhesDoProcessoInputResponsavelGigs')
         await focar(inputResponsavel)
         await suspender (200)
-        await preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
+        preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
     }
     if (observacao){
         let inputObservacao = await aguardarElementoNovo('detalhesDoProcessoInputObservacaoGigs')
         await suspender (200)
-        await preencherRota(inputObservacao, observacao)
+        preencherRota(inputObservacao, observacao)
     }
     if (corridosOuUteis){
         await aguardarElemento('pje-gigs-cadastro-atividades #' + corridosOuUteis + ' input')
         await suspender (200)
-        await clicar('pje-gigs-cadastro-atividades #' + corridosOuUteis + ' input')
+        clicar('pje-gigs-cadastro-atividades #' + corridosOuUteis + ' input')
         await suspender (200)
     }
     console.log('%c[Rota PJE]%c 50: ' + JSON.stringify(50), LOG.info, 'color:inherit')
     if (destaque){
         await aguardarElemento('pje-gigs-cadastro-atividades #destaque')
         await suspender (200)
-        await clicar('pje-gigs-cadastro-atividades #destaque')
+        clicar('pje-gigs-cadastro-atividades #destaque')
         await suspender (200)
     }
-    let inputTipoAtividade = await aguardarElementoNovo('detalhesDoProcessoInputTipoAtividadeGigs')
-    await focar(inputTipoAtividade)
+    aguardarElemento('pje-gigs-cadastro-atividades #tipoAtividade')
     await suspender (200)
-    await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
+    let inputTipoAtividade = document.querySelector('pje-gigs-cadastro-atividades #tipoAtividade')
+    if (inputTipoAtividade.value != tipoAtividade){
+        await focar(inputTipoAtividade)
+        preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
+    }
     if (salvar === 'sim'){
         let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
         await suspender (200)
-        await clicar(botaoSalvar)
+        clicar(botaoSalvar)
         await suspender (2000)
     }
     

@@ -277,7 +277,7 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
   await suspender(500)
   if (!botao) throw new Error(`Botão não encontrado para: "${label}"`)
   monitorarBody(6000, 1)
-  await clicar (botao)
+  clicar (botao)
   await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
 }
 
@@ -288,7 +288,7 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
   let selecao = await aguardarElementoNovo('conclusaoAoMagistradoSelecaoDeMagistrados')
-  await clicar(selecao)
+  clicar(selecao)
   let juiz = parametros.juiz.toUpperCase()
   await aguardarElementoNovo('conclusaoAoMagistradoOpcoesDeMagistrados')
   let juizes = [...(await sel ('conclusaoAoMagistradoOpcoesDeMagistrados', '', true))]
@@ -300,7 +300,7 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
     rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
     return
   }
-  await clicar(juizSelecionado)
+  clicar(juizSelecionado)
 
   return
 }
@@ -341,7 +341,7 @@ async function esperarEClicar(elementoSeletorNovo, tempoEmSegundos = 30) {
     await suspender(500)
   }
   if (!botao) return null
-  await clicar(botao)
+  clicar(botao)
   return botao
   
 }
@@ -359,7 +359,7 @@ async function selecionarOpcaoDeModelo(modelo, tempoEmSegundos = 30){
     
   }
   if (!opcaoModelo) return null
-  await clicar(opcaoModelo)
+  clicar(opcaoModelo)
   return opcaoModelo
 }
 // ------------------------------------------------------------

@@ -510,7 +510,7 @@ async function rotaCicloAssinatura(){
             .filter(l => l.querySelector('input.mat-checkbox-input')?.checked)
             .map(l => l.textContent.match(ROTA_REGEX_CNJ)?.[0])
             .filter(Boolean)
-        await clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
+        clicar(tabela.querySelector('thead button.botao-icone-tabela-assinar'))
         let dialogo = await aguardarElemento('mat-dialog-container .mat-dialog-content')
         if (dialogo && !dialogo.closest('pje-resposta-assinatura')) {
             let r = execucao.rotapje_assinaTudo
