@@ -16,7 +16,7 @@ async function favoritarGigs() {
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
     let idBotao = id('favoritarGig') 
-    criarBarraGigsFavoritos(idBotao)
+    await criarBarraGigsFavoritos(idBotao)
     await aguardarElemento('pje-gigs-cadastro-atividades')
     await suspender(100)
     await aguardarElemento('pje-gigs-cadastro-atividades mat-card-actions')
@@ -72,21 +72,35 @@ async function favoritarGigs() {
             rowColumn: 'row'
         })
         console.log('%c[Rota PJE]%c 76: ' + JSON.stringify(76), LOG.info, 'color:inherit')
-        let botaoDias = criaBotaoAzul({
-            id: idBotao + '_dias',
-            ancestral: idBotao + '_botoesAcoes',
-            texto: 'Salvar utilizando ' + document.querySelector('pje-gigs-cadastro-atividades #dias').value + ' dias',
-            acao: () => armazenarFavoritos(idBotao, 'dias')
-        })
-        botaoDias.style.width = '50%'
-        console.log('%c[Rota PJE]%c 77: ' + JSON.stringify(77), LOG.info, 'color:inherit')
-        let botaoDataPrazo = criaBotaoAzul({
-            id: idBotao + '_dataPrazo',
-            ancestral: idBotao + '_botoesAcoes',
-            texto: 'Salvar utilizando data certa: ' + document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value,
-            acao: () => armazenarFavoritos(idBotao, 'dataPrazo')
-        })
-        botaoDataPrazo.style.width = '50%'
+        if (!!document.querySelector('pje-gigs-cadastro-atividades #dias').value){
+            let botaoDias = criaBotaoAzul({
+                id: idBotao + '_dias',
+                ancestral: idBotao + '_botoesAcoes',
+                texto: 'Salvar utilizando ' + document.querySelector('pje-gigs-cadastro-atividades #dias').value + ' dias',
+                acao: () => armazenarFavoritos(idBotao, 'dias')
+            })
+            botaoDias.style.width = '50%'
+        } 
+        if (!!document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value){
+                let botaoDataPrazo = criaBotaoAzul({
+                id: idBotao + '_dataPrazo',
+                ancestral: idBotao + '_botoesAcoes',
+                texto: 'Salvar utilizando data certa: ' + document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value,
+                acao: () => armazenarFavoritos(idBotao, 'dataPrazo')
+            })
+            botaoDataPrazo.style.width = '50%'
+        }
+        if(
+            !document.querySelector('pje-gigs-cadastro-atividades #dataPrazo').value &&
+            !document.querySelector('pje-gigs-cadastro-atividades #dias')
+        ){
+            let botaoSalvar = criaBotaoAzul({
+                id: idBotao + '_botaoSalvar',
+                ancestral: idBotao + '_botoesAcoes',
+                texto: 'Salvar sem prazo',
+                acao: () => armazenarFavoritos(idBotao, null)
+            })
+        }
         console.log('%c[Rota PJE]%c 90: ' + JSON.stringify(90), LOG.info, 'color:inherit')
         
         async function armazenarFavoritos(idBotao, tipo) {
@@ -96,9 +110,7 @@ async function favoritarGigs() {
                 return
             }
             let armazenamento = await obterArmazenamento(idBotao)
-            console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.info, 'color:inherit')
             let gigsSalvos = armazenamento?.[idBotao] || []
-            console.log('%c[Rota PJE]%c gigsSalvos: ' + JSON.stringify(gigsSalvos), LOG.info, 'color:inherit')
             let dial = document.querySelector('pje-gigs-cadastro-atividades')
             let tipoAtividade = dial.querySelector('#tipoAtividade').value
             let corridosOuUteis = dial.querySelector('mat-radio-group .mat-radio-checked').id
@@ -117,13 +129,16 @@ async function favoritarGigs() {
                 ancestral: idBotao + '_corpo',
                 texto: 'Salvo com sucesso'
             })
+            criarBarraGigsFavoritos(idBotao)
             await suspender(2000)
-            document.getElementById(idBotao + '_div').remove()
+            let remover = document.getElementById(idBotao + '_div')?.remove()
         }
     }
     async function criarBarraGigsFavoritos(idBotao) {
         await aguardarElemento('pje-gigs-lista-atividades')
         let elementoInserirAntes = document.querySelector('pje-gigs-lista-atividades #lista-atividades')
+        let armazenamento = await obterArmazenamento(idBotao)
+        let botoes = armazenamento?.[idBotao] || []
         let idDiv = idBotao + '_barra'
         let remover = document.getElementById(idDiv)?.remove()
         let div = criaDiv({
@@ -139,14 +154,12 @@ async function favoritarGigs() {
             acao: () => alert('Vamos ver.')
         })
         estiloBotaoFitaSuperior(botao)
-        let armazenamento = await obterArmazenamento(idBotao)
-        let botoes = armazenamento?.[idBotao] || []
         let mFuncoes = {
             criaBotaoLaranja,
             criaBotaoAzul
         }
         for (let i = 0; i < botoes.length; i++){
-            let funcao = i % 2 == 0 ? 'criaBotaoLaranja' : 'criaBotaoAzul'
+            let funcao = i % 2 == 0 ? 'criaBotaoAzul' : 'criaBotaoLaranja'
             let botao = botoes[i]
             let b = mFuncoes[funcao]({
                 id: idBotao + '_' + i,

@@ -20,10 +20,6 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', d
     let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
     if (!novaAtividade) return
     await clicar(novaAtividade)
-    let inputTipoAtividade = await aguardarElementoNovo('detalhesDoProcessoInputTipoAtividadeGigs')
-    await focar(inputTipoAtividade)
-    await suspender (200)
-    await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
     if (dias && !dataPrazo){
         let inputDias = await aguardarElementoNovo('detalhesDoProcessoInputDiasGigs')
         await suspender (200)
@@ -57,6 +53,10 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', d
         await clicar('pje-gigs-lista-atividades #destaque')
         await suspender (200)
     }
+    let inputTipoAtividade = await aguardarElementoNovo('detalhesDoProcessoInputTipoAtividadeGigs')
+    await focar(inputTipoAtividade)
+    await suspender (200)
+    await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
     if (salvar === 'sim'){
         let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
         await suspender (200)
