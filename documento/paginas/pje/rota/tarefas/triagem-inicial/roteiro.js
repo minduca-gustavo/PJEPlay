@@ -161,7 +161,9 @@ async function triagem_inicial_atualizaHorariosVagos(p){
 
 async function triagem_inicial_retificarAutuacao(tipo) {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     let envio = tipo.tipo
     await armazenar({
         'rotapje_triagem_inicial_retificar': dadosTriagemInicial.execucaoAtual,
@@ -265,7 +267,9 @@ async function triagem_inicial_acoesRetificar(){
 
 async function triagem_inicial_despachar(tipo) {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     let envio = tipo.tipo
     await armazenar({
         'rotapje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
@@ -416,7 +420,9 @@ async function buscaModeloTriagem(sala, modo) {
 
 async function triagem_inicial_designarAudiencia(tipo) {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     //alert (JSON.stringify(tipo))
     //return
     await armazenar({
@@ -652,7 +658,9 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
 
 async function triagem_inicial_colocarGigDeAcompanhamento() {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
     if (!audienciaMarcadaHorario){
@@ -692,7 +700,9 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
 
 async function triagem_inicial_certificar(tipo) {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     let id =            dadosTriagemInicial?.processo?.id
     let audienciasMarcadas = await buscarAudienciasMarcadas(id) || null
     let envio = tipo.tipo
@@ -822,7 +832,9 @@ async function triagem_inicial_acoesCertificar(){
 
 async function triagem_inicial_intimar(tipo) {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     let id = dadosTriagemInicial?.processo?.id
     let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
     let envio = tipo?.dados?.tipo
@@ -1050,7 +1062,9 @@ async function triagem_inicial_acoesIntimar(){
 
 async function triagem_inicial_aguardandoAudiencia(tipo) {
     let wname = window.name
-    if (!wname.includes(dadosTriagemInicial.execucaoAtual)) return
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    if (!wname.includes(execAtual)) return
     let id =            dadosTriagemInicial?.processo?.id
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
