@@ -373,12 +373,7 @@ async function abre_tarefa_rotaCriaBotao() {
         acao: () => abre_tarefa_rotaAbrirEmModoJanelas(),
         texto: 'tarefa: ' + nomeTarefaAtiva
     })
-    botaoTarefa.style.width = 'fit-content'
-    botaoTarefa.style.fontSize = '9px'
-    botaoTarefa.style.height = '14px'
-    botaoTarefa.style.lineHeight = '14px'
-    botaoTarefa.style.padding = '0 8px'
-    botaoTarefa.style.zIndex = '9999999'
+    estiloBotaoFitaSuperior(botaoTarefa)
 }
 
 async function abre_tarefa_rotaNomeTarefaAtiva(){
@@ -604,8 +599,18 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
 
 
 
-function estiloBotaoFitaSuperior(botao){
+async function estiloBotaoFitaSuperior(botao){
     botao.style.width = 'fit-content'
+    let armazenamento = await obterArmazenamento('melhorLeitura_ativo')
+    let melhorLeitura = armazenamento?.melhorLeitura_ativo
+    //console.log('%c[Rota PJE]%c melhorLeitura' + JSON.stringify(melhorLeitura), LOG.aviso, 'color:inherit')
+    if (melhorLeitura) {
+        
+        botao.style.padding = '0 4px'
+        botao.style.fontSize = '20px'
+        botao.style.fontSize = '20px'
+        return
+    }
     botao.style.fontSize = '9px'
     botao.style.height     = '14px'
     botao.style.lineHeight = '14px'
