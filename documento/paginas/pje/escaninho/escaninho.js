@@ -78,7 +78,16 @@ async function escaninhoCriaBotao(){
     async function removePeticoesAnalisadas() {
         let idDivMenu = id('escaninho', 'menu')
         let opaco = document.getElementById(idDivMenu)
-        if (opaco) opaco.style.opacity = '0.5'
+        if (opaco) {
+            opaco.style.opacity = '0.5'
+            opaco.style.height = '70px'
+            opaco.replaceChildren('')
+            criaSubTitulo({
+                id: idDivMenu + '_aguarde',
+                texto: 'Aguarde a conclusão da tarefa.',
+                ancestral: idDivMenu
+            })
+        }
         let armazenamento = await obterArmazenamento(idDivMenu) || {}
         let ultimaData = armazenamento?.idDivMenu || ''
         let interceptados = interceptador_ler('peticoes_juntadas') || null
@@ -108,6 +117,52 @@ async function escaninhoCriaBotao(){
                 //return
             }
             buscados.push({numeroProcesso, idProcesso, idDocumento, dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), removido: removido? 'SIM' : 'NÃO'})
+            await armazenar({[idDivMenu]: dataJuntada})
+        }
+        let i = 0
+        while(interceptador_ler('peticoes_juntadas') === interceptados){
+            await suspender(1000)
+            i++
+            if (i === 10){
+                definePagina(qtdPaginas, true)
+                break
+            }
+        }
+
+        if (interceptador_ler('peticoes_juntadas') === interceptados) definePagina(interceptados?.qtdPaginas, true)
+
+        function finaliza(buscados){
+            let i = 0
+            let resultado = buscados.map(d => {
+                let cabecalho = Object.keys(d).map(d => d).join('\t')
+                i++
+                let linha = Object.values(d).map(d => d).join('\t')
+                return (i == 1? (cabecalho + '\n' + linha) : linha)
+            }).join('\n')
+            _baixarArquivo(JSON.stringify(resultado, null, 2), 'RemovePetiçõesAnalisadas.txt', 'text/plain')
+            rota_avisoObrigatorio('Um arquivo foi baixado contendo o relatório desta atividade', 5)
+            escaninhoMenu()
+        }
+
+        async function definePagina(paginas, interceptadorNaoMudou = false){
+            if (document.querySelector('pje-paginador mat-select').textContent >= paginas && interceptadorNaoMudou) {
+                finaliza(buscados)
+                return
+            } else if(interceptadorNaoMudou){
+                clicar('pje-paginador button[aria-label="Próximo"]')
+                while(interceptador_ler('peticoes_juntadas') === interceptados){
+                    await suspender(1000)
+                    i++
+                    if (i === 10){
+                        definePagina(qtdPaginas, true)
+                        break
+                    }
+                }
+            } else {
+                removePeticoesAnalisadas()
+            }
+            
+
         }
         
         async function removerDoEscaninho(numeroProcesso) {
