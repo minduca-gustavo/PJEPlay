@@ -639,22 +639,24 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     let numerosRaw = valores[0] || ''
                     let numeros = numerosRaw.split('\n').map(s => s.trim()).filter(Boolean)
                     if (!numeros.length) return 'Nenhum número informado.'
-                    let idsx = [], tx = []
+                    let processos = []
                     for (let i = 0; i < numeros.length; i++) {
                         atualizar_contador(ancestral, 0, (i + 1) + '/' + numeros.length)
                         let idProcesso = await buscarIdPeloNumeroCNJ(numeros[i])
-                        if (idProcesso) { idsx.push(idProcesso); tx.push({ numero: numeros[i] }) }
+                        if (idProcesso) processos.push(idProcesso)
                     }
-                    if (!idsx.length) return 'Nenhum processo encontrado.'
+                    if (!processos.length) return 'Nenhum processo encontrado.'
                     let d = []
-                    for (let i = 0; i < idsx.length; i++) {
+                    for (let i = 0; i < processos.length; i++) {
+                        let {id, numero, descricaoClasseJudicial, autor, reu, nomeTarefa, autuadoEm} = processos[i]
                         d.push({
-                            Id:         idsx[i] || '',
-                            Processo:   tx[i]?.numero || '',
-                            Tipo:       tx[i]?.descricaoClasseJudicial || '',
-                            Reclamada:  tx[i]?.reu   || '',
-                            Reclamante: tx[i]?.autor || '',
-                            Autuado_em: (new Date(tx[i]?.autuadoEm).toLocaleDateString('pt-BR')) || '',
+                            Id:         id || '',
+                            Processo:   numero || '',
+                            Tipo:       descricaoClasseJudicial || '',
+                            Reclamada:  reu   || '',
+                            Reclamante: autor || '',
+                            Tarefa: nomeTarefa || '',
+                            Autuado_em: (new Date(autuadoEm).toLocaleDateString('pt-BR')) || '',
                         })
                     }
                     return d

@@ -1,5 +1,5 @@
 function escaninhoFuncoes(){
-    return
+    //return
     console.log('%c[Rota PJE]%c 123456: ' + JSON.stringify(123456), LOG.info, 'color:inherit')
     escaninhoCriaBotao()
 }
@@ -76,6 +76,11 @@ async function escaninhoCriaBotao(){
         }
     }
     async function removePeticoesAnalisadas() {
+        let idDivMenu = id('escaninho', 'menu')
+        let opaco = document.getElementById(idDivMenu)
+        if (opaco) opaco.style.opacity = '0.5'
+        let armazenamento = await obterArmazenamento(idDivMenu) || {}
+        let ultimaData = armazenamento?.idDivMenu || ''
         let interceptados = interceptador_ler('peticoes_juntadas') || null
         if (!interceptados){
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
@@ -89,6 +94,7 @@ async function escaninhoCriaBotao(){
         let buscados = []
         for (let peticao of peticoes){
             let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
+            if(dataJuntada < ultimaData) continue
             let removido = false
             let timeline = await buscarDocumentos(idProcesso) || []
             if (!timeline.length) continue
@@ -99,13 +105,23 @@ async function escaninhoCriaBotao(){
                 removido = true
                 await removerDoEscaninho(numeroProcesso)
                 console.log('%c[Rota PJE]%c timeline' + JSON.stringify(peticao), LOG.aviso, 'color:inherit', timeline)
-                return
+                //return
             }
             buscados.push({numeroProcesso, idProcesso, idDocumento, dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), removido: removido? 'SIM' : 'NÃO'})
         }
         
         async function removerDoEscaninho(numeroProcesso) {
             let linhas = [...document.querySelectorAll('pje-data-table tr')]
+            let linhaExcluir = linhas.find(l => l.textContent.includes(numeroProcesso)) || null
+            await aguardarElemento('button[name$="' + numeroProcesso + '"]')
+            clicar('button[name$="' + numeroProcesso + '"]')
+            await aguardarElemento('.mat-dialog-actions button')
+            let botao = [...document.querySelectorAll('.mat-dialog-actions button')].find(b => b.textContent == 'Sim')
+            clicar(botao)
+            while (botao.isConnected){
+                await suspender()
+            }
+            return
         }
 
     }
