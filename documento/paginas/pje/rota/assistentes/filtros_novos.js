@@ -70,7 +70,8 @@ async function criaWidgetfiltrosNovos(ancestral) {
         'gustavo',
         'heber',
         'ronaldo',
-        'matheus'
+        'matheus',
+        'guilherme'
         // acrescente aqui
     ]
 
