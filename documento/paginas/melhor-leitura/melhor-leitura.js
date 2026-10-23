@@ -85,7 +85,7 @@
       font-family: system-ui, sans-serif;
       font-weight: 600;
       line-height: 1.5;
-      padding: 28px 36px;
+      padding: 14px 18px;
       border-radius: 12px;
       max-width: ${config.boxWidth}px;
       max-height: 80vh;
