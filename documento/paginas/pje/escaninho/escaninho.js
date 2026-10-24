@@ -117,7 +117,13 @@ async function escaninhoCriaBotao(){
                 await removerDoEscaninho(numeroProcesso)
                 //return
             }
-            buscados.push({numeroProcesso, idProcesso, idDocumento, dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), removido: removido? 'SIM' : 'NÃO'})
+            buscados.push({
+                numeroProcesso, 
+                idProcesso, 
+                idDocumento, 
+                dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), 
+                removido: removido? 'SIM' : 'NÃO'
+            })
             await armazenar({[idDivMenu]: dataJuntada})
         }
         
