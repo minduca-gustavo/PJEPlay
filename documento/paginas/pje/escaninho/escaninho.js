@@ -152,10 +152,13 @@ async function escaninhoCriaBotao(){
                     await suspender(1000)
                     i++
                     if (i === 10){
-                        definePagina(qtdPaginas, true)
+                        finaliza(buscados)
                         break
                     }
+                    definePagina(qtdPaginas, true)
                 }
+                removePeticoesAnalisadas()
+                return
             }
         }
         
