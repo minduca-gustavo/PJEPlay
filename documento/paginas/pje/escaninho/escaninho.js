@@ -27,6 +27,7 @@ async function escaninhoCriaBotao(){
         acao: () => escaninhoMenu()
     })
     botao.style.display = 'inline'
+    let buscados = []
 
     function escaninhoMenu(){
         let idDiv = id('escaninho', 'menu')
@@ -100,7 +101,7 @@ async function escaninhoCriaBotao(){
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
             return
         }
-        let buscados = []
+        let removeuAlgum = false
         for (let peticao of peticoes){
             let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
             if(dataJuntada < ultimaData) continue
@@ -112,24 +113,21 @@ async function escaninhoCriaBotao(){
                 d?.usuarioInterno)
             if (remover){
                 removido = true
+                removeuAlgum = true
                 await removerDoEscaninho(numeroProcesso)
-                console.log('%c[Rota PJE]%c timeline' + JSON.stringify(peticao), LOG.aviso, 'color:inherit', timeline)
                 //return
             }
             buscados.push({numeroProcesso, idProcesso, idDocumento, dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), removido: removido? 'SIM' : 'NÃO'})
             await armazenar({[idDivMenu]: dataJuntada})
         }
-        let i = 0
-        while(interceptador_ler('peticoes_juntadas') === interceptados){
-            await suspender(1000)
-            i++
-            if (i === 10){
-                definePagina(qtdPaginas, true)
-                break
-            }
+        
+        if (interceptador_ler('peticoes_juntadas') === interceptados) {
+            definePagina(interceptados?.qtdPaginas, removeuAlgum)
+        } else {
+            removePeticoesAnalisadas()
         }
+        
 
-        if (interceptador_ler('peticoes_juntadas') === interceptados) definePagina(interceptados?.qtdPaginas, true)
 
         function finaliza(buscados){
             let i = 0
@@ -144,11 +142,11 @@ async function escaninhoCriaBotao(){
             escaninhoMenu()
         }
 
-        async function definePagina(paginas, interceptadorNaoMudou = false){
-            if (document.querySelector('pje-paginador mat-select').textContent >= paginas && interceptadorNaoMudou) {
+        async function definePagina(paginas, removeuAlgum = false){
+            if (document.querySelector('pje-paginador mat-select').textContent >= paginas && !removeuAlgum) {
                 finaliza(buscados)
                 return
-            } else if(interceptadorNaoMudou){
+            } else {
                 clicar('pje-paginador button[aria-label="Próximo"]')
                 while(interceptador_ler('peticoes_juntadas') === interceptados){
                     await suspender(1000)
@@ -158,11 +156,7 @@ async function escaninhoCriaBotao(){
                         break
                     }
                 }
-            } else {
-                removePeticoesAnalisadas()
             }
-            
-
         }
         
         async function removerDoEscaninho(numeroProcesso) {
