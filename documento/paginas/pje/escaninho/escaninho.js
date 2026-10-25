@@ -151,7 +151,7 @@ async function escaninhoCriaBotao(){
         for (let peticao of peticoes){
             let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = petica
             if(dataJuntada < ultimaData) continue
-            let {removeuTF, dadosBuscados} = mFuncoes[funcao]({parametros, peticao})
+            let {removeuTF, dadosBuscados} = await mFuncoes[funcao]({parametros, peticao})
             if (removeuTF) removeuAlgum = true
             buscados.push(...dadosBuscados)
             await armazenar({[idDivMenu]: dataJuntada})
