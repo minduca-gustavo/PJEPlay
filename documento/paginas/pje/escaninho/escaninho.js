@@ -28,6 +28,7 @@ async function escaninhoCriaBotao(){
     })
     botao.style.display = 'inline'
     let buscados = []
+    let parar = false
 
     async function escaninhoMenu(){
         let idDiv = id('escaninho', 'menu')
