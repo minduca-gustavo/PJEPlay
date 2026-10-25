@@ -42,7 +42,7 @@ async function escaninhoCriaBotao(){
             {
                 id: 'removePeticoesAnalisadas',
                 titulo: 'Remove petições analisadas.',
-                texto: 'Remove do escaninho as petições de processos que já tem despacho, sentença ou ata de audiência posterior.',
+                texto: 'Remove do escaninho as petições de processos que já têm despacho, sentença ou ata de audiência posterior.',
                 textoBotao: 'Iniciar'
             }
         ]
@@ -76,12 +76,14 @@ async function escaninhoCriaBotao(){
             })
         }
     }
-    async function removePeticoesAnalisadas() {
+    async function removePeticoesAnalisadas(rechamada) {
         let idDivMenu = id('escaninho', 'menu')
         let opaco = document.getElementById(idDivMenu)
+        let top = opaco.style.top
         if (opaco) {
             opaco.style.opacity = '0.5'
             opaco.style.height = '70px'
+            opaco.style.top = top
             opaco.replaceChildren('')
             criaSubTitulo({
                 id: idDivMenu + '_aguarde',
@@ -102,6 +104,7 @@ async function escaninhoCriaBotao(){
             return
         }
         let removeuAlgum = false
+        if (!rechamada) await garanteOrdem()
         for (let peticao of peticoes){
             let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
             if(dataJuntada < ultimaData) continue
@@ -126,14 +129,33 @@ async function escaninhoCriaBotao(){
             })
             await armazenar({[idDivMenu]: dataJuntada})
         }
-        
-        if (interceptador_ler('peticoes_juntadas') === interceptados) {
+        console.log('%c[Rota PJE]%c interceptador_ler(peticoes_juntadas)' + JSON.stringify(interceptador_ler('peticoes_juntadas')), LOG.aviso, 'color:inherit')
+        console.log('%c[Rota PJE]%c interceptados' + JSON.stringify(interceptados), LOG.aviso, 'color:inherit')
+        if (JSON.stringify(interceptador_ler('peticoes_juntadas')) === JSON.stringify(interceptados)) {
             definePagina(interceptados?.qtdPaginas, removeuAlgum)
         } else {
-            removePeticoesAnalisadas()
+            
+            removePeticoesAnalisadas(true)
         }
         
-
+        async function garanteOrdem(){
+            let interceptados = interceptador_ler('peticoes_juntadas')
+            await aguardarElemento('table th')
+            let botaoOrdena = [...document.querySelectorAll('table th')].find(t => normalizar(t.textContent).includes('data de juntada'))
+            clicar(botaoOrdena)
+            await suspender()
+            while(interceptados === interceptador_ler('peticoes_juntadas')){
+                await suspender()
+            }
+            let botaoApos = [...document.querySelectorAll('table th')].find(t => normalizar(t.textContent).includes('data de juntada'))
+            let ordenacao = !!botaoApos.querySelector('[aria-label^="Ordenação ascendente"]')// || false
+            console.log('%c[Rota PJE]%c ordenacao' + JSON.stringify(ordenacao), LOG.aviso, 'color:inherit')
+            //return
+            if (ordenacao){
+                return
+            }
+            garanteOrdem()
+        }
 
         function finaliza(buscados){
             let i = 0
@@ -143,27 +165,29 @@ async function escaninhoCriaBotao(){
                 let linha = Object.values(d).map(d => d).join('\t')
                 return (i == 1? (cabecalho + '\n' + linha) : linha)
             }).join('\n')
-            _baixarArquivo(JSON.stringify(resultado, null, 2), 'RemovePetiçõesAnalisadas.txt', 'text/plain')
+            _baixarArquivo(resultado, 'RemovePetiçõesAnalisadas.txt', 'text/plain')
             rota_avisoObrigatorio('Um arquivo foi baixado contendo o relatório desta atividade', 5)
             escaninhoMenu()
         }
 
         async function definePagina(paginas, removeuAlgum = false){
-            if (document.querySelector('pje-paginador mat-select').textContent >= paginas && !removeuAlgum) {
+            if (Number(document.querySelector('pje-paginador mat-select').textContent) >= paginas && !removeuAlgum) {
                 finaliza(buscados)
                 return
             } else {
+                let interceptarAgora = interceptador_ler('peticoes_juntadas')
                 clicar('pje-paginador button[aria-label="Próximo"]')
-                while(interceptador_ler('peticoes_juntadas') === interceptados){
-                    await suspender(1000)
+                let i = 0
+                while(JSON.stringify(interceptarAgora) === JSON.stringify(interceptador_ler('peticoes_juntadas'))){
+                    await suspender()
                     i++
-                    if (i === 10){
+                    if (i === 20){
                         finaliza(buscados)
-                        break
+                        return
                     }
-                    definePagina(qtdPaginas, true)
+                    //definePagina(interceptados?.qtdPaginas, true)
                 }
-                removePeticoesAnalisadas()
+                removePeticoesAnalisadas(true)
                 return
             }
         }
@@ -172,7 +196,9 @@ async function escaninhoCriaBotao(){
             let linhas = [...document.querySelectorAll('pje-data-table tr')]
             let linhaExcluir = linhas.find(l => l.textContent.includes(numeroProcesso)) || null
             await aguardarElemento('button[name$="' + numeroProcesso + '"]')
+            await suspender()
             clicar('button[name$="' + numeroProcesso + '"]')
+            await suspender()
             await aguardarElemento('.mat-dialog-actions button')
             let botao = [...document.querySelectorAll('.mat-dialog-actions button')].find(b => b.textContent == 'Sim')
             clicar(botao)
