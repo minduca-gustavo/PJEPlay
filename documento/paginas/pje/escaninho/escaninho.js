@@ -104,12 +104,12 @@ async function escaninhoCriaBotao(){
         }
         await armazenar({[idInput]: termos})
         let termosArray = termos.split(',').map(d=> normalizar(d?.trim()))
-        removePeticoes(false, termosArray)
+        percorrePeticoes({rechamada: false, funcao: 'porTipoOuTitulo',parametros: termosArray})
     }
     async function removePeticoesAnalisadas(){
-        removePeticoes(false, [])
+        percorrePeticoes({rechamada: false, funcao: 'analisadas', parametros: []})
     }
-    async function removePeticoes(rechamada, termos) {
+    async function percorrePeticoes({rechamada, funcao, parametros}) {
         let idDivMenu = id('escaninho', 'menu')
         let opaco = document.getElementById(idDivMenu)
         let top = opaco.style.top
@@ -144,37 +144,16 @@ async function escaninhoCriaBotao(){
         }
         let removeuAlgum = false
         if (!rechamada) await garanteOrdem()
+        let mFuncoes = {
+            porTipoOuTitulo,
+            analisadas
+        }
         for (let peticao of peticoes){
-            let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
+            let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = petica
             if(dataJuntada < ultimaData) continue
-            if(termos.length){
-                let {descricaoDocumento, nomeTipoProcessoDocumento} = peticao
-                if (termos.some(t=> normalizar(descricaoDocumento).includes(t) || normalizar(nomeTipoProcessoDocumento).includes(t))){
-                    await removerDoEscaninho(numeroProcesso)
-                    removeuAlgum = true
-                    buscados.push({numeroProcesso, dataJuntada, descricaoDocumento, nomeTipoProcessoDocumento})
-                }
-                continue
-            }
-            let removido = false
-            let timeline = await buscarDocumentos(idProcesso) || []
-            if (!timeline.length) continue
-            let remover = timeline.some(d => d?.data > dataJuntada &&
-                ['despacho', 'decisao', 'sentenca', 'ata da audiencia'].some(c=> normalizar(d?.titulo).includes(c) || normalizar(d?.tipo).includes(c)) && 
-                d?.usuarioInterno)
-            if (remover){
-                removido = true
-                removeuAlgum = true
-                await removerDoEscaninho(numeroProcesso)
-                //return
-            }
-            buscados.push({
-                numeroProcesso, 
-                idProcesso, 
-                idDocumento, 
-                dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), 
-                removido: removido? 'SIM' : 'NÃO'
-            })
+            let {removeuTF, dadosBuscados} = mFuncoes[funcao]({parametros, peticao})
+            if (removeuTF) removeuAlgum = true
+            buscados.push(...dadosBuscados)
             await armazenar({[idDivMenu]: dataJuntada})
         }
         console.log('%c[Rota PJE]%c interceptador_ler(peticoes_juntadas)' + JSON.stringify(interceptador_ler('peticoes_juntadas')), LOG.aviso, 'color:inherit')
@@ -183,7 +162,41 @@ async function escaninhoCriaBotao(){
             definePagina(interceptados?.qtdPaginas, removeuAlgum)
         } else {
             
-            removePeticoesAnalisadas(true, termos)
+            percorrePeticoes({rechamada: true, funcao, parametros})
+        }
+
+        async function analisadas({peticao}) {
+            let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
+            let timeline = await buscarDocumentos(idProcesso) || []
+            if (!timeline.length) return {removeuTF: false, dadosBuscados: null} 
+            let remover = timeline.some(d => d?.data > dataJuntada &&
+                ['despacho', 'decisao', 'sentenca', 'ata da audiencia'].some(c=> normalizar(d?.titulo).includes(c) || normalizar(d?.tipo).includes(c)) && 
+                d?.usuarioInterno)
+            if (remover){
+                await removerDoEscaninho(numeroProcesso)
+                return {
+                    removeuTF: false, 
+                    dadosBuscados: {
+                        numeroProcesso,
+                        idProcesso,
+                        idDocumento,
+                        dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'),
+                        removido: removido? 'SIM' : 'NÃO'
+                    }
+                }
+            }
+            return {removeuTF: false, dadosBuscados: null}
+        }
+
+        async function porTipoOuTitulo({parametros, peticao}) {
+            let {descricaoDocumento, nomeTipoProcessoDocumento, numeroProcesso, dataJuntada} = peticao
+            if(!parametros.length) return {removeuTF: false, dadosBuscados: null}
+            if (parametros.some(t=> normalizar(descricaoDocumento).includes(t) || normalizar(nomeTipoProcessoDocumento).includes(t))){
+                await removerDoEscaninho(numeroProcesso)
+                let dadosBuscados = {numeroProcesso, dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), descricaoDocumento, nomeTipoProcessoDocumento}
+                return {removeuTF: true, dadosBuscados}
+            }
+            return {removeuTF: false, dadosBuscados: null}
         }
         
         async function garanteOrdem(){
@@ -237,7 +250,7 @@ async function escaninhoCriaBotao(){
                     }
                     //definePagina(interceptados?.qtdPaginas, true)
                 }
-                removePeticoesAnalisadas(true, termos)
+                percorrePeticoes(true, termos)
                 return
             }
         }
