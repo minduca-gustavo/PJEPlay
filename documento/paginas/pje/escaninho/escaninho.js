@@ -29,7 +29,7 @@ async function escaninhoCriaBotao(){
     botao.style.display = 'inline'
     let buscados = []
 
-    function escaninhoMenu(){
+    async function escaninhoMenu(){
         let idDiv = id('escaninho', 'menu')
         let remover = [...document.querySelectorAll('#' + idDiv)].map(d=> d.remove())
         let div = criaDivCentralPadrao({
@@ -44,25 +44,45 @@ async function escaninhoCriaBotao(){
                 titulo: 'Remove petições analisadas.',
                 texto: 'Remove do escaninho as petições de processos que já têm despacho, sentença ou ata de audiência posterior.',
                 textoBotao: 'Iniciar'
-            }
+            },
+            {
+                id: 'removePeticoesPorTipoOuTitulo',
+                titulo: 'Remove petições por tipo ou título.',
+                texto: 'Remove do escaninho todas as petições que contenham no título ou tipo alguma das palavras escolhidas.',
+                input: 'Preencha com as palavras a buscar, separadas por vírgula. Ex: contestacao, SUBSTABELECIMENTO, procuração.',
+                textoBotao: 'Iniciar'
+            },
         ]
         let mFuncoes = {
             removePeticoesAnalisadas,
+            removePeticoesPorTipoOuTitulo
         }
         for (let script of scripts){
             let idGeral = idDiv + script?.id
             let ancestral = idGeral + '_div'
-            criaDiv({
+            let idInput = script?.input ? idGeral + '_input' : ''
+            let armazenamentoInput = await obterArmazenamento(idInput) || {}
+            let inputValue = armazenamentoInput?.[idInput] || ''
+            let divIntermediaria = criaDiv({
                 id: ancestral,
                 ancestral: div?.corpo?.id, 
                 rowColumn: 'row-reverse'
             })
+            formataDiv(divIntermediaria, 'branco', 'auto', 'auto', 'relative', '0px', '0px', '')
             criaBotaoAzul({
                 id: idGeral + '_botao',
                 texto: script?.textoBotao,
                 ancestral,
-                acao: () => mFuncoes[script.id]()
+                acao: () => mFuncoes[script.id](idInput)
             })
+            if (script?.input){
+                let input = criaInput({
+                    id: idInput,
+                    textoEmCima: script?.input,
+                    ancestral,
+                })
+                input.value = inputValue
+            }
             let texto = criaTexto({
                 id: idGeral + '_texto',
                 texto: script?.texto,
@@ -76,10 +96,24 @@ async function escaninhoCriaBotao(){
             })
         }
     }
-    async function removePeticoesAnalisadas(rechamada) {
+    async function removePeticoesPorTipoOuTitulo(idInput){
+        let termos = document.getElementById(idInput).value || null
+        if (!termos) {
+            rota_avisoObrigatorio('Não foram informados termos para pesquisa', 5)
+            return
+        }
+        await armazenar({[idInput]: termos})
+        let termosArray = termos.split(',').map(d=> normalizar(d?.trim()))
+        removePeticoes(false, termosArray)
+    }
+    async function removePeticoesAnalisadas(){
+        removePeticoes(false, [])
+    }
+    async function removePeticoes(rechamada, termos) {
         let idDivMenu = id('escaninho', 'menu')
         let opaco = document.getElementById(idDivMenu)
         let top = opaco.style.top
+        let left = opaco.style.left
         if (opaco) {
             opaco.style.opacity = '0.5'
             opaco.style.height = '70px'
@@ -100,6 +134,11 @@ async function escaninhoCriaBotao(){
         }
         let peticoes = interceptados?.resultado || []
         if (!peticoes.length){
+            if (document.querySelector('table .mensagem-vazio')){
+                finaliza(buscados)
+                buscados = []
+                return
+            }
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
             return
         }
@@ -108,6 +147,15 @@ async function escaninhoCriaBotao(){
         for (let peticao of peticoes){
             let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
             if(dataJuntada < ultimaData) continue
+            if(termos.length){
+                let {descricaoDocumento, nomeTipoProcessoDocumento} = peticao
+                if (termos.some(t=> normalizar(descricaoDocumento).includes(t) || normalizar(nomeTipoProcessoDocumento).includes(t))){
+                    await removerDoEscaninho(numeroProcesso)
+                    removeuAlgum = true
+                    buscados.push({numeroProcesso, dataJuntada, descricaoDocumento, nomeTipoProcessoDocumento})
+                }
+                continue
+            }
             let removido = false
             let timeline = await buscarDocumentos(idProcesso) || []
             if (!timeline.length) continue
@@ -135,7 +183,7 @@ async function escaninhoCriaBotao(){
             definePagina(interceptados?.qtdPaginas, removeuAlgum)
         } else {
             
-            removePeticoesAnalisadas(true)
+            removePeticoesAnalisadas(true, termos)
         }
         
         async function garanteOrdem(){
@@ -173,6 +221,7 @@ async function escaninhoCriaBotao(){
         async function definePagina(paginas, removeuAlgum = false){
             if (Number(document.querySelector('pje-paginador mat-select').textContent) >= paginas && !removeuAlgum) {
                 finaliza(buscados)
+                buscados = []
                 return
             } else {
                 let interceptarAgora = interceptador_ler('peticoes_juntadas')
@@ -183,11 +232,12 @@ async function escaninhoCriaBotao(){
                     i++
                     if (i === 20){
                         finaliza(buscados)
+                        buscados = []
                         return
                     }
                     //definePagina(interceptados?.qtdPaginas, true)
                 }
-                removePeticoesAnalisadas(true)
+                removePeticoesAnalisadas(true, termos)
                 return
             }
         }

@@ -604,18 +604,21 @@ async function estiloBotaoFitaSuperior(botao){
     let armazenamento = await obterArmazenamento('melhorLeitura_ativo')
     let melhorLeitura = armazenamento?.melhorLeitura_ativo
     //console.log('%c[Rota PJE]%c melhorLeitura' + JSON.stringify(melhorLeitura), LOG.aviso, 'color:inherit')
-    if (melhorLeitura) {
-        
-        botao.style.padding = '0 4px'
-        botao.style.fontSize = '20px'
-        botao.style.fontSize = '20px'
+    if (!melhorLeitura){
+        botao.style.fontSize = '9px'
+        botao.style.height     = '14px'
+        botao.style.lineHeight = '14px'
+        botao.style.padding    = '0 8px'
+        botao.style.zIndex = '1'
         return
     }
-    botao.style.fontSize = '9px'
-    botao.style.height     = '14px'
-    botao.style.lineHeight = '14px'
-    botao.style.padding    = '0 8px'
-    botao.style.zIndex = '1'
+    botao.style.padding = '0 4px'
+    botao.style.fontSize = '20px'
+    botao.style.fontSize = '20px'
+    botao.style.background = '#000000'
+    _ui_hoverBotao(botao, '#000000', '#333333')
+    return
+
 }
 
 async function peritosPreferidos(ancestral) {
