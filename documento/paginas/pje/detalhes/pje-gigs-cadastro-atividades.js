@@ -192,14 +192,6 @@ async function alteraPrazoGigs(ancestral){
         ancestral
     })
     formataFitaSuperior(div)
-    let idBotao = id('gig', 'configura', 'prazo')
-    let botao = criaBotaoAzul({
-        id: idBotao,
-        ancestral: idGigBarra,
-        texto: 'Configura alteração de prazos.',
-        acao: () => alert('Olá')
-    })
-    estiloBotaoFitaSuperior(botao)
     let botoes = [2, 5, 10, 15, 30, 60, 90, 180]
     for (let prazo of botoes){
         let botao = criaBotaoAzul({
