@@ -73,6 +73,7 @@ function rota_nucleo_definirModoDev(ligado = false){
 var JANELA = {
 	meuPainel:              /\/pjekz\/gigs\/meu-painel/,
 	gigsRelatorios:         /\/pjekz\/gigs\/relatorios\/atividades/,
+	gigsAbrirGigs:			/\/pjekz\/gigs\/abrir-gigs/,
 	painelGlobal:           /\/pjekz\/painel\/global/,
 	painelGlobalTarefas:    /\/pjekz\/painel\/global\/\d*\/lista-processos/,
 	analisarEAssinar:       /\/pjekz\/painel\/global\/2\/lista-processos/,

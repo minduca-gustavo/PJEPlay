@@ -191,7 +191,7 @@ function rota_iniciarPermanentes(){
 
 async function mutacaoGigs(){
 	criarBarraGigsFavoritos()
-	await devolverGig()
+	devolverGig()
 	gig_copiaAtendimento()
 }
 

@@ -13,12 +13,13 @@ dial.querySelector('#destaque.mat-checkbox-checked') => checado
 */
 
 async function favoritarGigs() {
-    let janela = confereJanela(JANELA.detalhes)
+    let janela = confereJanela(JANELA.detalhes, JANELA.escaninho, JANELA.painelGlobal, JANELA.gigsRelatorios, JANELA.gigsAbrirGigs)
     if (!janela) return
     let idBotao = id('favoritarGig') 
     await aguardarElemento('pje-gigs-cadastro-atividades')
     await suspender(100)
     await aguardarElemento('pje-gigs-cadastro-atividades mat-card-actions')
+    criaBarrasAlteraGigs()
     let remover = [...document.querySelectorAll('#' + idBotao)].map(d=> d.remove())
     let botao = criaBotaoLaranja({
         id: idBotao,
@@ -99,7 +100,7 @@ async function favoritarGigs() {
                 texto: 'Salvar com prazo zero (data de hoje).',
                 acao: () => armazenarFavoritos(idBotao, 'hoje')
             })
-            botaoDataPrazo.style.width = '50%'
+            botaoHoje.style.width = '50%'
         }
         if(!dataPrazo && !dias){
             let botaoSalvar = criaBotaoAzul({
@@ -150,6 +151,75 @@ async function favoritarGigs() {
         }
     }
     
+}
+
+async function criaBarrasAlteraGigs() {
+    let idGigBarra = id('gig', 'barra', 'altera')
+    let elementoInserirAntes = document.querySelector('pje-gigs-cadastro-atividades')
+    let remover = document.getElementById(idGigBarra)?.remove()
+    let div = criaDiv({
+        id: idGigBarra,
+        ancestral: document.body
+    })
+    insereFitaSuperior(elementoInserirAntes, div)
+    //await alteraResponsavelGigs(idGigBarra)
+    await alteraPrazoGigs(idGigBarra)
+}
+
+async function alteraResponsavelGigs(ancestral){
+    let idGigBarra = id('gig', 'barra', 'altera', 'responsavel')
+    let remover = document.getElementById(idGigBarra)?.remove()
+    let div = criaDiv({
+        id: idGigBarra,
+        ancestral
+    })
+    formataFitaSuperior(div)
+    let idBotao = id('gig', 'configura', 'responsavel')
+    let botao = criaBotaoLaranja({
+        id: idBotao,
+        ancestral: idGigBarra,
+        texto: 'Configura alteração de responsáveis.',
+        acao: () => alert('Olá')
+    })
+    estiloBotaoFitaSuperior(botao)
+}
+
+async function alteraPrazoGigs(ancestral){
+    let idGigBarra = id('gig', 'barra', 'altera', 'prazo')
+    let remover = document.getElementById(idGigBarra)?.remove()
+    let div = criaDiv({
+        id: idGigBarra,
+        ancestral
+    })
+    formataFitaSuperior(div)
+    let idBotao = id('gig', 'configura', 'prazo')
+    let botao = criaBotaoAzul({
+        id: idBotao,
+        ancestral: idGigBarra,
+        texto: 'Configura alteração de prazos.',
+        acao: () => alert('Olá')
+    })
+    estiloBotaoFitaSuperior(botao)
+    let botoes = [2, 5, 10, 15, 30, 60, 90, 180]
+    for (let prazo of botoes){
+        let botao = criaBotaoAzul({
+            id: id('gig', 'acrescenta', prazo + 'dias'),
+            ancestral: idGigBarra,
+            texto: 'Acrescentar ' + prazo + ' dias',
+            acao: () => inserirGigsNaTelaDeDetalhesDoProcesso({
+                dataInicio: new Date().toLocaleDateString(),
+                dias: prazo,
+                clicarEmNovaAtividade: false,
+                salvar: true
+            })
+        })
+        estiloBotaoFitaSuperior(botao)
+        criaTooltip({
+            id: id('gig', 'acrescenta', prazo + 'dias', 'tooltip'),
+            texto: 'Acrescenta prazo de ' + prazo + ' dias a contar de HOJE.',
+            elemento: botao
+        })
+    }
 }
 
 async function criarBarraGigsFavoritos() {

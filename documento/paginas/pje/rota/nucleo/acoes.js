@@ -16,25 +16,42 @@
 
 // ── Utilitário interno ────────────────────────────────────────
 
-async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = 'nao', corridosOuUteis = 'diasUteis', destaque = false, hoje = false}){
-    let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
-    if (!novaAtividade) return
-    clicar(novaAtividade)
+async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = '', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = false, corridosOuUteis = 'diasUteis', destaque = false, hoje = false, clicarEmNovaAtividade = true, dataInicio = ''}){
+    if (clicarEmNovaAtividade){
+        let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
+        if (!novaAtividade) return
+        clicar(novaAtividade)
+    }
+    if (dataInicio){
+        await aguardarElemento('pje-gigs-cadastro-atividades #dataInicio')
+        await suspender (200)
+        let elemento = document.querySelector('pje-gigs-cadastro-atividades #dataPrazo')
+        let data = elemento?.value || ''
+        if (data && dataInicio){
+            dataCompara = data.split('/')[2] + data.split('/')[1] + data.split('/')[0]
+            inicioCompara = dataInicio.split('/')[2] + dataInicio.split('/')[1] + dataInicio.split('/')[0]
+            console.log('%c[Rota PJE]%c dataCompara: ' + JSON.stringify(dataCompara), LOG.info, 'color:inherit')
+            console.log('%c[Rota PJE]%c inicioCompara: ' + JSON.stringify(inicioCompara), LOG.info, 'color:inherit')
+            if (dataCompara < inicioCompara){
+                preencher('pje-gigs-cadastro-atividades #dataPrazo', dataInicio)
+                //return
+            }
+        }
+        preencher('pje-gigs-cadastro-atividades #dataInicio', dataInicio)
+    }
     let dataPrazoPreencher = dataPrazo
     await aguardarElemento('pje-gigs-cadastro-atividades #dataInicio')
     if (hoje){
         dataPrazoPreencher = document.querySelector('pje-gigs-cadastro-atividades #dataInicio').value
     }
-    console.log('%c[Rota PJE]%c dataPrazoPreencher: ' + JSON.stringify(dataPrazoPreencher), LOG.info, 'color:inherit')
     if (dias && !dataPrazoPreencher){
+        console.log('%c[Rota PJE]%c dias: ' + JSON.stringify(dias), LOG.info, 'color:inherit')
         let inputDias = await aguardarElementoNovo('detalhesDoProcessoInputDiasGigs')
-        console.log('%c[Rota PJE]%c 31: ' + JSON.stringify(31), LOG.teste, 'color:inherit', inputDias)
         await suspender (200)
         preencher(inputDias, dias)
     }
     if (dataPrazoPreencher){
         let inputData = await aguardarElementoNovo('detalhesDoProcessoInputDataPrazoGigs')
-        console.log('%c[Rota PJE]%c 37: ' + JSON.stringify(37), LOG.info, 'color:inherit', inputData)
         await suspender (200)
         preencher(inputData, dataPrazoPreencher)
     }
@@ -55,7 +72,6 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', d
         clicar('pje-gigs-cadastro-atividades #' + corridosOuUteis + ' input')
         await suspender (200)
     }
-    console.log('%c[Rota PJE]%c 50: ' + JSON.stringify(50), LOG.info, 'color:inherit')
     if (destaque){
         await aguardarElemento('pje-gigs-cadastro-atividades #destaque')
         await suspender (200)
@@ -65,11 +81,11 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = 'Prazo', d
     aguardarElemento('pje-gigs-cadastro-atividades #tipoAtividade')
     await suspender (200)
     let inputTipoAtividade = document.querySelector('pje-gigs-cadastro-atividades #tipoAtividade')
-    if (inputTipoAtividade.value != tipoAtividade){
+    if (inputTipoAtividade.value != tipoAtividade && tipoAtividade){
         await focar(inputTipoAtividade)
         await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
     }
-    if (salvar === 'sim'){
+    if (salvar){
         let botaoSalvar = await aguardarElementoNovo('detalhesDoProcessoBotaoSalvarGigs')
         await suspender (200)
         clicar(botaoSalvar)
