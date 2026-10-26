@@ -46,6 +46,7 @@ async function despachosPreferidos(ancestral){
     async function cadastrarDespachosPreferidos(){
         let despachos = await obterArmazenamento(idBotaoConfigura) || {}
         let divId = id('despachosPreferidos', 'cadastro')
+        let remover = document.getElementById(divId)?.remove()
         let div = criaDiv({
             id: divId,
             ancestral: document.body
