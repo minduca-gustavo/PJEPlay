@@ -162,7 +162,7 @@ async function criaBarrasAlteraGigs() {
         ancestral: document.body
     })
     insereFitaSuperior(elementoInserirAntes, div)
-    //await alteraResponsavelGigs(idGigBarra)
+    await alteraResponsavelGigs(idGigBarra)
     await alteraPrazoGigs(idGigBarra)
 }
 
@@ -179,9 +179,45 @@ async function alteraResponsavelGigs(ancestral){
         id: idBotao,
         ancestral: idGigBarra,
         texto: 'Configura alteração de responsáveis.',
-        acao: () => alert('Olá')
+        acao: () => configuraResponsaveis()
     })
     estiloBotaoFitaSuperior(botao)
+    function configuraResponsaveis(){
+        let idDiv = id('gig', 'configura', 'responsaveis')
+        let div = criaDivCentralPadrao({
+            id: idDiv,
+            largura: '40%',
+            altura: '40%',
+            titulo: 'Configura botões de alterar responsável'
+        })
+        criaSubTitulo({
+            id: idDiv + '_texto',
+            texto: 'Coloque o nome dos responsáveis abaixo, um por linha. Os botões serão criados com o primeiro e o último nome.',
+            ancestral: div?.corpo?.id
+        })
+        let input = criaInputAnotacao({
+            id: idDiv + '_input',
+            textoEmCima: 'Para excluir um responsável, apague a linha com o nome e clique em salvar.',
+            ancestral: div?.corpo?.id
+        })
+        let alturaMaxima = div?.corpo.offsetHeight
+        input.style.height = (alturaMaxima * 0.7) + 'px'
+        let alturaMaximaInput = input.offsetHeight
+        //console.log('%c[Rota PJE]%c alturaMaxima: ' + JSON.stringify(alturaMaxima), LOG.info, 'color:inherit')
+        input.textarea.style.height = alturaMaximaInput + 'px'
+        input.textarea.style.overflowY = 'auto'
+        input.textarea.style.boxSizing = 'border-box'
+        criaBotaoAzul({
+            id: idDiv + '_salvar',
+            texto: 'Salvar',
+            ancestral: div?.rodape?.id,
+            acao: ()=> salvarResponsaveis(idDiv + '_input')
+        })
+    }
+
+    async function salvarResponsaveis(input) {
+        
+    }
 }
 
 async function alteraPrazoGigs(ancestral){
