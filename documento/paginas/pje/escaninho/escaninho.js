@@ -112,21 +112,33 @@ async function escaninhoCriaBotao(){
     }
     async function percorrePeticoes({rechamada, funcao, parametros}) {
         let idDivMenu = id('escaninho', 'menu')
-        let opaco = document.getElementById(idDivMenu)
-        let top = opaco.style.top
-        let left = opaco.style.left
-        if (opaco) {
-            opaco.style.opacity = '0.5'
-            opaco.style.height = '70px'
-            opaco.style.top = top
-            opaco.replaceChildren('')
-            criaSubTitulo({
-                id: idDivMenu + '_aguarde',
-                texto: 'Aguarde a conclusão da tarefa.',
-                ancestral: idDivMenu
-            })
-        }
+        let top = document.getElementById(idDivMenu)?.style.top
+        let remover = document.getElementById(idDivMenu)?.remove()
+        let idExecucao = id('escaninho', 'execucao')
+        let removerExecucao = document.getElementById(idExecucao)?.remove()
+        let divExecucao = criaDivCentralPadrao({
+            id: idExecucao,
+            titulo: 'Executando',
+            largura: '40%',
+            altura: '40%',
+            top
+        })
+        let texto = criaSubTitulo({
+            id: id('escaninho', 'placar'),
+            texto: 'Aguarde a conclusão da tarefa. Iniciando.',
+            ancestral: divExecucao.corpo.id
+        })
+        criaBotaoLaranja({
+            id: id('escaninho', 'parar'),
+            texto: 'Parar.',
+            ancestral: divExecucao.corpo.id,
+            acao: () => {
+                parar = true
+                return
+            }
+        })
         let armazenamento = await obterArmazenamento(idDivMenu) || {}
+        if (!rechamada) await garanteOrdem()
         let ultimaData = armazenamento?.idDivMenu || ''
         let interceptados = interceptador_ler('peticoes_juntadas') || null
         if (!interceptados){
@@ -144,26 +156,35 @@ async function escaninhoCriaBotao(){
             return
         }
         let removeuAlgum = false
-        if (!rechamada) await garanteOrdem()
         let mFuncoes = {
             porTipoOuTitulo,
             analisadas
         }
+        let i = 0
         for (let peticao of peticoes){
-            let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = petica
+            if(parar){
+                finaliza(buscados)
+                return   
+            }
+            atualizaPlacar('Buscando ' + i++ + ' de ' + peticoes.length)
+            let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
             if(dataJuntada < ultimaData) continue
             let {removeuTF, dadosBuscados} = await mFuncoes[funcao]({parametros, peticao})
             if (removeuTF) removeuAlgum = true
-            buscados.push(...dadosBuscados)
+            if (dadosBuscados) buscados.push(dadosBuscados)
             await armazenar({[idDivMenu]: dataJuntada})
         }
-        console.log('%c[Rota PJE]%c interceptador_ler(peticoes_juntadas)' + JSON.stringify(interceptador_ler('peticoes_juntadas')), LOG.aviso, 'color:inherit')
-        console.log('%c[Rota PJE]%c interceptados' + JSON.stringify(interceptados), LOG.aviso, 'color:inherit')
         if (JSON.stringify(interceptador_ler('peticoes_juntadas')) === JSON.stringify(interceptados)) {
             definePagina(interceptados?.qtdPaginas, removeuAlgum)
         } else {
             
             percorrePeticoes({rechamada: true, funcao, parametros})
+        }
+
+        function atualizaPlacar(texto){
+            let placar = document.getElementById(id('escaninho', 'placar'))
+            placar.textContent = texto
+            return
         }
 
         async function analisadas({peticao}) {
@@ -173,20 +194,19 @@ async function escaninhoCriaBotao(){
             let remover = timeline.some(d => d?.data > dataJuntada &&
                 ['despacho', 'decisao', 'sentenca', 'ata da audiencia'].some(c=> normalizar(d?.titulo).includes(c) || normalizar(d?.tipo).includes(c)) && 
                 d?.usuarioInterno)
+            let removeuTF = false
             if (remover){
                 await removerDoEscaninho(numeroProcesso)
-                return {
-                    removeuTF: false, 
-                    dadosBuscados: {
-                        numeroProcesso,
-                        idProcesso,
-                        idDocumento,
-                        dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'),
-                        removido: removido? 'SIM' : 'NÃO'
-                    }
-                }
+                removeuTF = true
             }
-            return {removeuTF: false, dadosBuscados: null}
+            let dadosBuscados = {
+                numeroProcesso,
+                idProcesso,
+                idDocumento,
+                dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'),
+                removido: removeuTF? 'SIM' : 'NÃO'
+            }
+            return {removeuTF: false, dadosBuscados}
         }
 
         async function porTipoOuTitulo({parametros, peticao}) {
@@ -220,6 +240,7 @@ async function escaninhoCriaBotao(){
         }
 
         function finaliza(buscados){
+            atualizaPlacar('Finalizando...')
             let i = 0
             let resultado = buscados.map(d => {
                 let cabecalho = Object.keys(d).map(d => d).join('\t')
@@ -228,11 +249,13 @@ async function escaninhoCriaBotao(){
                 return (i == 1? (cabecalho + '\n' + linha) : linha)
             }).join('\n')
             _baixarArquivo(resultado, 'RemovePetiçõesAnalisadas.txt', 'text/plain')
+            let remover = document.getElementById(id('escaninho', 'execucao'))?.remove()
             rota_avisoObrigatorio('Um arquivo foi baixado contendo o relatório desta atividade', 5)
             escaninhoMenu()
         }
 
         async function definePagina(paginas, removeuAlgum = false){
+            atualizaPlacar('Próxima página...')
             if (Number(document.querySelector('pje-paginador mat-select').textContent) >= paginas && !removeuAlgum) {
                 finaliza(buscados)
                 buscados = []
@@ -251,12 +274,14 @@ async function escaninhoCriaBotao(){
                     }
                     //definePagina(interceptados?.qtdPaginas, true)
                 }
-                percorrePeticoes(true, termos)
+                await suspender()
+                percorrePeticoes({rechamada: true, funcao, parametros})
                 return
             }
         }
         
         async function removerDoEscaninho(numeroProcesso) {
+            atualizaPlacar('Removendo do escaninho...')
             let linhas = [...document.querySelectorAll('pje-data-table tr')]
             let linhaExcluir = linhas.find(l => l.textContent.includes(numeroProcesso)) || null
             await aguardarElemento('button[name$="' + numeroProcesso + '"]')
