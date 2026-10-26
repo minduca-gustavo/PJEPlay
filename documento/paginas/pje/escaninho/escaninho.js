@@ -49,7 +49,7 @@ async function escaninhoCriaBotao(){
             {
                 id: 'removePeticoesPorTipoOuTitulo',
                 titulo: 'Remove petições por tipo ou título.',
-                texto: 'Remove do escaninho todas as petições que contenham no título ou tipo alguma das palavras escolhidas.',
+                texto: 'Remove do escaninho todas as petições que contenham no título ou tipo alguma das palavras escolhidas. DICA: FILTRE ANTES AS PETIÇÕES POR TIPO.',
                 input: 'Preencha com as palavras a buscar, separadas por vírgula. Ex: contestacao, SUBSTABELECIMENTO, procuração.',
                 textoBotao: 'Iniciar'
             },
@@ -120,7 +120,7 @@ async function escaninhoCriaBotao(){
             id: idExecucao,
             titulo: 'Executando',
             largura: '40%',
-            altura: '40%',
+            altura: 'auto',
             top
         })
         let texto = criaSubTitulo({
@@ -248,7 +248,8 @@ async function escaninhoCriaBotao(){
                 let linha = Object.values(d).map(d => d).join('\t')
                 return (i == 1? (cabecalho + '\n' + linha) : linha)
             }).join('\n')
-            _baixarArquivo(resultado, 'RemovePetiçõesAnalisadas.txt', 'text/plain')
+            let nomeArquivo = 'RelatórioEscaninho' + new Date().slice(0, 10) + '.txt'
+            _baixarArquivo(resultado, nomeArquivo, 'text/plain')
             let remover = document.getElementById(id('escaninho', 'execucao'))?.remove()
             rota_avisoObrigatorio('Um arquivo foi baixado contendo o relatório desta atividade', 5)
             escaninhoMenu()
