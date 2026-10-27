@@ -16,13 +16,13 @@
 
 // ── Utilitário interno ────────────────────────────────────────
 
-async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = '', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = false, corridosOuUteis = 'diasUteis', destaque = false, hoje = false, clicarEmNovaAtividade = true, dataInicio = ''}){
+async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = '', dataPrazo = null, dias = null, responsavel = '', observacao = '', salvar = false, corridosOuUteis = 'diasUteis', destaque = false, hoje = false, clicarEmNovaAtividade = true, dataInicio = '', soma = false}){
     if (clicarEmNovaAtividade){
         let novaAtividade = await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs', {timeout: 20000})
         if (!novaAtividade) return
         clicar(novaAtividade)
     }
-    if (dataInicio){
+    if (soma){
         await aguardarElemento('pje-gigs-cadastro-atividades #dataInicio')
         await suspender (200)
         let elemento = document.querySelector('pje-gigs-cadastro-atividades #dataPrazo')

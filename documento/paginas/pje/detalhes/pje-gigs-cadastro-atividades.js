@@ -13,7 +13,7 @@ dial.querySelector('#destaque.mat-checkbox-checked') => checado
 */
 
 async function favoritarGigs() {
-    let janela = confereJanela(JANELA.detalhes, JANELA.escaninho, JANELA.painelGlobal, JANELA.gigsRelatorios, JANELA.gigsAbrirGigs)
+    let janela = confereJanela(JANELA.detalhes, JANELA.escaninho, JANELA.painelGlobal, JANELA.gigsRelatorios, JANELA.gigsAbrirGigs, JANELA.meuPainel)
     if (!janela) return
     let idBotao = id('favoritarGig') 
     await aguardarElemento('pje-gigs-cadastro-atividades')
@@ -169,7 +169,7 @@ async function criaBarrasAlteraGigs() {
 
 async function alteraResponsavelGigs(ancestral){
     let armazenamento = await obterArmazenamento(id('gig', 'configura', 'responsaveis', 'input'))
-    let botoes = armazenamento?.[id('gig', 'configura', 'responsaveis', 'input')]
+    let botoes = armazenamento?.[id('gig', 'configura', 'responsaveis', 'input')] || []
     let idGigBarra = id('gig', 'barra', 'altera', 'responsavel')
     let remover = document.getElementById(idGigBarra)?.remove()
     let div = criaDiv({
@@ -274,6 +274,7 @@ async function alteraPrazoGigs(ancestral){
             ancestral: idGigBarra,
             texto: 'Acrescentar ' + prazo + ' dias',
             acao: () => inserirGigsNaTelaDeDetalhesDoProcesso({
+                soma: true,
                 dataInicio: new Date().toLocaleDateString(),
                 dias: prazo,
                 clicarEmNovaAtividade: false,
