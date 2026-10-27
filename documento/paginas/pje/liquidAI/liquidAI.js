@@ -35,6 +35,55 @@ async function liquidAIGerarPJC(){
     await _baixarPjc('<?xml version="1.0" encoding="ISO-8859-1"?>' + xml, 'liquidAI')
 }
 
+function liquidAICriaHistoricos(){
+    let historicos = []
+    let historicoArray = []
+    for(let historico of historicos){
+        let id
+        let versao
+        let nome
+        let tipoVariacaoParcela
+        let incidenciaFGTS
+        let aplicarProporcionalidadeFGTS
+        let incidenciaINSS
+        let aplicarProporcionalidadeINSS
+        let calculo = {
+            Calculo: {
+                internalRef
+            }
+        }
+        let ocorrenciasArray = []
+        for (let ocorrencia of ocorrencias){
+            let id
+            let versao
+            let dataOcorrencia
+            let valor
+            let recolhidoFGTS
+            let recolhidoINSS
+            let incidenciaFGTS
+            let incidenciaINSS
+            let historicoSalarial = {
+                HistoricoSalarial: {
+                    internalRef // internalRef do HISTORICO
+                }
+            }
+            ocorrenciasArray.push(ocorrencia)
+        }
+        let ocorrencias = {
+            List:{
+                OcorrenciaDoHistoricoSalarial: ocorrenciasArray
+            }
+        }
+        historicoArray.push(historico)
+    }
+
+    let historicosSalariais = {
+        Set: {
+            HistoricoSalarial: historicoArray,
+        }
+    }
+}
+
 function naoMapeados(){
     return{
         verbas: {

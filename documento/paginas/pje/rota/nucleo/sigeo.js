@@ -1,7 +1,7 @@
 let SELETORES_SIGEO = {
     barraDeBusca: '#div_pesquisa',
     botaoOk: '#formAJIntranet\\:botaoPesquisarPorPalavraChave',
-    celulaDoProcessoNaTabela: '#formAJIntranet\\:numeroPPJ'
+    celulaDoProcessoNaTabela: '#formAJIntranet\\:numeroPPJ',
 }
 
 async function sigeoAjJtAoIniciar() {
@@ -84,16 +84,11 @@ async function sigeoAjJtInserirElementos() {
 
 async function sigeo_filtra_vt_finalfiltrarPorVara(vara) {
     await armazenar({rotapje_sigeo_filtra_vt_finalVaraSalva: vara})
-    document.querySelectorAll(SELETORES_SIGEO.celulaDoProcessoNaTabela)
-    .forEach(el => el.closest('tr').style.display = '')
+    document.querySelectorAll('tr').forEach(el => el.style.display = '')
     if (!vara){
         return
     }
-    let numeroProcessos = [...document.querySelectorAll(SELETORES_SIGEO.celulaDoProcessoNaTabela)]
-    console.log('%c[Rota PJE]%c 81: ' + JSON.stringify(numeroProcessos.length), LOG.teste, 'color:inherit')
-    let numeroFiltrado = numeroProcessos.filter(el => el.textContent.slice(-4) != vara)
-    console.log('%c[Rota PJE]%c 83: ' + JSON.stringify(numeroFiltrado.length), LOG.teste, 'color:inherit')
-    //numeroFiltrado.forEach(el => el.closest('tr').remove())
-    numeroFiltrado.forEach(el => el.closest('tr').style.display = 'none')
-    //await alert (vara)
+    let linhas = [...document.querySelectorAll('tr')]
+    let linhasExcluir = linhas.filter(l => [...l.querySelectorAll('td')].some(td => td.textContent.length && td.textContent.match(/\d{20}/) && td.textContent.trim().slice(-4) != vara))
+    linhasExcluir.forEach(el => el.closest('tr').style.display = 'none')
 }
