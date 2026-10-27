@@ -85,7 +85,7 @@ function liquidAICriaHistoricos(){
 }
 
 function naoMapeados(){
-    return{
+    let resultado = {
         verbas: {
             Set:''
         },
@@ -147,8 +147,9 @@ function naoMapeados(){
         },
         excecoesDoFechamentoDeCartaoDePonto: {
             Set:''
-        },
+        }
     }
+    return resultado
 }
 
 function liquidAIExtraiTextoEditor(){
