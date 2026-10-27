@@ -59,3 +59,30 @@ async function tramitaIAResumoRapidoCON1() {
     ]
     
 }
+
+async function tramitaIAResumoRapidoLIQ1() {
+    let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
+    let idURL = idURLMatch?.[1]
+    // DOCUMENTOS COMUNS
+    let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
+    let timelineLimpa = timeline.map(d => {
+        return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
+    })
+    let dataMaior = null
+    let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c))) || []
+    let teorDespachos = []
+    for (let despacho of despachos){
+        let teor = await rota_extrairTeorDocumento(idURL, despacho?.id) || ''
+        teorDespachos.push({id: despacho?.id, informacoes: despacho, teor})
+        dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
+    }
+    // ASSISTENTE
+    let assistenteEnvio = {timelineLimpa, teorDespachos}
+    let assistente = '6ae0dfd3f5c948c4262d5147'
+    let resposta = await rota_IAConsulta(assistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
+    
+    return [
+        {titulo: 'Resumo Geral LIQ1', resposta: resposta}, 
+    ]
+    
+}

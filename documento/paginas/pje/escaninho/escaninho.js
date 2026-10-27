@@ -248,7 +248,7 @@ async function escaninhoCriaBotao(){
                 let linha = Object.values(d).map(d => d).join('\t')
                 return (i == 1? (cabecalho + '\n' + linha) : linha)
             }).join('\n')
-            let nomeArquivo = 'RelatórioEscaninho' + new Date().slice(0, 10) + '.txt'
+            let nomeArquivo = 'RelatórioEscaninho' + Date.now() + '.txt'
             _baixarArquivo(resultado, nomeArquivo, 'text/plain')
             let remover = document.getElementById(id('escaninho', 'execucao'))?.remove()
             rota_avisoObrigatorio('Um arquivo foi baixado contendo o relatório desta atividade', 5)

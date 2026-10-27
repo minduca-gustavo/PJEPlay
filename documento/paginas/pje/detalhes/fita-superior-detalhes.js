@@ -43,7 +43,7 @@ async function criaFitaSuperior() {
     await irParaAOJDesteProcessoCriaBotao()
     await abrirTarefaChipEmCima('rotapje_fita_superior')
     
-    //await tramitaIAResumoRapido()
+    await tramitaIAResumoRapido()
     //await fitaDocumento()
     
 }
@@ -457,7 +457,7 @@ async function irParaAOJDesteProcesso() {
 
 async function tramitaIAResumoRapido() {
     let idBotao = id('tramitaIAResumoRapido', 'botao')
-    let botao = await criaBotaoAzul({
+    let botao = await criaBotaoLaranja({
         id: idBotao,
         ancestral: 'rotapje_fita_superior',
         acao: () => tramitaIAResumoRapidoBusca(idBotao),
@@ -477,10 +477,15 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
         {
             oj: 'CON1',
             funcao: 'tramitaIAResumoRapidoCON1',
+        },
+        {
+            oj: 'LIQ1',
+            funcao: 'tramitaIAResumoRapidoLIQ1',
         }
     ]
     let mapaFuncoes = {
-        tramitaIAResumoRapidoCON1
+        tramitaIAResumoRapidoCON1,
+        tramitaIAResumoRapidoLIQ1
     }
     let funcao = null
     for(let oj of ojs){

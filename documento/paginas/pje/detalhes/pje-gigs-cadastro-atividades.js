@@ -204,7 +204,7 @@ async function alteraResponsavelGigs(ancestral){
     async function configuraResponsaveis(){
         let idDiv = id('gig', 'configura', 'responsaveis')
         let armazenamento = await obterArmazenamento(idDiv + '_input')
-        let valores = armazenamento?.[idDiv + '_input']
+        let valores = armazenamento?.[idDiv + '_input'] || []
         let remover = document.getElementById(id('gig', 'configura', 'responsaveis'))?.remove()
         console.log('%c[Rota PJE]%c valores: ' + JSON.stringify(valores), LOG.info, 'color:inherit')
         let div = criaDivCentralPadrao({
