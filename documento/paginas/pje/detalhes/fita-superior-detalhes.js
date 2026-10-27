@@ -70,7 +70,7 @@ function acertaChipTelaGig(ancestral){
 
 function formataFitaSuperior(elemento, cor){
     elemento.style.backgroundColor = cor ?? '#ffffff'
-    elemento.style.gap = '0px'
+    elemento.style.gap = '1px'
     elemento.style.padding = '0px'
     elemento.style.marginBottom = '0px'
     elemento.style.minHeight = '14px'   // antes era height fixo
@@ -81,6 +81,9 @@ function formataFitaSuperior(elemento, cor){
     elemento.style.flexWrap = 'wrap'    // quebra de linha
     elemento.style.alignItems = 'center'
     elemento.style.alignContent = 'flex-start'
+    elemento.style.boxSizing = 'border-box'
+    elemento.style.width = '0px'
+    elemento.style.minWidth = '100%'
 }
 
 async function abrirTarefaChipEmCima(ancestral){

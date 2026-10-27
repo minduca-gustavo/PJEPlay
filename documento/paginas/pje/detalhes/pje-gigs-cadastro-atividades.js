@@ -161,12 +161,15 @@ async function criaBarrasAlteraGigs() {
         id: idGigBarra,
         ancestral: document.body
     })
+    formataFitaSuperior(div)
     insereFitaSuperior(elementoInserirAntes, div)
     await alteraResponsavelGigs(idGigBarra)
     await alteraPrazoGigs(idGigBarra)
 }
 
 async function alteraResponsavelGigs(ancestral){
+    let armazenamento = await obterArmazenamento(id('gig', 'configura', 'responsaveis', 'input'))
+    let botoes = armazenamento?.[id('gig', 'configura', 'responsaveis', 'input')]
     let idGigBarra = id('gig', 'barra', 'altera', 'responsavel')
     let remover = document.getElementById(idGigBarra)?.remove()
     let div = criaDiv({
@@ -182,8 +185,28 @@ async function alteraResponsavelGigs(ancestral){
         acao: () => configuraResponsaveis()
     })
     estiloBotaoFitaSuperior(botao)
-    function configuraResponsaveis(){
+    let i = 0
+    for (let bot of botoes){
+        let botao = criaBotaoLaranja({
+            id: idBotao + '_' + i,
+            ancestral: idGigBarra,
+            texto: normalizar(bot.split(' ')[0] + ' ' + bot.split(' ')[bot.split(' ').length - 1]).toUpperCase(),
+            acao: () => inserirGigsNaTelaDeDetalhesDoProcesso({responsavel: normalizar(bot).toUpperCase(), clicarEmNovaAtividade: false, salvar: true})
+        })
+        estiloBotaoFitaSuperior(botao)
+        i++
+        criaTooltip({
+            id: idBotao + '_' + i + '_tooltip',
+            texto: 'Alterar / inserir responsável pelo gig: ' + normalizar(bot).toUpperCase() + '. Se não der certo a alteração, confira se o nome está correto.',
+            elemento: botao
+        })
+    }
+    async function configuraResponsaveis(){
         let idDiv = id('gig', 'configura', 'responsaveis')
+        let armazenamento = await obterArmazenamento(idDiv + '_input')
+        let valores = armazenamento?.[idDiv + '_input']
+        let remover = document.getElementById(id('gig', 'configura', 'responsaveis'))?.remove()
+        console.log('%c[Rota PJE]%c valores: ' + JSON.stringify(valores), LOG.info, 'color:inherit')
         let div = criaDivCentralPadrao({
             id: idDiv,
             largura: '40%',
@@ -200,8 +223,9 @@ async function alteraResponsavelGigs(ancestral){
             textoEmCima: 'Para excluir um responsável, apague a linha com o nome e clique em salvar.',
             ancestral: div?.corpo?.id
         })
+        if (valores.length) input.textarea.value = valores.join('\n')
         let alturaMaxima = div?.corpo.offsetHeight
-        input.style.height = (alturaMaxima * 0.7) + 'px'
+        input.style.height = (alturaMaxima * 0.65) + 'px'
         let alturaMaximaInput = input.offsetHeight
         //console.log('%c[Rota PJE]%c alturaMaxima: ' + JSON.stringify(alturaMaxima), LOG.info, 'color:inherit')
         input.textarea.style.height = alturaMaximaInput + 'px'
@@ -216,7 +240,22 @@ async function alteraResponsavelGigs(ancestral){
     }
 
     async function salvarResponsaveis(input) {
-        
+        let elemento = document.getElementById(input)
+        if (!elemento){
+            rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
+            return
+        }
+        let value = elemento?.value
+        let nomes = value.split(/\r?\n/).map(d=> d?.trim().replace(/\.?\,?/g,''))
+        if (!nomes.length){
+            rota_avisoObrigatorio('Não foram encontrados nomes.', 5)
+            return
+        }
+        await armazenar({[input]: nomes})
+        criaBarrasAlteraGigs()
+        elemento.value = 'Salvo com sucesso.'
+        await suspender(2000)
+        elemento.value = value
     }
 }
 
