@@ -29,8 +29,10 @@ async function liquidAIGerarPJC(){
     // município tem uma externalRef que é da tabela TOM da receita federal
     municipio = liquidAIDefineMunicipio({municipio})
     // restante trará tudo que não foi mapeado, de acordo com CalculoCalculistaSemVerbasSemHistorico.xml
+    let verbas = verbasNaoMapeadas()
+    let historico = liquidAICriaHistoricos()
     let restante = naoMapeados()
-    let resultado = {Calculo: {gprec, dadosEstruturados, ...parametros, ...processoPJECalc, ...municipio, ...restante}}
+    let resultado = {Calculo: {gprec, dadosEstruturados, ...parametros, ...processoPJECalc, ...municipio, ...verbas, ...historico, ...restante}}
     let xml = liquidAIJsonToXml(resultado)
     await _baixarPjc('<?xml version="1.0" encoding="ISO-8859-1"?>' + xml, 'liquidAI')
 }
@@ -84,14 +86,12 @@ function liquidAICriaHistoricos(){
     }
 }
 
+function verbasNaoMapeadas(){
+    return{verbas:{Set:''}}
+}
+
 function naoMapeados(){
-    let resultado = {
-        verbas: {
-            Set:''
-        },
-        historicosSalariais: {
-            Set:''
-        },
+    return {
         listaDeFerias: {
             Set:''
         },
@@ -147,9 +147,8 @@ function naoMapeados(){
         },
         excecoesDoFechamentoDeCartaoDePonto: {
             Set:''
-        }
+        },
     }
-    return resultado
 }
 
 function liquidAIExtraiTextoEditor(){
