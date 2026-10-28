@@ -193,6 +193,71 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 1. Lista processos por CNPJ/CPF (Id) ─────────
             {
+                id: id(secao, 'botao', 'gig_id'),
+                texto: 'Lista informações dos processos pelo GIG — por Id',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'gig_id_nome'),
+                        textoEmCima: 'Ids',
+                        placeholder: '1234567\n2456789',
+                        tipoInput: 'criaInputAnotacao',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let idsInput = valores[0]?.split(/\r?\n/)
+                    let d = []
+                    if (!idsInput.length) return 'Ids não informados.'
+                    for (let ig = 0; ig < gigs.length; ig++) {
+                        let etapaTexto = gigs.length > 1 ? (ig + 1) + '/' + gigs.length : 0
+                        let r = await buscarProcessosPorGigPagina(gigs[ig].id, 1)
+                        atualizar_contador(ancestral, etapaTexto, '1/' + r.paginas)
+                        ids.push(...r.ids); t.push(...r.t)
+                        for (let pagina = 2; pagina <= r.paginas; pagina++) {
+                            atualizar_contador(ancestral, etapaTexto, pagina + '/' + r.paginas)
+                            let rp = await buscarProcessosPorGigPagina(gigs[ig].id, pagina)
+                            ids.push(...rp.ids); t.push(...rp.t)
+                        }
+                    }
+                    for (let idx = 0; idx < idsInput.length; idx++) {
+                        atualizar_contador(ancestral, 0, (idx + 1) + '/' + idsInput.length)
+                        let soNumeros = /\d+/.test(idsInput[idx])
+                        if (!soNumeros){
+                            d.push({
+                                'Id':                   idsInput[idx],
+                                'Documento':            'Id incorreto',
+                                'Reclamada':            'Id incorreto',
+                                'Reclamante':           'Id incorreto',
+                                'Outras Reclamadas':    'Id incorreto',
+                                'Apenas órgão público': 'Id incorreto',
+                                'Todas têm advogado?':  'Id incorreto',
+                                'Alguma tem advogado?': 'Id incorreto'
+                            })
+                            continue
+                        }
+                        let partes = await buscarProcesso(idsInput[idx], '/partes') || {}
+                        console.log('%c[Rota PJE]%c partes: ' + JSON.stringify(partes), LOG.info, 'color:inherit', partes)
+                        let autor = partes?.ATIVO[0]?.nome
+                        let orgaoPublico = partes?.PASSIVO.filter(d=> d?.tipoPessoa == 'O').length == partes?.PASSIVO.length ? 'Sim' : 'Não'
+                        let todasAdv = !partes?.PASSIVO.some(d => !d?.representantes && !d?.procuradoria)
+                        let algumaTemAdv = partes?.PASSIVO.some(d => d?.representantes || d?.procuradoria)
+                        for (let j of partes?.PASSIVO || []) {
+                            let maisReclamadas = partes?.PASSIVO.length === 1 ? 'Não' : 'Sim'
+                            d.push({
+                                'Id':                   idsInput[idx],
+                                'Documento':            j?.documento || '',
+                                'Reclamada':            j?.nome,
+                                'Reclamante':           autor,
+                                'Outras Reclamadas':    maisReclamadas,
+                                'Apenas órgão público': orgaoPublico,
+                                'Todas têm advogado?':  todasAdv ? 'SIM' : 'NÃO',
+                                'Alguma tem advogado?': algumaTemAdv ? 'SIM' : 'NÃO'
+                            })
+                        }
+                    }
+                    return d
+                }
+            },
+            {
                 id: id(secao, 'botao', 'cnpjcpf_id'),
                 texto: 'Lista processos por CNPJ/CPF - com indicação de apenas órgão público,  — por ID',
                 inputs: [
