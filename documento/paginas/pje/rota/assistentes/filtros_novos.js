@@ -574,8 +574,8 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     },
                     {
                         id: id(secao, 'input', 'pesquisa_timeline_id', 'movimentoOuDocumento'),
-                        textoEmCima: 'Digite Movimento, Documento, ou Ambos',
-                        placeholder: 'Ex: movimento, AMBOS, Documento',
+                        textoEmCima: 'Digite Movimentos, Documentos, ou Ambos',
+                        placeholder: 'Ex: movimentos, AMBOS, Documentos',
                         tipoInput: 'criaInput',
                     },
                     {
@@ -589,6 +589,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     let valorIds = valores[0]?.split(/\r?\n/)
                     if (!valorIds.length) return 'Não foram encontrados ids. Verifique.'
                     let movimentoOuDocumento = normalizar(valores[1])?.trim() || 'ambos'
+                    console.log('%c[Rota PJE]%c valores[1]' + JSON.stringify(valores[1]), LOG.erro, 'color:inherit')
                     let termosTimeline = valores[2]?.split(',').map(d=> normalizar(d)?.trim())
                     let funcoes = {
                         ambos: 'buscarDocumentosEMovimentos',
