@@ -262,6 +262,13 @@ async function buscarGigs(numProc) {
 	if (!Array.isArray(dados)) dados = dados?.resultado || []
 	return dados
 }
+async function buscarGigsPorId(id) {
+	
+	let dados = await rota_fetch(
+		location.origin + '/pje-gigs-api/api/atividade/processo/' + id
+	)
+	return dados
+}
 
 async function buscarHistoricoDeslocamentos(id) {
 	let dados = await rota_fetch(

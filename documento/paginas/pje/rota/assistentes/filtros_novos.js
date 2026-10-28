@@ -193,11 +193,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 1. Lista processos por CNPJ/CPF (Id) ─────────
             {
-                id: id(secao, 'botao', 'gig_id'),
-                texto: 'Lista informações dos processos pelo GIG — por Id',
+                id: id(secao, 'botao', 'gig_desIniLiq1'),
+                texto: 'Busca os Gigs Despacho Inicial e Registrar trânsito',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'gig_id_nome'),
+                        id: id(secao, 'input', 'gig_desIniLiq1'),
                         textoEmCima: 'Ids',
                         placeholder: '1234567\n2456789',
                         tipoInput: 'criaInputAnotacao',
@@ -207,52 +207,65 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     let idsInput = valores[0]?.split(/\r?\n/)
                     let d = []
                     if (!idsInput.length) return 'Ids não informados.'
-                    for (let ig = 0; ig < gigs.length; ig++) {
-                        let etapaTexto = gigs.length > 1 ? (ig + 1) + '/' + gigs.length : 0
-                        let r = await buscarProcessosPorGigPagina(gigs[ig].id, 1)
-                        atualizar_contador(ancestral, etapaTexto, '1/' + r.paginas)
-                        ids.push(...r.ids); t.push(...r.t)
-                        for (let pagina = 2; pagina <= r.paginas; pagina++) {
-                            atualizar_contador(ancestral, etapaTexto, pagina + '/' + r.paginas)
-                            let rp = await buscarProcessosPorGigPagina(gigs[ig].id, pagina)
-                            ids.push(...rp.ids); t.push(...rp.t)
+                    for (let idx = 0; idx < idsInput.length; idx++) {
+                        atualizar_contador(ancestral, 0, (idx + 1) + '/' + idsInput.length)
+                        let soNumeros = /\d+/.test(idsInput[idx])
+                        if (!soNumeros){
+                            d.push({
+                                'Id':                       idsInput[idx],
+                                'Gig Despacho Inicial':     'Id incorreto',
+                                'Gig Registrar Trânsito?':  'Id incorreto',
+                                
+                            })
+                            continue
                         }
+                        
+                        let gigs = await buscarGigsPorId(idsInput[idx]) || []
+                        let gigDespachoInicial = gigs.some(g => normalizar(g?.tipoAtividade?.descricaoConsulta).includes('despacho inicial'))
+                        let gigRegistrarTransito = gigs.some(g => normalizar(g?.tipoAtividade?.descricaoConsulta).includes('registrar transito'))
+                        
+                        d.push({
+                            'Id':                       idsInput[idx],
+                            'Gig Despacho Inicial':     gigDespachoInicial ? 'SIM' : 'NÃO',
+                            'Gig Registrar Trânsito?':  gigRegistrarTransito ? 'SIM' : 'NÃO'
+                        })
+                        
                     }
+                    return d
+                }
+            },
+            {
+                id: id(secao, 'botao', 'peritoNoPolo'),
+                texto: 'Diz se tem perito no polo - por ID.',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'peritoNoPolo'),
+                        textoEmCima: 'Digite/cole os ids, um por linha',
+                        placeholder: '1234567\n2345681\n',
+                        tipoInput: 'criaInputAnotacao',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let idsInput = valores[0]?.split(/\r?\n/)
+                    if (!idsInput.length) return 'Ids não informados.'
+
+                    let d = []
                     for (let idx = 0; idx < idsInput.length; idx++) {
                         atualizar_contador(ancestral, 0, (idx + 1) + '/' + idsInput.length)
                         let soNumeros = /\d+/.test(idsInput[idx])
                         if (!soNumeros){
                             d.push({
                                 'Id':                   idsInput[idx],
-                                'Documento':            'Id incorreto',
-                                'Reclamada':            'Id incorreto',
-                                'Reclamante':           'Id incorreto',
-                                'Outras Reclamadas':    'Id incorreto',
-                                'Apenas órgão público': 'Id incorreto',
-                                'Todas têm advogado?':  'Id incorreto',
-                                'Alguma tem advogado?': 'Id incorreto'
-                            })
+                                'Tem perito':           'Id incorreto',
+                                })
                             continue
                         }
                         let partes = await buscarProcesso(idsInput[idx], '/partes') || {}
-                        console.log('%c[Rota PJE]%c partes: ' + JSON.stringify(partes), LOG.info, 'color:inherit', partes)
-                        let autor = partes?.ATIVO[0]?.nome
-                        let orgaoPublico = partes?.PASSIVO.filter(d=> d?.tipoPessoa == 'O').length == partes?.PASSIVO.length ? 'Sim' : 'Não'
-                        let todasAdv = !partes?.PASSIVO.some(d => !d?.representantes && !d?.procuradoria)
-                        let algumaTemAdv = partes?.PASSIVO.some(d => d?.representantes || d?.procuradoria)
-                        for (let j of partes?.PASSIVO || []) {
-                            let maisReclamadas = partes?.PASSIVO.length === 1 ? 'Não' : 'Sim'
-                            d.push({
-                                'Id':                   idsInput[idx],
-                                'Documento':            j?.documento || '',
-                                'Reclamada':            j?.nome,
-                                'Reclamante':           autor,
-                                'Outras Reclamadas':    maisReclamadas,
-                                'Apenas órgão público': orgaoPublico,
-                                'Todas têm advogado?':  todasAdv ? 'SIM' : 'NÃO',
-                                'Alguma tem advogado?': algumaTemAdv ? 'SIM' : 'NÃO'
-                            })
-                        }
+                        let perito = partes?.TERCEIROS?.some(p => normalizar(p?.tipo).includes('perito')) || null
+                        d.push({
+                            'Id':           idsInput[idx],
+                            'Tem perito':   perito ? 'SIM' : 'NÃO'
+                        })
                     }
                     return d
                 }
@@ -550,6 +563,68 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
+                id: id(secao, 'botao', 'pesquisa_timeline_id'),
+                texto: 'Faz busca de termos na timeline e devolve processos que contiverem os termos - por ID.',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'pesquisa_timeline_id', 'tarefa'),
+                        textoEmCima: 'Digite/cole os ids, um por linha.',
+                        placeholder: '1234567\n9876543',
+                        tipoInput: 'criaInputAnotacao',
+                    },
+                    {
+                        id: id(secao, 'input', 'pesquisa_timeline_id', 'movimentoOuDocumento'),
+                        textoEmCima: 'Digite Movimento, Documento, ou Ambos',
+                        placeholder: 'Ex: movimento, AMBOS, Documento',
+                        tipoInput: 'criaInput',
+                    },
+                    {
+                        id: id(secao, 'input', 'pesquisa_timeline_id', 'termosTimeline'),
+                        textoEmCima: 'Digite os termos a buscar, separados por vírgula',
+                        placeholder: 'Ex: Acordo, SENTENÇA, Ata da audiencia',
+                        tipoInput: 'criaInput',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let valorIds = valores[0]?.split(/\r?\n/)
+                    if (!valorIds.length) return 'Não foram encontrados ids. Verifique.'
+                    let movimentoOuDocumento = normalizar(valores[1])?.trim() || 'ambos'
+                    let termosTimeline = valores[2]?.split(',').map(d=> normalizar(d)?.trim())
+                    let funcoes = {
+                        ambos: 'buscarDocumentosEMovimentos',
+                        documentos: 'buscarDocumentos',
+                        movimentos: 'buscarMovimentos'
+                    }
+                    let mapaFuncoes = {
+                        buscarDocumentosEMovimentos,
+                        buscarDocumentos,
+                        buscarMovimentos
+                    }
+                    let funcao = funcoes[movimentoOuDocumento] || null
+                    if(!funcao) return 'Digite ambos, movimentos ou documentos'
+                    let idsx = valorIds
+                    let d = []
+                    for (let i = 0; i < idsx.length; i++) {
+                        atualizar_contador(ancestral, '2/2', (i + 1) + '/' + idsx.length)
+                        let timeline = await mapaFuncoes[funcao](idsx[i]) || []
+                        if (!timeline.length) continue
+                        let encontrados = []
+                        for (let valor of termosTimeline){
+                            if (timeline.some(d => normalizar(d?.tipo).includes(valor) || normalizar(d?.titulo).includes(valor))) encontrados.push(valor)
+                        }
+                        if (encontrados.length) encontrado(encontrados.join(', '))
+                        function encontrado(valor){
+                            d.push({
+                                Id:         idsx[i] || '',
+                                encontrado: valor
+                            })
+                        }
+                        
+                    }
+                    return d
+                }
+            },
+            {
                 id: id(secao, 'botao', 'pesquisa_timeline'),
                 texto: 'Faz busca de termos na timeline e devolve processos que contiverem os termos',
                 inputs: [
@@ -784,6 +859,52 @@ async function criaWidgetfiltrosNovos(ancestral) {
             },
 
             // ── 4a. PJC único + Sentenças — por Tarefa ────────────
+            {
+                id: id(secao, 'botao', 'termos', 'sentencasEAcordaos', 'id'),
+                texto: 'Busca termos nas sentenças e acórdãos - por ID',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'ids', 'sentencasEAcordaos'),
+                        textoEmCima: 'Digite os Ids',
+                        placeholder: '1234567\n2456789',
+                        tipoInput: 'criaInputAnotacao',
+                    },
+                    {
+                        id: id(secao, 'input', 'termos', 'sentencasEAcordaos'),
+                        textoEmCima: 'Digite os termos que devem constar da sentença/acórdão, separados por vírgula.',
+                        placeholder: 'Ex.: horas extras, ferias vencidas.',
+                        tipoInput: 'criaInput',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let idsInput = valores[0]?.split(/\r?\n/)
+                    let d = []
+                    if (!idsInput.length) return 'Ids não informados.'
+                    let termos = valores[1]?.split(',').map(d => normalizar(d).trim()) || []
+                    if (!termos.length) return 'Não foram encontrados termos. Verifique.'
+                    let i = 0
+                    for (let id of idsInput){
+                        let termosEncontrados = []
+                        atualizar_contador(ancestral, 0, (i++) + '/' + idsInput.length)
+                        let soNumeros = /\d+/.test(id)
+                        if (!soNumeros) continue
+                        let timeline = await buscarDocumentos(id) || []
+                        let sentencasEAcordaos = timeline.filter(d=> ['sentenca', 'acordao', 'decisao'].some(c => normalizar(d?.titulo).includes(c) || normalizar(d?.tipo).includes(c)))
+                        for (let documento of sentencasEAcordaos){
+                            let texto = await rota_extrairTeorDocumento(id, documento?.id)
+                            for (let termo of termos){
+                                let encontrado = buscaEmTextoMalFormatado(texto, normalizar(termo).trim(), 10, 10)
+                                if (!!encontrado){
+                                    termosEncontrados.push(encontrado?.trechos)
+                                }
+                            }
+                        }
+                        d.push({id: id, encontrados: termosEncontrados.length ? 'SIM' : 'NÃO' ,'Termos Encontrados': termosEncontrados.join(', ')})
+                    }
+                    return d
+
+                }
+            },
             {
                 id: id(secao, 'botao', 'pjc_tarefa'),
                 texto: 'PJC único + Sentenças — por Tarefa',
