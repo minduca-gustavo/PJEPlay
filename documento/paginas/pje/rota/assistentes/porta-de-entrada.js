@@ -61,7 +61,7 @@ async function resolverGigs(nomeGig = '') {
     let gigsAtivos = await rota_fetch(
         location.origin + '/pje-gigs-api/api/relatorioatividades/tiposatividades'
     )
-    let gigs = gigsAtivos.filter(g => g.descricao.includes(nomeGig))
+    let gigs = gigsAtivos.filter(g => normalizar(g.descricao).includes(normalizar(nomeGig)))
     if (!gigs.length) {
         relatar('Gig não encontrada: ' + nomeGig, '', 'erro')
         return []
@@ -71,9 +71,9 @@ async function resolverGigs(nomeGig = '') {
 }
 
 // Busca uma única página de processos de um gig (1 requisição).
-async function buscarProcessosPorGigPagina(idGig, pagina) {
+async function buscarProcessosPorGigPagina(idGig, pagina, parametro) {
     let paginacao = await rota_fetch(
-        location.origin + '/pje-gigs-api/api/relatorioatividades/?tipo=' + idGig + '&pagina=' + pagina + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorDestinatario=false&filtrarPorLocalizacao=false'
+        location.origin + '/pje-gigs-api/api/relatorioatividades/?tipo=' + idGig + '&pagina=' + pagina + '&tamanhoPagina=100&ordenacaoCrescente=true&filtrarPorDestinatario=false&filtrarPorLocalizacao=false' + parametro
     )
     let paginas   = paginacao?.qtdPaginas || 1
     let resultado = paginacao?.resultado || []
@@ -182,18 +182,18 @@ async function buscarProcessosPorTarefa(nomeTarefa, param = '') {
     return { ids, t }
 }
 
-async function buscarProcessosPorGig(nomeGig = '') {
+async function buscarProcessosPorGig(nomeGig = '', parametro) {
     let gigs = await resolverGigs(nomeGig)
     if (!gigs.length) return { ids: [], t: [] }
 
     let ids = []
     let t   = []
     for (let gig of gigs) {
-        let r = await buscarProcessosPorGigPagina(gig.id, 1)
+        let r = await buscarProcessosPorGigPagina(gig.id, 1, parametro)
         ids.push(...r.ids)
         t.push(...r.t)
         for (let pagina = 2; pagina <= r.paginas; pagina++) {
-            let rp = await buscarProcessosPorGigPagina(gig.id, pagina)
+            let rp = await buscarProcessosPorGigPagina(gig.id, pagina, parametro)
             ids.push(...rp.ids)
             t.push(...rp.t)
         }

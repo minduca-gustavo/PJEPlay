@@ -191,7 +191,62 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
         let botoes = [
 
-            // ── 1. Lista processos por CNPJ/CPF (Tarefa) ─────────
+            // ── 1. Lista processos por CNPJ/CPF (Id) ─────────
+            {
+                id: id(secao, 'botao', 'cnpjcpf_id'),
+                texto: 'Lista processos por CNPJ/CPF - com indicação de apenas órgão público,  — por ID',
+                inputs: [
+                    {
+                        id: id(secao, 'input', 'cnpjcpf_id'),
+                        textoEmCima: 'Nome da tarefa',
+                        placeholder: 'Ex: Concluso para sentença',
+                        tipoInput: 'criaInputAnotacao',
+                    }
+                ],
+                funcao: async (valores, ancestral) => {
+                    let idsInput = valores[0]?.split(/\r?\n/)
+                    if (!idsInput.length) return 'Ids não informados.'
+
+                    let d = []
+                    for (let idx = 0; idx < idsInput.length; idx++) {
+                        atualizar_contador(ancestral, 0, (idx + 1) + '/' + idsInput.length)
+                        let soNumeros = /\d+/.test(idsInput[idx])
+                        if (!soNumeros){
+                            d.push({
+                                'Id':                   idsInput[idx],
+                                'Documento':            'Id incorreto',
+                                'Reclamada':            'Id incorreto',
+                                'Reclamante':           'Id incorreto',
+                                'Outras Reclamadas':    'Id incorreto',
+                                'Apenas órgão público': 'Id incorreto',
+                                'Todas têm advogado?':  'Id incorreto',
+                                'Alguma tem advogado?': 'Id incorreto'
+                            })
+                            continue
+                        }
+                        let partes = await buscarProcesso(idsInput[idx], '/partes') || {}
+                        console.log('%c[Rota PJE]%c partes: ' + JSON.stringify(partes), LOG.info, 'color:inherit', partes)
+                        let autor = partes?.ATIVO[0]?.nome
+                        let orgaoPublico = partes?.PASSIVO.filter(d=> d?.tipoPessoa == 'O').length == partes?.PASSIVO.length ? 'Sim' : 'Não'
+                        let todasAdv = !partes?.PASSIVO.some(d => !d?.representantes && !d?.procuradoria)
+                        let algumaTemAdv = partes?.PASSIVO.some(d => d?.representantes || d?.procuradoria)
+                        for (let j of partes?.PASSIVO || []) {
+                            let maisReclamadas = partes?.PASSIVO.length === 1 ? 'Não' : 'Sim'
+                            d.push({
+                                'Id':                   idsInput[idx],
+                                'Documento':            j?.documento || '',
+                                'Reclamada':            j?.nome,
+                                'Reclamante':           autor,
+                                'Outras Reclamadas':    maisReclamadas,
+                                'Apenas órgão público': orgaoPublico,
+                                'Todas têm advogado?':  todasAdv ? 'SIM' : 'NÃO',
+                                'Alguma tem advogado?': algumaTemAdv ? 'SIM' : 'NÃO'
+                            })
+                        }
+                    }
+                    return d
+                }
+            },
             {
                 id: id(secao, 'botao', 'cnpjcpf_tarefa'),
                 texto: 'Lista processos por CNPJ/CPF - com indicação de apenas órgão público — por Tarefa',
