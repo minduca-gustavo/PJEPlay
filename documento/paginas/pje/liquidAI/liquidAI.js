@@ -3,6 +3,10 @@
 async function liquidAIGerarPJC(){
     let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIExtraiDadosPJE()
     let textoSentenca = liquidAIExtraiTextoEditor()
+    if (!textoSentenca?.sucesso){
+        liquidAIErrosEditor(textoSentenca?.erros)
+        return
+    }
     let configuracoes = await liquidAIConfigurar('extrair')
     let dataCalculo = new Date().setHours(0,0,0,0)
     let indice = 0
@@ -41,7 +45,58 @@ async function liquidAIGerarPJC(){
     await _baixarPjc('<?xml version="1.0" encoding="ISO-8859-1"?>' + xml, 'liquidAI')
 }
 
+async function liquidAIErrosEditor(erros){
+    let divId = id('liquidAI', 'erro')
+    document.getElementById(divId)?.remove()
+    // apontar erros em um elemento
+    let mensagens = [
+        {
+            tipo: 'Data de Admissão',
+            modelo: 'Data de admissão: DD/MM/AAAA'
+        },
+        {
+            tipo: 'Data de Demissão',
+            modelo: 'Data de demissão: DD/MM/AAAA'
+        },
+        {
+            tipo: 'Última Remuneração',
+            modelo: 'Última Remuneração: R$ 1.234.56'
+        },
+        {
+            tipo: 'Maior Remuneração',
+            modelo: 'Maior Remuneração: R$ 1.234.56'
+        },
+    ]
+
+    let mensagem = 'Os seguintes termos não foram encontrados:\n-' + erros.map(d => d).join('\n-') + '\nClique no botão abaixo para copiar o modelo de como eles devem constar na sentença:\n' + erros.map(d=> mensagens.find(m => m?.tipo == d).modelo).join('\n')
+    let div = criaDivCentralPadrao({
+        id: divId, 
+        titulo: 'Erro - termos não encontrados',
+        largura: '40%',
+        altura: '40%'
+    })
+    let texto = criaTexto({
+        id: divId + '_texto',
+        ancestral: div?.corpo?.id,
+        texto: mensagem
+    })
+    let botao = criaBotaoAzul({
+        id: divId + '_botao',
+        texto: 'Copiar',
+        ancestral: div?.rodape?.id,
+        acao: async () => {
+            await navigator.clipboard.writeText(erros.map(d=> mensagens.find(m => m?.tipo == d).modelo).join('\n'))
+            document.getElementById(divId + '_botao').textContent = '✅ Copiado'
+            await suspender(1500)
+            document.getElementById(divId + '_botao').textContent = 'Copiar'
+        }
+    })
+}
+
 function liquidAICriaHistoricos(id, {historicos = [],}){
+    return{historicosSalariais:{Set:''}} //
+
+    
     let historicoArray = []
     let i = 1
     for(let historico of historicos){
@@ -91,7 +146,7 @@ function liquidAICriaHistoricos(id, {historicos = [],}){
 }
 
 function verbasNaoMapeadas(){
-    return{verbas:{Set:''}}
+    return{verbas:{Set:''}} //
 }
 
 function naoMapeados(){
@@ -232,6 +287,7 @@ function liquidAIExtraiTextoEditor(){
     alert (JSON.stringify(resultado))
     if (erros.length) return {erros, sucesso: false}
     return({
+        sucesso: true,
         dataAdmissao,
         dataDemissao,
         valorUltimaRemuneracao,

@@ -574,8 +574,8 @@ async function criaWidgetfiltrosNovos(ancestral) {
                     },
                     {
                         id: id(secao, 'input', 'pesquisa_timeline_id', 'movimentoOuDocumento'),
-                        textoEmCima: 'Digite Movimentos, Documentos, ou Ambos',
-                        placeholder: 'Ex: movimentos, AMBOS, Documentos',
+                        textoEmCima: 'Digite Movimentos, Documentos, Documentos e Anexos, ou Ambos',
+                        placeholder: 'Ex: movimentos, AMBOS, Documentos, documentos e anexos',
                         tipoInput: 'criaInput',
                     },
                     {
@@ -588,13 +588,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 funcao: async (valores, ancestral) => {
                     let valorIds = valores[0]?.split(/\r?\n/)
                     if (!valorIds.length) return 'Não foram encontrados ids. Verifique.'
-                    let movimentoOuDocumento = normalizar(valores[1])?.trim() || 'ambos'
+                    let movimentoOuDocumento = normalizar(valores[1])?.trim().replace(/\s/g, '') || 'ambos'
                     console.log('%c[Rota PJE]%c valores[1]' + JSON.stringify(valores[1]), LOG.erro, 'color:inherit')
                     let termosTimeline = valores[2]?.split(',').map(d=> normalizar(d)?.trim())
                     let funcoes = {
                         ambos: 'buscarDocumentosEMovimentos',
                         documentos: 'buscarDocumentos',
-                        movimentos: 'buscarMovimentos'
+                        movimentos: 'buscarMovimentos',
+                        documentoseanexos: 'buscarDocumentos',
                     }
                     let mapaFuncoes = {
                         buscarDocumentosEMovimentos,
@@ -611,7 +612,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         if (!timeline.length) continue
                         let encontrados = []
                         for (let valor of termosTimeline){
-                            if (timeline.some(d => normalizar(d?.tipo).includes(valor) || normalizar(d?.titulo).includes(valor))) encontrados.push(valor)
+                            for (let documento of timeline){
+                                if (normalizar(documento?.tipo).includes(valor) || normalizar(documento?.titulo).includes(valor)) encontrados.push(valor)
+                                if (movimentoOuDocumento == 'documentoseanexos') {
+                                    if (documento?.anexos) {
+                                        if (documento?.anexos.some(d => normalizar(d?.tipo).includes(valor) || normalizar(d?.titulo).includes(valor))) encontrados.push(valor)
+                                    }
+                                }
+                            }
                         }
                         if (encontrados.length) encontrado(encontrados.join(', '))
                         function encontrado(valor){

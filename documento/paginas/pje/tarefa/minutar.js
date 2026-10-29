@@ -126,7 +126,7 @@ async function despachosPreferidos(ancestral){
             }
             despachos.push({
                 modelo: dados[0].trim(), 
-                textoBotao: dados[1].trim()
+                textoBotao: !!dados[1] ? dados[1].trim() : dados[0].trim()
             })
         }
         return {despachos, erros}
