@@ -1,5 +1,5 @@
 async function liquidAICriaBotoes(){
-    //return
+    return
     console.log('%c[Rota PJE]%c 2 Liquidai: ' + JSON.stringify(2), LOG.info, 'color:inherit')
     await aguardarElemento('pje-editor-documento')
     let elementoInserirAntes = document.querySelector('pje-editor-documento .wrapper')

@@ -37,7 +37,7 @@ async function liquidAIGerarPJC(){
     let verbas = verbasNaoMapeadas()
     // historico - está sendo feito agora
     let historico = liquidAICriaHistoricos(indice, textoSentenca)
-    indice = indice + textoSentenca.historicos.length
+    //indice = indice + textoSentenca.historicos.length
     // restante trará tudo que não foi mapeado, de acordo com CalculoCalculistaSemVerbasSemHistorico.xml
     let restante = naoMapeados()
     let resultado = {Calculo: {gprec, dadosEstruturados, ...parametros, ...processoPJECalc, ...municipio, ...verbas, ...historico, ...restante}}
@@ -94,7 +94,7 @@ async function liquidAIErrosEditor(erros){
 }
 
 function liquidAICriaHistoricos(id, {historicos = [],}){
-    return{historicosSalariais:{Set:''}} //
+    //return{historicosSalariais:{Set:''}} //
 
     
     let historicoArray = []

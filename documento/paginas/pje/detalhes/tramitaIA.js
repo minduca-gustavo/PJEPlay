@@ -69,6 +69,7 @@ async function tramitaIAResumoRapidoLIQ1() {
         return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso})
     })
     let dataMaior = null
+    let numeroProcesso = document.querySelector('pje-descricao-processo [role="button"]')?.textContent || ''
     let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c))) || []
     let teorDespachos = []
     for (let despacho of despachos){
@@ -77,8 +78,8 @@ async function tramitaIAResumoRapidoLIQ1() {
         dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
     }
     // ASSISTENTE
-    let assistenteEnvio = {timelineLimpa, teorDespachos}
-    let assistente = '6ae0dfd3f5c948c4262d5147'
+    let assistenteEnvio = {timelineLimpa, teorDespachos, numeroProcesso}
+    let assistente = '6ae39ae8bac219ab06a6932d'
     let resposta = await rota_IAConsulta(assistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
     
     return [
