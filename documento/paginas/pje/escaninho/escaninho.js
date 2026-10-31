@@ -53,10 +53,17 @@ async function escaninhoCriaBotao(){
                 input: 'Preencha com as palavras a buscar, separadas por vírgula. Ex: contestacao, SUBSTABELECIMENTO, procuração.',
                 textoBotao: 'Iniciar'
             },
+            {
+                id: 'inserirGigPorTipoOuTitulo',
+                titulo: 'Insergir GIG e remover por tipo ou título.',
+                texto: 'Insere o GIG escolhido e remove do escaninho as petições que contenham no título ou tipo alguma das palavras escolhidas. DICA: FILTRE ANTES AS PETIÇÕES POR TIPO.',
+                textoBotao: 'Configurar e executar'
+            },
         ]
         let mFuncoes = {
             removePeticoesAnalisadas,
-            removePeticoesPorTipoOuTitulo
+            removePeticoesPorTipoOuTitulo,
+            inserirGigPorTipoOuTitulo
         }
         for (let script of scripts){
             let idGeral = idDiv + script?.id
@@ -96,6 +103,120 @@ async function escaninhoCriaBotao(){
                 ancestral,
             })
         }
+    }
+    async function inserirGigPorTipoOuTitulo() {
+        document.getElementById(id('escaninho', 'menu'))?.remove()
+        let ancestral = id('escaninho', 'inserirGigPorTipoOuTitulo')
+        document.getElementById(ancestral)?.remove()
+        let div = criaDivCentralPadrao({
+            id: ancestral,
+            largura: '65%',
+            altura: '65%',
+            titulo: 'Inserir GIG por Tipo ou Título'
+        })
+        div.corpo.style.overflowY = 'auto'
+        let secoes = [
+            {
+                label: 'secretarios',
+                titulo: 'Secretários de audiência',
+                oj: ['CON1'],
+                texto: 'Os gigs serão atribuídos aos secretários de acordo com o GIG Simetria ou de acordo com a planilha de Juízes (finais), no caso de legado.',
+                inputAnotacao: [
+                    {
+                        label: 'secretarios_dados',
+                        texto: 'Cole abaixo os dados tabulados JUIZ [TAB] SECRETÁRIO, um por linha.', 
+                    },
+                    {
+                        label: 'secretarios_termos',
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos secretários, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\n acordo [TAB] Acordo [TAB] 0\nredesigna [TAB] Audiência [TAB] 5'
+                    }
+                ],
+            },
+            {
+                label: 'assistentes',
+                titulo: 'Assistentes de Juiz',
+                texto: 'Os gigs serão atribuídos aos assistentes de acordo com o GIG Simetria (CON1 e CON2) ou de acordo com a planilha de Juízes (finais), no caso de legado.',
+                inputAnotacao: [
+                    {
+                        label: 'assistente_dados',
+                        texto: 'Cole abaixo os dados tabulados JUIZ [TAB] ASSISTENTE, um por linha.', 
+                    },
+                    {
+                        label: 'assistente_termos',
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos assistentes, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\n embargos de declaracao [TAB] Embargos de Declaração [TAB] 0\nreconsideracao [TAB] Gabinete [TAB] 5'
+                    }
+                ],
+            },
+            {
+                label: 'apoio',
+                titulo: 'Servidores de apoio',
+                texto: 'Os gigs serão atribuídos aos servidores de apoio de acordo com o final indicado.',
+                inputAnotacao: [
+                    {
+                        label:'apoio_dados',
+                        texto: 'Cole abaixo os dados dos servidores de apoio e finais tabulados, no formato SERVIDOR [TAB] FINAIS, um por linha. Ex: \nFULANO DE TAL [TAB] 0,1\nBELTRANO DE TAL [TAB] 2,3', 
+                    },
+                    {
+                        label:'apoio_termos',
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos servidores de apoio, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\n concordancia [TAB] Concordância [TAB] 15\nurgente [TAB] URGENCIA [TAB] 0\npenhora online [TAB] sisbajud [TAB] 0'
+                    }
+                ],
+            },
+        ]
+        let inputsIds = []
+        for (let secao of secoes){
+            if(secao?.oj){
+                let oj = document.querySelector('pje-cabecalho-perfil .papel-usuario')?.textContent || ''
+                if (!oj.includes(secao?.oj)) continue
+            }
+            let idSecao = ancestral + '_' + secao?.label
+            let divSecao = criaDiv({
+                id: idSecao,
+                ancestral: div.corpo.id,
+            })
+            formataDiv(divSecao, 'branco', 'auto', 'auto', 'relative', '0px', '0px', '')
+            criaTitulo({
+                id: idSecao + '_titulo',
+                ancestral: idSecao,
+                texto: secao?.titulo
+            })
+            let texto = criaTexto({
+                id: idSecao + '_texto',
+                ancestral: idSecao,
+                texto: secao?.texto
+            })
+            
+            for (let input of secao?.inputAnotacao){
+                let inputElemento = criaInputAnotacao({
+                    id: idSecao + '_' + input?.label,
+                    textoEmCima: input?.texto,
+                    ancestral: idSecao
+                })
+                inputElemento.textarea.style.maxHeight = '150px'
+                inputElemento.textarea.style.overflowY = 'auto'
+                inputsIds.push(idSecao + '_' + input?.label)
+                let botao = criaBotaoAzul({
+                    id: idSecao + '_' + input?.label + '_salvar',
+                    ancestral: idSecao,
+                    texto: 'Salvar',
+                    acao: async () => {
+                        let valor =
+                        await armazenar({[idSecao + '_' + input?.label]: document.getElementById(idSecao + '_' + input?.label)?.value || ''})
+                    }
+                })
+            }
+        }
+        criaBotaoLaranja({
+            id: ancestral + '_executar',
+            ancestral: div.rodape.id,
+            texto: 'Percorrer todas as petições, inserir os GIGs e remover do escaninho',
+            acao: () => {
+                document.getElementById(ancestral)?.remove()
+                let parametros = inputsIds.map(d => document.getElementById(d)?.value)
+                percorrePeticoes({rechamada: false, funcao: 'gigPorTituloOuTipo', parametros})
+            }
+        })
+        
     }
     async function removePeticoesPorTipoOuTitulo(idInput){
         let termos = document.getElementById(idInput).value || null
@@ -207,6 +328,10 @@ async function escaninhoCriaBotao(){
                 removido: removeuTF? 'SIM' : 'NÃO'
             }
             return {removeuTF: false, dadosBuscados}
+        }
+
+        async function gigPorTituloOuTipo({parametros, peticao}){
+            alert (parametros)
         }
 
         async function porTipoOuTitulo({parametros, peticao}) {
