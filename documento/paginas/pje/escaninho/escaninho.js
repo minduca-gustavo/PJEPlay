@@ -167,7 +167,7 @@ async function escaninhoCriaBotao(){
         for (let secao of secoes){
             if(secao?.oj){
                 let oj = document.querySelector('pje-cabecalho-perfil .papel-usuario')?.textContent || ''
-                if (!oj.includes(secao?.oj)) continue
+                if (!secao?.oj.some(o => oj.includes(o))) continue
             }
             let idSecao = ancestral + '_' + secao?.label
             let divSecao = criaDiv({
