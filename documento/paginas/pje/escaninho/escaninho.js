@@ -358,6 +358,14 @@ async function escaninhoCriaBotao(){
                             juiz = await defineJuizPlanilha(vara, numeroProcesso)
                         }
                         for(let linha of termos){
+                            let celula = linha.split(/\t/) || []
+                            if (!celula.length) continue
+                            if (
+                                normalizar(descricaoDocumento).includes(normalizar(celula[0]).trim()) || 
+                                normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
+                            ){
+                                
+                            }
                         }
                     }
                 }
@@ -374,15 +382,32 @@ async function escaninhoCriaBotao(){
                             juiz = await defineJuizPlanilha(vara, numeroProcesso)
                         }
                         for(let linha of termos){
+                            let celula = linha.split(/\t/) || []
+                            if (!celula.length) continue
+                            if (
+                                normalizar(descricaoDocumento).includes(normalizar(celula[0]).trim()) || 
+                                normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
+                            ){
+                                
+                            }
                         }
                     }
                 }
                 if (tipo?.label?.includes('apoio_dados')){
-                    let termos = tipo?.termos?.split(/\r?\n/) || ''
-                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
-                    let dados = tipo?.dados?.split(/\r?\n/)
-                    for(let linha of termos){
+                    let dados = tipo?.dados?.split(/\r?\n/) || []
+                    let termos = tipo?.termos?.split(/\r?\n/) || []
+                    if (dados.length && termos.length) {
 
+                        for(let linha of termos){
+                            let celula = linha.split(/\t/) || []
+                            if (!celula.length) continue
+                            if (
+                                normalizar(descricaoDocumento).includes(normalizar(celula[0]).trim()) || 
+                                normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
+                            ){
+                                
+                            }
+                        }
                     }
                 }
             }
