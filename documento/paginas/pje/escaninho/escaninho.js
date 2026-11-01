@@ -192,6 +192,8 @@ async function escaninhoCriaBotao(){
                     textoEmCima: input?.texto,
                     ancestral: idSecao
                 })
+                let valor = await obterArmazenamento(idSecao + '_' + input?.label)
+                inputElemento.textarea.value = valor?.[idSecao + '_' + input?.label] || ''
                 inputElemento.label.style.whiteSpace = 'pre-wrap'
                 inputElemento.textarea.style.maxHeight = '150px'
                 inputElemento.textarea.style.overflowY = 'auto'
@@ -212,11 +214,13 @@ async function escaninhoCriaBotao(){
             ancestral: div.rodape.id,
             texto: 'Percorrer todas as petições, inserir os GIGs e remover do escaninho',
             acao: () => {
-                document.getElementById(ancestral)?.remove()
                 let parametros = inputsIds.map(d => {
+                    console.log('%c[Rota PJE]%c d' + JSON.stringify(d), LOG.aviso, 'color:inherit')
                     let valor = document.getElementById(d)?.value
                     return {[d]: valor}
                 })
+                console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
+                document.getElementById(ancestral)?.remove()
                 percorrePeticoes({rechamada: false, funcao: 'gigPorTituloOuTipo', parametros})
             }
         })
@@ -283,7 +287,8 @@ async function escaninhoCriaBotao(){
         let removeuAlgum = false
         let mFuncoes = {
             porTipoOuTitulo,
-            analisadas
+            analisadas,
+            gigPorTituloOuTipo
         }
         let i = 0
         for (let peticao of peticoes){
@@ -335,7 +340,11 @@ async function escaninhoCriaBotao(){
         }
 
         async function gigPorTituloOuTipo({parametros, peticao}){
-            alert (parametros)
+            let {idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento} = peticao
+            
+            console.log('%c[Rota PJE]%c peticao' + JSON.stringify(peticao), LOG.erro, 'color:inherit', peticao)
+            console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
+            alert (JSON.stringify(parametros))
         }
 
         async function porTipoOuTitulo({parametros, peticao}) {
