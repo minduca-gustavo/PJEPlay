@@ -344,23 +344,37 @@ async function escaninhoCriaBotao(){
             console.log('%c[Rota PJE]%c peticao' + JSON.stringify(peticao), LOG.erro, 'color:inherit', peticao)
             console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
             for (let tipo of parametros){
+                let juiz = ''
                 if (tipo?.label?.includes('secretarios_dados')){
-                    let termos = tipo?.termos?.split(/\r?\n/) || ''
-                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
-                    let dados = tipo?.dados?.split(/\r?\n/)
-                    for(let linha of termos){
-                        let juiz = await defineJuizSimetria(idProcesso) || ''
+                    let dados = tipo?.dados?.split(/\r?\n/) || []
+                    let termos = tipo?.termos?.split(/\r?\n/) || []
+                    if (dados.length && termos.length) {
+                        juiz = await defineJuizSimetria(idProcesso) || ''
                         if (!juiz){
-                            let historico = await buscarHistoricoDeslocamentos(idProcesso) || ''
+                            let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+                            let vara = historico
+                                .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
+                                ?.orgaoJulgadorOrigem?.descricao || ''
+                            juiz = await defineJuizPlanilha(vara, numeroProcesso)
+                        }
+                        for(let linha of termos){
                         }
                     }
                 }
                 if (tipo?.label?.includes('assistentes_dados')){
-                    let termos = tipo?.termos?.split(/\r?\n/) || ''
-                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
-                    let dados = tipo?.dados?.split(/\r?\n/)
-                    for(let linha of termos){
-
+                    let dados = tipo?.dados?.split(/\r?\n/) || []
+                    let termos = tipo?.termos?.split(/\r?\n/) || []
+                    if (dados.length && termos.length) {
+                        if (!juiz) juiz = await defineJuizSimetria(idProcesso) || ''
+                        if (!juiz){
+                            let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+                            let vara = historico
+                                .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
+                                ?.orgaoJulgadorOrigem?.descricao || ''
+                            juiz = await defineJuizPlanilha(vara, numeroProcesso)
+                        }
+                        for(let linha of termos){
+                        }
                     }
                 }
                 if (tipo?.label?.includes('apoio_dados')){
