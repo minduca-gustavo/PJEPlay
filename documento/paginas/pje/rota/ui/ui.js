@@ -959,6 +959,7 @@ function criaInputAnotacao({ id, textoEmCima = '', ancestral, placeholder = '' }
         })
         label.textContent = textoEmCima
         container.appendChild(label)
+        container.label = label
     }
 
     const textarea = _ui_el('textarea', {
@@ -985,7 +986,6 @@ function criaInputAnotacao({ id, textoEmCima = '', ancestral, placeholder = '' }
         textarea.style.height = 'auto'
         textarea.style.height = textarea.scrollHeight + 'px'
     })
-
     container.textarea = textarea
     container.appendChild(textarea)
     _ui_inserir(container, ancestral)

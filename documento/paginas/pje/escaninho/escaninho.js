@@ -128,7 +128,7 @@ async function escaninhoCriaBotao(){
                     },
                     {
                         label: 'secretarios_termos',
-                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos secretários, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\n acordo [TAB] Acordo [TAB] 0\nredesigna [TAB] Audiência [TAB] 5'
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos secretários, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\nacordo [TAB] Acordo [TAB] 0\nredesigna [TAB] Audiência [TAB] 5'
                     }
                 ],
             },
@@ -143,7 +143,7 @@ async function escaninhoCriaBotao(){
                     },
                     {
                         label: 'assistente_termos',
-                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos assistentes, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\n embargos de declaracao [TAB] Embargos de Declaração [TAB] 0\nreconsideracao [TAB] Gabinete [TAB] 5'
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos assistentes, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\nembargos de declaracao [TAB] Embargos de Declaração [TAB] 0\nreconsideracao [TAB] Gabinete [TAB] 5'
                     }
                 ],
             },
@@ -192,6 +192,7 @@ async function escaninhoCriaBotao(){
                     textoEmCima: input?.texto,
                     ancestral: idSecao
                 })
+                inputElemento.label.style.whiteSpace = 'pre-wrap'
                 inputElemento.textarea.style.maxHeight = '150px'
                 inputElemento.textarea.style.overflowY = 'auto'
                 inputsIds.push(idSecao + '_' + input?.label)
