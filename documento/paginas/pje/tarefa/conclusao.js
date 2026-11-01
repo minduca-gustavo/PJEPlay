@@ -59,30 +59,6 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
         juizTitular,
         juizUltima
     }
-    async function defineJuizSimetria(id) {
-        let gigs = await buscarGigsPorId(id) || []
-        if (!gigs.length) return null
-        let gigSimetria = gigs.find(d => d?.tipoAtividade?.descricaoConsulta.includes('GABINETE D') || d?.tipoAtividade?.descricaoConsulta.includes('GAB. JUIZ'))
-        console.log('%c[Rota PJE]%c gigSimetria.length' + JSON.stringify(gigSimetria), LOG.erro, 'color:inherit', gigSimetria)
-        if (!gigSimetria?.tipoAtividade) return null
-        let juizAtividade = gigSimetria.tipoAtividade.descricaoConsulta.split(/JUIZ[A]?/)
-        let juiz = juizAtividade[1] ? juizAtividade[1].trim() : null
-        return juiz
-    }
-    async function defineJuizPlanilha(vara, processo) {
-        let anoProcesso = processo.slice(11, 15)
-        let final = Number(anoProcesso) < 2010 ? processo.slice(4, 5) : processo.slice(6, 7)
-        let git = await lerGit('rotapje_finais.json') || []
-        console.log('%c[Rota PJE]%c git: ' + JSON.stringify(git), LOG.info, 'color:inherit')
-        let varasObjetos = git.filter(d => d?.Vara == vara) || []
-        console.log('%c[Rota PJE]%c varasObjetos: ' + JSON.stringify(varasObjetos), LOG.info, 'color:inherit')
-        let varaDigito = varasObjetos.find(d => d?.Dígitos.includes(final)) || {}
-        console.log('%c[Rota PJE]%c vara: ' + JSON.stringify(vara), LOG.info, 'color:inherit')
-        console.log('%c[Rota PJE]%c varaDigito: ' + JSON.stringify(varaDigito), LOG.aviso, 'color:inherit')
-        let juiz = varaDigito.Magistrado || null
-        console.log('%c[Rota PJE]%c juiz: ' + JSON.stringify(juiz), LOG.info, 'color:inherit')
-        return juiz ?? null
-    }
     async function defineJuizApi(parametro) {
         let interceptado = interceptador_ler('magistrados') || {}
         if (!interceptado?.magistradosSugeridos) return null
@@ -178,4 +154,29 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
         }
         
     }
+}
+
+async function defineJuizSimetria(id) {
+    let gigs = await buscarGigsPorId(id) || []
+    if (!gigs.length) return null
+    let gigSimetria = gigs.find(d => d?.tipoAtividade?.descricaoConsulta.includes('GABINETE D') || d?.tipoAtividade?.descricaoConsulta.includes('GAB. JUIZ'))
+    console.log('%c[Rota PJE]%c gigSimetria.length' + JSON.stringify(gigSimetria), LOG.erro, 'color:inherit', gigSimetria)
+    if (!gigSimetria?.tipoAtividade) return null
+    let juizAtividade = gigSimetria.tipoAtividade.descricaoConsulta.split(/JUIZ[A]?/)
+    let juiz = juizAtividade[1] ? juizAtividade[1].trim() : null
+    return juiz
+}
+async function defineJuizPlanilha(vara, processo) {
+    let anoProcesso = processo.slice(11, 15)
+    let final = Number(anoProcesso) < 2010 ? processo.slice(4, 5) : processo.slice(6, 7)
+    let git = await lerGit('rotapje_finais.json') || []
+    console.log('%c[Rota PJE]%c git: ' + JSON.stringify(git), LOG.info, 'color:inherit')
+    let varasObjetos = git.filter(d => d?.Vara == vara) || []
+    console.log('%c[Rota PJE]%c varasObjetos: ' + JSON.stringify(varasObjetos), LOG.info, 'color:inherit')
+    let varaDigito = varasObjetos.find(d => d?.Dígitos.includes(final)) || {}
+    console.log('%c[Rota PJE]%c vara: ' + JSON.stringify(vara), LOG.info, 'color:inherit')
+    console.log('%c[Rota PJE]%c varaDigito: ' + JSON.stringify(varaDigito), LOG.aviso, 'color:inherit')
+    let juiz = varaDigito.Magistrado || null
+    console.log('%c[Rota PJE]%c juiz: ' + JSON.stringify(juiz), LOG.info, 'color:inherit')
+    return juiz ?? null
 }

@@ -138,11 +138,11 @@ async function escaninhoCriaBotao(){
                 texto: 'Os gigs serão atribuídos aos assistentes de acordo com o GIG Simetria (CON1 e CON2) ou de acordo com a planilha de Juízes (finais), no caso de legado.',
                 inputAnotacao: [
                     {
-                        label: 'assistente_dados',
+                        label: 'assistentes_dados',
                         texto: 'Cole abaixo os dados tabulados JUIZ [TAB] ASSISTENTE, um por linha.', 
                     },
                     {
-                        label: 'assistente_termos',
+                        label: 'assistentes_termos',
                         texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos assistentes, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\nembargos de declaracao [TAB] Embargos de Declaração [TAB] 0\nreconsideracao [TAB] Gabinete [TAB] 5'
                     }
                 ],
@@ -217,7 +217,7 @@ async function escaninhoCriaBotao(){
                 let parametros = inputsIds.map(d => {
                     console.log('%c[Rota PJE]%c d' + JSON.stringify(d), LOG.aviso, 'color:inherit')
                     let valor = document.getElementById(d)?.value
-                    return {[d]: valor}
+                    return {label: d, valor}
                 })
                 console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
                 document.getElementById(ancestral)?.remove()
@@ -341,9 +341,37 @@ async function escaninhoCriaBotao(){
 
         async function gigPorTituloOuTipo({parametros, peticao}){
             let {idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento} = peticao
-            
             console.log('%c[Rota PJE]%c peticao' + JSON.stringify(peticao), LOG.erro, 'color:inherit', peticao)
             console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
+            for (let tipo of parametros){
+                if (tipo?.label?.includes('secretarios_dados')){
+                    let termos = tipo?.termos?.split(/\r?\n/) || ''
+                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
+                    let dados = tipo?.dados?.split(/\r?\n/)
+                    for(let linha of termos){
+                        let juiz = await defineJuizSimetria(idProcesso) || ''
+                        if (!juiz){
+                            let historico = await buscarHistoricoDeslocamentos(idProcesso) || ''
+                        }
+                    }
+                }
+                if (tipo?.label?.includes('assistentes_dados')){
+                    let termos = tipo?.termos?.split(/\r?\n/) || ''
+                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
+                    let dados = tipo?.dados?.split(/\r?\n/)
+                    for(let linha of termos){
+
+                    }
+                }
+                if (tipo?.label?.includes('apoio_dados')){
+                    let termos = tipo?.termos?.split(/\r?\n/) || ''
+                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
+                    let dados = tipo?.dados?.split(/\r?\n/)
+                    for(let linha of termos){
+
+                    }
+                }
+            }
             alert (JSON.stringify(parametros))
         }
 
