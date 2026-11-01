@@ -213,7 +213,10 @@ async function escaninhoCriaBotao(){
             texto: 'Percorrer todas as petições, inserir os GIGs e remover do escaninho',
             acao: () => {
                 document.getElementById(ancestral)?.remove()
-                let parametros = inputsIds.map(d => document.getElementById(d)?.value)
+                let parametros = inputsIds.map(d => {
+                    let valor = document.getElementById(d)?.value
+                    return {[d]: valor}
+                })
                 percorrePeticoes({rechamada: false, funcao: 'gigPorTituloOuTipo', parametros})
             }
         })
