@@ -421,6 +421,17 @@ async function escaninhoCriaBotao(){
                 }
             }
             alert (JSON.stringify(parametros))
+            async function escaninhoDefineJuiz(idProcesso, numeroProcesso) {
+                let juiz = await defineJuizSimetria(idProcesso) || ''
+                if (!juiz){
+                    let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+                    let vara = historico
+                        .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
+                        ?.orgaoJulgadorOrigem?.descricao || ''
+                    juiz = await defineJuizPlanilha(vara, numeroProcesso) || ''
+                }
+                return juiz
+            }
         }
 
         async function porTipoOuTitulo({parametros, peticao}) {
