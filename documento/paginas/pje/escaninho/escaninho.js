@@ -352,7 +352,6 @@ async function escaninhoCriaBotao(){
             console.log('%c[Rota PJE]%c peticao' + JSON.stringify(peticao), LOG.erro, 'color:inherit', peticao)
             console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
             for (let tipo of parametros){
-                let juiz = ''
                 if (tipo?.label?.includes('secretarios_dados')){
                     let dados = tipo?.dados?.split(/\r?\n/) || []
                     let termos = tipo?.termos?.split(/\r?\n/) || []
@@ -377,14 +376,6 @@ async function escaninhoCriaBotao(){
                     let dados = tipo?.dados?.split(/\r?\n/) || []
                     let termos = tipo?.termos?.split(/\r?\n/) || []
                     if (dados.length && termos.length) {
-                        if (!juiz) juiz = await defineJuizSimetria(idProcesso) || ''
-                        if (!juiz){
-                            let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
-                            let vara = historico
-                                .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
-                                ?.orgaoJulgadorOrigem?.descricao || ''
-                            juiz = await defineJuizPlanilha(vara, numeroProcesso)
-                        }
                         for(let linha of termos){
                             let celula = linha.split(',') || []
                             if (!celula.length) continue
@@ -405,7 +396,6 @@ async function escaninhoCriaBotao(){
                     let dados = tipo?.dados?.split(/\r?\n/) || []
                     let termos = tipo?.termos?.split(/\r?\n/) || []
                     if (dados.length && termos.length) {
-
                         for(let linha of termos){
                             let celula = linha.split(',') || []
                             if (!celula.length) continue
