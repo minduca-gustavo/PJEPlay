@@ -356,14 +356,6 @@ async function escaninhoCriaBotao(){
                     let dados = tipo?.dados?.split(/\r?\n/) || []
                     let termos = tipo?.termos?.split(/\r?\n/) || []
                     if (dados.length && termos.length) {
-                        juiz = await defineJuizSimetria(idProcesso) || ''
-                        if (!juiz){
-                            let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
-                            let vara = historico
-                                .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
-                                ?.orgaoJulgadorOrigem?.descricao || ''
-                            juiz = await defineJuizPlanilha(vara, numeroProcesso)
-                        }
                         for(let linha of termos){
                             let celula = linha.split(',') || []
                             if (!celula.length) continue
@@ -372,7 +364,10 @@ async function escaninhoCriaBotao(){
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
                                 if(!celula[1] || !celula[2]) continue
-                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz)))
+                                let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
+                                if (!juiz) continue
+                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz))) || ''
+                                if(!juizLinha) continue
                             }
                         }
                     }
@@ -397,7 +392,10 @@ async function escaninhoCriaBotao(){
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
                                 if(!celula[1] || !celula[2]) continue
-                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz)))
+                                let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
+                                if (!juiz) continue
+                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz))) || ''
+                                if(!juizLinha) continue
                             }
                         }
                     }
