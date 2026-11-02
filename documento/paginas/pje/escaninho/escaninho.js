@@ -124,11 +124,13 @@ async function escaninhoCriaBotao(){
                 inputAnotacao: [
                     {
                         label: 'secretarios_dados',
-                        texto: 'Cole abaixo os dados tabulados JUIZ [TAB] SECRETÁRIO, um por linha.', 
+                        texto: 'Insira abaixo os dados de JUIZ e SECRETÁRIO correspondente, separados por vírgula, um por linha.',
+                        placeholder: 'Ex:\nFULANO DE TAL, beltrano de tal\nciclano de tal, fulano de tal'
                     },
                     {
                         label: 'secretarios_termos',
-                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos secretários, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\nacordo [TAB] Acordo [TAB] 0\nredesigna [TAB] Audiência [TAB] 5'
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos secretários, o GIG a ser marcado, e o prazo, separados por vírgulas, um por linha.',
+                        placeholder: 'Ex:\nacordo, Acordo, 0\nredesigna, Audiência, 5'
                     }
                 ],
             },
@@ -139,11 +141,13 @@ async function escaninhoCriaBotao(){
                 inputAnotacao: [
                     {
                         label: 'assistentes_dados',
-                        texto: 'Cole abaixo os dados tabulados JUIZ [TAB] ASSISTENTE, um por linha.', 
+                        texto: 'Insira abaixo os dados de JUIZ e SECRETÁRIO correspondente, separados por vírgula, um por linha.',
+                        placeholder: 'Ex:\nFULANO DE TAL, beltrano de tal\nciclano de tal, fulano de tal'
                     },
                     {
                         label: 'assistentes_termos',
-                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos assistentes, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\nembargos de declaracao [TAB] Embargos de Declaração [TAB] 0\nreconsideracao [TAB] Gabinete [TAB] 5'
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos assistentes, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha.',
+                        placeholder: 'Ex:\nembargos de declaracao, Embargos de Declaração, 0\nreconsideracao, Gabinete, 5'
                     }
                 ],
             },
@@ -154,11 +158,13 @@ async function escaninhoCriaBotao(){
                 inputAnotacao: [
                     {
                         label:'apoio_dados',
-                        texto: 'Cole abaixo os dados dos servidores de apoio e finais tabulados, no formato SERVIDOR [TAB] FINAIS, um por linha. Ex: \nFULANO DE TAL [TAB] 0,1\nBELTRANO DE TAL [TAB] 2,3', 
+                        texto: 'Cole abaixo os dados dos servidores de apoio e finais, separados por vírgula, no formato "SERVIDOR, FINAIS", um por linha.',
+                        placeholder: 'Ex: \nFULANO DE TAL, 01\nBELTRANO DE TAL, 2 3'
                     },
                     {
                         label:'apoio_termos',
-                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos servidores de apoio, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha. \nEx:\n concordancia [TAB] Concordância [TAB] 15\nurgente [TAB] URGENCIA [TAB] 0\npenhora online [TAB] sisbajud [TAB] 0'
+                        texto: 'Indique os termos que devem conter no tipo ou título da petição para serem atribuídas aos servidores de apoio, o GIG a ser marcado, e o prazo, separados por tabulações, um por linha.',
+                        placeholder: 'Ex:\n concordancia, Concordância, 15\nurgente, URGENCIA, 0\npenhora online, sisbajud, 0'
                     }
                 ],
             },
@@ -194,6 +200,7 @@ async function escaninhoCriaBotao(){
                 })
                 let valor = await obterArmazenamento(idSecao + '_' + input?.label)
                 inputElemento.textarea.value = valor?.[idSecao + '_' + input?.label] || ''
+                inputElemento.textarea.placeholder = input?.placeholder || ''
                 inputElemento.label.style.whiteSpace = 'pre-wrap'
                 inputElemento.textarea.style.maxHeight = '150px'
                 inputElemento.textarea.style.overflowY = 'auto'
@@ -358,13 +365,14 @@ async function escaninhoCriaBotao(){
                             juiz = await defineJuizPlanilha(vara, numeroProcesso)
                         }
                         for(let linha of termos){
-                            let celula = linha.split(/\t/) || []
+                            let celula = linha.split(',') || []
                             if (!celula.length) continue
                             if (
                                 normalizar(descricaoDocumento).includes(normalizar(celula[0]).trim()) || 
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
-                                
+                                if(!celula[1] || !celula[2]) continue
+                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz)))
                             }
                         }
                     }
@@ -382,13 +390,14 @@ async function escaninhoCriaBotao(){
                             juiz = await defineJuizPlanilha(vara, numeroProcesso)
                         }
                         for(let linha of termos){
-                            let celula = linha.split(/\t/) || []
+                            let celula = linha.split(',') || []
                             if (!celula.length) continue
                             if (
                                 normalizar(descricaoDocumento).includes(normalizar(celula[0]).trim()) || 
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
-                                
+                                if(!celula[1] || !celula[2]) continue
+                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz)))
                             }
                         }
                     }
@@ -399,13 +408,13 @@ async function escaninhoCriaBotao(){
                     if (dados.length && termos.length) {
 
                         for(let linha of termos){
-                            let celula = linha.split(/\t/) || []
+                            let celula = linha.split(',') || []
                             if (!celula.length) continue
                             if (
                                 normalizar(descricaoDocumento).includes(normalizar(celula[0]).trim()) || 
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
-                                
+                                if(!celula[1] || !celula[2]) continue
                             }
                         }
                     }
