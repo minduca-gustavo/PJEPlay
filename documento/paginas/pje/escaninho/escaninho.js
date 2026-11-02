@@ -299,7 +299,7 @@ async function escaninhoCriaBotao(){
         }
         let i = 0
         for (let peticao of peticoes){
-            if(parar){
+            if(parar || !document.getElementById(idExecucao)){
                 finaliza(buscados)
                 return   
             }
@@ -320,6 +320,7 @@ async function escaninhoCriaBotao(){
 
         function atualizaPlacar(texto){
             let placar = document.getElementById(id('escaninho', 'placar'))
+            if (!placar) return
             placar.textContent = texto
             return
         }
