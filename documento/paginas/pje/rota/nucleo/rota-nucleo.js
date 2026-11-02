@@ -216,6 +216,7 @@ async function preencherCampoComEscolhaDeOpcao(elemento, valor){
 	if (!escolha) return null
 	await suspender(300)
 	clicar(escolha)
+	return escolha
 }
 
 

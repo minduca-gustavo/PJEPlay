@@ -334,7 +334,7 @@ async function escaninhoCriaBotao(){
                 d?.usuarioInterno)
             let removeuTF = false
             if (remover){
-                await removerDoEscaninho(numeroProcesso)
+                await removerDoEscaninhoEInserirGigs(numeroProcesso)
                 removeuTF = true
             }
             let dadosBuscados = {
@@ -348,7 +348,7 @@ async function escaninhoCriaBotao(){
         }
 
         async function gigPorTituloOuTipo({parametros, peticao}){
-            let {idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento} = peticao
+            let {idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada} = peticao
             console.log('%c[Rota PJE]%c peticao' + JSON.stringify(peticao), LOG.erro, 'color:inherit', peticao)
             console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
             for (let tipo of parametros){
@@ -368,6 +368,12 @@ async function escaninhoCriaBotao(){
                                 if (!juiz) continue
                                 let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz))) || ''
                                 if(!juizLinha) continue
+                                let responsavel = juizLinha.split(',')[1].trim() || ''
+                                if(!responsavel) continue
+                                let tipoAtividade = celula[1].trim()
+                                let dias = celula[2].trim()
+                                let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
+                                removerDoEscaninhoEInserirGigs(numeroProcesso, {gig: {responsavel, tipoAtividade, dias, observacao}})
                             }
                         }
                     }
@@ -427,7 +433,7 @@ async function escaninhoCriaBotao(){
             let {descricaoDocumento, nomeTipoProcessoDocumento, numeroProcesso, dataJuntada} = peticao
             if(!parametros.length) return {removeuTF: false, dadosBuscados: null}
             if (parametros.some(t=> normalizar(descricaoDocumento).includes(t) || normalizar(nomeTipoProcessoDocumento).includes(t))){
-                await removerDoEscaninho(numeroProcesso)
+                await removerDoEscaninhoEInserirGigs(numeroProcesso)
                 let dadosBuscados = {numeroProcesso, dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'), descricaoDocumento, nomeTipoProcessoDocumento}
                 return {removeuTF: true, dadosBuscados}
             }
@@ -495,7 +501,7 @@ async function escaninhoCriaBotao(){
             }
         }
         
-        async function removerDoEscaninho(numeroProcesso) {
+        async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null) {
             atualizaPlacar('Removendo do escaninho...')
             let linhas = [...document.querySelectorAll('pje-data-table tr')]
             let linhaExcluir = linhas.find(l => l.textContent.includes(numeroProcesso)) || null
