@@ -212,7 +212,8 @@ function _getValueDescriptor(el){
 async function preencherCampoComEscolhaDeOpcao(elemento, valor){
 	clicar(elemento)
 	await aguardarElemento('mat-option')
-	let escolha = [...document.querySelectorAll('mat-option')].find(d => normalizar(d.textContent).includes(normalizar(valor)))
+	let escolha = [...document.querySelectorAll('mat-option')].find(d => normalizar(d.textContent).includes(normalizar(valor))) || null
+	if (!escolha) return null
 	await suspender(300)
 	clicar(escolha)
 }
