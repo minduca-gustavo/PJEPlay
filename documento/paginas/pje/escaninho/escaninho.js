@@ -169,7 +169,7 @@ async function escaninhoCriaBotao(){
                 ],
             },
         ]
-        let inputsIds = []
+        let inputsSecoes = []
         for (let secao of secoes){
             if(secao?.oj){
                 let oj = document.querySelector('pje-cabecalho-perfil .papel-usuario')?.textContent || ''
@@ -191,7 +191,7 @@ async function escaninhoCriaBotao(){
                 ancestral: idSecao,
                 texto: secao?.texto
             })
-            
+            let inputsIds = []
             for (let input of secao?.inputAnotacao){
                 let inputElemento = criaInputAnotacao({
                     id: idSecao + '_' + input?.label,
@@ -215,18 +215,28 @@ async function escaninhoCriaBotao(){
                     }
                 })
             }
+            inputsSecoes.push({label: secao?.label, inputs: inputsIds})
         }
         criaBotaoLaranja({
             id: ancestral + '_executar',
             ancestral: div.rodape.id,
             texto: 'Percorrer todas as petições, inserir os GIGs e remover do escaninho',
             acao: () => {
-                let parametros = inputsIds.map(d => {
-                    console.log('%c[Rota PJE]%c d' + JSON.stringify(d), LOG.aviso, 'color:inherit')
-                    let valor = document.getElementById(d)?.value
-                    return {label: d, valor}
-                })
-                console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
+                let parametros = []
+                for (let secao of inputsSecoes){
+                    let inputs = []
+                    for (let input of secao?.inputs){
+                        let valor = document.getElementById(input)?.value
+                        inputs.push({label: input, valor})
+                    }
+                    parametros.push({secao: secao.label, inputs})
+                }
+                //parametros = inputsIds.map(d => {
+                //    console.log('%c[Rota PJE]%c d' + JSON.stringify(d), LOG.aviso, 'color:inherit')
+                //    let valor = document.getElementById(d)?.value
+                //    return {label: d, valor}
+                //})
+                //console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
                 document.getElementById(ancestral)?.remove()
                 percorrePeticoes({rechamada: false, funcao: 'gigPorTituloOuTipo', parametros})
             }
@@ -344,17 +354,22 @@ async function escaninhoCriaBotao(){
                 dataJuntada: new Date(dataJuntada).toLocaleDateString('pt-BR'),
                 removido: removeuTF? 'SIM' : 'NÃO'
             }
-            return {removeuTF: false, dadosBuscados}
+            return {removeuTF, dadosBuscados}
         }
 
         async function gigPorTituloOuTipo({parametros, peticao}){
             let {idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada} = peticao
             console.log('%c[Rota PJE]%c peticao' + JSON.stringify(peticao), LOG.erro, 'color:inherit', peticao)
             console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
+            //return
+            let removeuTF = false
             for (let tipo of parametros){
-                if (tipo?.label?.includes('secretarios_dados')){
-                    let dados = tipo?.dados?.split(/\r?\n/) || []
-                    let termos = tipo?.termos?.split(/\r?\n/) || []
+                if (tipo?.secao?.includes('secretarios')){
+                    let dados = tipo?.inputs?.find(d => d.label.includes('dados')).valor.split(/\r?\n/) || []
+                    let termos = tipo?.inputs?.find(d => d.label.includes('termos')).valor.split(/\r?\n/) || []
+                    console.log('%c[Rota PJE]%c dados' + JSON.stringify(dados), LOG.aviso, 'color:inherit', dados)
+                    console.log('%c[Rota PJE]%c termos' + JSON.stringify(termos), LOG.aviso, 'color:inherit', termos)
+                    //return
                     if (dados.length && termos.length) {
                         for(let linha of termos){
                             let celula = linha.split(',') || []
@@ -371,16 +386,23 @@ async function escaninhoCriaBotao(){
                                 let responsavel = juizLinha.split(',')[1].trim() || ''
                                 if(!responsavel) continue
                                 let tipoAtividade = celula[1].trim()
-                                let dias = celula[2].trim()
+                                let dataPrazo = /\d\d\/\d\d\/\d\d\d\d/.test(celula[2].trim()) ? celula[2].trim() : null
+                                console.log('%c[Rota PJE]%c dataPrazo' + JSON.stringify(dataPrazo), LOG.info, 'color:inherit')
+                                let hoje = Number(celula[2].trim()) == 0 ? true : false
+                                console.log('%c[Rota PJE]%c hoje' + JSON.stringify(hoje), LOG.info, 'color:inherit')
+                                let dias = !dataPrazo && !hoje && !!Number(celula[2].trim()) ? celula[2].trim() : null
+                                console.log('%c[Rota PJE]%c dias' + JSON.stringify(dias), LOG.info, 'color:inherit')
                                 let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
-                                removerDoEscaninhoEInserirGigs(numeroProcesso, {gig: {responsavel, tipoAtividade, dias, observacao}})
+                                let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
+                                if (sucesso) removeuTF = true
+                                
                             }
                         }
                     }
                 }
-                if (tipo?.label?.includes('assistentes_dados')){
-                    let dados = tipo?.dados?.split(/\r?\n/) || []
-                    let termos = tipo?.termos?.split(/\r?\n/) || []
+                if (tipo?.secao?.includes('assistentes')){
+                    let dados = tipo?.inputs?.find(d => d.label.includes('dados')).valor.split(/\r?\n/) || []
+                    let termos = tipo?.inputs?.find(d => d.label.includes('termos')).valor.split(/\r?\n/) || []
                     if (dados.length && termos.length) {
                         for(let linha of termos){
                             let celula = linha.split(',') || []
@@ -394,13 +416,25 @@ async function escaninhoCriaBotao(){
                                 if (!juiz) continue
                                 let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz))) || ''
                                 if(!juizLinha) continue
+                                let responsavel = juizLinha.split(',')[1].trim() || ''
+                                if(!responsavel) continue
+                                let tipoAtividade = celula[1].trim()
+                                let dataPrazo = /\d\d\/\d\d\/\d\d\d\d/.test(celula[2].trim()) ? celula[2].trim() : null
+                                console.log('%c[Rota PJE]%c dataPrazo' + JSON.stringify(dataPrazo), LOG.info, 'color:inherit')
+                                let hoje = Number(celula[2].trim()) == 0 ? true : false
+                                console.log('%c[Rota PJE]%c hoje' + JSON.stringify(hoje), LOG.info, 'color:inherit')
+                                let dias = !dataPrazo && !hoje && !!Number(celula[2].trim()) ? celula[2].trim() : null
+                                console.log('%c[Rota PJE]%c dias' + JSON.stringify(dias), LOG.info, 'color:inherit')
+                                let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
+                                let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
+                                if (sucesso) removeuTF = true
                             }
                         }
                     }
                 }
-                if (tipo?.label?.includes('apoio_dados')){
-                    let dados = tipo?.dados?.split(/\r?\n/) || []
-                    let termos = tipo?.termos?.split(/\r?\n/) || []
+                if (tipo?.secao?.includes('apoio')){
+                    let dados = tipo?.inputs?.find(d => d.label.includes('dados')).valor.split(/\r?\n/) || []
+                    let termos = tipo?.inputs?.find(d => d.label.includes('termos')).valor.split(/\r?\n/) || []
                     if (dados.length && termos.length) {
                         for(let linha of termos){
                             let celula = linha.split(',') || []
@@ -415,7 +449,8 @@ async function escaninhoCriaBotao(){
                     }
                 }
             }
-            alert (JSON.stringify(parametros))
+            return {removeuTF, dadosBuscados:{idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada}}
+            //alert (JSON.stringify(parametros))
             async function escaninhoDefineJuiz(idProcesso, numeroProcesso) {
                 let juiz = await defineJuizSimetria(idProcesso) || ''
                 if (!juiz){
@@ -441,20 +476,21 @@ async function escaninhoCriaBotao(){
         }
         
         async function garanteOrdem(){
-            let interceptados = interceptador_ler('peticoes_juntadas')
-            await aguardarElemento('table th')
-            let botaoOrdena = [...document.querySelectorAll('table th')].find(t => normalizar(t.textContent).includes('data de juntada'))
-            clicar(botaoOrdena)
-            await suspender()
-            while(interceptados === interceptador_ler('peticoes_juntadas')){
-                await suspender()
-            }
+            if (document.querySelector('.total-registros').textContent.trim() == '1 - 1 de 1') return
             let botaoApos = [...document.querySelectorAll('table th')].find(t => normalizar(t.textContent).includes('data de juntada'))
             let ordenacao = !!botaoApos.querySelector('[aria-label^="Ordenação ascendente"]')// || false
             console.log('%c[Rota PJE]%c ordenacao' + JSON.stringify(ordenacao), LOG.aviso, 'color:inherit')
             //return
             if (ordenacao){
                 return
+            }
+            let interceptados = interceptador_ler('peticoes_juntadas')
+            await aguardarElemento('table th')
+            let botaoOrdena = [...document.querySelectorAll('table th')].find(t => normalizar(t.textContent).includes('data de juntada'))
+            clicar(botaoOrdena)
+            await suspender()
+            while(JSON.stringify(interceptados) === JSON.stringify(interceptador_ler('peticoes_juntadas'))){
+                await suspender()
             }
             garanteOrdem()
         }
@@ -502,9 +538,31 @@ async function escaninhoCriaBotao(){
         }
         
         async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null) {
-            atualizaPlacar('Removendo do escaninho...')
+            console.log('%c[Rota PJE]%c gig532' + JSON.stringify(numeroProcesso), LOG.aviso, 'color:inherit')
+            //return
+            let mensagemPlacar = gig ? 'Inserindo GIGs e removendo do escaninho...' : 'Removendo do escaninho...'
+            atualizaPlacar(mensagemPlacar)
+            await aguardarElemento('pje-data-table tr')
             let linhas = [...document.querySelectorAll('pje-data-table tr')]
             let linhaExcluir = linhas.find(l => l.textContent.includes(numeroProcesso)) || null
+            if (!linhaExcluir) return null
+            if (gig){
+                await aguardarElemento('pje-gigs-icone-gigs button')
+                let gigClicar = document.querySelector('pje-gigs-icone-gigs button[aria-label*="' + numeroProcesso + '"]')
+                if (!gigClicar) return null
+                clicar(gigClicar)
+                await aguardarElemento('pje-gigs-lista-atividades #nova-atividade')
+                let gigSucesso = await inserirGigsNaTelaDeDetalhesDoProcesso(gig)
+                let botoes = [...document.querySelectorAll('pje-gigs-cadastro-atividades mat-card-actions button')]
+                let texto = gigSucesso ? 'Salvar' : 'Cancelar'
+                await suspender(500)
+                clicar(botoes.find(b => normalizar(b.textContent).includes(normalizar(texto))))
+                await suspender(500)
+                await aguardarElemento('pje-gigs-dados-processo button[mattooltip="Fechar"]')
+                await suspender(500)
+                clicar('pje-gigs-dados-processo button[mattooltip="Fechar"]')
+                if (!gigSucesso) return null
+            }
             await aguardarElemento('button[name$="' + numeroProcesso + '"]')
             await suspender()
             clicar('button[name$="' + numeroProcesso + '"]')
@@ -515,7 +573,7 @@ async function escaninhoCriaBotao(){
             while (botao.isConnected){
                 await suspender()
             }
-            return
+            return true
         }
 
     }

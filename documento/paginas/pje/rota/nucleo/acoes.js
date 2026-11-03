@@ -46,7 +46,6 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = '', dataPr
         dataPrazoPreencher = document.querySelector('pje-gigs-cadastro-atividades #dataInicio').value
     }
     if (dias && !dataPrazoPreencher){
-        console.log('%c[Rota PJE]%c dias: ' + JSON.stringify(dias), LOG.info, 'color:inherit')
         let inputDias = await aguardarElementoNovo('detalhesDoProcessoInputDiasGigs')
         await suspender (200)
         preencher(inputDias, dias)
