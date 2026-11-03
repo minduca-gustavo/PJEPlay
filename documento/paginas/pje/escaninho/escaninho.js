@@ -441,6 +441,19 @@ async function escaninhoCriaBotao(){
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
                                 if(!celula[1] || !celula[2]) continue
+                                let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
+                                if (!juiz) continue
+                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz))) || ''
+                                if(!juizLinha) continue
+                                let responsavel = juizLinha.split(',')[1].trim() || ''
+                                if(!responsavel) continue
+                                let tipoAtividade = celula[1].trim()
+                                let dataPrazo = /\d\d\/\d\d\/\d\d\d\d/.test(celula[2].trim()) ? celula[2].trim() : null
+                                let hoje = Number(celula[2].trim()) == 0 ? true : false
+                                let dias = !dataPrazo && !hoje && !!Number(celula[2].trim()) ? celula[2].trim() : null
+                                let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
+                                let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
+                                if (sucesso) removeuTF = true
                             }
                         }
                     }
