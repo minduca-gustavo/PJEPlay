@@ -159,7 +159,7 @@ async function escaninhoCriaBotao(){
                     {
                         label:'apoio_dados',
                         texto: 'Cole abaixo os dados dos servidores de apoio e finais, separados por vírgula, no formato "SERVIDOR, FINAIS", um por linha.',
-                        placeholder: 'Ex: \nFULANO DE TAL, 01\nBELTRANO DE TAL, 2 3'
+                        placeholder: 'Ex: \nFULANO DE TAL, 01\nBELTRANO DE TAL, 2 3\nCiclano de tal, 456 7'
                     },
                     {
                         label:'apoio_termos',
@@ -311,6 +311,8 @@ async function escaninhoCriaBotao(){
         for (let peticao of peticoes){
             if(parar || !document.getElementById(idExecucao)){
                 finaliza(buscados)
+                buscados = []
+                parar = false
                 return   
             }
             atualizaPlacar('Buscando ' + i++ + ' de ' + peticoes.length)
@@ -363,6 +365,7 @@ async function escaninhoCriaBotao(){
             console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
             //return
             let removeuTF = false
+            let gig = ''
             for (let tipo of parametros){
                 if (tipo?.secao?.includes('secretarios')){
                     let dados = tipo?.inputs?.find(d => d.label.includes('dados')).valor.split(/\r?\n/) || []
@@ -394,7 +397,10 @@ async function escaninhoCriaBotao(){
                                 console.log('%c[Rota PJE]%c dias' + JSON.stringify(dias), LOG.info, 'color:inherit')
                                 let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
                                 let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
-                                if (sucesso) removeuTF = true
+                                if (sucesso) {
+                                    removeuTF = true
+                                    gig = tipoAtividade + ' - ' + observacao
+                                }
                                 
                             }
                         }
@@ -424,7 +430,10 @@ async function escaninhoCriaBotao(){
                                 let dias = !dataPrazo && !hoje && !!Number(celula[2].trim()) ? celula[2].trim() : null
                                 let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
                                 let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
-                                if (sucesso) removeuTF = true
+                                if (sucesso) {
+                                    removeuTF = true
+                                    gig = tipoAtividade + ' - ' + observacao
+                                }
                             }
                         }
                     }
@@ -441,11 +450,11 @@ async function escaninhoCriaBotao(){
                                 normalizar(nomeTipoProcessoDocumento).includes(normalizar(celula[0]).trim())
                             ){
                                 if(!celula[1] || !celula[2]) continue
-                                let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
-                                if (!juiz) continue
-                                let juizLinha = dados.find(d => normalizar(d).includes(normalizar(juiz))) || ''
-                                if(!juizLinha) continue
-                                let responsavel = juizLinha.split(',')[1].trim() || ''
+                                let anoProcesso = numeroProcesso.slice(11, 15)
+                                let final = Number(anoProcesso) < 2010 ? numeroProcesso.slice(4, 5) : numeroProcesso.slice(6, 7)
+                                let linhaApoio = dados.find(d => normalizar(d).includes(String(final))) || ''
+                                if(!linhaApoio) continue
+                                let responsavel = linhaApoio.split(',')[0].trim() || ''
                                 if(!responsavel) continue
                                 let tipoAtividade = celula[1].trim()
                                 let dataPrazo = /\d\d\/\d\d\/\d\d\d\d/.test(celula[2].trim()) ? celula[2].trim() : null
@@ -453,13 +462,16 @@ async function escaninhoCriaBotao(){
                                 let dias = !dataPrazo && !hoje && !!Number(celula[2].trim()) ? celula[2].trim() : null
                                 let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
                                 let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
-                                if (sucesso) removeuTF = true
+                                if (sucesso) {
+                                    removeuTF = true
+                                    gig = tipoAtividade + ' - ' + observacao
+                                }
                             }
                         }
                     }
                 }
             }
-            return {removeuTF, dadosBuscados:{idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada}}
+            return {removeuTF, dadosBuscados:{idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada, removido: removeuTF ? 'SIM' : 'NÃO', gig}}
             //alert (JSON.stringify(parametros))
             async function escaninhoDefineJuiz(idProcesso, numeroProcesso) {
                 let juiz = await defineJuizSimetria(idProcesso) || ''
