@@ -420,11 +420,8 @@ async function escaninhoCriaBotao(){
                                 if(!responsavel) continue
                                 let tipoAtividade = celula[1].trim()
                                 let dataPrazo = /\d\d\/\d\d\/\d\d\d\d/.test(celula[2].trim()) ? celula[2].trim() : null
-                                console.log('%c[Rota PJE]%c dataPrazo' + JSON.stringify(dataPrazo), LOG.info, 'color:inherit')
                                 let hoje = Number(celula[2].trim()) == 0 ? true : false
-                                console.log('%c[Rota PJE]%c hoje' + JSON.stringify(hoje), LOG.info, 'color:inherit')
                                 let dias = !dataPrazo && !hoje && !!Number(celula[2].trim()) ? celula[2].trim() : null
-                                console.log('%c[Rota PJE]%c dias' + JSON.stringify(dias), LOG.info, 'color:inherit')
                                 let observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + descricaoDocumento
                                 let sucesso = await removerDoEscaninhoEInserirGigs(numeroProcesso, {responsavel, tipoAtividade, dias, observacao, dataPrazo, hoje, dias})
                                 if (sucesso) removeuTF = true
