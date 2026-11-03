@@ -103,7 +103,7 @@ Clique para fixar/desafixar.`,
             })
         }
         let i = 0
-        for (let s of solucoes){
+        for (let solucao of solucoes){
             let linha = Math.floor(i / 2)
             let celula = criaDiv({
                 id: id(tarefaNome, bloco, nomeTabela, 'celula' + i),
@@ -113,22 +113,23 @@ Clique para fixar/desafixar.`,
             
             let plaquinha = criaPlaquinhaComTooltip({
                 id: id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i),
-                texto: s.split('-', 2)[0].trim(),
-                cor: corDaSolucao(s),
-                tooltip: s,
+                texto: solucao?.movimento.split('-', 2)[0].trim(),
+                cor: corDaSolucao(solucao?.movimento),
+                tooltip: solucao?.movimento + ' - ' + solucao?.data,
                 ancestral: id(tarefaNome, bloco, nomeTabela, 'celula' + i)
             })
             let pl = document.querySelector('#' + id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i))
             pl.style.width = '100%'
+            pl.style.height = '100%'
             pl.style.textAlign = 'center'
             i++
 
         }
 
         function corDaSolucao(solucao) {
-            if (solucao.includes('IMPROCEDENTES') || solucao.includes('EXTINTO')) return 'vermelho'
-            if (solucao.includes('EM PARTE'))    return 'amarelo'
-            if (solucao.includes('PROCEDENTES')) return 'verde'
+            if (normalizar(solucao).includes('improcedentes') || normalizar(solucao).includes('extinto')) return 'vermelho'
+            if (normalizar(solucao).includes('em parte'))    return 'amarelo'
+            if (normalizar(solucao).includes('procedentes')) return 'verde'
             return ''
         }
 
@@ -148,7 +149,14 @@ Clique para fixar/desafixar.`,
         { chave: 'substabelecimento',label: 'Substabelecimento' },
     ]
     let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
-    
+    let valores = 'sentenca, recurso, deposito, custas, seguro, fianca, procuracao, substabelecimento'
+    criaVisualizadorDeDocumentos({
+        id: id(tarefaNome, bloco, 'visualizador'),
+        ancestral: id(tarefaNome, bloco),
+        timeline: documentosTimeline,
+        termos: valores,
+        abrir: (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
+    })
     await criaWidgetDocumentos({
         ancestral:  id(tarefaNome, bloco),
         documentos: documentosTimeline,

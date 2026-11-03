@@ -1945,7 +1945,7 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
                     let documento = buscaProximoDocumento(termo, idBotao, maisAntigo, quantidade)
                     abrir(documento)
                 },
-                acaoSecundaria: () => criaTabelaDocumentos(termo?.termo)
+                acaoSecundaria: () => criaTabelaDocumentos(termo?.termo, idBotao)
             })
         }
     }
@@ -1964,12 +1964,16 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
         console.log('%c[Rota PJE]%c termo' + JSON.stringify(termo), LOG.aviso, 'color:inherit')
         return termo?.documentos[contadores[termo?.termo] - 1]
     }
-    function criaTabelaDocumentos(termo){
+    function criaTabelaDocumentos(termo, idBotao){
         let idTabela = id + '_tabelaDocumentos_' + termo.replace(/\s/g,'_')
         console.log('%c[Rota PJE]%c idTabela: ' + JSON.stringify(idTabela), LOG.info, 'color:inherit')
         let tabela = document.querySelector('[id^="' + id + '_tabelaDocumentos_' + '"]')
         if(tabela) tabela.remove()
-        if(tabela && tabela.id.includes(termo.replace(/\s/g,'_'))) return
+        if(tabela && tabela.id.includes(termo.replace(/\s/g,'_'))) {
+            alternaCor(idBotao, id, true)
+            return
+        }
+        alternaCor(idBotao, id, false)
         let documentosTermos = termosIds.find(d => d.termo === termo)?.documentos ?? []
         let documentos = documentosTermos.map(d => d)
         
@@ -2006,6 +2010,21 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
                 elemento: idBotao
             })
         }
+    }
+    function alternaCor(idBotao, id, tudoAzul = true){
+        let botao = [...document.querySelectorAll('button[id^="' + idBotao + '"]')]
+        let botoes = [...document.querySelectorAll('button[id^="' + id + '"]')]
+        for (let bot of botoes){
+            bot.style.background = UI_CORES.azul
+            _ui_hoverBotao(bot, UI_CORES.azul, UI_CORES.azulHover)
+        }
+        if (!tudoAzul){
+            for (let bot of botao){
+                bot.style.background = '#00aa77'
+                _ui_hoverBotao(bot, '#00aa77', '#009977')
+            }
+        }
+
     }
     function criaBotaoTermos({id, texto, ancestral, acaoPrincipal, acaoSecundaria, tooltip}){
         let divId = id

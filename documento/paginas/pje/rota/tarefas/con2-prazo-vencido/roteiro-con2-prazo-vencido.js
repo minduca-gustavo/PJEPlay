@@ -75,6 +75,7 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     }
     console.log('%c[Rota PJE]%c solucaoMovimento: ' + JSON.stringify(solucaoMovimento), LOG.rosa, 'color:inherit')
     for (let mov of solucaoMovimento) {
+        let {data} = mov
         let movimento = ''
         if (mov?.titulo.includes('Julgado(s) ')){
             movimento = (mov?.titulo.split('Julgado(s) ')[1])
@@ -88,7 +89,7 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
         } else {
             movimento = mov?.titulo
         }
-        solucao.push(movimento)
+        solucao.push({movimento, data: new Date(data).toLocaleDateString()})
     }
     console.log('%c[Rota PJE]%c solucao: ' + JSON.stringify(solucao), LOG.rosa, 'color:inherit')
     
