@@ -1871,24 +1871,39 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
     let maisAntigo = false
     if (!ordemSalva) maisAntigo = ordemSalva?.maisAntigo
     let arrayTermos = [... new Set (termos.split(',').map(d => normalizar(d).trim().toLowerCase()))]
-    let termosIds = arrayTermos.map(d => {
-        let docs = timeline.filter(c => 
-            normalizar(c.titulo).toLowerCase().includes(d) 
-            || normalizar(c.tipo).toLowerCase().includes(d) 
-            || c?.anexos?.some(a => normalizar(a?.titulo).toLowerCase().includes(d)) 
-            || c?.anexos?.some(a => normalizar(a?.tipo).toLowerCase().includes(d))
-        )
-        let idDocs = docs.flatMap(b => {
-            if (normalizar(b.titulo).toLowerCase().includes(d) 
-                || normalizar(b.tipo).toLowerCase().includes(d)
-            ) return [{id: b.id, idUnicoDocumento: b.idUnicoDocumento, titulo: b.titulo, data: b.data}]
-            
-            return b.anexos
-                .filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d))
-                .map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idDocumentoPai: a.idDocumentoPai}))
-        })
-        return {termo:d , documentos: idDocs}
-    })
+    let termosIds = []
+    for (let termo of arrayTermos){
+        let docs = []
+        for (let documento of timeline){
+            let {id, idUnicoDocumento, titulo, data} = documento
+            if (normalizar(documento?.titulo).includes(termo) || normalizar(documento?.tipo).includes(termo)) docs.push({id, idUnicoDocumento, titulo, data})
+            if (documento?.anexos?.length){
+                for (let anexo of documento?.anexos){
+                    let {id, idUnicoDocumento, titulo, data, idDocumentoPai} = anexo
+                    if (normalizar(anexo?.titulo).includes(termo) || normalizar(anexo?.tipo).includes(termo)) docs.push({id, idUnicoDocumento, titulo, data, idDocumentoPai})
+                }
+            }
+        }
+        if (docs.length) termosIds.push({termo, documentos: docs})
+    }
+    //let termosIds = arrayTermos.map(d => {
+    //    let docs = timeline.filter(c => 
+    //        normalizar(c.titulo).toLowerCase().includes(d) 
+    //        || normalizar(c.tipo).toLowerCase().includes(d) 
+    //        || c?.anexos?.some(a => normalizar(a?.titulo).toLowerCase().includes(d)) 
+    //        || c?.anexos?.some(a => normalizar(a?.tipo).toLowerCase().includes(d))
+    //    )
+    //    let idDocs = docs.flatMap(b => {
+    //        if (normalizar(b.titulo).toLowerCase().includes(d) 
+    //            || normalizar(b.tipo).toLowerCase().includes(d)
+    //        ) return [{id: b.id, idUnicoDocumento: b.idUnicoDocumento, titulo: b.titulo, data: b.data}]
+    //        
+    //        return b.anexos
+    //            .filter(a => normalizar(a?.titulo).toLowerCase().includes(d) || normalizar(a?.tipo).toLowerCase().includes(d))
+    //            .map(a => ({id: a.id, idUnicoDocumento: a.idUnicoDocumento, titulo: a.titulo, data: a.data, idDocumentoPai: a.idDocumentoPai}))
+    //    })
+    //    return {termo:d , documentos: idDocs}
+    //})
     let contadores = {}
     criaDiv({
         id: id,
