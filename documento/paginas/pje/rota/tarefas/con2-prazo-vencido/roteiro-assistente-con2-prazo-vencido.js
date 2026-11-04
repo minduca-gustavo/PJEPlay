@@ -157,14 +157,6 @@ Clique para fixar/desafixar.`,
         termos: valores,
         abrir: (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
     })
-    await criaWidgetDocumentos({
-        ancestral:  id(tarefaNome, bloco),
-        documentos: documentosTimeline,
-        tipos:      tiposDocumentos,
-        idPrefixo:  id(tarefaNome, bloco, 'widget'),
-        onAbrir:    (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
-        modo:       'tipo',
-    })
 
     bloco = 'partes'
 
@@ -185,6 +177,79 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
          ancestral: id(tarefaNome, bloco),
          acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Partes'}])
     })
+
+    bloco = 'recursos'
+
+    criaTitulo({
+        id: id(tarefaNome, bloco, 'titulo'),
+        texto: 'Recursos',
+        ancestral: 'rota_corpo'
+    })
+    let recursosPrimeiroGrau = documentosTimeline.filter(d => (normalizar(d?.tipo).includes('recurso') || normalizar(d?.titulo).includes('recurso')) && normalizar(d?.instancia).includes(normalizar('1º Grau'))) || []
+    console.log('%c[Rota PJE]%c recursosUm' + JSON.stringify(recursosPrimeiroGrau), LOG.aviso, 'color:inherit', recursosPrimeiroGrau)
+    for(let i = 0; i < recursosPrimeiroGrau.length; i++){
+        let recurso = recursosPrimeiroGrau[i]
+        let {id, idUnicoDocumento, data, participacaoProcesso, tipoPolo} = recurso || {}
+        let ancestral = id(tarefaNome, bloco, i)
+        let coluna = id(tarefaNome, bloco, i, 'coluna')
+        criaDiv({
+            id: coluna,
+            ancestral: 'rota_corpo'
+        })
+        criaDiv({
+            id: ancestral,
+            ancestral: coluna,
+            rowColumn: 'row'
+        })
+        let check = await criaCheckBox({
+            id: ancestral + '_check',
+            ancestral,
+        })
+        check.style.gap = '0px'
+        check.dataset.recurso = {id, idUnicoDocumento}
+        let textoAoLado = criaTexto({
+            id: ancestral + '_texto',
+            ancestral,
+            texto: idUnicoDocumento + ' - ' + new Date(data).toLocaleDateString() + ' - ' + participacaoProcesso.split(',')[0]
+        })
+        textoAoLado.style.padding = '0px 0px 0px 0px'
+        textoAoLado.style.cursor = 'pointer'
+        criaTooltip({
+            id: ancestral + '_tip',
+            texto: 'Clique para abrir este recurso na janela do processo.',
+            elemento: textoAoLado
+        })
+        //let textoAoLado = document.querySelector('#' + ancestral + ' span')
+        textoAoLado.addEventListener('click', () => comandar(['con2_prazo_vencido_abrir_documentos'],[recurso]))
+        let anexos = recurso?.anexos?.length ? recurso?.anexos : []
+        if (anexos.length){
+            let div = criaDiv({
+                id: ancestral + '_anexos',
+                ancestral: coluna,
+            })
+        }
+        for (let anexo of anexos){
+            let {idUnicoDocumento, data, participacaoProcesso, titulo} = anexo || {}
+            let texto = criaTexto({
+                id: ancestral + '_anexos_texto',
+                ancestral: ancestral + '_anexos',
+                texto: 'Anexo - ' + idUnicoDocumento + ' - ' + new Date(data).toLocaleDateString() + ' - ' + participacaoProcesso.split(',')[0] + ' - ' + titulo
+            })
+            texto.style.padding = '0px 0px 0px 0px'
+            texto.style.marginLeft = '35px'
+            texto.style.cursor = 'pointer'
+            texto.addEventListener('click', () => comandar(['con2_prazo_vencido_abrir_documentos'],[anexo]))
+            criaTooltip({
+                id: ancestral + '_tip',
+                texto: 'Clique para abrir este anexo na janela do processo.',
+                elemento: texto
+            })
+        }
+        
+        console.log('%c[Rota PJE]%c textoAoLado', LOG.aviso, 'color:inherit', textoAoLado)
+    }
+    
+    return
     // ___________________________________________________
     //  SECAO POS SENTENCA
     // ___________________________________________________    
