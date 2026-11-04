@@ -112,7 +112,7 @@ async function confereCriaFitaSuperior(){
         JANELA.encaminharPostoAvancado,
         JANELA.gigsRelatorios,
         JANELA.painelGlobal,
-        JANELA.escaninho
+        JANELA.escaninho,
     )
     console.log('%c[Rota PJE]%c fita superior janela: ' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return

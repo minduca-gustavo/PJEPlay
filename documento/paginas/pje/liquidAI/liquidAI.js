@@ -1,4 +1,4 @@
-// estou retirando dados do editor. tem que fazer rotina de erro no textoSentenca, ou seja, se textoSentenca?.erro
+// estou lidando com o histórico. Cheguei no array de históricos, quero entender a melhor forma de fazer os períodos diferentes de cada histórico.
 
 async function liquidAIGerarPJC(){
     let {dadosProcesso, dadosProcessuaisPJECalc, municipio} = await liquidAIExtraiDadosPJE()
@@ -21,7 +21,7 @@ async function liquidAIGerarPJC(){
     let internalRefCalculo = atualizaIndice()
     let parametros = liquidAICriaParametrosIniciais(
         {
-            id: internalRefProcesso, 
+            id: internalRefCalculo, 
             versao, 
             dataCriacao: dataCalculo,
             dataDeLiquidacao: dataCalculo,
@@ -32,7 +32,7 @@ async function liquidAIGerarPJC(){
         configuracoes,
     )
     // processo entra e é uma variável só
-    let processoPJECalc = liquidAICriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, ++indice, versao, internalRefProcesso)
+    let processoPJECalc = liquidAICriaDadosProcessuaisPJECalc(dadosProcessuaisPJECalc, internalRefProcesso, versao, internalRefCalculo)
     // município tem uma externalRef que é da tabela TOM da receita federal
     municipio = liquidAIDefineMunicipio({municipio})
     let verbas = verbasNaoMapeadas()
@@ -67,9 +67,21 @@ async function liquidAIGerarPJC(){
                 tipo: 'Maior Remuneração',
                 modelo: 'Maior Remuneração: R$ 1.234.56'
             },
+            {
+                tipo: 'Histórico',
+                modelo: `Histórico: Salário Base - R$ 2.000,00 - abril/2023 a dezembro/2023.
+
+Histórico: Salário Base - R$ 2.200,00 - janeiro/2024 a dezembro/2024.
+
+Histórico: Salário Base - R$ 2.500,00 - janeiro/2025 a fevereiro/2025.
+
+Histórico: Horas extras pagas - R$ 700,00 - abril/2023 a junho/2024.
+
+Histórico: Horas extras pagas - R$ 500,00 - julho/2024 a fevereiro/2025.`
+            }
         ]
 
-        let mensagem = 'Os seguintes termos não foram encontrados:\n-' + erros.map(d => d).join('\n-') + '\nClique no botão abaixo para copiar o modelo de como eles devem constar na sentença:\n' + erros.map(d=> mensagens.find(m => m?.tipo == d).modelo).join('\n')
+        let mensagem = 'Os seguintes termos não foram encontrados, ou estão formatados incorretamente:\n-' + erros.map(d => d).join('\n-') + '\nClique no botão abaixo para copiar o modelo de como eles devem constar na sentença:\n' + erros.map(d=> mensagens.find(m => m?.tipo == d).modelo).join('\n')
         let div = criaDivCentralPadrao({
             id: divId, 
             titulo: 'Erro - termos não encontrados',
@@ -94,17 +106,18 @@ async function liquidAIGerarPJC(){
         })
     }
 
-    function liquidAICriaHistoricos(internalRefCalculo, textoSentenca){
-        
+    function liquidAICriaHistoricos(internalRefCalculo, {historicos}){
+        console.log('%c[Rota PJE]%c historicos: ' + JSON.stringify(historicos), LOG.info, 'color:inherit')
         //return{historicosSalariais:{Set:''}} //
 
         let internalRefHistorico = atualizaIndice()
         let historicoArray = []
         let i = 1
+        let nome = ''
         for(let historico of historicos){
             let id = internalRefHistorico
             let versao = 0
-            let nome
+            nome = historico?.nome
             let tipoVariacaoParcela
             let incidenciaFGTS
             let aplicarProporcionalidadeFGTS
@@ -285,8 +298,24 @@ async function liquidAIGerarPJC(){
         if (!dataDemissao) erros.push('Data de Demissão')
         if (!valorUltimaRemuneracao) erros.push('Última Remuneração')
         if (!valorMaiorRemuneracao) erros.push('Maior Remuneração')
-        console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.info, 'color:inherit', resultado)
-        alert (JSON.stringify(resultado))
+        
+        // HISTÓRICO SALARIAL
+        let historicos = []
+        let linhasHistoricos = linhas.filter(d => normalizar(d).includes('historico :') || normalizar(d).includes('historico:')) || []
+        for (let historico of linhasHistoricos){
+            let nome = normalizar(historico.split(':')[1].split('-')[0].trim()).toUpperCase() || ''
+            let valor = tratarValor(historico.split('-')[1].trim()) || ''
+            let periodo = historico.split('-')[2].trim() || ''
+            let periodos = periodo.match(/[A-Za-z]+\/\d{4}/g) || []
+            let periodosTratar = periodos.map(d => tratarDataHistorico(d))
+            let inicio = periodosTratar[0] || ''
+            let fim = periodosTratar[1] || ''
+            if(!nome || !valor || !inicio || !fim) erros.push('Histórico')
+            historicos.push({nome, valor, inicio, fim})
+        }
+        
+        
+        //alert (JSON.stringify(resultado))
         if (erros.length) return {erros, sucesso: false}
         return({
             sucesso: true,
@@ -311,8 +340,28 @@ async function liquidAIGerarPJC(){
             processoInformadoManualmente: 'true',
             comentarios: 'Gerado por LiquidAI',
             diaFechamentoMes: '31',
+            historicos
         })
 
+        function tratarDataHistorico(texto){
+            let meses = {
+                janeiro: 0,
+                fevereiro: 1,
+                marco: 2,
+                abril: 3,
+                maio: 4,
+                junho: 5,
+                julho: 6,
+                agosto: 7,
+                setembro: 8,
+                outubro: 9,
+                novembro: 10,
+                dezembro: 11
+            }
+            let mes = texto.split('/')[0].trim()
+            let ano = texto.split('/')[1].trim().match(/\d+/g).join('')
+            return new Date(ano, meses?.[mes], 1).setHours(0, 0, 0, 0)
+        }
         function tratarData(texto){
             let numeros = texto.match(/\d*/g).join('')
             if (numeros.length != 8) return null
@@ -410,20 +459,20 @@ async function liquidAIGerarPJC(){
             tipoDocumentoFiscalReclamado,
             numeroDocumentoFiscalReclamado,
         },
-        id, 
+        internalRefProcesso, 
         versao,
-        internalRef,
+        internalRefCalculo,
     ){
         return({
             processo:{
                 Processo:{
-                    id,
+                    id: internalRefProcesso,
                     versao,
                     valorDaCausa,
                     dataAutuacao,
                     calculo:{
                         Calculo:{
-                            internalRef
+                            internalRef: internalRefCalculo
                         }
                     },
                     identificador:{

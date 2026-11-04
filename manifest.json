@@ -179,6 +179,7 @@
 				"documento/paginas/pje/rota/tramitaIA/tramitaIAConfereFerramentasEXE.js",
 				"documento/paginas/pje/detalhes/tramitaIA.js",
 				"documento/paginas/pje/detalhes/fita-superior-detalhes.js",
+				"documento/paginas/pje/pauta-audiencias/pauta-audiencias.js",
 				"documento/paginas/pje/tarefa/minutar.js",
 				"documento/paginas/pje/tarefa/conclusao.js",
 				"documento/paginas/pje/tarefa/encaminharPostoAvancado.js",

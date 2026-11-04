@@ -339,6 +339,8 @@ function rota_interfacePorContexto(){
 	escaninhoFuncoes()
 
  	favoritarGigs()
+
+	pautaAudienciasMeses()
 	//
 	guardaContraOJIncorreta()
 

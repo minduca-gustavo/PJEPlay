@@ -92,10 +92,10 @@ async function triagem_inicial_enviarParaRoteiroAssistente(){
         interceptador_aguardar('recursos', 8000).then(()        => interceptador_lerRecursos()          || []),
     ])
     gigs.push(...gigs_concluidos)
-    let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricao || '')) ?? {}
+    let gig = gigs.find(gig => /GAB.*JU.*/i.test(gig?.tipoAtividade?.descricaoConsulta || '')) ?? {}
     if (!gig?.tipoAtividade) {
-        let gigsAPI = await buscarGigs(processo?.numero) || []
-        gig = gigsAPI.find(g => /GAB.*JU.*/i.test(g?.tipoAtividade?.descricao || '')) ?? {}
+        let gigsAPI = await buscarGigsPorId(idURL) || []
+        gig = gigsAPI.find(g => /GAB.*JU.*/i.test(g?.tipoAtividade?.descricaoConsulta || '')) ?? {}
     }
     if (!timeline.length) timeline = buscarDocumentos(idURL) || []
     if (!processo.id) processo = await buscarProcesso(idURL) || {}
