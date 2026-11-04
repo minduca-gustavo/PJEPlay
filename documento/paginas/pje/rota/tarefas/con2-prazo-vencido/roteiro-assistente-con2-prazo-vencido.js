@@ -250,11 +250,16 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         
         console.log('%c[Rota PJE]%c textoAoLado', LOG.aviso, 'color:inherit', textoAoLado)
     }
-    criaBotaoLaranja({
+    let botaoProcessar = criaBotaoLaranja({
         id: idg(tarefaNome, 'processarRecursos'),
         texto: 'Processar Recursos Selecionados',
         ancestral: 'rota_corpo',
         acao: () => processarRecursosSelecionados(caixas)
+    })
+    criaTooltip({
+        id: idg(tarefaNome, 'processar_tip'),
+        texto: 'Somente os recursos selecionados serão processados. Aos demais será denegado seguimento.',
+        elemento: botaoProcessar
     })
 
     async function processarRecursosSelecionados(caixas) {
