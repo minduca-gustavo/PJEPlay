@@ -14,7 +14,7 @@ function pautaAudienciasMeses(){
     insereFitaSuperior(elementoAnterior, div)
     let mesAgora = Number(mesAtual().split('/')[1])
     let somas = []
-    for (let i = -4; i < 8; i++){
+    for (let i = -4; i < 12; i++){
         somas.push(i)
     }
     let meses = somas.map(d => new Date().setMonth(mesAgora + d, 1)).map(d => new Date(d).toLocaleDateString())
