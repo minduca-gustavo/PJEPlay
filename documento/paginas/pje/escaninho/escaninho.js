@@ -18,7 +18,7 @@ async function escaninhoCriaBotao(){
     ]
     let ancestral = seletores.find(d => d?.janela.test(location.href))?.seletor
     await aguardarElemento(ancestral)
-    let idBotao = id('escaninho', 'botaoPrincipal')
+    let idBotao = idg('escaninho', 'botaoPrincipal')
     let botoes = [...document.querySelectorAll('#' + idBotao)].map(d => d.remove())
     let botao = criaBotaoLaranja({
         id: idBotao,
@@ -31,7 +31,7 @@ async function escaninhoCriaBotao(){
     let parar = false
 
     async function escaninhoMenu(){
-        let idDiv = id('escaninho', 'menu')
+        let idDiv = idg('escaninho', 'menu')
         let remover = [...document.querySelectorAll('#' + idDiv)].map(d=> d.remove())
         let div = criaDivCentralPadrao({
             id: idDiv,
@@ -105,8 +105,8 @@ async function escaninhoCriaBotao(){
         }
     }
     async function inserirGigPorTipoOuTitulo() {
-        document.getElementById(id('escaninho', 'menu'))?.remove()
-        let ancestral = id('escaninho', 'inserirGigPorTipoOuTitulo')
+        document.getElementById(idg('escaninho', 'menu'))?.remove()
+        let ancestral = idg('escaninho', 'inserirGigPorTipoOuTitulo')
         document.getElementById(ancestral)?.remove()
         let div = criaDivCentralPadrao({
             id: ancestral,
@@ -257,10 +257,10 @@ async function escaninhoCriaBotao(){
         percorrePeticoes({rechamada: false, funcao: 'analisadas', parametros: []})
     }
     async function percorrePeticoes({rechamada, funcao, parametros}) {
-        let idDivMenu = id('escaninho', 'menu')
+        let idDivMenu = idg('escaninho', 'menu')
         let top = document.getElementById(idDivMenu)?.style.top
         let remover = document.getElementById(idDivMenu)?.remove()
-        let idExecucao = id('escaninho', 'execucao')
+        let idExecucao = idg('escaninho', 'execucao')
         let removerExecucao = document.getElementById(idExecucao)?.remove()
         let divExecucao = criaDivCentralPadrao({
             id: idExecucao,
@@ -270,12 +270,12 @@ async function escaninhoCriaBotao(){
             top
         })
         let texto = criaSubTitulo({
-            id: id('escaninho', 'placar'),
+            id: idg('escaninho', 'placar'),
             texto: 'Aguarde a conclusão da tarefa. Iniciando.',
             ancestral: divExecucao.corpo.id
         })
         criaBotaoLaranja({
-            id: id('escaninho', 'parar'),
+            id: idg('escaninho', 'parar'),
             texto: 'Parar.',
             ancestral: divExecucao.corpo.id,
             acao: () => {
@@ -331,7 +331,7 @@ async function escaninhoCriaBotao(){
         }
 
         function atualizaPlacar(texto){
-            let placar = document.getElementById(id('escaninho', 'placar'))
+            let placar = document.getElementById(idg('escaninho', 'placar'))
             if (!placar) return
             placar.textContent = texto
             return
@@ -528,7 +528,7 @@ async function escaninhoCriaBotao(){
             }).join('\n')
             let nomeArquivo = 'RelatórioEscaninho' + Date.now() + '.txt'
             _baixarArquivo(resultado, nomeArquivo, 'text/plain')
-            let remover = document.getElementById(id('escaninho', 'execucao'))?.remove()
+            let remover = document.getElementById(idg('escaninho', 'execucao'))?.remove()
             rota_avisoObrigatorio('Um arquivo foi baixado contendo o relatório desta atividade', 5)
             escaninhoMenu()
         }

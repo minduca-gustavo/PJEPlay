@@ -15,7 +15,7 @@ dial.querySelector('#destaque.mat-checkbox-checked') => checado
 async function favoritarGigs() {
     let janela = confereJanela(JANELA.detalhes, JANELA.escaninho, JANELA.painelGlobal, JANELA.gigsRelatorios, JANELA.gigsAbrirGigs, JANELA.meuPainel)
     if (!janela) return
-    let idBotao = id('favoritarGig') 
+    let idBotao = idg('favoritarGig') 
     await aguardarElemento('pje-gigs-cadastro-atividades')
     await suspender(100)
     await aguardarElemento('pje-gigs-cadastro-atividades mat-card-actions')
@@ -154,7 +154,7 @@ async function favoritarGigs() {
 }
 
 async function criaBarrasAlteraGigs() {
-    let idGigBarra = id('gig', 'barra', 'altera')
+    let idGigBarra = idg('gig', 'barra', 'altera')
     let elementoInserirAntes = document.querySelector('pje-gigs-cadastro-atividades')
     let remover = document.getElementById(idGigBarra)?.remove()
     let div = criaDiv({
@@ -168,16 +168,16 @@ async function criaBarrasAlteraGigs() {
 }
 
 async function alteraResponsavelGigs(ancestral){
-    let armazenamento = await obterArmazenamento(id('gig', 'configura', 'responsaveis', 'input'))
-    let botoes = armazenamento?.[id('gig', 'configura', 'responsaveis', 'input')] || []
-    let idGigBarra = id('gig', 'barra', 'altera', 'responsavel')
+    let armazenamento = await obterArmazenamento(idg('gig', 'configura', 'responsaveis', 'input'))
+    let botoes = armazenamento?.[idg('gig', 'configura', 'responsaveis', 'input')] || []
+    let idGigBarra = idg('gig', 'barra', 'altera', 'responsavel')
     let remover = document.getElementById(idGigBarra)?.remove()
     let div = criaDiv({
         id: idGigBarra,
         ancestral
     })
     formataFitaSuperior(div)
-    let idBotao = id('gig', 'configura', 'responsavel')
+    let idBotao = idg('gig', 'configura', 'responsavel')
     let botao = criaBotaoLaranja({
         id: idBotao,
         ancestral: idGigBarra,
@@ -202,10 +202,10 @@ async function alteraResponsavelGigs(ancestral){
         })
     }
     async function configuraResponsaveis(){
-        let idDiv = id('gig', 'configura', 'responsaveis')
+        let idDiv = idg('gig', 'configura', 'responsaveis')
         let armazenamento = await obterArmazenamento(idDiv + '_input')
         let valores = armazenamento?.[idDiv + '_input'] || []
-        let remover = document.getElementById(id('gig', 'configura', 'responsaveis'))?.remove()
+        let remover = document.getElementById(idg('gig', 'configura', 'responsaveis'))?.remove()
         console.log('%c[Rota PJE]%c valores: ' + JSON.stringify(valores), LOG.info, 'color:inherit')
         let div = criaDivCentralPadrao({
             id: idDiv,
@@ -260,7 +260,7 @@ async function alteraResponsavelGigs(ancestral){
 }
 
 async function alteraPrazoGigs(ancestral){
-    let idGigBarra = id('gig', 'barra', 'altera', 'prazo')
+    let idGigBarra = idg('gig', 'barra', 'altera', 'prazo')
     let remover = document.getElementById(idGigBarra)?.remove()
     let div = criaDiv({
         id: idGigBarra,
@@ -270,7 +270,7 @@ async function alteraPrazoGigs(ancestral){
     let botoes = [2, 5, 10, 15, 30, 60, 90, 180]
     for (let prazo of botoes){
         let botao = criaBotaoAzul({
-            id: id('gig', 'acrescenta', prazo + 'dias'),
+            id: idg('gig', 'acrescenta', prazo + 'dias'),
             ancestral: idGigBarra,
             texto: 'Acrescentar ' + prazo + ' dias',
             acao: () => inserirGigsNaTelaDeDetalhesDoProcesso({
@@ -283,7 +283,7 @@ async function alteraPrazoGigs(ancestral){
         })
         estiloBotaoFitaSuperior(botao)
         criaTooltip({
-            id: id('gig', 'acrescenta', prazo + 'dias', 'tooltip'),
+            id: idg('gig', 'acrescenta', prazo + 'dias', 'tooltip'),
             texto: 'Acrescenta prazo de ' + prazo + ' dias a contar de HOJE.',
             elemento: botao
         })
@@ -292,8 +292,8 @@ async function alteraPrazoGigs(ancestral){
 
 async function criarBarraGigsFavoritos() {
     await aguardarElemento('pje-gigs-lista-atividades')
-    let idGigBarra = id('gig', 'barra', 'favoritos')
-    let gigsArmazenados = id('favoritarGig')
+    let idGigBarra = idg('gig', 'barra', 'favoritos')
+    let gigsArmazenados = idg('favoritarGig')
     let elementoInserirAntes = document.querySelector('pje-gigs-lista-atividades #lista-atividades')
     let armazenamento = await obterArmazenamento(gigsArmazenados)
     let botoes = armazenamento?.[gigsArmazenados] || []
@@ -330,7 +330,7 @@ async function criarBarraGigsFavoritos() {
 }
 
 async function configurarGigsFavoritos(botoes) {
-    let idDiv = id('gigsFavoritos', 'configurar')
+    let idDiv = idg('gigsFavoritos', 'configurar')
     let remover = [...document.querySelectorAll('#' + idDiv)].map(d => d?.remove())
     let div = criaDivCentralPadrao({
         id: idDiv,
@@ -366,7 +366,7 @@ async function configurarGigsFavoritos(botoes) {
         console.log('%c[Rota PJE]%c nomes: ' + JSON.stringify(nomes), LOG.info, 'color:inherit')
         let botoesSalvar = botoes.filter(d=> nomes.some(c=> d?.nomeBotao == c))
         console.log('%c[Rota PJE]%c botoesSalvar: ' + JSON.stringify(botoesSalvar), LOG.info, 'color:inherit')
-        await armazenar({[id('favoritarGig')]: botoesSalvar})
+        await armazenar({[idg('favoritarGig')]: botoesSalvar})
         criarBarraGigsFavoritos()
         input.value = 'Alterações salvas com sucesso'
         await suspender (3000)

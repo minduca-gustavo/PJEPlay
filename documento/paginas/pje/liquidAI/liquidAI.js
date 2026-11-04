@@ -46,7 +46,7 @@ async function liquidAIGerarPJC(){
 }
 
 async function liquidAIErrosEditor(erros){
-    let divId = id('liquidAI', 'erro')
+    let divId = idg('liquidAI', 'erro')
     document.getElementById(divId)?.remove()
     // apontar erros em um elemento
     let mensagens = [

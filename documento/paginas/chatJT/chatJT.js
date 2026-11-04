@@ -51,7 +51,7 @@ async function chatJTFuncoes(){
     // naoMandar: em objeto vem na raiz; em lista vem dentro de cada item (removido item a item, ao enviar)
     let naoMandar = (!Array.isArray(dados) && dados?.naoMandar) || {}
     let overlay = criaDiv({
-        id: id('tramitaIA', 'chatJT', 'overlay'),
+        id: idg('tramitaIA', 'chatJT', 'overlay'),
         ancestral: document.body
     })
     formataDiv(overlay, 'branco', '100%', '100%', 'absolute')
@@ -59,12 +59,12 @@ async function chatJTFuncoes(){
     overlay.style.justifyContent = 'center'
     overlay.style.alignItems = 'center'
     let divMensagem = criaDiv({
-        id: id('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
-        ancestral: id('tramitaIA', 'chatJT', 'overlay')
+        id: idg('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
+        ancestral: idg('tramitaIA', 'chatJT', 'overlay')
     })
     let texto = criaSubTitulo({
-        id: id('tramitaIA', 'chatJT', 'overlay', 'mensagem', 'texto'),
-        ancestral: id('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
+        id: idg('tramitaIA', 'chatJT', 'overlay', 'mensagem', 'texto'),
+        ancestral: idg('tramitaIA', 'chatJT', 'overlay', 'mensagem'),
         texto: 'Aguarde, iniciando consultas. Não feche esta página.'
     })
     texto.style.fontSize = '20px'

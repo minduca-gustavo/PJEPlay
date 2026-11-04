@@ -2133,12 +2133,12 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
     }
     if (modo === 'tipo' || modo === 'tipoComCheckBox') {
         criaBotaoLaranja({
-            id:        id(idPrefixo, 'botao_ordem_documentos'),
+            id:        idg(idPrefixo, 'botao_ordem_documentos'),
             texto:     textoOrdem(),
             ancestral: ancestral,
             acao: () => {
                 ordem = ordem === 0 ? 1 : 0
-                let botao = document.getElementById(id(idPrefixo, 'botao_ordem_documentos'))
+                let botao = document.getElementById(idg(idPrefixo, 'botao_ordem_documentos'))
                 if (botao) botao.textContent = textoOrdem()
                 console.log('%c[Rota PJE]%c ordem: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
                 armazenar({ armazenarCriaWidgetDocumentos: { [idPrefixo]: ordem } })
@@ -2197,7 +2197,7 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
         if (!elementos) return
 
         let colunas = elementos > 3 ? 3 : elementos
-        let idGrade = id(idPrefixo, 'tabela')
+        let idGrade = idg(idPrefixo, 'tabela')
 
         criaGrade({
             id:            idGrade,
@@ -2212,11 +2212,11 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
             let tipoDef = tiposNormalizados.find(t => t.chave === tipo || (t.opcoes && t.opcoes.includes(tipo)))
             if (!tipoDef) continue
 
-            let chaveContador = id(idPrefixo, tipo)
+            let chaveContador = idg(idPrefixo, tipo)
             contadoresDocumentos[chaveContador] = { atual: 0, total: doc.length, primeiroClique: true }
 
-            let idBotao    = id(idPrefixo, 'botao', tipo)
-            let idCheckbox = id(idPrefixo, 'checkbox', tipo)
+            let idBotao    = idg(idPrefixo, 'botao', tipo)
+            let idCheckbox = idg(idPrefixo, 'checkbox', tipo)
             let textoBotao = tipoDef.label + ' 0/' + doc.length
 
             let acaoBotao = async () => {
@@ -2234,7 +2234,7 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
     }
 
     function _avancarContadorDocumento(tipo) {
-        let chaveContador = id(idPrefixo, tipo)
+        let chaveContador = idg(idPrefixo, tipo)
         let contador = contadoresDocumentos[chaveContador]
         if (!contador) return null
 
@@ -2249,7 +2249,7 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
             }
         }
 
-        let idBotao = id(idPrefixo, 'botao', tipo)
+        let idBotao = idg(idPrefixo, 'botao', tipo)
         let botao = document.getElementById(idBotao)
         if (!botao) return null
 
@@ -2273,7 +2273,7 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
         if (!elementos) return
 
         let colunas = elementos > 3 ? 3 : elementos
-        let idGrade = id(idPrefixo, 'tabela')
+        let idGrade = idg(idPrefixo, 'tabela')
 
         criaGrade({
             id:            idGrade,
@@ -2290,8 +2290,8 @@ async function criaWidgetDocumentos({ ancestral, documentos, tipos, idPrefixo, o
             let labelTipo  = tipoDef?.label ?? documento?.tipo ?? documento?.titulo ?? docId
             let textoBotao = labelTipo + ' - ' + docId
 
-            let idBotao    = id(idPrefixo, 'botao', docId)
-            let idCheckbox = id(idPrefixo, 'checkbox', docId)
+            let idBotao    = idg(idPrefixo, 'botao', docId)
+            let idCheckbox = idg(idPrefixo, 'checkbox', docId)
 
             let acaoBotao = async () => {
                 console.log('%c[Rota PJE]%c onAbrir documento: ' + JSON.stringify(documento), LOG.rosa, 'color:inherit')
@@ -2326,7 +2326,7 @@ function formataDiv(div, cor = 'branco', largura = '80%', altura = '80%', positi
 }
 
 function apresentaResultados({array, nome, ancestral = document.body, embutido = false, aoVoltar = null, baixarResultadoBruto = null}){
-    let divId = id(nome)
+    let divId = idg(nome)
     let div = criaDiv({
         id: divId,
         ancestral: ancestral
@@ -2356,20 +2356,20 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
     })
     
     let divTitulo = criaDiv({
-        id: id(nome, 'divTitulo'),
+        id: idg(nome, 'divTitulo'),
         ancestral: divId,
         rowColumn: 'row'
     })
     let titulo = criaTitulo({
-        id: id(nome, 'titulo'),
+        id: idg(nome, 'titulo'),
         texto: 'Resultado',
-        ancestral: id(nome, 'divTitulo')
+        ancestral: idg(nome, 'divTitulo')
     })
     if (!embutido) {
         let botaoFechar = criaBotaoAzul({
-            id: id(nome, 'fechar'),
+            id: idg(nome, 'fechar'),
             texto: '✕',
-            ancestral: id(nome, 'divTitulo'),
+            ancestral: idg(nome, 'divTitulo'),
             acao: () => {
                 document.getElementById(divId).remove()
                 return
@@ -2384,7 +2384,7 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
         botaoFechar.style.right =           '4px'
     }
     let divLinhas = criaDiv({
-        id: id(nome, 'linhas'),
+        id: idg(nome, 'linhas'),
         ancestral: divId
     })
     divLinhas.style.overflowY = 'auto'
@@ -2392,14 +2392,14 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
     for (i; i < array.length; i++){
         if (i === 0){
             let primeiraLinha = criaDiv({
-            id: id(nome, 'linha' + i),
-            ancestral: id(nome, 'linhas'), 
+            id: idg(nome, 'linha' + i),
+            ancestral: idg(nome, 'linhas'), 
             rowColumn: 'row'
         })
         }
         let linha = criaDiv({
-            id: id(nome, 'linha' + (i + 1)),
-            ancestral: id(nome, 'linhas'), 
+            id: idg(nome, 'linha' + (i + 1)),
+            ancestral: idg(nome, 'linhas'), 
             rowColumn: 'row'
         })
         let objeto = array[i]
@@ -2408,8 +2408,8 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
             let largura = Math.floor(100/Object.entries(objeto).length)
             if (i === 0){
                 let celula = criaSubTitulo({
-                    id: id(nome, 'linhaCabecalho' + i, 'celula' + j),
-                    ancestral: id(nome, 'linha' + i),
+                    id: idg(nome, 'linhaCabecalho' + i, 'celula' + j),
+                    ancestral: idg(nome, 'linha' + i),
                     texto: Object.keys(objeto)[j]
                 })
                 celula.style.width = largura + '%'
@@ -2417,8 +2417,8 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
             }
             
             let celula = criaTexto({
-                id: id(nome, 'linha' + i, 'celula' + j),
-                ancestral: id(nome, 'linha' + (i + 1)),
+                id: idg(nome, 'linha' + i, 'celula' + j),
+                ancestral: idg(nome, 'linha' + (i + 1)),
                 texto: Object.values(objeto)[j]
             })
             
@@ -2428,31 +2428,31 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
     }
     i++
     let linhaFinal = criaDiv({
-        id: id(nome, 'linha' + i),
+        id: idg(nome, 'linha' + i),
         ancestral: divId, 
         rowColumn: 'row'
     })
     //linhaFinal.style.
     let botoesFinais = [
         {
-            id: id(nome, 'copiar'),
+            id: idg(nome, 'copiar'),
             texto: 'Copiar dados tabulados',
-            ancestral: id(nome, 'linha' + i),
+            ancestral: idg(nome, 'linha' + i),
         },
         {
-            id: id(nome, 'baixarTexto'),
+            id: idg(nome, 'baixarTexto'),
             texto: 'Baixar em formato TXT',
-            ancestral: id(nome, 'linha' + i),
+            ancestral: idg(nome, 'linha' + i),
         },
         {
-            id: id(nome, 'baixarJSON'),
+            id: idg(nome, 'baixarJSON'),
             texto: 'Baixar em formato JSON',
-            ancestral: id(nome, 'linha' + i),
+            ancestral: idg(nome, 'linha' + i),
         },
         {
-            id: id(nome, 'baixarResultadoBrutoFuncao'),
+            id: idg(nome, 'baixarResultadoBrutoFuncao'),
             texto: 'Baixar resultado Bruto',
-            ancestral: id(nome, 'linha' + i),
+            ancestral: idg(nome, 'linha' + i),
         },
     ]
     for (let k = 0; k < botoesFinais.length; k++) {
@@ -2468,9 +2468,9 @@ function apresentaResultados({array, nome, ancestral = document.body, embutido =
     }
     if (aoVoltar){
         criaBotaoLaranja({
-            id: id(nome, 'voltar'),
+            id: idg(nome, 'voltar'),
             texto: 'Nova análise',
-            ancestral: id(nome, 'linha' + i),
+            ancestral: idg(nome, 'linha' + i),
             acao: aoVoltar
         })
     }

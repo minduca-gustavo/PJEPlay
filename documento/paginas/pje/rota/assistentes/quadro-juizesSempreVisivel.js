@@ -76,7 +76,7 @@ async function visualizaQuadroDeJuizes() {
         // Fora de uma tela de processo a plaquinha "Vara de Origem" não
         // faz sentido — remove qualquer instância deixada por navegação
         // anterior dentro do pjekz (evita badge desatualizado na tela).
-        removerComLimpezaDeAncora(id('origem', 'plaquinha'))
+        removerComLimpezaDeAncora(idg('origem', 'plaquinha'))
     }
 }
 
@@ -140,7 +140,7 @@ function removerComLimpezaDeAncora(idSelector) {
 // ------------------------------------------------------------
 
 async function criaVisualizador(banner) {
-    let idPlaquinha = id('visualizadorJuizes', 'plaquinha')
+    let idPlaquinha = idg('visualizadorJuizes', 'plaquinha')
     removerComLimpezaDeAncora(idPlaquinha)
 
     let quebra = qjAjuste()?.quebra ? ' ' : '\n'
@@ -177,7 +177,7 @@ async function mostraVaraDeOrigem(banner) {
     let vara = historico
         .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
         ?.orgaoJulgadorOrigem?.descricao || ''
-    let idOrigem = id('origem', 'plaquinha')
+    let idOrigem = idg('origem', 'plaquinha')
     if (confereJanela(JANELA.detalhes, JANELA.encaminharPostoAvancado, JANELA.analise, JANELA.triagem_inicial)){
         levaGigs(idOrigem, historico)
         encaminharPostoAvancadoGigs(vara)
@@ -211,7 +211,7 @@ async function mostraVaraDeOrigem(banner) {
 // ------------------------------------------------------------
 
 async function mostraQuadroDeJuizes(acao, plaquinha) {
-    let idQuadro = id('visualizadorJuizes', 'quadro')
+    let idQuadro = idg('visualizadorJuizes', 'quadro')
 
     if (acao !== 'mostrar') {
         document.querySelectorAll('#' + idQuadro).forEach(d => d.style.display = 'none')
@@ -246,7 +246,7 @@ async function mostraQuadroDeJuizes(acao, plaquinha) {
 }
 
 async function preencheQuadro(idQuadro, dados = []) {
-    let idDivBotoes = id('visualizadorJuizes', 'quadro', 'botoes')
+    let idDivBotoes = idg('visualizadorJuizes', 'quadro', 'botoes')
     // Remove a instância anterior antes de recriar — sem isso, cada clique
     // em "Quadro de Juízes" ou "Secretários/Assistentes" empilhava um novo
     // #idDivBotoes com id duplicado.
@@ -301,12 +301,12 @@ async function preencheQuadro(idQuadro, dados = []) {
         if (!armazenamento) return
         let varas = [...new Set(armazenamento.map(d => d?.Vara))]
         let colunas = Object.keys(armazenamento[0] ?? {})
-        let idBase = id('visualizadorJuizes', 'linha', 'finais')
+        let idBase = idg('visualizadorJuizes', 'linha', 'finais')
 
         // Remove TODAS as linhas de qualquer um dos dois modos (finais e
         // assistente) antes de remontar — mantém a mesma estratégia usada
         // pelo branch de assistentes abaixo.
-        document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
+        document.querySelectorAll('[id^=' + idg('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
 
         montaCabecalho(idQuadro, idBase, colunas)
 
@@ -323,9 +323,9 @@ async function preencheQuadro(idQuadro, dados = []) {
         let url = 'https://raw.githubusercontent.com/minduca-gustavo/rotaPJEd/main/rotapje_comQuemFalar.json'
         let armazenamento = await consultaQuadrosGit(url)
         console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.aviso, 'color:inherit')
-        document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
+        document.querySelectorAll('[id^=' + idg('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
         let fases = Object.keys(armazenamento)
-        let idBase = id('visualizadorJuizes', 'linha', 'assistente')
+        let idBase = idg('visualizadorJuizes', 'linha', 'assistente')
         
         console.log('%c[Rota PJE]%c elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit', elemento)
         criaDiv({
@@ -342,7 +342,7 @@ async function preencheQuadro(idQuadro, dados = []) {
             ancestral: elemento
         })
         divBase.style.overflowY = 'auto'
-        //let idRolante = id('visualizadorJuizes', 'linha', 'finais', 'divRolante')
+        //let idRolante = idg('visualizadorJuizes', 'linha', 'finais', 'divRolante')
         console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(elemento), LOG.aviso, 'color:inherit', divBase)
         function formataDivQJ(elemento){
             elemento.style.gap = '1px'
@@ -353,7 +353,7 @@ async function preencheQuadro(idQuadro, dados = []) {
             return elemento
         }
         for (let fase of fases){
-            let idFase = id('comQuemFalar', normalizar(fase))
+            let idFase = idg('comQuemFalar', normalizar(fase))
             let divFase = formataDivQJ(criaDiv({
                 id: idFase,
                 ancestral: idBase,
@@ -362,7 +362,7 @@ async function preencheQuadro(idQuadro, dados = []) {
             formataDiv(divFase, 'branco', 'auto', 'auto', 'inherit')
             divFase.style.transform = ''
             divFase.style.gap = '1px'
-            let idSubtitulo = id('comQuemFalar', normalizar(fase), 'subtitulo', 'div')
+            let idSubtitulo = idg('comQuemFalar', normalizar(fase), 'subtitulo', 'div')
             let divSubtitulo = criaDiv({
                 id: idSubtitulo,
                 ancestral: idFase
@@ -371,13 +371,13 @@ async function preencheQuadro(idQuadro, dados = []) {
             divSubtitulo.style.transform = 'rotate(180deg)'
             //if (fase == 'DAM' || fase == 'DAA') continue
             criaSubTitulo({
-                id: id('comQuemFalar', normalizar(fase), 'subtitulo'),
+                id: idg('comQuemFalar', normalizar(fase), 'subtitulo'),
                 texto: fase,
                 ancestral: idSubtitulo
             })
             let ojs = Object.keys(armazenamento[fase])
             console.log('%c[Rota PJE]%c ojs: ' + JSON.stringify(ojs), LOG.rosa, 'color:inherit')
-            let idOjs = id('comQuemFalar', normalizar(fase), 'ojs')
+            let idOjs = idg('comQuemFalar', normalizar(fase), 'ojs')
             
             
             let ASSESSORES = ['Assessor', 'Chefe de Divisão', 'Chefe de Seção']
@@ -392,7 +392,7 @@ async function preencheQuadro(idQuadro, dados = []) {
 
             function montaComQuemFalar(chave, valor, idPai, caminho = []) {
                 let novoCaminho = [...caminho, formataProId(chave)]
-                let idDiv = id('comQuemFalar', ...novoCaminho)
+                let idDiv = idg('comQuemFalar', ...novoCaminho)
                 let montaAssessor = ASSESSORES.includes(chave) || Array.isArray(valor)
                 if (montaAssessor) {
                     formataDivQJ(criaDiv({
@@ -472,13 +472,13 @@ async function preencheQuadro(idQuadro, dados = []) {
         console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.teste, 'color:inherit')
         let juizes = [...new Set(armazenamento.map(d => d?.JUIZ))]
         let colunas = Object.keys(armazenamento[0] ?? {})
-        let idBase = id('visualizadorJuizes', 'linha', 'assistente')
+        let idBase = idg('visualizadorJuizes', 'linha', 'assistente')
 
         // Remove TODAS as linhas (do modo "finais" e de uma execução anterior
         // deste próprio modo) antes de remontar — antes só ocultava as do
         // outro grupo e nunca limpava as do próprio idBase, deixando
         // elementos remontados por cima dos antigos.
-        document.querySelectorAll('[id^=' + id('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
+        document.querySelectorAll('[id^=' + idg('visualizadorJuizes', 'linha') + ']').forEach(d => d.remove())
 
         montaCabecalho(idQuadro, idBase, colunas)
 

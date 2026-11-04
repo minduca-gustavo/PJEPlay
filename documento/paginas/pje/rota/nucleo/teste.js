@@ -6,7 +6,7 @@ async function teste(){
   ]
   let janela = janelas.some(j => j.test(window.location.href))
   if (!janela) return
-  let divId = id('teste')
+  let divId = idg('teste')
   let el = [...document.querySelectorAll('#' + divId)].forEach(e => e.remove())
   let div = criaDiv({
     id: divId,

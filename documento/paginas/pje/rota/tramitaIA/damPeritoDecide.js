@@ -36,7 +36,7 @@
 //        texto: 'Filtra processos com parecer pericial para decisão na DAM'
 //    })
 //    async function damBusca(modo){
-//        let idMostrador = id('tramitaIA', 'mostraResultadoBuscaDamPerito')
+//        let idMostrador = idg('tramitaIA', 'mostraResultadoBuscaDamPerito')
 //        let limpar = [...document.getElementById(ancestralLimpar).children].filter(d => d?.id !== elementoAncestral).map(d => d.remove())
 //        if (modo === 'lista'){
 //            rota_avisoObrigatorio('Não implementado', 5)
@@ -47,7 +47,7 @@
 //            if (!processos?.ids?.length) {
 //                mostraResultadosBuscaSimples(ancestralLimpar, 'Não foram encontrados processos na tarefa Elaborar sentença.', idMostrador)
 //                let botao = criaBotaoLaranja({
-//                    id: id('tramitaIA', 'mostraResultado', 'botaoNovaBusca'),
+//                    id: idg('tramitaIA', 'mostraResultado', 'botaoNovaBusca'),
 //                    ancestral: ancestralLimpar,
 //                    texto: 'Nova busca',
 //                    acao: () => {

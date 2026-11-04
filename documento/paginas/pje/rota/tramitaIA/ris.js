@@ -157,7 +157,7 @@ async function tramitaIASecaoRis(elemento, ancestral, rechamada = false, dadosRe
     }
 
     function mostraResultadosBuscaRis(idElemento, contador){
-        let idDiv = id('tramitaIA', 'mostraResultadosBuscaRis')
+        let idDiv = idg('tramitaIA', 'mostraResultadosBuscaRis')
         if (!document.getElementById(idDiv)) criaDiv({ id: idDiv, ancestral: idElemento })
         let idConteudo = idDiv + '_conteudo'
         let conteudo = document.getElementById(idConteudo)

@@ -5,7 +5,7 @@ async function menuPericiasAud() {
     await aguardarElemento(seletorBarra)
     let barra = document.querySelector(seletorBarra)
     if (!barra) return
-    let idBotaoPericias = id('aud', 'pericias', 'botao')
+    let idBotaoPericias = idg('aud', 'pericias', 'botao')
     let remover = [...document.querySelectorAll('#' + idBotaoPericias)].map(d => d.remove())
     let botaoPericias = criaBotaoLaranja({
         id: idBotaoPericias,
@@ -16,20 +16,20 @@ async function menuPericiasAud() {
 
 }
 async function criaQuadroDePericias(){
-    let idDivQuadro = id('aud', 'pericias', 'quadro')
+    let idDivQuadro = idg('aud', 'pericias', 'quadro')
     let remover = [...document.querySelectorAll('#' + idDivQuadro)].map(d => d.remove())
     let quadro = criaDiv({
         id: idDivQuadro,
         ancestral: 'ffff'
     })
     formataDiv(quadro, 'branco', '75%', '75%')
-    let idCabecalho = id('aud', 'pericias', 'quadro', 'cabecalho')
+    let idCabecalho = idg('aud', 'pericias', 'quadro', 'cabecalho')
     let cabecalho = criaDiv({
         id: idCabecalho,
         ancestral: idDivQuadro,
         rowColumn: 'row-reverse'
     })
-    let idBotaoFechar = id('aud', 'pericias', 'quadro', 'fechar')
+    let idBotaoFechar = idg('aud', 'pericias', 'quadro', 'fechar')
     let botaoFechar = criaBotaoAzul({
         id: idBotaoFechar,
         texto: '✕',
@@ -44,7 +44,7 @@ async function criaQuadroDePericias(){
     botaoFechar.style.lineHeight =      '1px'
     botaoFechar.style.padding =         '2px 5px'
     botaoFechar.style.borderRadius =    '4px'
-    let idTitulo = id('aud', 'pericias', 'quadro', 'titulo')
+    let idTitulo = idg('aud', 'pericias', 'quadro', 'titulo')
     let titulo = criaTitulo({
         id: idTitulo,
         texto: 'Perícias',
@@ -52,7 +52,7 @@ async function criaQuadroDePericias(){
     })
     titulo.style.width = '100%'
     titulo.style.fontSize = '18px'
-    let idRolante = id('aud', 'pericias', 'quadro', 'rolante')
+    let idRolante = idg('aud', 'pericias', 'quadro', 'rolante')
     let divRolante = criaDiv({
         id: idRolante,
         ancestral: idDivQuadro
@@ -84,7 +84,7 @@ async function criaQuadroDePericias(){
 
 async function montarQuadro(idRolante, dados) {
 
-    let base    = id('aud', 'pericias')
+    let base    = idg('aud', 'pericias')
     let peritos = pericias_normalizarPeritos(dados)
 
     // Estado compartilhado entre as seções

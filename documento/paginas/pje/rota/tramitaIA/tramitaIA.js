@@ -16,7 +16,7 @@ async function tramitaIACriaBotao(){
     ]
     let ancestral = seletores.find(d => d?.janela.test(location.href))?.seletor
     await aguardarElemento(ancestral)
-    let idBotao = id('tramitaIA', 'botaoPrincipal')
+    let idBotao = idg('tramitaIA', 'botaoPrincipal')
     let botoes = [...document.querySelectorAll('#' + idBotao)].map(d => d.remove())
     let botao = criaBotaoLaranja({
         id: idBotao,
@@ -28,7 +28,7 @@ async function tramitaIACriaBotao(){
 }
 
 async function tramitaIAMenu() {
-    let idBase = id('tramitaIA', 'menu')
+    let idBase = idg('tramitaIA', 'menu')
     let remover = document.getElementById(idBase)?.remove()
     let div = criaDiv({
         id: idBase,

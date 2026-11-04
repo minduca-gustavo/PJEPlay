@@ -40,7 +40,7 @@ function atualizar_contador(ancestral, etapa = 0, filtrando = 1) {
 }
 
 async function filtrosNovos(ancestral) {
-    document.querySelectorAll('#' + id('filtros')).forEach(el => el.remove())
+    document.querySelectorAll('#' + idg('filtros')).forEach(el => el.remove())
     let janela = confereJanela(
         JANELA.meuPainel,
         JANELA.painelGlobal,
@@ -62,7 +62,7 @@ async function filtrosNovos(ancestral) {
 async function criaWidgetfiltrosNovos(ancestral) {
     let div = 'filtros'
     let divFiltros = criaDiv({
-        id: id(div),
+        id: idg(div),
         ancestral: ancestral
     })
 
@@ -90,22 +90,22 @@ async function criaWidgetfiltrosNovos(ancestral) {
     }
 
     if (!autenticado) {
-        await obterAutenticacao(id(div))
+        await obterAutenticacao(idg(div))
     } else {
-        await apresentaFiltros(id(div))
+        await apresentaFiltros(idg(div))
     }
     return
 
     // ── Autenticação ─────────────────────────────────────────────
     async function obterAutenticacao(ancestral) {
         let secao = 'senha'
-        let divAutenticaNome = id(div, secao, 'autentica')
+        let divAutenticaNome = idg(div, secao, 'autentica')
         let divAutentica = criaDiv({
             id: divAutenticaNome,
             ancestral: ancestral
         })
-        let idInputUsuario = id(div, secao, 'input') + '_usuario'
-        let idInputSenha   = id(div, secao, 'input')
+        let idInputUsuario = idg(div, secao, 'input') + '_usuario'
+        let idInputSenha   = idg(div, secao, 'input')
 
         let inputUsuario = criaInput({
             id: idInputUsuario,
@@ -147,7 +147,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
         })
 
         let botao = criaBotaoAzul({
-            id: id(div, secao, 'botao'),
+            id: idg(div, secao, 'botao'),
             texto: 'Autenticar',
             acao: () => confereSenha(idInputUsuario, idInputSenha, divAutentica),
             ancestral: divAutenticaNome
@@ -193,11 +193,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 1. Lista processos por CNPJ/CPF (Id) ─────────
             {
-                id: id(secao, 'botao', 'gig_desIniLiq1'),
+                id: idg(secao, 'botao', 'gig_desIniLiq1'),
                 texto: 'Busca os Gigs Despacho Inicial e Registrar trânsito',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'gig_desIniLiq1'),
+                        id: idg(secao, 'input', 'gig_desIniLiq1'),
                         textoEmCima: 'Ids',
                         placeholder: '1234567\n2456789',
                         tipoInput: 'criaInputAnotacao',
@@ -235,11 +235,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'peritoNoPolo'),
+                id: idg(secao, 'botao', 'peritoNoPolo'),
                 texto: 'Diz se tem perito no polo - por ID.',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'peritoNoPolo'),
+                        id: idg(secao, 'input', 'peritoNoPolo'),
                         textoEmCima: 'Digite/cole os ids, um por linha',
                         placeholder: '1234567\n2345681\n',
                         tipoInput: 'criaInputAnotacao',
@@ -271,11 +271,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'cnpjcpf_id'),
+                id: idg(secao, 'botao', 'cnpjcpf_id'),
                 texto: 'Lista processos por CNPJ/CPF - com indicação de apenas órgão público,  — por ID',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'cnpjcpf_id'),
+                        id: idg(secao, 'input', 'cnpjcpf_id'),
                         textoEmCima: 'Nome da tarefa',
                         placeholder: 'Ex: Concluso para sentença',
                         tipoInput: 'criaInputAnotacao',
@@ -326,11 +326,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'cnpjcpf_tarefa'),
+                id: idg(secao, 'botao', 'cnpjcpf_tarefa'),
                 texto: 'Lista processos por CNPJ/CPF - com indicação de apenas órgão público — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'cnpjcpf_tarefa_nome'),
+                        id: idg(secao, 'input', 'cnpjcpf_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa',
                         placeholder: 'Ex: Concluso para sentença',
                         tipoInput: 'criaInput',
@@ -380,11 +380,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 2. Lista processos Tema 1389 (Tarefa) ─────────────
             {
-                id: id(secao, 'botao', 'tema1389_tarefa'),
+                id: idg(secao, 'botao', 'tema1389_tarefa'),
                 texto: 'Lista processos Tema 1389 — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'tema1389_tarefa_nome'),
+                        id: idg(secao, 'input', 'tema1389_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa',
                         placeholder: 'Ex: Concluso para sentença',
                         tipoInput: 'criaInput',
@@ -442,11 +442,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 3a. Lista número/partes/autuação/tarefa — por Tarefa ─
             {
-                id: id(secao, 'botao', 'listagem_tarefa'),
+                id: idg(secao, 'botao', 'listagem_tarefa'),
                 texto: 'Lista número, partes, autuação, tarefa — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'listagem_tarefa_nome'),
+                        id: idg(secao, 'input', 'listagem_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa (ou TODAS)',
                         placeholder: 'TODAS',
                         tipoInput: 'criaInput',
@@ -493,11 +493,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'recebimento_execucao'),
+                id: idg(secao, 'botao', 'recebimento_execucao'),
                 texto: 'Lista processos na tarefa Recebimento em fase de execução, separando entre OJs',
                 inputs: [
                     //{
-                    //    id: id(secao, 'input', 'listagem_tarefa_nome'),
+                    //    id: idg(secao, 'input', 'listagem_tarefa_nome'),
                     //    textoEmCima: 'ESTE INPUT ESTÁ INATIVO NESTE FILTRO',
                     //    placeholder: 'INATIVO',
                     //    tipoInput: 'criaInput',
@@ -563,23 +563,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'pesquisa_timeline_id'),
+                id: idg(secao, 'botao', 'pesquisa_timeline_id'),
                 texto: 'Faz busca de termos na timeline e devolve processos que contiverem os termos - por ID.',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'pesquisa_timeline_id', 'tarefa'),
+                        id: idg(secao, 'input', 'pesquisa_timeline_id', 'tarefa'),
                         textoEmCima: 'Digite/cole os ids, um por linha.',
                         placeholder: '1234567\n9876543',
                         tipoInput: 'criaInputAnotacao',
                     },
                     {
-                        id: id(secao, 'input', 'pesquisa_timeline_id', 'movimentoOuDocumento'),
+                        id: idg(secao, 'input', 'pesquisa_timeline_id', 'movimentoOuDocumento'),
                         textoEmCima: 'Digite Movimentos, Documentos, Documentos e Anexos, ou Ambos',
                         placeholder: 'Ex: movimentos, AMBOS, Documentos, documentos e anexos',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'pesquisa_timeline_id', 'termosTimeline'),
+                        id: idg(secao, 'input', 'pesquisa_timeline_id', 'termosTimeline'),
                         textoEmCima: 'Digite os termos a buscar, separados por vírgula',
                         placeholder: 'Ex: Acordo, SENTENÇA, Ata da audiencia',
                         tipoInput: 'criaInput',
@@ -634,23 +634,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'pesquisa_timeline'),
+                id: idg(secao, 'botao', 'pesquisa_timeline'),
                 texto: 'Faz busca de termos na timeline e devolve processos que contiverem os termos',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'pesquisa_timeline', 'tarefa'),
+                        id: idg(secao, 'input', 'pesquisa_timeline', 'tarefa'),
                         textoEmCima: 'Digite a tarefa',
                         placeholder: 'Ex: Prazos vencidos',
                         tipoInput: 'criaInputAnotacao',
                     },
                     {
-                        id: id(secao, 'input', 'pesquisa_timeline', 'movimentoOuDocumento'),
+                        id: idg(secao, 'input', 'pesquisa_timeline', 'movimentoOuDocumento'),
                         textoEmCima: 'Digite Movimento, Documento, ou Ambos',
                         placeholder: 'Ex: movimento, AMBOS, Documento',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'pesquisa_timeline', 'termosTimeline'),
+                        id: idg(secao, 'input', 'pesquisa_timeline', 'termosTimeline'),
                         textoEmCima: 'Digite os termos a buscar, separados por vírgula',
                         placeholder: 'Ex: Acordo, SENTENÇA, Ata da audiencia',
                         tipoInput: 'criaInput',
@@ -715,17 +715,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'sentenca_acordao'),
+                id: idg(secao, 'botao', 'sentenca_acordao'),
                 texto: 'Busca textos das Sentenças e Acórdãos',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'sentenca_acordao'),
+                        id: idg(secao, 'input', 'sentenca_acordao'),
                         textoEmCima: 'Nome da tarefa (ou TODAS - MUITO DEMORADO)',
                         placeholder: 'TODAS',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'sentenca_acordao_quantidade'),
+                        id: idg(secao, 'input', 'sentenca_acordao_quantidade'),
                         textoEmCima: 'Quantos processos devem ser buscados',
                         placeholder: 'Máximo: 50',
                         tipoInput: 'criaInput',
@@ -811,7 +811,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
                         )
                         let url = 'https://ia.jt.jus.br/chat/'
 
-                        window.open(url, id('filtros_novos', 'sentencas_e_acordaos_') + Date.now())
+                        window.open(url, idg('filtros_novos', 'sentencas_e_acordaos_') + Date.now())
                         //let idAssistente = '6aac80f81501b0e00725a8df'
                         //let {idIA, aut} = await rota_fetch_IACriaConversa(idAssistente)
                         //let resultado = await rota_fetch_IAEnviaRequisicao(parametro, idIA, aut)
@@ -829,11 +829,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 3b. Lista número/partes/autuação/tarefa — por Lista ──
             {
-                id: id(secao, 'botao', 'listagem_lista'),
+                id: idg(secao, 'botao', 'listagem_lista'),
                 texto: 'Lista número, partes, autuação, tarefa — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'listagem_lista_nums'),
+                        id: idg(secao, 'input', 'listagem_lista_nums'),
                         textoEmCima: 'Números CNJ (um por linha)',
                         placeholder: '0000000-00.0000.0.00.0000',
                         tipoInput: 'criaInputAnotacao',
@@ -869,17 +869,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 4a. PJC único + Sentenças — por Tarefa ────────────
             {
-                id: id(secao, 'botao', 'termos', 'sentencasEAcordaos', 'id'),
+                id: idg(secao, 'botao', 'termos', 'sentencasEAcordaos', 'id'),
                 texto: 'Busca termos nas sentenças e acórdãos - por ID',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'ids', 'sentencasEAcordaos'),
+                        id: idg(secao, 'input', 'ids', 'sentencasEAcordaos'),
                         textoEmCima: 'Digite os Ids',
                         placeholder: '1234567\n2456789',
                         tipoInput: 'criaInputAnotacao',
                     },
                     {
-                        id: id(secao, 'input', 'termos', 'sentencasEAcordaos'),
+                        id: idg(secao, 'input', 'termos', 'sentencasEAcordaos'),
                         textoEmCima: 'Digite os termos que devem constar da sentença/acórdão, separados por vírgula.',
                         placeholder: 'Ex.: horas extras, ferias vencidas.',
                         tipoInput: 'criaInput',
@@ -915,17 +915,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'pjc_tarefa'),
+                id: idg(secao, 'botao', 'pjc_tarefa'),
                 texto: 'PJC único + Sentenças — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'pjc_tarefa_nome'),
+                        id: idg(secao, 'input', 'pjc_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa (ou TODAS)',
                         placeholder: 'TODAS',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'pjc_termo_nome'),
+                        id: idg(secao, 'input', 'pjc_termo_nome'),
                         textoEmCima: 'Digite o termo que deve constar da sentença/acórdão.',
                         placeholder: 'Ex.: horas extras, ferias vencidas.',
                         tipoInput: 'criaInput',
@@ -961,17 +961,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 4b. PJC único + Sentenças — por Lista ─────────────
             {
-                id: id(secao, 'botao', 'pjc_lista'),
+                id: idg(secao, 'botao', 'pjc_lista'),
                 texto: 'PJC único + Sentenças — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'pjc_lista_nums'),
+                        id: idg(secao, 'input', 'pjc_lista_nums'),
                         textoEmCima: 'Números CNJ (um por linha)',
                         placeholder: '0000000-00.0000.0.00.0000',
                         tipoInput: 'criaInputAnotacao',
                     },
                     {
-                        id: id(secao, 'input', 'pjc_termo_nome'),
+                        id: idg(secao, 'input', 'pjc_termo_nome'),
                         textoEmCima: 'Digite o termo que deve constar da sentença/acórdão.',
                         placeholder: 'Ex.: horas extras, ferias vencidas.',
                         tipoInput: 'criaInput',
@@ -995,11 +995,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 5. Lista informações por GIG (Tarefa) ─────────────
             {
-                id: id(secao, 'botao', 'gig_tarefa'),
+                id: idg(secao, 'botao', 'gig_tarefa'),
                 texto: 'Lista informações dos processos pelo GIG — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'gig_tarefa_nome'),
+                        id: idg(secao, 'input', 'gig_tarefa_nome'),
                         textoEmCima: 'Nome do GIG',
                         placeholder: 'Ex: GAB JUÍZA FULANA',
                         tipoInput: 'criaInput',
@@ -1039,11 +1039,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 6. Simetria sem GIG Gabinete — por Tarefa ─────────
             {
-                id: id(secao, 'botao', 'simetria_tarefa'),
+                id: idg(secao, 'botao', 'simetria_tarefa'),
                 texto: 'Simetria sem GIG Gabinete — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'simetria_tarefa_nome'),
+                        id: idg(secao, 'input', 'simetria_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa',
                         placeholder: 'Ex: Concluso para sentença',
                         tipoInput: 'criaInput',
@@ -1071,11 +1071,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 6b. Simetria sem GIG Gabinete — por Lista ─────────
             {
-                id: id(secao, 'botao', 'simetria_lista'),
+                id: idg(secao, 'botao', 'simetria_lista'),
                 texto: 'Simetria sem GIG Gabinete — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'simetria_lista_nums'),
+                        id: idg(secao, 'input', 'simetria_lista_nums'),
                         textoEmCima: 'Números CNJ (um por linha)',
                         placeholder: '0000000-00.0000.0.00.0000',
                         tipoInput: 'criaInputAnotacao',
@@ -1098,11 +1098,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 7a. Processos sem .pjc na tarefa — por Tarefa ─────
             {
-                id: id(secao, 'botao', 'sempjc_tarefa'),
+                id: idg(secao, 'botao', 'sempjc_tarefa'),
                 texto: 'Processos sem .pjc na tarefa — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'sempjc_tarefa_nome'),
+                        id: idg(secao, 'input', 'sempjc_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa',
                         placeholder: 'Ex: Concluso para sentença',
                         tipoInput: 'criaInput',
@@ -1130,11 +1130,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 7b. Processos sem .pjc na tarefa — por Lista ──────
             {
-                id: id(secao, 'botao', 'sempjc_lista'),
+                id: idg(secao, 'botao', 'sempjc_lista'),
                 texto: 'Processos sem .pjc na tarefa — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'sempjc_lista_nums'),
+                        id: idg(secao, 'input', 'sempjc_lista_nums'),
                         textoEmCima: 'Números CNJ (um por linha)',
                         placeholder: '0000000-00.0000.0.00.0000',
                         tipoInput: 'criaInputAnotacao',
@@ -1157,11 +1157,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 8. Recebimento do TRT — por Tarefa ────────────────
             {
-                id: id(secao, 'botao', 'recebimento_tarefa'),
+                id: idg(secao, 'botao', 'recebimento_tarefa'),
                 texto: 'Recebimento do TRT (Acordo / Improcedência) — por Tarefa',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'recebimento_tarefa_nome'),
+                        id: idg(secao, 'input', 'recebimento_tarefa_nome'),
                         textoEmCima: 'Nome da tarefa',
                         placeholder: 'Ex: Concluso para sentença',
                         tipoInput: 'criaInput',
@@ -1189,11 +1189,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 8b. Recebimento do TRT — por Lista ────────────────
             {
-                id: id(secao, 'botao', 'recebimento_lista'),
+                id: idg(secao, 'botao', 'recebimento_lista'),
                 texto: 'Recebimento do TRT (Acordo / Improcedência) — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'recebimento_lista_nums'),
+                        id: idg(secao, 'input', 'recebimento_lista_nums'),
                         textoEmCima: 'Números CNJ (um por linha)',
                         placeholder: '0000000-00.0000.0.00.0000',
                         tipoInput: 'criaInputAnotacao',
@@ -1216,23 +1216,23 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 9. Audiências até data — por Sala ─────────────────
             {
-                id: id(secao, 'botao', 'analisa_triagem'),
+                id: idg(secao, 'botao', 'analisa_triagem'),
                 texto: 'Analisa a triagem.',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'audiencias_sala_juiz'),
+                        id: idg(secao, 'input', 'audiencias_sala_juiz'),
                         textoEmCima: 'Nome da sala na OJ.',
                         placeholder: 'Ex: FULANO DE TAL',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'audiencias_tipo'),
+                        id: idg(secao, 'input', 'audiencias_tipo'),
                         textoEmCima: 'Tipos de audiência a buscar, separados por vírgula. Deixe em branco para todas.',
                         placeholder: 'Ex: "inicial, una", "una", "rito sumarissimo, instrucao"',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'audiencias_maximo'),
+                        id: idg(secao, 'input', 'audiencias_maximo'),
                         textoEmCima: 'Quantos processos devem ser buscados',
                         placeholder: 'Máximo: 50. Caso não seja informado, será 50.',
                         tipoInput: 'criaInput',
@@ -1370,17 +1370,17 @@ async function criaWidgetfiltrosNovos(ancestral) {
             },
             // ── 9. Audiências até data — por Sala ─────────────────
             {
-                id: id(secao, 'botao', 'audiencias_sala'),
+                id: idg(secao, 'botao', 'audiencias_sala'),
                 texto: 'Listar audiências na sala até a data — por Sala',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'audiencias_sala_juiz'),
+                        id: idg(secao, 'input', 'audiencias_sala_juiz'),
                         textoEmCima: 'Nome da sala / juiz',
                         placeholder: 'Ex: FULANO DE TAL - TODAS para todas',
                         tipoInput: 'criaInput',
                     },
                     {
-                        id: id(secao, 'input', 'audiencias_sala_data'),
+                        id: idg(secao, 'input', 'audiencias_sala_data'),
                         textoEmCima: 'Data limite (dd/mm/aaaa)',
                         placeholder: '31/12/2024',
                         tipoInput: 'criaInput',
@@ -1447,11 +1447,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 10. Audiências por ID — por Lista ─────────────────
             {
-                id: id(secao, 'botao', 'audiencias_lista'),
+                id: idg(secao, 'botao', 'audiencias_lista'),
                 texto: 'Lista audiências a partir do ID do processo — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'audiencias_lista_ids'),
+                        id: idg(secao, 'input', 'audiencias_lista_ids'),
                         textoEmCima: 'IDs dos processos (um por linha)',
                         placeholder: '123456',
                         tipoInput: 'criaInputAnotacao',
@@ -1489,11 +1489,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 11. Dados do processo por ID — por Lista ──────────
             {
-                id: id(secao, 'botao', 'dadosprocesso_lista'),
+                id: idg(secao, 'botao', 'dadosprocesso_lista'),
                 texto: 'Lista dados do processo a partir do ID — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'dadosprocesso_lista_ids'),
+                        id: idg(secao, 'input', 'dadosprocesso_lista_ids'),
                         textoEmCima: 'IDs dos processos (um por linha)',
                         placeholder: '123456',
                         tipoInput: 'criaInputAnotacao',
@@ -1520,11 +1520,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
                 }
             },
             {
-                id: id(secao, 'botao', 'varaOrigem_lista'),
+                id: idg(secao, 'botao', 'varaOrigem_lista'),
                 texto: 'Vara de Origem por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'varaOrigem_lista_ids'),
+                        id: idg(secao, 'input', 'varaOrigem_lista_ids'),
                         textoEmCima: 'IDs dos processos (um por linha)',
                         placeholder: '123456',
                         tipoInput: 'criaInputAnotacao',
@@ -1554,11 +1554,11 @@ async function criaWidgetfiltrosNovos(ancestral) {
 
             // ── 12. Data da sentença por ID — por Lista ───────────
             {
-                id: id(secao, 'botao', 'sentenca_lista'),
+                id: idg(secao, 'botao', 'sentenca_lista'),
                 texto: 'Lista data da sentença a partir do ID do processo — por Lista',
                 inputs: [
                     {
-                        id: id(secao, 'input', 'sentenca_lista_ids'),
+                        id: idg(secao, 'input', 'sentenca_lista_ids'),
                         textoEmCima: 'IDs dos processos (um por linha)',
                         placeholder: '123456',
                         tipoInput: 'criaInputAnotacao',
@@ -1592,14 +1592,14 @@ async function criaWidgetfiltrosNovos(ancestral) {
         let armazenamento = (await obterArmazenamento('rota_ranking_botoesFiltro')) || {}
         let ranking = armazenamento?.rota_ranking_botoesFiltro ? armazenamento?.rota_ranking_botoesFiltro : []
         let botoesOrdenados = [...botoes].sort((a, b) => {
-            let ra = ranking[id(secao, a?.id)] || { pontos: 0, ultimoUso: 0 }
-            let rb = ranking[id(secao, b?.id)] || { pontos: 0, ultimoUso: 0 }
+            let ra = ranking[idg(secao, a?.id)] || { pontos: 0, ultimoUso: 0 }
+            let rb = ranking[idg(secao, b?.id)] || { pontos: 0, ultimoUso: 0 }
             if (rb.pontos !== ra.pontos) return rb.pontos - ra.pontos
             return rb.ultimoUso - ra.ultimoUso
         })
 
         for (let botao of botoesOrdenados) {
-            let divId = id(secao, botao?.id)
+            let divId = idg(secao, botao?.id)
             let divBotao = criaDiv({ id: divId, ancestral: ancestral })
             criaBotaoAzul({
                 id: divId + '_botao',
@@ -1637,7 +1637,7 @@ async function criaWidgetfiltrosNovos(ancestral) {
             texto: 'Filtrar',
             ancestral: idConteiner,
             acao: async () => {
-                let raiz = document.querySelector('#' + id('filtros'))
+                let raiz = document.querySelector('#' + idg('filtros'))
                 let botoesTela = [...(raiz?.querySelectorAll('button') || [])]
                 botoesTela.forEach(b => b.disabled = true)
 

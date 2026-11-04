@@ -1,5 +1,5 @@
 async function despachosPreferidos(ancestral){
-    let idBotaoConfigura = id('fita_superior', 'despachosPreferidos')
+    let idBotaoConfigura = idg('fita_superior', 'despachosPreferidos')
     document.getElementById(idBotaoConfigura)?.remove()
     let botaoConfigura = criaBotaoAzul({
         id: idBotaoConfigura,
@@ -45,7 +45,7 @@ async function despachosPreferidos(ancestral){
     }
     async function cadastrarDespachosPreferidos(){
         let despachos = await obterArmazenamento(idBotaoConfigura) || {}
-        let divId = id('despachosPreferidos', 'cadastro')
+        let divId = idg('despachosPreferidos', 'cadastro')
         let remover = document.getElementById(divId)?.remove()
         let div = criaDiv({
             id: divId,

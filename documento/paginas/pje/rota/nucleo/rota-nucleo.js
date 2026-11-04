@@ -517,7 +517,7 @@ function registrarListenerFechar(sessao){
 }
 
 
-function id(...partes){
+function idg(...partes){
 	return ['rotapje', ...partes].filter(Boolean).join('_')
 }
 

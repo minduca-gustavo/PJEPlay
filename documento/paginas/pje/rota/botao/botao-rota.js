@@ -15,7 +15,7 @@
 
 // ── letantes ────────────────────────────────────────────────
 
-let ROTA_ID_BOTAO = id('botaoRota')
+let ROTA_ID_BOTAO = idg('botaoRota')
 
 // Telas em que o botão aparece
 let ROTA_JANELAS_BOTAO = [

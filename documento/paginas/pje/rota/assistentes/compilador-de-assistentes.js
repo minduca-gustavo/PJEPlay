@@ -45,7 +45,7 @@ async function _compiladorMontar() {
     if (!janela) return
     let funcao = 'compiladorDeAssistentes'
     let elemento = 'divFlutuante'
-    let idCompilador = id(funcao, elemento)
+    let idCompilador = idg(funcao, elemento)
     document.querySelectorAll('#' + idCompilador).forEach(el => el.remove())
     let compilador = await criaDivFlutuante({
         id: idCompilador,
@@ -66,12 +66,12 @@ async function _compiladorMontar() {
         if (assistente.inativo) continue
         let janela = confereJanela(...assistente?.janelas)
         if (!janela) continue
-        let ancestral = id(funcao, elemento) + '-corpo'
-        let jaExistia = !!document.getElementById(id(assistente.id, 'recolhe'))
+        let ancestral = idg(funcao, elemento) + '-corpo'
+        let jaExistia = !!document.getElementById(idg(assistente.id, 'recolhe'))
         let mostraRecolhe = await criaSecaoMostraRecolhe({
-            id: id(assistente.id, 'mostra-recolhe'),
-            idSempreAMostra: id(assistente.id, 'mostra'), 
-            idRecolhe: id(assistente.id, 'recolhe'), 
+            id: idg(assistente.id, 'mostra-recolhe'),
+            idSempreAMostra: idg(assistente.id, 'mostra'), 
+            idRecolhe: idg(assistente.id, 'recolhe'), 
             ancestral: ancestral,
             armazenarExpandido: true
         })
@@ -85,15 +85,15 @@ async function _compiladorMontar() {
         }
         // depois que o mecanismo rodar, ele gerencia o overflow normalmente
         let titulo = criaTitulo({
-            id: id(assistente.id, 'titulo'),
+            id: idg(assistente.id, 'titulo'),
             texto: assistente.titulo,
-            ancestral: id(assistente.id, 'mostra')
+            ancestral: idg(assistente.id, 'mostra')
         })
         let funcaoChamar = assistente?.funcao
         console.log('%c[Rota PJE]%c mapaFuncoes[funcaoChamar]: ' + JSON.stringify(typeof mapaFuncoes[funcaoChamar]), LOG.mb, 'color:inherit')
         if (assistente.id !== 'filtros-novos'){
             try {
-                let funcaoConfere = await mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+                let funcaoConfere = await mapaFuncoes[funcaoChamar](idg(assistente.id, 'recolhe'))
                 console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
             } catch (e) {
                 console.error('%c[Rota PJE]%c falhou ao montar ' + assistente.id, LOG.erro, 'color:inherit', e)
@@ -101,7 +101,7 @@ async function _compiladorMontar() {
         } else {
             mostraRecolhe.aoAlternar = (aberta) => {
                 if (!aberta) return
-                return mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+                return mapaFuncoes[funcaoChamar](idg(assistente.id, 'recolhe'))
             }
             if (mostraRecolhe.expandido) {
                 try {
@@ -112,10 +112,10 @@ async function _compiladorMontar() {
             }
         }
         //if (assistente.id !== 'filtros-novos'){
-        //    let funcaoConfere = await mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+        //    let funcaoConfere = await mapaFuncoes[funcaoChamar](idg(assistente.id, 'recolhe'))
         //    console.log('%c[Rota PJE]%c funcaoConfere: ' + JSON.stringify(typeof funcaoConfere), LOG.erro, 'color:inherit')
         //} else {
-        //    mostraRecolhe.aoAlternar = () => mapaFuncoes[funcaoChamar](id(assistente.id, 'recolhe'))
+        //    mostraRecolhe.aoAlternar = () => mapaFuncoes[funcaoChamar](idg(assistente.id, 'recolhe'))
         //}
     }
     

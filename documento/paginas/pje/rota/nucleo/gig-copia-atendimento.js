@@ -12,14 +12,14 @@ function criaBotaoCopiaAtendimento(botao){
     for (let ancestral of ancestrais) {
         i++
         let botaoCopia = document.createElement('button')
-        botaoCopia.id = id('copiaAtendimento') + i
+        botaoCopia.id = idg('copiaAtendimento') + i
         botaoCopia.textContent = '📋'
         botaoCopia.className = 'btn-copia_atendimento mat-focus-indicator mat-tooltip-trigger icone-clicavel mat-icon-button mat-button-base'
         botaoCopia.style.cssText = 'min-width: 20px !important; width: 20px !important; height: 0px !important; padding: 0 !important; margin: 0 !important; line-height: 20px !important;'
         botaoCopia.addEventListener('click', () => copiaDadosAtendimento(botaoCopia))
         ancestral.appendChild(botaoCopia)
         criaTooltip({
-            id: id('copiaAtendimento', 'tooltip'),
+            id: idg('copiaAtendimento', 'tooltip'),
             texto: 'Copia OJ, Número do Processo e Texto do GIG para colar no Chat.',
             elemento: botaoCopia
         })

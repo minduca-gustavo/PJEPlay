@@ -376,7 +376,7 @@ function rota_observarNavegacaoSPA(){
 
 		relatar('Navegação SPA:', urlAnterior, 'mutacao')
 
-		remover(id('botaoRota'))
+		remover(idg('botaoRota'))
 		pinturaInicio().catch(() => {})
 
 		if(location.search.includes('rotapje_sessao=')){

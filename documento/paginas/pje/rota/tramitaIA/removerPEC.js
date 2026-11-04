@@ -1,5 +1,5 @@
 async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada = false, dadosRechamada) {
-    let idMostrador = id('tramitaIA', 'mostraResultadoRemoverPEC')
+    let idMostrador = idg('tramitaIA', 'mostraResultadoRemoverPEC')
     if (rechamada){
         let rolanteFilhos = [...document.getElementById(ancestralLimpar).children]
         let excluir = rolanteFilhos.map(d=> {
@@ -89,7 +89,7 @@ async function tramitaIARemoverPEC(elementoAncestral, ancestralLimpar, rechamada
             if (!processos?.ids?.length) {
                 mostraResultadosBuscaSimples(ancestralLimpar, 'Não foram encontrados processos na tarefa Preparar expedientes e comunicações.', idMostrador)
                 let botao = criaBotaoLaranja({
-                    id: id('tramitaIA', 'mostraResultado', 'botaoNovaBusca'),
+                    id: idg('tramitaIA', 'mostraResultado', 'botaoNovaBusca'),
                     ancestral: ancestralLimpar,
                     texto: 'Nova busca',
                     acao: () => {

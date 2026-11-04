@@ -13,25 +13,25 @@ async function gestao_inicializar() {
     let _modoEdicao       = null  // 'tabela' | 'texto' | null
 
     // ── Estrutura principal ──────────────────────────────────────────────────
-    let divId = id('gestao', 'corpo')
+    let divId = idg('gestao', 'corpo')
     let div = criaDiv({ id: divId, ancestral: 'rota_corpo_gestao', rowColumn: 'row' })
     div.style.height = '100%'
 
-    let divDoca = id('gestao', 'doca')
+    let divDoca = idg('gestao', 'doca')
     let doca = criaDiv({ id: divDoca, ancestral: divId, rowColumn: 'column' })
     doca.style.width = '100px'
 
-    let divConteudo = id('gestao', 'conteudo')
+    let divConteudo = idg('gestao', 'conteudo')
     let conteudo = criaDiv({ id: divConteudo, ancestral: divId, rowColumn: 'column' })
     conteudo.style.width = 'calc(100% - 100px)'
 
-    let divPrincipal = id('gestao', 'principal')
+    let divPrincipal = idg('gestao', 'principal')
     let principal = criaDiv({ id: divPrincipal, ancestral: divConteudo })
     principal.style.width  = '100%'
     principal.style.height = 'calc(100% - 50px)'
     principal.style.overflowY = 'auto'
 
-    let divRodape = id('gestao', 'rodape')
+    let divRodape = idg('gestao', 'rodape')
     let rodape = criaDiv({ id: divRodape, ancestral: divConteudo, rowColumn: 'row' })
     rodape.style.width  = '100%'
     rodape.style.height = '50px'
@@ -40,26 +40,26 @@ async function gestao_inicializar() {
     // ── Botões da doca ───────────────────────────────────────────────────────
     let botoesDoca = [
         {
-            id: id('finais'),
+            id: idg('finais'),
             texto: '👨🏾‍⚖️\nFinais',
             tooltip: 'Finais por Vara/Final.',
             colunas: [{ vara: 'Vara' }, { digitos: 'Dígitos' }, { magistrado: 'Magistrado' }],
             acrescentaColunas: false
         },
         {
-            id: id('pericias'),
+            id: idg('pericias'),
             texto: '🩺\nPerícias',
             tooltip: 'Tabela de peritos em atividade',
             acrescentaColunas: true
         },
         {
-            id: id('juizes'),
+            id: idg('juizes'),
             texto: '👩🏻‍⚖️\nJuízes',
             tooltip: 'Informações sobre Juízes - assistente/secretário, modelos de despacho, etc.',
             acrescentaColunas: true
         },
         {
-            id: id('comQuemFalar'),
+            id: idg('comQuemFalar'),
             texto: '📞\nCom quem falar',
             tooltip: 'Informações sobre as OJs - assessores e equipe.',
             acrescentaColunas: true
@@ -123,7 +123,7 @@ async function gestao_inicializar() {
             }
         }
         removerCarregando()  // ← deve ficar FORA do try/catch, depois dele
-        if (configBotao.id === id('comQuemFalar')){
+        if (configBotao.id === idg('comQuemFalar')){
             grade_comQuemFalar()
             return
         }
@@ -153,7 +153,7 @@ async function gestao_inicializar() {
         console.log('%c[Rota PJE]%c _dadosGit: ' + JSON.stringify(_dadosGit), LOG.teste, 'color:inherit')
         let el = document.getElementById(divPrincipal)
         if (el) el.innerHTML = ''
-        let idInput = id('comQuemFalar', 'input')
+        let idInput = idg('comQuemFalar', 'input')
         criaInputAnotacao({
             textoEmCima: 'Não altere sem saber o que está fazendo.',
             id: idInput,
@@ -166,7 +166,7 @@ async function gestao_inicializar() {
         let rodape = document.getElementById(divRodape)
         if (rodape) rodape.innerHTML = ''
         let botaoSalvar = criaBotaoLaranja({
-            id: id('comQuemFalar', 'salva'),
+            id: idg('comQuemFalar', 'salva'),
             texto: 'Salvar',
             ancestral: rodape.id,
             acao: async () => {
@@ -179,10 +179,10 @@ async function gestao_inicializar() {
                     botaoSalvar.disabled = false
                     return
                 }
-                await githubSalvarDados(id('comQuemFalar.json'), obj)
+                await githubSalvarDados(idg('comQuemFalar.json'), obj)
                 el.innerHTML = ''
                 criaTexto({
-                    id: id('comQuemFalar', 'textoSucesso'),
+                    id: idg('comQuemFalar', 'textoSucesso'),
                     texto: 'Salvo com sucesso',
                     ancestral: el.id
                 })
@@ -198,18 +198,18 @@ async function gestao_inicializar() {
         if (el) el.innerHTML = ''
 
         if (!_dadosGit.length) {
-            criaTexto({ id: id('gestao', 'vazio'), texto: 'Nenhum dado encontrado.', ancestral: divPrincipal })
+            criaTexto({ id: idg('gestao', 'vazio'), texto: 'Nenhum dado encontrado.', ancestral: divPrincipal })
             return
         }
 
         // Linha de cabeçalho
-        let idCabecalho = id('gestao', 'grade', 'cabecalho')
+        let idCabecalho = idg('gestao', 'grade', 'cabecalho')
         let cabecalho = criaDiv({ id: idCabecalho, ancestral: divPrincipal, rowColumn: 'row' })
         Object.assign(cabecalho.style, { borderBottom: '2px solid ' + UI_CORES.azul, paddingBottom: '4px' })
 
         for (let col of _colunasAtivas) {
             let titulo = criaTitulo({
-                id: id('gestao', 'grade', 'titulo', col.chave),
+                id: idg('gestao', 'grade', 'titulo', col.chave),
                 texto: col.label,
                 ancestral: idCabecalho
             })
@@ -219,7 +219,7 @@ async function gestao_inicializar() {
         // Linhas de dados
         for (let i = 0; i < _dadosGit.length; i++) {
             let linha = _dadosGit[i]
-            let idLinha = id('gestao', 'grade', 'linha', String(i))
+            let idLinha = idg('gestao', 'grade', 'linha', String(i))
             let divLinha = criaDiv({ id: idLinha, ancestral: divPrincipal, rowColumn: 'row' })
             Object.assign(divLinha.style, {
                 background:   i % 2 === 0 ? UI_CORES.branco : UI_CORES.fundo,
@@ -231,7 +231,7 @@ async function gestao_inicializar() {
                 let textoValor = Array.isArray(valor) ? valor.join(', ') : (valor ?? '')
                 console.log('%c[Rota PJE]%c textoValor' + JSON.stringify(textoValor), LOG.aviso, 'color:inherit')
                 let celula = criaTexto({
-                    id: id('gestao', 'grade', 'cel', col.chave, String(i)),
+                    id: idg('gestao', 'grade', 'cel', col.chave, String(i)),
                     texto: String(textoValor),
                     ancestral: idLinha
                 })
@@ -258,13 +258,13 @@ async function gestao_inicializar() {
         if (el) el.innerHTML = ''
 
         // Linha de cabeçalho com colunas
-        let idCabecalho = id('gestao', 'grade', 'cabecalho')
+        let idCabecalho = idg('gestao', 'grade', 'cabecalho')
         let cabecalho = criaDiv({ id: idCabecalho, ancestral: divPrincipal, rowColumn: 'row' })
         Object.assign(cabecalho.style, { borderBottom: '2px solid ' + UI_CORES.azul, paddingBottom: '4px' })
 
         for (let col of _colunasAtivas) {
             let titulo = criaTitulo({
-                id: id('gestao', 'grade', 'titulo', col.chave),
+                id: idg('gestao', 'grade', 'titulo', col.chave),
                 texto: col.label,
                 ancestral: idCabecalho
             })
@@ -280,7 +280,7 @@ async function gestao_inicializar() {
         grade_criarLinhaInput(null, dados.length)
 
         // Botão acrescentar linha (simples, no final)
-        let idBtnLinha = id('gestao', 'btn', 'addlinha')
+        let idBtnLinha = idg('gestao', 'btn', 'addlinha')
         let btnLinha = criaBotaoAzul({
             id: idBtnLinha,
             texto: '+ Linha',
@@ -300,7 +300,7 @@ async function gestao_inicializar() {
     }
 
     function grade_criarLinhaInput(dadosLinha, indice) {
-        let idLinha = id('gestao', 'grade', 'linha', String(indice))
+        let idLinha = idg('gestao', 'grade', 'linha', String(indice))
         let divLinha = criaDiv({ id: idLinha, ancestral: divPrincipal, rowColumn: 'row' })
         Object.assign(divLinha.style, {
             background:   indice % 2 === 0 ? UI_CORES.branco : UI_CORES.fundo,
@@ -312,7 +312,7 @@ async function gestao_inicializar() {
             let valorBruto = dadosLinha ? dadosLinha[col.label] : ''
             let valorExibido = Array.isArray(valorBruto) ? valorBruto.join(',') : (valorBruto ?? '')
             console.log('%c[Rota PJE]%c valorExibido' + JSON.stringify(valorExibido), LOG.aviso, 'color:inherit')
-            let idCelula = id('gestao', 'grade', col.chave, String(indice))
+            let idCelula = idg('gestao', 'grade', col.chave, String(indice))
             let inputEl = criaInput({
                 id: idCelula,
                 ancestral: idLinha,
@@ -355,7 +355,7 @@ async function gestao_inicializar() {
                 let idxCol = colunaInicio + ci
                 if (idxCol >= _colunasAtivas.length) break
                 let col = _colunasAtivas[idxCol]
-                let inputEl = document.getElementById(id('gestao', 'grade', col.chave, String(idxLinha)))
+                let inputEl = document.getElementById(idg('gestao', 'grade', col.chave, String(idxLinha)))
                 if (inputEl) inputEl.value = linhasTexto[li][ci].trim()
             }
         }
@@ -363,29 +363,29 @@ async function gestao_inicializar() {
 
     function _contarLinhasInput() {
         let i = 0
-        while (document.getElementById(id('gestao', 'grade', 'linha', String(i)))) i++
+        while (document.getElementById(idg('gestao', 'grade', 'linha', String(i)))) i++
         return i
     }
 
     // ── Botão acrescentar coluna ─────────────────────────────────────────────
     function grade_mostrarBotaoAcrescentarColuna() {
-        let idBtnCol = id('gestao', 'btn', 'addcoluna')
+        let idBtnCol = idg('gestao', 'btn', 'addcoluna')
         let existing = document.getElementById(idBtnCol)
         if (existing) existing.remove()
 
-        let idInputContainer = id('gestao', 'addcol', 'container')
+        let idInputContainer = idg('gestao', 'addcol', 'container')
         let existingInput = document.getElementById(idInputContainer + '-container')
         if (existingInput) existingInput.remove()
 
         // Input para nome da nova coluna (estilo igual à senha)
         let inputCol = criaBotaoComInputAzul({
             id: idBtnCol,
-            idInput: id('gestao', 'addcol', 'input'),
+            idInput: idg('gestao', 'addcol', 'input'),
             texto: '+ Coluna',
             textoEmCima: 'Nome da nova coluna',
             ancestral: divPrincipal,
             acao: () => {
-                let inputEl = document.getElementById(id('gestao', 'addcol', 'input'))
+                let inputEl = document.getElementById(idg('gestao', 'addcol', 'input'))
                 let nomeCol = inputEl?.value?.trim()
                 if (!nomeCol) return
                 // Verifica se já existe
@@ -419,7 +419,7 @@ async function gestao_inicializar() {
             let obj = {}
             let temValor = false
             for (let col of _colunasAtivas) {
-                let inputEl = document.getElementById(id('gestao', 'grade', col.chave, String(i)))
+                let inputEl = document.getElementById(idg('gestao', 'grade', col.chave, String(i)))
                 let val = inputEl?.value?.trim() ?? ''
                 if (val) temValor = true
                 if (chavesArray.has(col.label)) {          // era col.chave
@@ -456,7 +456,7 @@ async function gestao_inicializar() {
             linhas.push(linha.join('\t'))
         }
 
-        let idTextarea = id('gestao', 'textarea')
+        let idTextarea = idg('gestao', 'textarea')
         let anotacao = criaInputAnotacao({
             id: idTextarea,
             textoEmCima: 'Edite os dados tabulados (Tab entre colunas, Enter entre linhas). Primeira linha = cabeçalho.',
@@ -479,7 +479,7 @@ async function gestao_inicializar() {
 
     // ── Lê e valida o textarea, retorna array de objetos ou null ────────────
     function _lerDadosTexto() {
-        let idTextarea = id('gestao', 'textarea')
+        let idTextarea = idg('gestao', 'textarea')
         let textarea = document.getElementById(idTextarea)
         if (!textarea) return null
 
@@ -542,7 +542,7 @@ async function gestao_inicializar() {
             return
         }
 
-        let btnSalvar = document.getElementById(id('gestao', 'btn', 'salvar'))
+        let btnSalvar = document.getElementById(idg('gestao', 'btn', 'salvar'))
         if (btnSalvar) {
             btnSalvar.textContent = 'Salvando…'
             btnSalvar.disabled    = true
@@ -574,9 +574,9 @@ async function gestao_inicializar() {
 
     function rodape_limparEdicao() {
         let ids = [
-            id('gestao', 'editar', 'tabelado'),
-            id('gestao', 'editar', 'texto'),
-            id('gestao', 'btn', 'salvar'),
+            idg('gestao', 'editar', 'tabelado'),
+            idg('gestao', 'editar', 'texto'),
+            idg('gestao', 'btn', 'salvar'),
         ]
         for (let elId of ids) {
             document.getElementById(elId)?.remove()
@@ -591,7 +591,7 @@ async function gestao_inicializar() {
         ]
         for (let botao of botoesEdicao) {
             criaBotaoAzul({
-                id: id('gestao', 'editar', botao.id),
+                id: idg('gestao', 'editar', botao.id),
                 texto: botao.texto,
                 ancestral: divRodape,
                 acao: botao.acao
@@ -601,12 +601,12 @@ async function gestao_inicializar() {
 
     function rodape_mostrarSalvar() {
         // Remove botões de editar, mostra só salvar
-        document.getElementById(id('gestao', 'editar', 'tabelado'))?.remove()
-        document.getElementById(id('gestao', 'editar', 'texto'))?.remove()
-        document.getElementById(id('gestao', 'btn', 'salvar'))?.remove()
+        document.getElementById(idg('gestao', 'editar', 'tabelado'))?.remove()
+        document.getElementById(idg('gestao', 'editar', 'texto'))?.remove()
+        document.getElementById(idg('gestao', 'btn', 'salvar'))?.remove()
 
         criaBotaoLaranja({
-            id: id('gestao', 'btn', 'salvar'),
+            id: idg('gestao', 'btn', 'salvar'),
             texto: 'Salvar',
             ancestral: divRodape,
             acao: salvar
@@ -615,7 +615,7 @@ async function gestao_inicializar() {
 
     function rodape_mostrarLogin() {
         criaBotaoLaranja({
-            id: id('gestao', 'login'),
+            id: idg('gestao', 'login'),
             ancestral: divRodape,
             texto: 'Fazer login como gestor.',
             acao: () => loginGestor()
@@ -628,7 +628,7 @@ async function gestao_inicializar() {
 
     async function loginGestor() {
         let nome  = 'loginGestor'
-        let divId = id('gestao', nome)
+        let divId = idg('gestao', nome)
 
         // Evita duplicar
         document.getElementById(divId)?.remove()
@@ -650,15 +650,15 @@ async function gestao_inicializar() {
         })
 
         criaBotaoComInputAzul({
-            id:          id('gestao', 'senhaBotao'),
-            idInput:     id('gestao', 'senhaInput'),
+            id:          idg('gestao', 'senhaBotao'),
+            idInput:     idg('gestao', 'senhaInput'),
             texto:       'OK',
             textoEmCima: 'Digite a senha',
             ancestral:   divId,
-            acao:        () => confereSenha(document.getElementById(id('gestao', 'senhaInput')), divId)
+            acao:        () => confereSenha(document.getElementById(idg('gestao', 'senhaInput')), divId)
         })
 
-        let inputElemento = document.getElementById(id('gestao', 'senhaInput'))
+        let inputElemento = document.getElementById(idg('gestao', 'senhaInput'))
         inputElemento.type         = 'password'
         inputElemento.autocomplete = 'new-password'
         inputElemento.placeholder  = 'Insira sua senha'
@@ -681,7 +681,7 @@ async function gestao_inicializar() {
         await githubSalvarSenha(elemento.value)
         // Remove o modal de login
         document.getElementById(remover)?.remove()
-        document.getElementById(id('gestao', 'login'))?.remove()
+        document.getElementById(idg('gestao', 'login'))?.remove()
         // Aparece botões de edição se já houver uma doca ativa
         if (_docaAtiva) {
             rodape_mostrarBotoesEdicao()

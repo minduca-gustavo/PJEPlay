@@ -353,7 +353,7 @@ async function criaWidgetLeituraDinamica(ancestral) {
         
         console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
     }
-    let idGrade = id('leituraDinamica', 'botoesCopia')
+    let idGrade = idg('leituraDinamica', 'botoesCopia')
     let gradeCopias = criaGrade({
         id: idGrade,
         ancestral: 'rota_leituraDinamica',

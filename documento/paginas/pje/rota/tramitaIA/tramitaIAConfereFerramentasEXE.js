@@ -1,5 +1,5 @@
 async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar, rechamada = false, dadosRechamada) {
-    let idMostrador = id('tramitaIA', 'tramitaIAConfereFerramentasEXE')
+    let idMostrador = idg('tramitaIA', 'tramitaIAConfereFerramentasEXE')
     if (rechamada){
         let rolanteFilhos = [...document.getElementById(ancestralLimpar).children]
         let excluir = rolanteFilhos.map(d=> {
@@ -96,7 +96,7 @@ async function tramitaIAConfereFerramentasEXE(elementoAncestral, ancestralLimpar
         console.log('%c[Rota PJE]%c processos: ', LOG.mb, 'color:inherit', processos)
         if (!processos.length){
             mostraResultadosBuscaSimples(ancestralLimpar, 'Ocorreu um erro. Atualize a página e tente novamente.', idMostrador)
-            tramitaIAcriaBotaoNovaBusca(id('tramitaIA', 'confereFerramentasEXE', 'novaBusca'), ancestralLimpar)
+            tramitaIAcriaBotaoNovaBusca(idg('tramitaIA', 'confereFerramentasEXE', 'novaBusca'), ancestralLimpar)
             return
         }
         for (let i = 0; i < processos?.length; i++) {

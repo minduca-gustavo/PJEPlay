@@ -52,7 +52,7 @@ function acertaChipTelaGig(ancestral){
     let janela = confereJanela(JANELA.gigsRelatorios, JANELA.painelGlobal, JANELA.escaninho)
     if (!janela) return
     let botao = criaBotaoAzul({
-        id: id('acertaChipTelaGig'),
+        id: idg('acertaChipTelaGig'),
         texto: 'Ajustar filtros',
         ancestral,
         acao: () => {
@@ -61,9 +61,9 @@ function acertaChipTelaGig(ancestral){
         }
     })
     criaTooltip({
-        id: id('acertaChipTelaGig', 'tooltip'),
+        id: idg('acertaChipTelaGig', 'tooltip'),
         texto: 'Ajustar filtros para evitar a rolagem da tela para os lados.',
-        elemento: id('acertaChipTelaGig')
+        elemento: idg('acertaChipTelaGig')
     })
     estiloBotaoFitaSuperior(botao)
 }
@@ -90,7 +90,7 @@ async function abrirTarefaChipEmCima(ancestral){
     let janela = confereJanela(JANELA.detalhes)
     if (!janela) return
     let botao = criaBotaoAzul({
-        id: id('abrirTarefaChipEmCima'),
+        id: idg('abrirTarefaChipEmCima'),
         texto: 'Abrir Tarefa',
         ancestral,
         acao: () => {
@@ -269,13 +269,13 @@ function busca_posicao_filaNavegar(url) {
 
 async function busca_pautaEletronicaCriaBotao() {
     let botao = await criaBotaoLaranja({
-        id: id('buscaPautaEletronica', 'botao'),
+        id: idg('buscaPautaEletronica', 'botao'),
         ancestral: 'rotapje_fita_superior',
         acao: () => busca_pautaEletronica(),
         texto: 'Pauta Eletrônica'
     })
     criaTooltip({
-        id: id('buscaPautaEletronica', 'botao', 'tooltip'),
+        id: idg('buscaPautaEletronica', 'botao', 'tooltip'),
         texto: 'Abre a pauta eletrônica na sala correspondente, SE houver audiência marcada',
         elemento: botao
     })
@@ -297,7 +297,7 @@ async function busca_pautaEletronica() {
         return
     }
     let url = 'https://pauta.trt15.jus.br/pautaeletronica/pautaAudiencia.xhtml'
-    let tarefa = id('buscaPautaEletronica')
+    let tarefa = idg('buscaPautaEletronica')
     let execucao = Date.now()
     let nomeJanela = tarefa + '_' + execucao
     await armazenar ({[tarefa]: {execucao: execucao, oj: oj?.orgaoJulgador?.descricao, sala: sala}})
@@ -307,7 +307,7 @@ async function busca_pautaEletronica() {
 async function pautaEletronicaAbriu() {
     let janela = confereJanela(JANELA.pautaEletronica)
     if (!janela) return
-    let tarefa = id('buscaPautaEletronica')
+    let tarefa = idg('buscaPautaEletronica')
     let janelaNome = window.name
     if (!janelaNome.includes(tarefa)) return
     let armazenamento = await obterArmazenamento(tarefa)
@@ -456,7 +456,7 @@ async function irParaAOJDesteProcesso() {
 // ___________________________________________________
 
 async function tramitaIAResumoRapido() {
-    let idBotao = id('tramitaIAResumoRapido', 'botao')
+    let idBotao = idg('tramitaIAResumoRapido', 'botao')
     let botao = await criaBotaoLaranja({
         id: idBotao,
         ancestral: 'rotapje_fita_superior',
@@ -464,7 +464,7 @@ async function tramitaIAResumoRapido() {
         texto: 'Tramita IA - Resumo rápido'
     })
     criaTooltip({
-        id: id('tramitaIAResumoRapido', 'botao', 'tooltip'),
+        id: idg('tramitaIAResumoRapido', 'botao', 'tooltip'),
         texto: 'Apresenta um resumo rápido da tramitação do processo. Disponível apenas na CON1, por enquanto.',
         elemento: botao
     })
@@ -512,7 +512,7 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
 
     
     function montarResumo(dados){
-        let idDiv = id('tramitaIA', 'resumos')
+        let idDiv = idg('tramitaIA', 'resumos')
         if (document.getElementById(idDiv)){
             if (document.getElementById(idDiv).style.display == 'none'){
                 document.getElementById(idDiv).style.display = 'flex'
@@ -630,7 +630,7 @@ async function estiloBotaoFitaSuperior(botao){
 }
 
 async function peritosPreferidos(ancestral) {
-    let idBotaoConfigura = id('fita_superior', 'peritosPreferidos')
+    let idBotaoConfigura = idg('fita_superior', 'peritosPreferidos')
     document.getElementById(idBotaoConfigura)?.remove()
     let botaoConfigura = criaBotaoAzul({
         id: idBotaoConfigura,
@@ -677,7 +677,7 @@ async function peritosPreferidos(ancestral) {
     
     async function cadastrarPeritosPreferidos(){
         let peritos = await obterArmazenamento(idBotaoConfigura) || {}
-        let divId = id('peritosPreferidos', 'cadastro')
+        let divId = idg('peritosPreferidos', 'cadastro')
         let div = criaDiv({
             id: divId,
             ancestral: document.body
@@ -847,7 +847,7 @@ async function fitaDocumento() {
 }
 
 async function buscaPeritoNoDocumento(ancestral) {
-    let idBusca = id('buscaPeritoNoDocumento')
+    let idBusca = idg('buscaPeritoNoDocumento')
     let botao = await criaBotaoAzul({
         id: idBusca,
         ancestral: ancestral,

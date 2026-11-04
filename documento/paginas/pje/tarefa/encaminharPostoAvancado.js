@@ -3,7 +3,7 @@ async function guardaContraOJIncorreta(){
     if (!janela) return
     await aguardarElemento('.container-botoes')
     await suspender()
-    let divId = id('guardaContraOJIncorreta')
+    let divId = idg('guardaContraOJIncorreta')
     let armazenamento = await obterArmazenamento(divId)
     //if (!armazenamento[divId]) return
     let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
@@ -61,7 +61,7 @@ async function encaminharPostoAvancadoGigs(vara){
     let ancestral = 'rotapje_fita_superior'
     let fita = await aguardarElemento('#' + ancestral)
     if (!fita) return
-    let idEncaminha = id('encaminhaComGig')
+    let idEncaminha = idg('encaminhaComGig')
     let armazenamento = await obterArmazenamento(idEncaminha) || {}
     let estado = armazenamento[idEncaminha] || null
     

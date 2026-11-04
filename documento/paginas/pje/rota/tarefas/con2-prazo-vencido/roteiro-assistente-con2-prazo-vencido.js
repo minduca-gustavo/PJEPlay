@@ -48,10 +48,10 @@ async function con2_prazo_vencido_assistente_iniciar() {
     console.log('%c[Rota PJE]%c dados?.rota_dadosCon2PrazoVencido' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido), LOG.rosa, 'color:inherit')
     let bloco = 'inicial'
 
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Con2 Prazo Vencido', ancestral: id(tarefaNome, bloco) })
+    criaDiv({ id: idg(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Con2 Prazo Vencido', ancestral: idg(tarefaNome, bloco) })
     criaTextoQueAbrePassandoOMouse({
-        id: id(tarefaNome, bloco, 'instrucao_longa'),
+        id: idg(tarefaNome, bloco, 'instrucao_longa'),
         texto: `Passe o mouse para ver a instrução completa da tarefa.
 Clique para fixar/desafixar.`,
         textoBox: `Como utilizar este assistente:
@@ -62,15 +62,15 @@ Clique para fixar/desafixar.`,
     - No bloco de documentos, ao clicar em cada opção, o assistente buscará o próximo documento daquele tipo (sentença, recurso, procuração, etc.), se houver.
     - As instruções e tarefas referentes à admissibilidade de recursos e remessa ao TRT ficam abaixo, e podem ser recolhidas.
 `,
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
-    criaInputAnotacao({ id: id(tarefaNome, bloco, 'anotacao'), placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: id(tarefaNome, bloco) })
+    criaInputAnotacao({ id: idg(tarefaNome, bloco, 'anotacao'), placeholder: 'Utilize este campo para suas anotações. As informações não serão salvas e não aparecerão em lugar algum.', ancestral: idg(tarefaNome, bloco) })
 
     // ── Bloco: autuacao ───────────────────────────────────────
     bloco = 'solucao'
 
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: id(tarefaNome, bloco) })
+    criaDiv({ id: idg(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Solução(ões) do Processo', ancestral: idg(tarefaNome, bloco) })
     let i = 0
     
     let solucoes = dados?.rota_dadosCon2PrazoVencido?.solucao || []
@@ -79,17 +79,17 @@ Clique para fixar/desafixar.`,
         criaTabelaDeSolucoes(solucoes)
     } else {
         criaTexto({
-            id: id(tarefaNome, bloco, 'sem_solucao'),
+            id: idg(tarefaNome, bloco, 'sem_solucao'),
             texto: 'Não foram encontradas sentenças.',
-            ancestral: id(tarefaNome, bloco),
+            ancestral: idg(tarefaNome, bloco),
         })
     }
 
     function criaTabelaDeSolucoes(solucoes){
         let nomeTabela = 'tabelaSolucoes'
         let divTabela = criaDiv({
-            id: id(tarefaNome, bloco, nomeTabela),
-            ancestral: id(tarefaNome, bloco),
+            id: idg(tarefaNome, bloco, nomeTabela),
+            ancestral: idg(tarefaNome, bloco),
             rowColumn: 'column'
         })
         let colunas = solucoes.length == 1 ? 1 : 2
@@ -97,8 +97,8 @@ Clique para fixar/desafixar.`,
         console.log('%c[Rota PJE]%c linhas: ' + JSON.stringify(linhas), LOG.erro, 'color:inherit')
         for (let i = 0; i < linhas; i++){
             let div = criaDiv({
-                id: id(tarefaNome, bloco, nomeTabela, 'linha' + i),
-                ancestral: id(tarefaNome, bloco, nomeTabela),
+                id: idg(tarefaNome, bloco, nomeTabela, 'linha' + i),
+                ancestral: idg(tarefaNome, bloco, nomeTabela),
                 rowColumn: 'row'
             })
         }
@@ -106,19 +106,19 @@ Clique para fixar/desafixar.`,
         for (let solucao of solucoes){
             let linha = Math.floor(i / 2)
             let celula = criaDiv({
-                id: id(tarefaNome, bloco, nomeTabela, 'celula' + i),
-                ancestral: id(tarefaNome, bloco, nomeTabela, 'linha' + linha),
+                id: idg(tarefaNome, bloco, nomeTabela, 'celula' + i),
+                ancestral: idg(tarefaNome, bloco, nomeTabela, 'linha' + linha),
             })
             celula.style.width = '100%'
             
             let plaquinha = criaPlaquinhaComTooltip({
-                id: id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i),
+                id: idg(tarefaNome, bloco, nomeTabela, 'plaquinha' + i),
                 texto: solucao?.movimento.split('-', 2)[0].trim(),
                 cor: corDaSolucao(solucao?.movimento),
                 tooltip: solucao?.movimento + ' - ' + solucao?.data,
-                ancestral: id(tarefaNome, bloco, nomeTabela, 'celula' + i)
+                ancestral: idg(tarefaNome, bloco, nomeTabela, 'celula' + i)
             })
-            let pl = document.querySelector('#' + id(tarefaNome, bloco, nomeTabela, 'plaquinha' + i))
+            let pl = document.querySelector('#' + idg(tarefaNome, bloco, nomeTabela, 'plaquinha' + i))
             pl.style.width = '100%'
             pl.style.height = '100%'
             pl.style.textAlign = 'center'
@@ -136,8 +136,8 @@ Clique para fixar/desafixar.`,
     }
 
     bloco = 'documentos'
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Documentos do Processo', ancestral: id(tarefaNome, bloco) })
+    criaDiv({ id: idg(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Documentos do Processo', ancestral: idg(tarefaNome, bloco) })
     
     let tiposDocumentos = [
         { chave: 'sentenca',         label: 'Sentença' },
@@ -151,8 +151,8 @@ Clique para fixar/desafixar.`,
     let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
     let valores = 'sentenca, recurso, deposito, custas, seguro, fianca, procuracao, substabelecimento'
     criaVisualizadorDeDocumentos({
-        id: id(tarefaNome, bloco, 'visualizador'),
-        ancestral: id(tarefaNome, bloco),
+        id: idg(tarefaNome, bloco, 'visualizador'),
+        ancestral: idg(tarefaNome, bloco),
         timeline: documentosTimeline,
         termos: valores,
         abrir: (documento) => comandar(['con2_prazo_vencido_abrir_documentos'],[documento]),
@@ -160,38 +160,39 @@ Clique para fixar/desafixar.`,
 
     bloco = 'partes'
 
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Partes do Processo', ancestral: id(tarefaNome, bloco) })
+    criaDiv({ id: idg(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Partes do Processo', ancestral: idg(tarefaNome, bloco) })
     criaTextoQueAbrePassandoOMouse({
-        id: id(tarefaNome, bloco, 'dados_das_partes'),
+        id: idg(tarefaNome, bloco, 'dados_das_partes'),
         texto: `Passe o mouse para ver os dados das partes.
 Clique para fixar/desafixar.`,
         textoBox: `Dados das partes:
 ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
 
     criaBotaoAzul({
-         id: id(tarefaNome, bloco, 'retificar_partes'),
+         id: idg(tarefaNome, bloco, 'retificar_partes'),
          texto: 'Retificar autuação',
-         ancestral: id(tarefaNome, bloco),
+         ancestral: idg(tarefaNome, bloco),
          acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Partes'}])
     })
 
     bloco = 'recursos'
 
     criaTitulo({
-        id: id(tarefaNome, bloco, 'titulo'),
+        id: idg(tarefaNome, bloco, 'titulo'),
         texto: 'Recursos',
         ancestral: 'rota_corpo'
     })
     let recursosPrimeiroGrau = documentosTimeline.filter(d => (normalizar(d?.tipo).includes('recurso') || normalizar(d?.titulo).includes('recurso')) && normalizar(d?.instancia).includes(normalizar('1º Grau'))) || []
     console.log('%c[Rota PJE]%c recursosUm' + JSON.stringify(recursosPrimeiroGrau), LOG.aviso, 'color:inherit', recursosPrimeiroGrau)
+    let caixas = []
     for(let i = 0; i < recursosPrimeiroGrau.length; i++){
         let recurso = recursosPrimeiroGrau[i]
         let {id, idUnicoDocumento, data, participacaoProcesso, tipoPolo} = recurso || {}
-        let ancestral = id(tarefaNome, bloco, i)
-        let coluna = id(tarefaNome, bloco, i, 'coluna')
+        let ancestral = idg(tarefaNome, bloco, JSON.stringify(i))
+        let coluna = idg(tarefaNome, bloco, i, 'coluna')
         criaDiv({
             id: coluna,
             ancestral: 'rota_corpo'
@@ -205,8 +206,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             id: ancestral + '_check',
             ancestral,
         })
+        caixas.push(ancestral + '_check')
         check.style.gap = '0px'
-        check.dataset.recurso = {id, idUnicoDocumento}
+        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento})
         let textoAoLado = criaTexto({
             id: ancestral + '_texto',
             ancestral,
@@ -247,6 +249,16 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         }
         
         console.log('%c[Rota PJE]%c textoAoLado', LOG.aviso, 'color:inherit', textoAoLado)
+    }
+    criaBotaoLaranja({
+        id: idg(tarefaNome, 'processarRecursos'),
+        texto: 'Processar Recursos Selecionados',
+        ancestral: 'rota_corpo',
+        acao: () => processarRecursosSelecionados(caixas)
+    })
+
+    async function processarRecursosSelecionados(caixas) {
+        alert(JSON.stringify(caixas))
     }
     
     return
@@ -348,34 +360,34 @@ Clique para fixar/desafixar.`,
     
     
     let divSecoes = criaDiv({
-        id: id(tarefaNome, 'divSecoes'),
+        id: idg(tarefaNome, 'divSecoes'),
         ancestral: 'rota_corpo',
         rowColumn: 'column'
     })
     for (let secao of secoes){
         let mostraRecolhe = await criaSecaoMostraRecolhe({
-            id: id(tarefaNome, secao?.label, 'mostra_recolhe'),
-            idSempreAMostra: id(tarefaNome, secao?.label, 'mostra'),
-            idRecolhe: id(tarefaNome, secao?.label, 'recolhe'),
-            ancestral: id(tarefaNome, 'divSecoes'),
+            id: idg(tarefaNome, secao?.label, 'mostra_recolhe'),
+            idSempreAMostra: idg(tarefaNome, secao?.label, 'mostra'),
+            idRecolhe: idg(tarefaNome, secao?.label, 'recolhe'),
+            ancestral: idg(tarefaNome, 'divSecoes'),
             armazenarExpandido: true
         })
         let titulo = criaTitulo({
-            id: id(tarefaNome, secao?.label, 'titulo'),
+            id: idg(tarefaNome, secao?.label, 'titulo'),
             texto: secao?.titulo,
-            ancestral: id(tarefaNome, secao?.label, 'mostra')
+            ancestral: idg(tarefaNome, secao?.label, 'mostra')
         })
         let instrucaoLonga = criaTextoQueAbrePassandoOMouse({
-            id: id(tarefaNome, secao?.label, secao?.instrucaoLonga?.label),
+            id: idg(tarefaNome, secao?.label, secao?.instrucaoLonga?.label),
             texto: secao?.instrucaoLonga?.texto,
-            ancestral: id(tarefaNome, secao?.label, 'recolhe'),
+            ancestral: idg(tarefaNome, secao?.label, 'recolhe'),
             textoBox: secao?.instrucaoLonga?.textoBox
         })
         
         for (let caso of secao?.casos){
-            let ancestral = id(tarefaNome, secao?.label, 'recolhe')
+            let ancestral = idg(tarefaNome, secao?.label, 'recolhe')
             let checkBox = await criaCheckBox({
-                id: id(tarefaNome, secao?.label, 'checkbox', caso?.id),
+                id: idg(tarefaNome, secao?.label, 'checkbox', caso?.id),
                 textoAoLado: caso?.texto,
                 ancestral: ancestral,
             })
@@ -398,7 +410,7 @@ Clique para fixar/desafixar.`,
 
         async function montarAcoes_con2_prazo_vencido(caso, ancestral) {
             console.log('%c[Rota PJE]%c montaracoes: ' + JSON.stringify(caso + ' - ' + ancestral), LOG.teste, 'color:inherit')
-            let idDiv = id('divAcoes', ancestral)
+            let idDiv = idg('divAcoes', ancestral)
             let remover = document.getElementById(idDiv)
             if (remover) {
                 remover.remove()
@@ -408,12 +420,12 @@ Clique para fixar/desafixar.`,
                 id: idDiv,
                 ancestral: ancestral
             })
-            let idDivEmail = id('divEmail', ancestral)
+            let idDivEmail = idg('divEmail', ancestral)
             let divEmail = criaDiv({
                 id: idDivEmail,
                 ancestral: idDiv
             })
-            let idBotaoLaranjaEmail = id('e-mail')
+            let idBotaoLaranjaEmail = idg('e-mail')
             let armazenamentoBotaoLaranjaEmail = await obterArmazenamento(idBotaoLaranjaEmail)
             let expandido = armazenamentoBotaoLaranjaEmail[idBotaoLaranjaEmail] ? armazenamentoBotaoLaranjaEmail[idBotaoLaranjaEmail] : false
             console.log('%c[Rota PJE]%c expandido: ' + JSON.stringify(expandido), LOG.erro, 'color:inherit')
@@ -425,13 +437,13 @@ Clique para fixar/desafixar.`,
                 acao: () => montarMenuEmail(idDivEmail, idBotaoLaranjaEmail, true),
             })
             if (expandido) montarMenuEmail(idDivEmail, idBotaoLaranjaEmail, false)
-            let idDivRequisicao = id('divRequisicao', ancestral, caso)
+            let idDivRequisicao = idg('divRequisicao', ancestral, caso)
             let divRequisicao = criaDiv({
                 id: idDivRequisicao,
                 ancestral: idDiv
             })
             let botaoRequisicao = criaBotaoLaranja({
-                id: id(caso, 'requisicaoHonorarios'),
+                id: idg(caso, 'requisicaoHonorarios'),
                 texto: 'Fazer Requisição de Honorários Periciais ▼',
                 ancestral: idDivRequisicao,
                 acao: () => montarMenuRequisicao(caso, idDivRequisicao),
@@ -440,7 +452,7 @@ Clique para fixar/desafixar.`,
 
         async function montarMenuEmail(ancestral, botao, expandir){
             
-            let idDiv = id('menuEMail')
+            let idDiv = idg('menuEMail')
             let remover = document.getElementById(idDiv)
             let botaoSeta = document.getElementById(botao)
             if (remover && expandir) {
@@ -461,7 +473,7 @@ Clique para fixar/desafixar.`,
             if (emailsArmazenados[idDiv]){
                 console.log('%c[Rota PJE]%c emailsArmazenados: ' + JSON.stringify(emailsArmazenados), LOG.erro, 'color:inherit')
                 for (let email of emailsArmazenados[idDiv]){
-                    let idCheckbox = id('checkEMail')
+                    let idCheckbox = idg('checkEMail')
                     let checkBox = await criaCheckBox({
                         id: idCheckbox,
                         ancestral: idDiv,
@@ -469,19 +481,19 @@ Clique para fixar/desafixar.`,
                     })
                 }
             }
-            let inputId = id('inputEMail')
+            let inputId = idg('inputEMail')
             let inputEMail = criaInput({
-                id: id('inputEMail'),
+                id: idg('inputEMail'),
                 ancestral: idDiv,
                 textoEmCima: 'Digite os e-mails, separados por vírgula',
                 placeholder: 'email@email.com, email2@email.org, email3@email.jus.br'
             })
             let botaoEMail = criaBotaoAzul({
-                id: id('botaoEMail'),
+                id: idg('botaoEMail'),
                 ancestral: idDiv,
                 texto: 'Encaminhar para todos (inclusive os selecionados)',
                 acao: () => {
-                    let checkId = id('checkEMail')
+                    let checkId = idg('checkEMail')
                     let checks = [...document.querySelectorAll('#' + checkId)].map(d => d.textContent)
                     let input = document.querySelector('#' + inputId)
                     let regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/g
@@ -506,7 +518,7 @@ Clique para fixar/desafixar.`,
             
         }
         async function montarMenuRequisicao(caso, ancestral){
-            let idDiv = id(caso, 'menuEMail')
+            let idDiv = idg(caso, 'menuEMail')
             let div = criaDiv({
                 id: idDiv,
                 ancestral: ancestral
@@ -525,8 +537,8 @@ Clique para fixar/desafixar.`,
 
     
     
-    let armazenarSecaoPosSentenca = (id(tarefaNome, bloco, 'mostra_recolhe'))
-    let estadoSalvoPosSentenca = await obterArmazenamento(id(tarefaNome, bloco, 'mostra_recolhe'))
+    let armazenarSecaoPosSentenca = (idg(tarefaNome, bloco, 'mostra_recolhe'))
+    let estadoSalvoPosSentenca = await obterArmazenamento(idg(tarefaNome, bloco, 'mostra_recolhe'))
     if (estadoSalvoPosSentenca?.[armazenarSecaoPosSentenca] === false) {
         SecaoPosSentenca.recolher()
     }
@@ -536,15 +548,15 @@ Clique para fixar/desafixar.`,
     }
 
     criaTitulo({
-        id: id(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
+        id: idg(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
         texto: 'Pós Sentença',
-        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
+        ancestral: idg(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
     })
 
     criaTexto({
-        id: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra', 'texto'),
+        id: idg(tarefaNome, bloco, 'mostra_recolhe', 'mostra', 'texto'),
         texto: 'Em desenvolvimento.',
-        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe')
+        ancestral: idg(tarefaNome, bloco, 'mostra_recolhe', 'recolhe')
     })
 
     
@@ -555,14 +567,14 @@ Clique para fixar/desafixar.`,
     
     
     let SecaoRemessa = await criaSecaoMostraRecolhe({
-        id: id(tarefaNome, bloco, 'mostra_recolhe'),
-        idSempreAMostra: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra'),
-        idRecolhe: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe'),
+        id: idg(tarefaNome, bloco, 'mostra_recolhe'),
+        idSempreAMostra: idg(tarefaNome, bloco, 'mostra_recolhe', 'mostra'),
+        idRecolhe: idg(tarefaNome, bloco, 'mostra_recolhe', 'recolhe'),
         ancestral: 'rota_corpo',
     })
 
-    let armazenarSecaoRemessa = (id(tarefaNome, bloco, 'mostra_recolhe'))
-    let estadoSalvoRemessa = await obterArmazenamento(id(tarefaNome, bloco, 'mostra_recolhe'))
+    let armazenarSecaoRemessa = (idg(tarefaNome, bloco, 'mostra_recolhe'))
+    let estadoSalvoRemessa = await obterArmazenamento(idg(tarefaNome, bloco, 'mostra_recolhe'))
     if (estadoSalvoRemessa?.[armazenarSecaoRemessa] === false) {
         SecaoRemessa.recolher()
     }
@@ -572,15 +584,15 @@ Clique para fixar/desafixar.`,
     }
 
     criaTitulo({
-        id: id(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
+        id: idg(tarefaNome, bloco, 'mostra_recolhe', 'titulo'),
         texto: 'Remessa ao TRT.',
-        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
+        ancestral: idg(tarefaNome, bloco, 'mostra_recolhe', 'mostra')
     })
 
     criaTexto({
-        id: id(tarefaNome, bloco, 'mostra_recolhe', 'mostra', 'texto'),
+        id: idg(tarefaNome, bloco, 'mostra_recolhe', 'mostra', 'texto'),
         texto: 'Em desenvolvimento.',
-        ancestral: id(tarefaNome, bloco, 'mostra_recolhe', 'recolhe')
+        ancestral: idg(tarefaNome, bloco, 'mostra_recolhe', 'recolhe')
     })
     
     return
@@ -589,9 +601,9 @@ Clique para fixar/desafixar.`,
     let ordem = 0
     let textoOrdem = ordem == 0  ? 'do mais antigo para o mais novo' : 'do mais novo para o mais antigo'
     let botaoOrdem = criaBotaoLaranja({
-        id: id(tarefaNome, bloco, 'botao_ordem_documentos'),
+        id: idg(tarefaNome, bloco, 'botao_ordem_documentos'),
         texto: 'Ordem: ' + textoOrdem,
-        ancestral: id(tarefaNome, bloco),
+        ancestral: idg(tarefaNome, bloco),
         acao: () => ordenaDocumentos()
     })
     
@@ -603,7 +615,7 @@ Clique para fixar/desafixar.`,
     
     function ordenaDocumentos(){
         
-        let botaoOrdem = document.getElementById(id(tarefaNome, bloco, 'botao_ordem_documentos'))
+        let botaoOrdem = document.getElementById(idg(tarefaNome, bloco, 'botao_ordem_documentos'))
         ordem = ordem == 0 ? 1 : 0
         botaoOrdem.textContent = ordem == 0  ? 'Ordem: do mais antigo para o mais novo' : 'Ordem: do mais novo para o mais antigo'
         console.log('%c[Rota PJE]%c ordena: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
@@ -620,14 +632,14 @@ Clique para fixar/desafixar.`,
         let colunas =           elementos > 3 ? 3 : elementos
         let idDasColunas =      []
         for(let i = 1; i <= colunas; i){
-            idDasColunas.push(id(tarefaNome, bloco, 'tabela', 'coluna', i++))
+            idDasColunas.push(idg(tarefaNome, bloco, 'tabela', 'coluna', i++))
         }
-        let idTabela = id(tarefaNome, bloco, 'tabela')
+        let idTabela = idg(tarefaNome, bloco, 'tabela')
         criaTabela({
             id:             idTabela,
             idDasColunas:   idDasColunas,
             semDivisao:     true,
-            ancestral:      id(tarefaNome, bloco)
+            ancestral:      idg(tarefaNome, bloco)
         })
         // to parado aqui
         let contadorTipo = 0
@@ -640,10 +652,10 @@ Clique para fixar/desafixar.`,
             if (!label) continue
 
             // Estado do contador para este tipo
-            let chaveContador = id(tarefaNome, bloco, tipo)
+            let chaveContador = idg(tarefaNome, bloco, tipo)
             contadoresDocumentos[chaveContador] = { atual: 0, total: doc.length }
 
-            let idBotao = id(tarefaNome, bloco, 'botao', tipo)
+            let idBotao = idg(tarefaNome, bloco, 'botao', tipo)
             let textoBotao = label.label + ' 0/' + doc.length
             let idColuna = idDasColunas[contadorTipo]       // ← chave que ui_adicionarLinhaTabela entende
             linha[idColuna] = criaBotaoAzul({
@@ -698,10 +710,10 @@ Clique para fixar/desafixar.`,
             }
             
             let valores = {
-                [idEsq]: criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i), texto: esq, tooltip: toolTipEsq, cor: corDaSolucao(esq) }),
+                [idEsq]: criaPlaquinhaComTooltip({ id: idg(tarefaNome, bloco, 'solucao', i), texto: esq, tooltip: toolTipEsq, cor: corDaSolucao(esq) }),
             }
             if (dir !== undefined) {
-                valores[idDir] = criaPlaquinhaComTooltip({ id: id(tarefaNome, bloco, 'solucao', i + 1), texto: dir, tooltip: toolTipDir, cor: corDaSolucao(dir) })
+                valores[idDir] = criaPlaquinhaComTooltip({ id: idg(tarefaNome, bloco, 'solucao', i + 1), texto: dir, tooltip: toolTipDir, cor: corDaSolucao(dir) })
             }
 
             ui_adicionarLinhaTabela(idTabela, valores)
@@ -733,7 +745,7 @@ Clique para fixar/desafixar.`,
     }
 
     function avancarContadorDocumento(tarefaNome, bloco, tipo, ordem) {
-        let chaveContador = id(tarefaNome, bloco, tipo)
+        let chaveContador = idg(tarefaNome, bloco, tipo)
         let contador = contadoresDocumentos[chaveContador]
         console.log('%c[Rota PJE]%c ordem: ' + JSON.stringify(ordem), LOG.rosa, 'color:inherit')
         if (!contador) return
@@ -743,7 +755,7 @@ Clique para fixar/desafixar.`,
             contador.atual = (contador.atual - 1 + contador.total + 1) % (contador.total + 1)
         }
         
-        let idBotao = id(tarefaNome, bloco, 'botao', tipo)
+        let idBotao = idg(tarefaNome, bloco, 'botao', tipo)
         let botao = document.getElementById(idBotao)
         if (!botao) return
 
@@ -778,15 +790,15 @@ Clique para fixar/desafixar.`,
     
 
     criaTextoQueAbrePassandoOMouse({
-        id: id(tarefaNome, bloco, 'dados_das_partes'),
+        id: idg(tarefaNome, bloco, 'dados_das_partes'),
         texto: `Passe o mouse para ver os dados das partes.
 Clique para fixar/desafixar.`,
         textoBox: `Dados das partes:
 ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
     criaTexto({
-        id: id(tarefaNome, bloco, 'instrucao_curta'),
+        id: idg(tarefaNome, bloco, 'instrucao_curta'),
         texto: `Verifique os dados da autuação, se estão corretos e correspondem à petição inicial.
     Tenha atenção aos seguintes pontos:
         - Documentos das partes;
@@ -794,15 +806,15 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         - Valor da causa;
         - Rito (atenção especial a casos com Órgãos Públicos);
         - Pedidos (líquidos/ilíquidos);`,
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
-    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_partes'),   texto: 'Retificar autuação: partes',   ancestral: id(tarefaNome, bloco), acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Partes'}])})
-    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_rito'),     texto: 'Retificar autuação: rito',     ancestral: id(tarefaNome, bloco), acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Dados Iniciais'}])})
-    criaBotaoAzul({ id: id(tarefaNome, bloco, 'retificar_assuntos'), texto: 'Retificar autuação: assuntos', ancestral: id(tarefaNome, bloco), acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Assuntos'}])})
+    criaBotaoAzul({ id: idg(tarefaNome, bloco, 'retificar_partes'),   texto: 'Retificar autuação: partes',   ancestral: idg(tarefaNome, bloco), acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Partes'}])})
+    criaBotaoAzul({ id: idg(tarefaNome, bloco, 'retificar_rito'),     texto: 'Retificar autuação: rito',     ancestral: idg(tarefaNome, bloco), acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Dados Iniciais'}])})
+    criaBotaoAzul({ id: idg(tarefaNome, bloco, 'retificar_assuntos'), texto: 'Retificar autuação: assuntos', ancestral: idg(tarefaNome, bloco), acao: () => comandar(['con2_prazo_vencido_retificar'], [{tipo: 'Assuntos'}])})
     criaBotaoLaranja({
-        id: id(tarefaNome, bloco, 'despacho_emenda_retificacao'), 
+        id: idg(tarefaNome, bloco, 'despacho_emenda_retificacao'), 
         texto: 'Despacho: retificar autuação/emendar a inicial', 
-        ancestral: id(tarefaNome, bloco), 
+        ancestral: idg(tarefaNome, bloco), 
         acao: async () => {
             await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
             comandar(['con2_prazo_vencido_despachar'], [{tipo: 'con2_prazo_vencido_emendar'}])
@@ -812,33 +824,33 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     // ── Bloco: designa-audiencia ──────────────────────────────
     bloco = 'designa_audiencia'
 
-    criaDiv({ id: id(tarefaNome, bloco), ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, bloco, 'titulo'), texto: 'Designação de audiência', ancestral: id(tarefaNome, bloco) })
+    criaDiv({ id: idg(tarefaNome, bloco), ancestral: 'rota_corpo' })
+    criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Designação de audiência', ancestral: idg(tarefaNome, bloco) })
     console.log('%c[Rota PJE]%c Juiz: ' + dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig, LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido?.sala), LOG.teste, 'color:inherit')
     console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido?.horariosVagos), LOG.teste, 'color:inherit')
 
     criaTexto({
-        id: id(tarefaNome, bloco, 'texto'),
+        id: idg(tarefaNome, bloco, 'texto'),
         texto: dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig
             ? `A extensão identificou a seguinte sala: ${dados.rota_dadosCon2PrazoVencido.processo.sala.nome}.`
             : 'Não foi identificada sala.',
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
 
     if (!dados?.rota_dadosCon2PrazoVencido?.horariosVagos?.length) {
 
         if (dados?.rota_dadosCon2PrazoVencido?.sala?.nome) {
             criaTexto({
-                id: id(tarefaNome, bloco, 'sem_horario'),
+                id: idg(tarefaNome, bloco, 'sem_horario'),
                 texto: `Não foram encontrados horários vagos para esta sala. Clique no botão abaixo para designar manualmente a audiência.`,
-                ancestral: id(tarefaNome, bloco)
+                ancestral: idg(tarefaNome, bloco)
             })
         }
         criaBotaoAzul({
-            id: id(tarefaNome, bloco, 'btn_manual'),
+            id: idg(tarefaNome, bloco, 'btn_manual'),
             texto: 'Designar manualmente a audiência',
-            ancestral: id(tarefaNome, bloco),
+            ancestral: idg(tarefaNome, bloco),
             acao: async () => {
                 await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
                 comandar(['con2_prazo_vencido_designa_audiencia'], [{dados: 'manual'}])
@@ -847,21 +859,21 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
 
     }
     criaSubTitulo({
-        id: id(tarefaNome, bloco, 'subtitulo_link_da_audiencia'),
+        id: idg(tarefaNome, bloco, 'subtitulo_link_da_audiencia'),
         texto: 'Link da audiência',
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
     criaBotaoComInputAzul({
-        id: id(tarefaNome, bloco, 'salvar_link_da_audiencia'),
-        idInput: id(tarefaNome, bloco, 'input_link_da_audiencia'),
+        id: idg(tarefaNome, bloco, 'salvar_link_da_audiencia'),
+        idInput: idg(tarefaNome, bloco, 'input_link_da_audiencia'),
         texto: 'Salvar link',
         textoEmCima: 'Digite abaixo o link da audiência para preenchimento automático no momento da designação e despacho.',
-        ancestral: id(tarefaNome, bloco),
+        ancestral: idg(tarefaNome, bloco),
         acao: () => con2_prazo_vencido_salvar_link_da_audiencia()
     })
     let linkSalvo = await obterArmazenamento(['rota_con2_prazo_vencido_linkDaAudiencia'])
     let link = linkSalvo?.rota_con2_prazo_vencido_linkDaAudiencia || ''
-    let inputLinkAudiencia = document.getElementById(id(tarefaNome, bloco, 'input_link_da_audiencia'))
+    let inputLinkAudiencia = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
     if (inputLinkAudiencia) {
         inputLinkAudiencia.placeholder = 'digite aqui o link do zoom'
         if (link) {
@@ -870,25 +882,25 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         }
     }
     criaSubTitulo({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'subtitulo'),
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'subtitulo'),
         texto: 'Ações conjuntas',
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
     
     criaDivExecucao({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas'),
-        idColuna: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
-        idBotaoExecutar: id(tarefaNome, bloco, 'acoes_conjuntas', 'executar'), 
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas'),
+        idColuna: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        idBotaoExecutar: idg(tarefaNome, bloco, 'acoes_conjuntas', 'executar'), 
         acaoBotaoExecutar: () => /*alert('Em desenvolvimento'), */con2_prazo_vencidoDesignarAudienciaAcoesConjuntas('designa_audiencia'),
-        ancestral: id(tarefaNome, bloco)
+        ancestral: idg(tarefaNome, bloco)
     })
     
 
     criaTextoQueAbrePassandoOMouse({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'instrucao'),
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'instrucao'),
         texto: 'Como usar este bloco? Passe o mouse. Clique para fixar/desafixar.',
         textoBox: 'Se você deseja fazer apenas uma das ações, clique no botão azul ou laranja correspondente. Você pode, também, selecionar os checkbox que deseja, e as ações serão executadas uma após a outra ao clicar no botão laranja Executar ao lado.',
-        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna')
+        ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna')
     })
 
     if (dados?.rota_dadosCon2PrazoVencido?.horariosVagos?.length) {
@@ -898,9 +910,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         let checkBoxPreMarcadoTipoAudiencia = false
         let i = 0
         //let inputPulando = criaInput({
-        //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
+        //    id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
         //    textoEmCima: 'Caso queira utilizar datas posteriores às datas dos botões abaixo, insira a data inicial desejada abaixo, utilize a opção de designação manual, e clique no botão "Próximo horário vago" (seta preta) correspondente.', 
-        //    ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        //    ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         //    placeholder: 'DD/MM/AAAA'
         //})
         //let dataPula = await obterArmazenamento('con2_prazo_vencido_pula_data')
@@ -917,96 +929,96 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             horario.processo = processo
             horario.nomeDaSala = sala
             let linha = criaBotaoAzulComCheckBox({
-                id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
-                idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
+                id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
+                idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
                 texto: horarioInicialBotao,
-                ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+                ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
                 acao: async () => {
                     await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
                     comandar(['con2_prazo_vencido_designa_audiencia'], [{horario}])
                 },
-                grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+                grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
             })
             linha.dataset.horario = JSON.stringify(horario)
             if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia) {
-                let checkBox = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))
+                let checkBox = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))
                 if (checkBox) checkBox.click()
                 checkBoxPreMarcadoTipoAudiencia = true
             }
         }
         let linhaManual = criaBotaoAzulComCheckBox({
-            id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
-            idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
+            id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
+            idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
             texto: 'Designar audiência manualmente em outra sala/horário',
-            ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+            ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
             acao: async () => {
                 await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
                 comandar(['con2_prazo_vencido_designa_audiencia'], [{horario: {tipo: 'manual', processo: dados?.rota_dadosCon2PrazoVencido?.processo?.numero, sala: dados?.rota_dadosCon2PrazoVencido?.sala?.nome, link: inputLinkAudiencia.value}}])
             },
-            grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+            grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
         })
         linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosCon2PrazoVencido?.processo?.numero, sala: dados?.rota_dadosCon2PrazoVencido?.sala?.nome, link: inputLinkAudiencia.value})
         
         //i++
         //let inputPulando = criaInput({
-        //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
+        //    id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario', i, 'input'), 
         //    textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
-        //    ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+        //    ancestral: idg(tarefaNome, bloco, 'extras-recolhe'),
         //    placeholder: 'DD/MM/AAAA'
         //})
         //await armazenar({con2_prazo_vencido_pula_data: '22/06/2026'})
         
         //let linhaPulando = criaBotaoAzulComCheckBox({
-        //    id: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
-        //    idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
+        //    id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
+        //    idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
         //    texto: 'Designar audiência pulando horário',
-        //    ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        //    ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         //    acao: async () => {
         //        await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
         //        comandar(['con2_prazo_vencido_designa_audiencia'], [{horario: {tipo: 'pulando', processo: dados?.rota_dadosCon2PrazoVencido?.processo?.numero, sala: dados?.rota_dadosCon2PrazoVencido?.sala?.nome}}])
         //    },
-        //    grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+        //    grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
         //})
         //linhaPulando.dataset.horario = JSON.stringify({tipo: 'manual', processo: dados?.rota_dadosCon2PrazoVencido?.processo?.numero, sala: dados?.rota_dadosCon2PrazoVencido?.sala?.nome})
     }
     criaBotaoLaranjaComCheckBox({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
-        idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
+        idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
         texto: 'Despachar designando.',
-        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: async () => {
             await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
             comandar(['con2_prazo_vencido_despachar'], [{tipo: 'con2_prazo_vencido_despachar_designacao'}])
         },
-        grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
+        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
     criaBotaoLaranjaComCheckBox({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao'),
-        idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao'),
+        idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
         texto: 'Certificar a designação, intimar e encaminhar para aguardando audiência.',
-        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), 
+        ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), 
         acao: async () => {
             await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
             comandar(['con2_prazo_vencido_certidao'], [{tipo: 'con2_prazo_vencido_certificar_designacao'}])
         },
-        grupo: id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
+        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
     })
     
 
-    let checkBoxDespacho = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
+    let checkBoxDespacho = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
     if (checkBoxDespacho) checkBoxDespacho.click()
 
     criaBotaoAzulComCheckBox({
-        id: id(tarefaNome, bloco, 'acoes_conjuntas', 'gig'),
-        idCheckbox: id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'),
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig'),
+        idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'),
         texto: 'Colocar GIG de acompanhamento.',
-        ancestral: id(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: async () => {
             await removerArmazenamento('rota_acoes_conjuntas_con2_prazo_vencido_em_andamento')
             comandar(['con2_prazo_vencido_gig'], [{tipo: 'con2_prazo_vencido_gig_acompanhamento'}])
         },
     })
-    let checkBoxGig = document.getElementById(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
+    let checkBoxGig = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
     if (checkBoxGig) checkBoxGig.click()
 
     console.log('%c[Rota PJE]%c blocos criados', LOG.teste, 'color:inherit')
@@ -1017,9 +1029,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     /*
     bloco = 'extras'
     let secaoExtras = await criaSecaoMostraRecolhe({
-        id: id(tarefaNome, bloco),
-        idSempreAMostra: id(tarefaNome, bloco, 'extras-mostra'), 
-        idRecolhe: id(tarefaNome, bloco, 'extras-recolhe'),  
+        id: idg(tarefaNome, bloco),
+        idSempreAMostra: idg(tarefaNome, bloco, 'extras-mostra'), 
+        idRecolhe: idg(tarefaNome, bloco, 'extras-recolhe'),  
         ancestral: 'rota_corpo'
     })
     const estadoSalvo = await obterArmazenamento('con2_prazo_vencido_extras_expandido')
@@ -1032,30 +1044,30 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         await armazenar({ con2_prazo_vencido_extras_expandido: expandido })
     }
     criaTitulo({
-        id: id(tarefaNome, bloco, 'extras-titulo'), 
+        id: idg(tarefaNome, bloco, 'extras-titulo'), 
         texto: 'Extras (Bloqueio de pauta, etc.)', 
-        ancestral: id(tarefaNome, bloco, 'extras-mostra')
+        ancestral: idg(tarefaNome, bloco, 'extras-mostra')
     })
     criaSubTitulo({
-        id: id(tarefaNome, bloco, 'extras-bloqueioDePauta'), 
+        id: idg(tarefaNome, bloco, 'extras-bloqueioDePauta'), 
         texto: 'Bloqueio de pauta', 
-        ancestral: id(tarefaNome, bloco, 'extras-recolhe')
+        ancestral: idg(tarefaNome, bloco, 'extras-recolhe')
     })
     criaTexto({
-        id: id(tarefaNome, bloco, 'extras-bloqueio-texto'), 
+        id: idg(tarefaNome, bloco, 'extras-bloqueio-texto'), 
         texto: 'Esta ferramenta foi pensada para "tapar os furos" da pauta, dos processos que são retirados de pauta, e os horários ficam muito "em cima" para designação.', 
-        ancestral: id(tarefaNome, bloco, 'extras-recolhe')
+        ancestral: idg(tarefaNome, bloco, 'extras-recolhe')
     })
     criaInput({
-        id: id(tarefaNome, bloco, 'extras-bloqueio-inputData'), 
+        id: idg(tarefaNome, bloco, 'extras-bloqueio-inputData'), 
         textoEmCima: 'Insira a data limite para bloqueio das audiências (serão bloqueadas todas as audiências até a data escolhida).', 
-        ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+        ancestral: idg(tarefaNome, bloco, 'extras-recolhe'),
         placeholder: 'DD/MM/AAAA'
     })
     await armazenar({con2_prazo_vencido_pula_data: '22/06/2026'})
     let dataPula = await obterArmazenamento('con2_prazo_vencido_pula_data')
     console.log('%c[Rota PJE]%c dataPula: ' + JSON.stringify(dataPula), LOG.rosa, 'color:inherit')
-    let input = document.getElementById(id(tarefaNome, bloco, 'extras-pula-inputData'))
+    let input = document.getElementById(idg(tarefaNome, bloco, 'extras-pula-inputData'))
     if (dataPula?.con2_prazo_vencido_pula_data){
         input.value = dataPula?.con2_prazo_vencido_pula_data
     }
@@ -1066,9 +1078,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         if (horario?.descricaoTipoAudiencia){
             let funcao = i % 2 === 0 ? criaBotaoAzul : criaBotaoLaranja
             funcao({
-                id: id(tarefaNome, bloco, 'extras-bloqueio-botao' + i),
+                id: idg(tarefaNome, bloco, 'extras-bloqueio-botao' + i),
                 texto: 'Bloquear todas as audiências do tipo ' + horario?.descricaoTipoAudiencia + ' até a data preenchida acima.',
-                ancestral: id(tarefaNome, bloco, 'extras-recolhe'),
+                ancestral: idg(tarefaNome, bloco, 'extras-recolhe'),
                 acao: async ()=> {
                     if (!/\d\d\/\d\d\/\d\d\d\d/.test(input.value)) {
                         rota_avisoTemporario('Data no formato incorreto. Formato esperado: DD/MM/AAAA', 'erro')
@@ -1088,7 +1100,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         const comandos = []
         const dados = []
 
-        const chkDesignacao = document.querySelector(`[data-grupo="${id(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data-marcado="1"]`)
+        const chkDesignacao = document.querySelector(`[data-grupo="${idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data-marcado="1"]`)
         console.log('%c[Rota PJE]%c chkDesignacao: ' + JSON.stringify(chkDesignacao), LOG.teste, 'color:inherit')
         if (chkDesignacao) {
             const horario = JSON.parse(chkDesignacao.closest('[data-horario]').dataset.horario)
@@ -1096,17 +1108,17 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             dados.push({horario: horario})
         }
 
-        if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))) {
+        if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))) {
             comandos.push('con2_prazo_vencido_despachar')
             dados.push({tipo: 'con2_prazo_vencido_despachar_designacao'})
         }
 
-        if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
+        if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
             comandos.push('con2_prazo_vencido_certidao')
             dados.push({tipo: 'con2_prazo_vencido_certificar_designacao'})
         }
 
-        if (chkEstaMarcado(id(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))) {
+        if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))) {
             comandos.push('con2_prazo_vencido_gig')
             dados.push({tipo: 'con2_prazo_vencido_gig_acompanhamento'})
         }
@@ -1114,7 +1126,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         if (comandos.length) comandar(['con2_prazo_vencido_acoes_conjuntas'], [{comandos: comandos, parametros: dados}])
     }
     async function con2_prazo_vencido_salvar_link_da_audiencia() {
-        let inputLinkAudiencia = document.getElementById(id(tarefaNome, 'designa_audiencia', 'input_link_da_audiencia'))
+        let inputLinkAudiencia = document.getElementById(idg(tarefaNome, 'designa_audiencia', 'input_link_da_audiencia'))
         let linkSalvar = inputLinkAudiencia.value
         if (linkSalvar){
             await armazenar({ rota_con2_prazo_vencido_linkDaAudiencia: linkSalvar })

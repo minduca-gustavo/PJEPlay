@@ -66,7 +66,7 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
         let juizObjeto = sugeridos.find(j => normalizar(j?.destaques).includes(parametro)) || null
         return (juizObjeto?.nome)
     }
-    let idMagistrado = id('escolheMagistrado', 'botao')
+    let idMagistrado = idg('escolheMagistrado', 'botao')
     let botaoConfigura = criaBotaoAzul({
         id: idMagistrado,
         ancestral,
@@ -99,7 +99,7 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     if(opcao) clicar('#' + idMagistrado + '_botao_' + opcao)
     console.log('%c[Rota PJE]%c opcao' + JSON.stringify(opcao), LOG.erro, 'color:inherit')
     async function escolheMagistradoConfigura(){
-        let divId = id('escolheMagistrados', 'configura')
+        let divId = idg('escolheMagistrados', 'configura')
         let div = criaDiv({
             id: divId,
             ancestral: document.body

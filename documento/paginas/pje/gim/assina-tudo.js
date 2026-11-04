@@ -25,7 +25,7 @@ async function rotaAssinaTudo() {
     let elemento = await aguardarElemento(ancestral)
     if (!elemento) return
     console.log('%c[Rota PJE]%c assina Elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit', elemento)
-    let idBotaoExibe = id('assinaTudo', 'botao', 'exibe')
+    let idBotaoExibe = idg('assinaTudo', 'botao', 'exibe')
     document.getElementById(idBotaoExibe)?.remove()
     let botaoExibe = criaBotaoLaranja({
         id: idBotaoExibe,
@@ -79,7 +79,7 @@ async function rotaAssinaTudo() {
             return true
         }
         // CRIA DIV CENTRALIZADA PARA MOSTRAR OS DESPACHOS
-        let idDiv = id('assinaTudo', 'exibirTodos')
+        let idDiv = idg('assinaTudo', 'exibirTodos')
         document.getElementById(idDiv)?.remove()
         let div = criaDiv({
             id: idDiv,
@@ -87,14 +87,14 @@ async function rotaAssinaTudo() {
         })
         formataDiv(div)
         // CRIA CABEÇALHO COM TÍTULO E BOTÃO FECHAR
-        let idCabecalho = id('assinaTudo', 'cabecalho')
+        let idCabecalho = idg('assinaTudo', 'cabecalho')
         let cabecalho = criaDiv({
             id: idCabecalho,
             ancestral: idDiv,
             rowColumn: 'row-reverse'
         })
         let botaoFechar = criaBotaoAzul({
-            id: id('assinaTudo', 'botao', 'fechar'),
+            id: idg('assinaTudo', 'botao', 'fechar'),
             ancestral: idCabecalho,
             texto: '✕',
             acao: () => {
@@ -108,20 +108,20 @@ async function rotaAssinaTudo() {
         botaoFechar.style.padding =         '2px 5px'
         botaoFechar.style.borderRadius =    '4px'
         let titulo = criaTitulo({
-            id: id('assinaTudo', 'titulo'),
+            id: idg('assinaTudo', 'titulo'),
             texto: 'Exibe todos os documentos para assinatura de todas as OJs',
             ancestral: idCabecalho
         })
         titulo.style.width = '100%'
         titulo.style.fontSize = '16px'
-        let idSubCabecalho = id('assinaTudo', 'subCabecalho')
+        let idSubCabecalho = idg('assinaTudo', 'subCabecalho')
         let subCabecalho = criaDiv({
             id: idSubCabecalho,
             ancestral: idDiv,
             rowColumn: 'row-reverse'
         })
         // CRIA DIV ROLANTE PARA POSICIONAR OS DESPACHOS
-        let idRolante = id('assinaTudo', 'rolante')
+        let idRolante = idg('assinaTudo', 'rolante')
         let rolante = criaDiv({
             id: idRolante,
             ancestral: idDiv
@@ -135,13 +135,13 @@ async function rotaAssinaTudo() {
         })
         
         // CRIA RODAPE PARA BOTÃO DE SELECIONAR TODOS E ASSINAR - ATENÇÃO: O RODAPÉ É ROW-REVERSE, ou seja, os elementos inseridos primeiro ficam à direita
-        let idRodape = id('assinaTudo', 'rodape')
+        let idRodape = idg('assinaTudo', 'rodape')
         let rodape = criaDiv({
             id: idRodape,
             ancestral: idDiv,
             rowColumn: 'row-reverse'
         })
-        let idCheck = id('assinaTudo', 'check')
+        let idCheck = idg('assinaTudo', 'check')
         let idCheckTodos = idCheck + '_selecionaTodos'
         let checkTodos = await criaCheckBox({
             id: idCheckTodos,
@@ -157,20 +157,20 @@ async function rotaAssinaTudo() {
             clicar(checkTodos)
         }
         checkTodos.addEventListener('click', () => selecionaTodos(checkTodos, idCheck))
-        let idSubSeleciona = id('assina', 'subSeleciona')
+        let idSubSeleciona = idg('assina', 'subSeleciona')
         let subSeleciona = criaSubTitulo({
             id: idSubSeleciona,
             texto: 'Seleciona todos',
             ancestral: idSubCabecalho
         })
         subSeleciona.style.fontSize = '16px'
-        let idDivBotaoFuturo = id('assinaTudo', 'divBotaoFuturo')
+        let idDivBotaoFuturo = idg('assinaTudo', 'divBotaoFuturo')
         let divBotaoFuturo = criaDiv({
             id: idDivBotaoFuturo,
             ancestral: idRodape,
             rowColumn: 'row-reverse'
         })
-        let idContador = id('assinaTudo', 'contador')
+        let idContador = idg('assinaTudo', 'contador')
         let contador = criaTexto({
             id: idContador,
             texto: '',
@@ -207,7 +207,7 @@ async function rotaAssinaTudo() {
             contador.textContent = 'Nenhum documento disponível para assinatura em lote.'
             return
         }
-        let idAssinaSelecionadosESinalizados = id('assinaTudo', 'botao', 'assinaSelecionadosESinalizados')
+        let idAssinaSelecionadosESinalizados = idg('assinaTudo', 'botao', 'assinaSelecionadosESinalizados')
         let assinaSelecionadosESinalizados = criaBotaoLaranja({
             id: idAssinaSelecionadosESinalizados,
             texto: 'Assinar Selecionados e Sinalizados',
@@ -260,7 +260,7 @@ async function rotaAssinaTudo() {
             contador.textContent = final ? 'Busca finalizada: ' + atual + ' de ' + total + ' OJs.' : 'Buscando ' + atual + '/' + total + ' OJs'
         }
         function atualizaContadorDespachos(){
-            let contadores = [...document.querySelectorAll('[id^="' + id('assinaTudo', 'contador', 'cabecalho') + '"]')].filter(d => d.id.match(/cabecalho_\d+/))
+            let contadores = [...document.querySelectorAll('[id^="' + idg('assinaTudo', 'contador', 'cabecalho') + '"]')].filter(d => d.id.match(/cabecalho_\d+/))
             console.log('%c[Rota PJE]%c contadores.length: ' + JSON.stringify(contadores.length), LOG.info, 'color:inherit')
             for (let i = 0; i < contadores.length; i++){
                 contadores[i].textContent = (i + 1) + '/' + contadores.length
@@ -317,24 +317,24 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
         if (!div.isConnected) return // impede a execução se o usuário fechar
         if (!conteudo) continue
         let idProcesso = processo?.id
-        let idDivProcesso = id('assinaTudo', 'processo', idProcesso)
+        let idDivProcesso = idg('assinaTudo', 'processo', idProcesso)
         let divProcesso = criaDiv({
             id: idDivProcesso,
             ancestral: idRolante + '_grade'
         })
-        let idDivCabecalhoProcesso = id('assinaTudo', 'cabecalho', idProcesso)
+        let idDivCabecalhoProcesso = idg('assinaTudo', 'cabecalho', idProcesso)
         let cabecalhoProcesso = criaDiv({
             id: idDivCabecalhoProcesso,
             ancestral: idDivProcesso,
             rowColumn: 'row-reverse'
         })
-        let idContadorCabecalho = id('assinaTudo', 'contador', 'cabecalho', idProcesso)
+        let idContadorCabecalho = idg('assinaTudo', 'contador', 'cabecalho', idProcesso)
         let contadorCabecalho = criaSubTitulo({
             texto: '',
             id: idContadorCabecalho,
             ancestral: idDivCabecalhoProcesso
         })
-        let idAbreDetalhesCabecalho = id('assinaTudo', 'abre_detalhes', idProcesso)
+        let idAbreDetalhesCabecalho = idg('assinaTudo', 'abre_detalhes', idProcesso)
         let botaoAbreDetalhesCabecalho = criaBotaoLaranja({
             id: idAbreDetalhesCabecalho,
             texto: 'Abre os detalhes do processo',
@@ -344,7 +344,7 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
                 window.open(url, '_blank')
             }
         })
-        let idTituloProcessoCabecalho = id('assinaTudo', 'titulo_cabecalho', idProcesso)
+        let idTituloProcessoCabecalho = idg('assinaTudo', 'titulo_cabecalho', idProcesso)
         let tituloProcessoCabecalho = criaSubTitulo({
             texto: processo?.numeroProcesso,
             id: idTituloProcessoCabecalho,
@@ -353,13 +353,13 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
         formataDiv(divProcesso, 'fundo', 'auto', 'auto', 'relative')
         
         //conteudo.querySelector('img')?.remove()
-        let idDivConteudo = id('assinaTudo', 'conteudo', idProcesso)
+        let idDivConteudo = idg('assinaTudo', 'conteudo', idProcesso)
         let divConteudo = criaDiv({
             id: idDivConteudo,
             ancestral: idDivProcesso
         })
         divConteudo.innerHTML = conteudo
-        let idDivRodapeProcesso = id('assinaTudo', 'rodape', idProcesso)
+        let idDivRodapeProcesso = idg('assinaTudo', 'rodape', idProcesso)
         let rodapeProcesso = criaDiv({
             id: idDivRodapeProcesso,
             ancestral: idDivProcesso,
@@ -374,7 +374,7 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
         checkBoxProcesso.dataset.oj = processo?.idOrgaoJulgador || ''
         checkBoxProcesso.dataset.ojDescricao = processo?.descricaoOrgaoJulgador || ''
         clicar(checkBoxProcesso)
-        let idAbreDetalhesRodape = id('assinaTudo', 'abre_detalhes_rodape', idProcesso)
+        let idAbreDetalhesRodape = idg('assinaTudo', 'abre_detalhes_rodape', idProcesso)
         let botaoAbreDetalhesRodape = criaBotaoLaranja({
             id: idAbreDetalhesRodape,
             texto: 'Abre os detalhes do processo',
@@ -384,7 +384,7 @@ async function apresentaDespachos(dados, idRolante, idCheck, sinalizados, div){
                 window.open(url, '_blank')
             }
         })
-        let idTituloProcesso = id('assinaTudo', 'titulo', idProcesso)
+        let idTituloProcesso = idg('assinaTudo', 'titulo', idProcesso)
         let tituloProcesso = criaSubTitulo({
             texto: processo?.numeroProcesso,
             id: idTituloProcesso,
@@ -662,7 +662,7 @@ async function rota_assinarTudo_sinalizadoAberto() {
 }
 
 function rota_tratarSinalizados_criarWidgetProximo(execucao) {
-    let idWidget = id('tratarSinalizados', 'widget')
+    let idWidget = idg('tratarSinalizados', 'widget')
     document.getElementById(idWidget)?.remove()
     let restantes = (execucao.sinalizados?.length || 1) - 1
     _rota_criarWidgetFlutuante({

@@ -48,12 +48,12 @@ async function visualizador_de_documentos_assistente_iniciar() {
     console.log('%c[Rota PJE]%c dados?.rota_dadosVisualizadorDeDocumentos' + JSON.stringify(dados?.rota_dadosVisualizadorDeDocumentos), LOG.rosa, 'color:inherit')
     let bloco = 'inicial'
     console.log('%c[Rota PJE]%c dados: ' + JSON.stringify(dados), LOG.rosa, 'color:inherit')
-    let idDiv = id(tarefaNome)
-    let idInput = id(tarefaNome, 'tipos')
+    let idDiv = idg(tarefaNome)
+    let idInput = idg(tarefaNome, 'tipos')
     criaDiv({ id: idDiv, ancestral: 'rota_corpo' })
-    criaTitulo({ id: id(tarefaNome, 'titulo'), texto: 'Visualizador de Documentos', ancestral: idDiv })
+    criaTitulo({ id: idg(tarefaNome, 'titulo'), texto: 'Visualizador de Documentos', ancestral: idDiv })
     criaTextoQueAbrePassandoOMouse({
-        id: id(tarefaNome, 'instrucao_longa'),
+        id: idg(tarefaNome, 'instrucao_longa'),
         texto: `Passe o mouse para ver como utilizar este assistente.
 Clique para fixar/desafixar.`,
         textoBox: `No input abaixo, digite os termos que você deseja buscar no tipo do documento ou no título. Os tipos selecionados serão mostrados abaixo, em formato de tabela.
@@ -209,7 +209,7 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         ancestral: idDiv
     })
     criaBotaoLaranja({
-        id: id(tarefaNome, 'botao_tipos'), 
+        id: idg(tarefaNome, 'botao_tipos'), 
         texto: 'Seleciona Tipos', 
         ancestral: idDiv,
         acao: () => criaVisualizador(idInput)
@@ -223,7 +223,7 @@ Ao clicar nos botões "🎛️", o documento escolhido é detalhado na tabela cr
         criaVisualizador(idInput)
     }
     function criaVisualizador(input){
-        let idVisualizador = id(tarefaNome, 'visualizador')
+        let idVisualizador = idg(tarefaNome, 'visualizador')
         let valores = document.getElementById(input)?.value
         if (!valores){
             document.getElementById(idVisualizador)?.remove()
