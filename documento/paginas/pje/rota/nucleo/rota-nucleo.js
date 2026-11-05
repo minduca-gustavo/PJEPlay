@@ -121,6 +121,13 @@ function rota_normalizaHtml(valor) {
     return ''
 }
 
+async function execucaoAtualConferencia(){
+	let wname = window.name
+    let execArm = await obterArmazenamento('rotaExecucaoAtual')
+    let execAtual = execArm?.rotaExecucaoAtual || ''
+    return wname.includes(execAtual)
+}
+
 
 // ── Espera com timeout ────────────────────────────────────────
 //

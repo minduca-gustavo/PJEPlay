@@ -139,15 +139,6 @@ Clique para fixar/desafixar.`,
     criaDiv({ id: idg(tarefaNome, bloco), ancestral: 'rota_corpo' })
     criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Documentos do Processo', ancestral: idg(tarefaNome, bloco) })
     
-    let tiposDocumentos = [
-        { chave: 'sentenca',         label: 'Sentença' },
-        { chave: 'recurso',          label: 'Recurso' },
-        { chave: 'deposito',         label: 'Depósito' },
-        { chave: 'custas',           label: 'Custas' },
-        { chave: 'seguro',           label: 'Seguro/Fiança', opcoes: ['fianca', 'seguro'] },
-        { chave: 'procuracao',       label: 'Procuração' },
-        { chave: 'substabelecimento',label: 'Substabelecimento' },
-    ]
     let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
     let valores = 'sentenca, recurso, deposito, custas, seguro, fianca, procuracao, substabelecimento'
     criaVisualizadorDeDocumentos({
@@ -190,9 +181,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     let caixas = []
     for(let i = 0; i < recursosPrimeiroGrau.length; i++){
         let recurso = recursosPrimeiroGrau[i]
-        let {id, idUnicoDocumento, data, participacaoProcesso, tipoPolo} = recurso || {}
+        let {id, idUnicoDocumento, data, participacaoProcesso, titulo, idSignatario} = recurso || {}
         let ancestral = idg(tarefaNome, bloco, JSON.stringify(i))
-        let coluna = idg(tarefaNome, bloco, i, 'coluna')
+        let coluna = idg(tarefaNome, bloco, JSON.stringify(i), 'coluna')
         criaDiv({
             id: coluna,
             ancestral: 'rota_corpo'
@@ -208,11 +199,12 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         })
         caixas.push(ancestral + '_check')
         check.style.gap = '0px'
-        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento})
+        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento, idSignatario})
+        clicar('#' + ancestral + '_check')
         let textoAoLado = criaTexto({
             id: ancestral + '_texto',
             ancestral,
-            texto: idUnicoDocumento + ' - ' + new Date(data).toLocaleDateString() + ' - ' + participacaoProcesso.split(',')[0]
+            texto: idUnicoDocumento + ' - ' + new Date(data).toLocaleDateString() + ' - ' + participacaoProcesso.split(',')[0] + ' - ' + titulo
         })
         textoAoLado.style.padding = '0px 0px 0px 0px'
         textoAoLado.style.cursor = 'pointer'
@@ -263,7 +255,17 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     })
 
     async function processarRecursosSelecionados(caixas) {
-        alert(JSON.stringify(caixas))
+        let recursos = []
+        for (caixa of caixas){
+            let elemento = document.getElementById(caixa)
+            let marcado = elemento.dataset.marcado == 1 ? true : false
+            let dataset = JSON.parse(elemento.dataset.recurso)
+            console.log('%c[Rota PJE]%c dataset: ' + JSON.stringify(dataset), LOG.info, 'color:inherit')
+            let {idSignatario, idUnicoDocumento} = dataset
+            recursos.push({marcado, idUnicoDocumento, idSignatario})
+        }
+        comandar(['con2_prazo_vencido_processar_recursos'], [recursos])
+        
     }
     
     return

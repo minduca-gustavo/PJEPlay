@@ -119,6 +119,8 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
 //__________________________________________________
 
 async function con2_prazo_vencido_abrirDocumentos(documento) {
+    let confereExecucao = await execucaoAtualConferencia()
+    if (!confereExecucao) return
     // Tenta pelo idUnicoDocumento (documento raiz)
     let botao = selecionar('[id="anexo_' + documento.id + '"]')
     console.log('%c[Rota PJE]%c botao 125: ' + JSON.stringify(botao.textContent), LOG.rosa, 'color:inherit')
@@ -210,6 +212,32 @@ async function con2_prazo_vencido_acoesRetificar(){
     clicar(elemento)
 }
 
+// _________________________________________________
+//                   PROCESSAR RECURSO
+// _________________________________________________
+
+async function con2_prazo_vencido_processarRecursos(recursos) {
+    let confereExecucao = await execucaoAtualConferencia()
+    if (!confereExecucao) return
+    let idURL = location.href.match(/processo\/(\d+)\/detalhe/)
+    let id = idURL[1]
+    /*
+    [{"marcado":false,"idUnicoDocumento":"4caf1df","idSignatario":239515},
+    {"marcado":false,"idUnicoDocumento":"cf1e595","idSignatario":33408}]
+    */
+    let recorrentes = []
+    for (let recurso of recursos){
+        let {marcado, idUnicoDocumento, idSignatario} = recurso
+        let recorrente = []
+        if (marcado){
+            let url = location.origin + '/pje-comum-api/api/processos/id/' + id + '/partes/representadas?idRepresentante= + '
+            recorrente = await rota_fetch()
+        }
+    }
+    alert(JSON.stringify(recursos))
+    
+}
+
 //__________________________________________________
 //                      DESPACHAR
 //__________________________________________________
@@ -217,6 +245,8 @@ async function con2_prazo_vencido_acoesRetificar(){
 // DESPACHAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function con2_prazo_vencido_despachar(tipo) {
+    let confereExecucao = await execucaoAtualConferencia()
+    if (!confereExecucao) return
     let envio = tipo.tipo
     await armazenar({
         'rotapje_con2_prazo_vencido_despachar': dadosCon2PrazoVencido.execucaoAtual,
@@ -327,227 +357,13 @@ async function con2_prazo_vencido_acoesDespachar(){
 
 }
 
-
-//__________________________________________________
-//                      DESIGNAR AUDIÊNCIA
-//__________________________________________________
-
-// DESIGNAR AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
-
-async function con2_prazo_vencido_designarAudiencia(tipo) {
-    //alert (JSON.stringify(tipo))
-    //return
-    await armazenar({
-        'rotapje_con2_prazo_vencido_designa_audiencia_tipo': tipo,
-        'rotapje_con2_prazo_vencido_designa_audiencia': dadosCon2PrazoVencido.execucaoAtual
-    })
-    let parametros =    '?rotapje_con2_prazo_vencido_designa_audiencia=' + dadosCon2PrazoVencido.execucaoAtual
-    let nomeJanela =    'rotapje_con2_prazo_vencido_designa_audiencia_' + dadosCon2PrazoVencido.execucaoAtual
-    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
-    if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
-        return
-    }
-    let url = location.origin + '/pjekz/pauta-audiencias' + parametros
-    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
-}
-
-/*
-{"horario":{
-    "idTipoAudiencia":21,
-    "descricaoTipoAudiencia":"Inicial por videoconferência",
-    "codigoTipoAudiencia":"7699",
-    "horarioInicial":"2026-08-11T09:30:00",
-    "horarioFinal":"2026-08-11T09:45:00",
-    "qtdDias":47,"diaUtil":"2026-08-11",
-    "processo":"0010861-27.2026.5.15.0055",
-    "nomeDaSala":"ERIKA RODRIGUES PEDREUS MORETE"
-    }
-}
-*/
-
-// DESIGNAR AUDIÊNCIA PASSO 2 - verifica se a janela aberta é a da extensão
-async function con2_prazo_vencido_aoAbrirDesignarAudiencia(){
-    
-    let janela = confereJanela(JANELA.pautaAudiencias)
-    if (!janela) return
-    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_designa_audiencia')
-    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_designa_audiencia || '')
-    if (!armazenamento) return
-    let nomeJanela = window.name
-    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_designa_audiencia')) return
-    if(execucao !== nomeJanela.split('_').pop()) return
-    registrarListenerFechar(execucao)
-    await con2_prazo_vencido_acoesDesignarAudiencia()
-}
-
-// DESIGNAR AUDIÊNCIA PASSO 3 - executa as ações
-
-async function con2_prazo_vencido_acoesDesignarAudiencia(){
-    let dados = await obterArmazenamento('rotapje_con2_prazo_vencido_designa_audiencia_tipo')
-    let buscaLink = await obterArmazenamento('rota_con2_prazo_vencido_linkDaAudiencia')
-    let link = buscaLink?.rota_con2_prazo_vencido_linkDaAudiencia || ''
-    
-    //if (!dados) return
-    if (dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.tipo == 'manual'){
-        await con2_prazo_vencido_acoesDesignarAudienciaManual('manual')
-        return
-    }
-    let horario = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario || ''
-    if (!horario) {
-        await con2_prazo_vencido_acoesDesignarAudienciaManual('erro')
-        return
-    }
-    if (link) horario.link = link
-    await aguardarElementoNovo('pautaDeAudienciaCelulaDaTabela')
-    await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
-    
-   
-    await con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario)
-    
-
-}
-
-// DESIGNAR AUDIÊNCIA - AÇÕES AUXILIARES
-
-async function con2_prazo_vencido_acoesDesignarAudienciaManual(manualOuErro) {
-    let [tipo, aviso] = [null, null]
-    if (manualOuErro == 'erro') {
-        tipo  = 'erro'
-        aviso = 'Ocorreu um erro. Designe manualmente a audiência.'
-    } else {
-        tipo  = 'info'
-        aviso = 'Designe manualmente a audiência.'
-    }
-    let dados = await obterArmazenamento('rotapje_con2_prazo_vencido_designa_audiencia_tipo')
-    let processo = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.processo
-    let sala = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.sala
-    let link = dados?.rotapje_con2_prazo_vencido_designa_audiencia_tipo?.horario?.link
-    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_con2_prazo_vencido_em_andamento'])
-    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_con2_prazo_vencido_em_andamento === 'con2_prazo_vencido_designa_audiencia'
-    if (chamadaPorAcaoConjunta) {
-        await criaDivFlutuante({
-            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
-            titulo: 'Execute o necessário e clique em próximo.'
-        })
-        await criaBotaoLaranja({
-            texto: '▶️ Próximo',
-            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante_botao',
-            ancestral: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
-            acao: async () => {
-                await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_designa_audiencia' })
-                window.close()
-            }
-        })
-    }
-    let seletorJuiz = await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuiz')
-    let metaQuadroDeHorarios
-    if (seletorJuiz.textContent != sala){
-        clicar(seletorJuiz)
-        await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
-        let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
-        let juizSelecionado = juizes.find(j => j.textContent?.trim() == sala)
-        if (!juizSelecionado){
-            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
-            return
-        }
-        metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        clicar(juizSelecionado)
-    }
-    rota_avisoObrigatorio(aviso, 15)
-    await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
-    let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
-    preencher(inputNumeroProcesso, processo)
-    let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
-    preencher(inputLinkAudiencia, link)
-    return
-}
-
-async function con2_prazo_vencido_acoesDesignarAudienciaAutomaticamente(horario) {    
-    // selecionar juiz
-    let seletorJuiz = await sel('pautaDeAudienciaSeletorDeJuiz')
-    let metaQuadroDeHorarios
-    if (seletorJuiz.textContent != horario.nomeDaSala){
-        clicar(seletorJuiz)
-        await aguardarElementoNovo('pautaDeAudienciaSeletorDeJuizAberto')
-        let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
-        let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
-        if (!juizSelecionado){
-            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
-            return
-        }
-        
-        monitorarBody(6000, 100)
-        metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
-        clicar(juizSelecionado)
-    }
-    if (metaQuadroDeHorarios){
-        await aguardarElementoMudar(metaQuadroDeHorarios,'content')
-    } else {
-        await aguardarElementoNovo('pautaDeAudienciaMetaQuadroHorariosVagos')
-    }
-    //return
-    //// clicar no botao do primeiro dia
-    //await aguardarElementoNovo(['pautaDeAudienciaCelulaDaTabela', 'pautaDeAudienciaMetaQuadroHorariosVagos'], {modo: 'e'})
-    //return
-    let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
-    let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil'))
-    if (!celula){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
-        return
-    }
-    await suspender(500)
-    clicar(celula)
-
-    // clicar no botao de designar
-
-    let botaoDesignar = await aguardarElementoNovo('pautaDeAudienciaBotaoDesignarAudiencia')
-    clicar(botaoDesignar)
-
-    //preencher dados do processo e da audiencia
-    let confirmacaoSala = await aguardarElementoNovo('pautaDeAudienciaConfirmacaoSala')
-    if (!confirmacaoSala.textContent.includes(horario.nomeDaSala)){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
-        return
-    }
-    let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
-    preencher(inputNumeroProcesso, horario.processo)
-    let inputLinkAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputLinkDesignarAudiencia')
-    preencher(inputLinkAudiencia, horario.link)
-    let dataAudiencia = new Date(horario.horarioInicial).toLocaleDateString('pt-BR')
-    let pautaDeAudienciaInputDataDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputDataDesignarAudiencia')
-    let horarioInicial = horario.horarioInicial.split('T')[1].split(':')[0] + ':' + horario.horarioInicial.split('T')[1].split(':')[1]
-    preencher(pautaDeAudienciaInputDataDesignarAudiencia, dataAudiencia)
-    let pautaDeAudienciaInputHorarioDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputHorarioDesignarAudiencia')
-    preencher(pautaDeAudienciaInputHorarioDesignarAudiencia, horarioInicial)
-    let pautaDeAudienciaInputTipoDesignarAudiencia = await aguardarElementoNovo('pautaDeAudienciaInputTipoDesignarAudiencia')
-    clicar(pautaDeAudienciaInputTipoDesignarAudiencia)
-    await aguardarElementoNovo('pautaDeAudienciaOpcoesTipoAudienciaDesignarAudienciaAberto')
-    clicar('[name="' + horario.descricaoTipoAudiencia + '"]')
-    
-    // clicar no botao de confirmar - alterar depois para CONFIRMAR
-
-    let botoesDesignar = [...(await sel('pautaDeAudienciaBotoesConfirmarCancelarDesignarAudiencia', '', true))]
-    let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
-    if (!botaoConfirmar){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
-        return
-    }
-    await suspender(1000)
-    //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
-    clicar(botaoConfirmar)
-    await aguardarElementoNovo('pautaDeAudienciaBotaoFecharDesignacaoDeAudiencia')
-    await suspender(2000)
-    await armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_designa_audiencia' })
-    window.close()
-    return
-}
-
 //__________________________________________________
 //                      COLOCAR GIG DE ACOMPANHAMENTO
 //__________________________________________________
 
 async function con2_prazo_vencido_colocarGigDeAcompanhamento() {
+    let confereExecucao = await execucaoAtualConferencia()
+    if (!confereExecucao) return
     let id = await obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.processo?.id || '')
     let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
     let audienciaMarcadaNumero = audienciaMarcadaHorario ? new Date(audienciaMarcadaHorario).getTime() : NaN
@@ -571,223 +387,6 @@ async function con2_prazo_vencido_colocarGigDeAcompanhamento() {
 }
 
 
-//__________________________________________________
-//                      CERTIFICAR
-//__________________________________________________
-
-// CERTIFICAR PASSO 1 - recebe os dados e abre a tela de tarefa
-
-async function con2_prazo_vencido_certificar(tipo) {
-    let envio = tipo.tipo
-    await armazenar({
-        'rotapje_con2_prazo_vencido_certificar': dadosCon2PrazoVencido.execucaoAtual,
-        'rotapje_con2_prazo_vencido_certificar_tipo': envio,
-    })
-    let parametros =    '?rotapje_con2_prazo_vencido_certificar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rotapje_con2_prazo_vencido_certificar_tipo=' + envio
-    let nomeJanela =    'rotapje_con2_prazo_vencido_certificar_' + dadosCon2PrazoVencido.execucaoAtual
-    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
-    if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
-        return
-    }
-    let id =            dadosCon2PrazoVencido?.processo?.id
-    let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
-    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
-}
-
-// CERTIFICAR PASSO 2 - verifica se a janela aberta é a da extensão
-async function con2_prazo_vencido_aoAbrirCertificar(){
-    let janela = confereJanela(JANELA.certificar)
-    if (!janela) return
-    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_certificar')
-    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_certificar || '')
-    if (!armazenamento) return
-    let nomeJanela = window.name
-    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_certificar')) return
-    if(execucao !== nomeJanela.split('_').pop()) return
-    registrarListenerFechar(execucao)
-    await con2_prazo_vencido_acoesCertificar()
-}
-
-// CERTIFICAR PASSO 3 - executa as ações
-
-async function con2_prazo_vencido_acoesCertificar(){
-    let elementos = await aguardarElementoNovo(
-        [
-            'detalhesDoProcessoInputTipoDeDocumento',
-            'detalhesDoProcessoInputDescricaoDeDocumento',
-            'anexarDocumentosBuscarModelos'
-        ],
-        {modo: 'e', timeout: 10000}
-    )
-    
-    if (!elementos) return
-    let tipo = await sel('detalhesDoProcessoInputTipoDeDocumento')
-    let descricao = await sel('detalhesDoProcessoInputDescricaoDeDocumento')
-    let modelo = await sel('anexarDocumentosBuscarModelos')
-    await suspender(200)
-    await preencherCampoComEscolhaDeOpcao(tipo, 'Certidão')
-    await suspender(200)
-    preencher(descricao, 'Designação de audiência')
-    await suspender(200)
-    await digitarNoInput(modelo, 'SCBAU_TI_CERT')
-    await selecionarOpcaoDeModelo('SCBAU_TI_CERT')
-    await esperarEClicar('elaborarDespachoInserirModelo')
-    let botaoAssinar = await aguardarElementoNovo('anexarDocumentosBotaoAssinar')
-    clicar(botaoAssinar)
-    monitorarBody(6000, 100)
-    window.addEventListener('beforeunload', () => {
-        comandar(['con2_prazo_vencido_intimar'], [{tipo: 'con2_prazo_vencido_intimar_designacao'}])
-    })
-    await suspender(2000)
-    return
-}
-
-
-//__________________________________________________
-//                      INTIMAR
-//__________________________________________________
-
-// INTIMAR PASSO 1 - recebe os dados e abre a tela de tarefa
-
-async function con2_prazo_vencido_intimar(tipo) {
-    let id = dadosCon2PrazoVencido?.processo?.id
-    let audienciaMarcadaTipo = await buscarAudienciasMarcadas(id).then(dados=> dados?.tipo?.descricao || '')
-    let envio = tipo.tipo
-    await armazenar({
-        'rotapje_con2_prazo_vencido_intimar': dadosCon2PrazoVencido.execucaoAtual,
-        'rotapje_con2_prazo_vencido_intimar_tipo': envio,
-        'rotapje_con2_prazo_vencido_intimar_audienciaMarcadaTipo': audienciaMarcadaTipo,
-    })
-    let parametros =    '?rotapje_con2_prazo_vencido_intimar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rotapje_con2_prazo_vencido_intimar_tipo=' + envio
-    let nomeJanela =    'rotapje_con2_prazo_vencido_intimar_' + dadosCon2PrazoVencido.execucaoAtual
-    let url =           location.origin + '/pjekz/processo/' + id + '/comunicacoesprocessuais/minutas' + parametros
-    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
-}
-
-
-
-// INTIMAR PASSO 2 - verifica se a janela aberta é a da extensão
-async function con2_prazo_vencido_aoAbrirIntimar(){
-    let janela = confereJanela(JANELA.pec)
-    if (!janela) return
-    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_intimar')
-    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_intimar || '')
-    if (!armazenamento) return
-    let nomeJanela = window.name
-    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_intimar')) return
-    if(execucao !== nomeJanela.split('_').pop()) return
-    registrarListenerFechar(execucao)
-    await con2_prazo_vencido_acoesIntimar()
-}
-
-// INTIMAR PASSO 3 - executa as ações
-
-async function con2_prazo_vencido_acoesIntimar(){
-    
-    await aguardarElementoNovo(
-        [
-            'prepararExpedientesSeletorTipoDeExpediente',
-            'prepararExpedientesBotaoConfeccionarAtoAgrupado',
-        ],
-        {modo: 'e', timeout: 10000}
-    )
-    //logInterceptador = false
-    
-    let seletor = await sel('prepararExpedientesSeletorTipoDeExpediente')
-    clicar(seletor)
-    await aguardarElementoNovo('prepararExpedientesSeletorTipoDeExpedienteAberto')
-    let opcao = [...await sel('prepararExpedientesSeletorTipoDeExpedienteAberto', '', true)].find(o => o.textContent.trim().includes('Notificação inicial'))
-    clicar(opcao)
-    let botaoConfeccionar = await aguardarElementoNovo('prepararExpedientesBotaoConfeccionarAtoAgrupado')
-    clicar(botaoConfeccionar)
-    await aguardarElementoNovo(
-        [
-            'elaborarAtoSeletorTipoDeDocumento',
-            'elaborarAtoInputDescricao'
-        ],
-        {modo: 'e', timeout: 10000}
-    )
-    let descricao = await sel('elaborarAtoInputDescricao')
-    let inputModelo = await sel('elaborarDespachoBuscarModelos')
-    preencher(descricao, 'Notificação Inicial - Designação de audiência')
-    await suspender(200)
-    let areaAssinatura = await aguardarElementoNovo('elaborarAtoCampoAssinaturaOpcional')
-    await preencherCKEditorExecCommand(areaAssinatura, '.')
-    await suspender(200)
-    let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
-    await focar(conteudoPrincipal)
-    await suspender(200)
-    let tipoAudiencia = await obterArmazenamento('rotapje_con2_prazo_vencido_intimar_audienciaMarcadaTipo').then(dados => dados?.rotapje_con2_prazo_vencido_intimar_audienciaMarcadaTipo || '')
-    let tipos = [
-        {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
-        {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
-    ]
-    let modelo = tipos.find(t => tipoAudiencia.toLowerCase().includes(t.tipo))?.modelo || null
-    if (!modelo){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
-        window.addEventListener('beforeunload', () => {
-            comandar(['con2_prazo_vencido_aguardando_audiencia'], [{tipo: 'con2_prazo_vencido_aguardando_audiencia'}])
-        })
-        return
-    }
-    await digitarNoInput(inputModelo, modelo)
-    await selecionarOpcaoDeModelo(modelo)
-    await suspender(200)
-    await esperarEClicar('elaborarDespachoInserirModelo')
-    await suspender(200)
-    let botaoFinalizarMinuta = await aguardarElementoNovo('elaborarAtoFinalizarMinuta')
-    clicar(botaoFinalizarMinuta)
-    
-    //monitorarBody(6000, 300, {incluir:{classes:['snack-bar']}})
-    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Modelo de documento inserido com sucesso no editorX'})
-    let i = 0
-    while (await sel('prepararExpedientesMensagemModeloInserido')){
-        await suspender(500)
-        if (i++ > 3 * 2) break
-    }
-    //for(let i = 0; i < 30 * 2; i++){
-    //    let metaConfere = await interceptador_ler('expedientes_materia')
-    //    await suspender(500)
-    //    if (metaConfere !== metaExpedientes) break
-    //    if (i==30) return rota_avisoTemporario('Ocorreu um erro. Prossiga manualmente.', 'erro', 15 * 1000)
-    //}
-    //await suspender(200)
-    //await aguardarElementoNovo('prepararExpedientesAtoConfeccionado')
-    //metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    let botaoPoloAtivo = await aguardarElementoNovo('prepararExpedientesBotaoPoloAtivo')
-    //logInterceptador = true
-    let metaExpedientes = await interceptador_ler('expedientes_materia') || null
-    clicar(botaoPoloAtivo)
-    //monitorarBody(6000, 500, {incluir:{classes:['mat-select']}})
-    let verificarCarregamentoDestinatario = await aguardarElementoNovo('prepararExpedientesVerificarCarregamentoDestinatario', {texto:'Notificação inicialTipo de Expediente'})
-    i = 0
-    while (verificarCarregamentoDestinatario.isConnected){
-        await suspender(500)
-        if (i++ > 3 * 2) break
-    }
-    //await suspender(500)
-    let botaoSalvar = await aguardarElementoNovo('prepararExpedientesBotaoSalvar')
-    let botaoAssinar = (await aguardarElementoNovo('prepararExpedientesBotaoAssinar'))
-    
-    clicar(botaoSalvar)
-    let verificarCarregamentoSalvar = await aguardarElementoNovo('prepararExpedientesRodinhaGirando')
-    while (verificarCarregamentoSalvar.isConnected){
-        await suspender(500)
-    }
-    clicar(botaoAssinar)
-    window.addEventListener('beforeunload', () => {
-        comandar(['con2_prazo_vencido_aguardando_audiencia'], [{tipo: 'con2_prazo_vencido_aguardando_audiencia'}])
-    })
-    monitorarBody(6000, 100)
-    await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Expediente(s) assinado(s) com sucesso.X'})
-    await suspender(1500)
-    window.close()
-    
-}
-
 
 //__________________________________________________
 //                      ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA
@@ -796,6 +395,8 @@ async function con2_prazo_vencido_acoesIntimar(){
 // ENCAMINHAR PARA AGUARDANDO AUDIÊNCIA PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function con2_prazo_vencido_aguardandoAudiencia(tipo) {
+    let confereExecucao = await execucaoAtualConferencia()
+    if (!confereExecucao) return
     let id =            dadosCon2PrazoVencido?.processo?.id
     let tarefa =        await buscarTarefaMaisRecente(id)
     let idTarefa =      tarefa[0]?.idTarefa || ''
@@ -900,6 +501,7 @@ async function con2_prazo_vencido_acoesConjuntas(p){
 Object.assign(rota_acoes, {
     'con2_prazo_vencido_abrir_documentos':  async (p) => await con2_prazo_vencido_abrirDocumentos(p),
     'con2_prazo_vencido_retificar':         async (p) => await con2_prazo_vencido_retificarAutuacao(p),
+    'con2_prazo_vencido_processar_recursos':async (p) => await con2_prazo_vencido_processarRecursos(p)
 })
 
 
