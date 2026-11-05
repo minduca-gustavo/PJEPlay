@@ -205,6 +205,7 @@
 				"documento/paginas/pje/rota/tarefas/visualizador-de-documentos/roteiro-visualizador-de-documentos.js",
 				"documento/paginas/pje/rota/tarefas/pos-triagem/roteiro.js",
 				"documento/paginas/pje/rota/tarefas/acordo-vencido/roteiro.js",
+				"documento/paginas/sisbajud/sisbajud.js",
 
 				"documento/paginas/pje/pje.js",
 				"documento/documento.js"

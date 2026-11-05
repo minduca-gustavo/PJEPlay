@@ -321,6 +321,8 @@ function rota_interfacePorContexto(){
 	// assistentes/quadro-juizesSempreVisivel.js
 	visualizaQuadroDeJuizes()
 
+	sisbajudInicia()
+
 	// nucleo/gigs.js — primeira tentativa; o observer cobre o resto
 	devolverGig()
 	
@@ -340,6 +342,8 @@ function rota_interfacePorContexto(){
 	pautaAudienciasMeses()
 	//
 	guardaContraOJIncorreta()
+
+	sisbajudDetalhesAbriu()
 
 	// gigs — botão de copiar atendimento. Passada de recuperação:
 	// o observador central só vê o que é adicionado depois dele,

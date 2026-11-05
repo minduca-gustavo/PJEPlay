@@ -86,6 +86,7 @@ var JANELA = {
 	triagem_inicial:		/\/pjekz\/processo\/\d*\/tarefa\/122\/transicao/,
 	encaminharPostoAvancado:/\/pjekz\/processo\/\d*\/tarefa\/\d*\/posto-avancado\/encaminhar/,
 	escaninho:              /\/pjekz\/escaninho/,
+	sisbajudCadastrarMinuta:/sisbajud\.cnj\.jus\.br\/minuta\/\d+\/detalhar/,
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
 	certificar:             /\/pjekz\/processo\/\d*\/documento\/anexar/,
 	minutar:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/minutar/,
