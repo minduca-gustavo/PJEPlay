@@ -230,11 +230,12 @@ async function con2_prazo_vencido_processarRecursos(recursos) {
         let {marcado, idUnicoDocumento, idSignatario} = recurso
         let recorrente = []
         if (marcado){
-            let url = location.origin + '/pje-comum-api/api/processos/id/' + id + '/partes/representadas?idRepresentante= + '
-            recorrente = await rota_fetch()
+            let url = location.origin + '/pje-comum-api/api/processos/id/' + id + '/partes/representadas?idRepresentante=' + idSignatario
+            recorrente = await rota_fetch(url)
         }
+        recorrentes.push({marcado, idUnicoDocumento, recorrente})
     }
-    alert(JSON.stringify(recursos))
+    alert(JSON.stringify(recorrentes))
     
 }
 
