@@ -1,6 +1,8 @@
-function pautaAudienciasMeses(){
+async function pautaAudienciasMeses(){
     let janela = confereJanela(JANELA.pautaAudiencias)
     if(!janela) return
+    console.log('%c[Rota PJE]%c 4 audiências: ' + JSON.stringify(4), LOG.info, 'color:inherit')
+    await aguardarElemento('pje-cabecalho-perfil .papel-usuario')
     let oj = document.querySelector('pje-cabecalho-perfil .papel-usuario')
     if (!oj.textContent.includes('CON1')) return
     let fitaId = idg('pautaAudiencias', 'meses')
@@ -9,6 +11,7 @@ function pautaAudienciasMeses(){
         id: fitaId,
         ancestral: document.body
     })
+    await aguardarElemento('pje-calendario-pauta-audiencia .filtros')
     let elementoAnterior = document.querySelector('pje-calendario-pauta-audiencia .filtros')
     formataFitaSuperior(div)
     insereFitaSuperior(elementoAnterior, div)

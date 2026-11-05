@@ -81,9 +81,11 @@ async function tramitaIAResumoRapidoLIQ1() {
     let assistenteEnvio = {timelineLimpa, teorDespachos, numeroProcesso}
     let assistente = '6ae39ae8bac219ab06a6932d'
     let resposta = await rota_IAConsulta(assistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
-    
+    let segundoAssistente = '6aecc761296544c71127842a'
+    let segundaResposta = await rota_IAConsulta(segundoAssistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
     return [
         {titulo: 'Resumo Geral LIQ1', resposta: resposta}, 
+        {titulo: 'Obrigações de fazer LIQ1', resposta: segundaResposta}, 
     ]
     
 }

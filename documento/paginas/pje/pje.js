@@ -288,6 +288,8 @@ async function rota_aoAbrir(){
 
 	pautaEletronicaAbriu()
 
+	pautaAudienciasMeses()
+
 	pinturaInicio().catch(e => relatar('Pintura:', e, 'erro'))
 	botaoRotaIniciar().catch(e => relatar('Botão Rota:', e, 'erro'))
 
