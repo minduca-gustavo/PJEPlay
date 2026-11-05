@@ -583,11 +583,12 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
         let i = 0
         for(let dado of dados){
             let {resposta, titulo} = dado
-            criaSubTitulo({
+            let subtitulo = criaSubTitulo({
                 id: idDiv + '_titulo_' + i,
                 texto: titulo,
                 ancestral: idRolante
             })
+            subtitulo.style.fontSize = '20px'
             criaTexto({
                 id: idDiv + '_resumo_' + i,
                 ancestral: idRolante,

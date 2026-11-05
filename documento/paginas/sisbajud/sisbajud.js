@@ -42,15 +42,36 @@ async function sisbajudInicia(){
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
             return
         }
-        let urlAbrir = 'https://pje.trt15.jus.br/pjekz/processo/' + dados[0]?.id + '/detalhe?rota_pje_sisbajud=criaGIGeCHIP'
+        let execucao = Date.now()
+        await armazenar({rotapje_sisbajudExecucao: execucao})
+        let urlAbrir = 'https://pje.trt15.jus.br/pjekz/processo/' + dados[0]?.id + '/detalhe?rotapje_sisbajud=criaGIGeCHIP&rotapje_sisbajudExecucao=' + execucao
         abrirURL({url: urlAbrir})
         
     }
     //let botoes = elemento.querySelectorAll('button')
 }
 
-function sisbajudDetalhesAbriu(){
-    return
+async function sisbajudDetalhesAbriu(){
+    let parametros = new URLSearchParams(document.location.search);
+    let sisbajud = parametros.get('rota_pje_sisbajud')
+    if(!sisbajud) return
+    let execucao = parametros.get('rotapje_sisbajudExecucao')
+    let armazenamento = await obterArmazenamento('rotapje_sisbajudExecucao') || {}
+    let execucaoArmazenada = armazenamento?.rotapje_sisbajudExecucao
+    if (execucao != execucaoArmazenada) return
+    await aguardarElemento('pje-historico button.botao-esconder-gigs')
+    if (!document.querySelector('.conteudo-historico #gigs')) clicar('pje-historico button.botao-esconder-gigs')
+    let usuarioArmazenado = await obterArmazenamento('rota_usuario') || {}
+    let responsavel = usuarioArmazenado?.rota_usuario?.nome || null
+    let salvar = responsavel ? true : false
+    let fechar = responsavel ? true : false
+    let gig = await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'SISBAJUD', dias: 5, responsavel, salvar, observacao: 'Resposta SISBAJUD'})
+    if (gig && fechar){
+        await removerArmazenamento('rotapje_sisbajudExecucao')
+        window.close()
+    }
+    rota_avisoObrigatorio('Ocorreu um erro ao inserir o GIG. Prossiga manualmente.', 5)
+    
 }
 
 /*
