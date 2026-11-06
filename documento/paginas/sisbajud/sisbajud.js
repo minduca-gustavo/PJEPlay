@@ -52,8 +52,8 @@ async function sisbajudInicia(){
         let execucao = Date.now()
         await armazenar({rotapje_sisbajudExecucao: execucao})
         let detalhe = {
-            'criaGIGeCHIP': 'detalhe',
-            'sisbajudCertificar': 'documento/anexar'
+            criaGIGeCHIP: 'detalhe',
+            sisbajudCertificar: 'documento/anexar'
         }
         let urlAbrir = 'https://pje.trt15.jus.br/pjekz/processo/' + dados[0]?.id + '/' + detalhe[parametro] +'?rotapje_sisbajud=' + parametro + '&rotapje_sisbajudExecucao=' + execucao
         abrirURL({url: urlAbrir})
@@ -61,31 +61,48 @@ async function sisbajudInicia(){
     }
 
     async function botaoCertificar(){
+        //return
         await aguardarElemento('.uikit-actions button')
         await suspender(500)
         let idBotao = idg('sisbajud', 'certificar')
         document.getElementById(idBotao)?.remove()
-        let textoProtocolo = [...document.querySelectorAll('div .row [class*="label"]')].map(d => d.textContent).join('\n')
-        let colReus = [...document.querySelectorAll('sisbajud-table-reus td')].filter(c=> c.textContent.trim())
-        let textoReus = colReus.map(d=> {
-            let span = [...d?.querySelectorAll('span')].filter(d=> d?.textContent).map(d => d).join(' - ')
-            let aEl = [...d?.querySelectorAll('a')].filter(d=> d?.textContent).map(d => d).join(' - ')
-            return(span + '\n' + a)
-        })
-        /*
-        textoReus = colReus.map(d=> {
-            let span = [...d?.querySelectorAll('span')].filter(d=> d?.textContent).map(d => d.textContent).join(' - ')
-            let aEl = [...d?.querySelectorAll('a')].filter(d=> d?.textContent).map(d => d.textContent).join(' - ')
-            return(span + ' ' + aEl)
-        })
-        */
+        
+        
         let botao = criaBotaoLaranja({
             id: idBotao,
             ancestral: '.uikit-actions',
             texto: 'Certificar',
-            acao: () => abrirUrlSisbajud('sisbajudCertificar')
+            acao: async () => {
+                await armazenaTextoCertidao()
+                abrirUrlSisbajud('sisbajudCertificar')
+            }
         })
         botao.style.display = 'inline-block'
+
+        async function armazenaTextoCertidao(){
+            let textoProtocolo = [...document.querySelectorAll('div .row [class*="label"]')].map(d => d.textContent).join('\n')
+            let tReus = [...document.querySelectorAll('sisbajud-table-reus tr')]
+            for (let tr of tReus){
+                //let texto = ''
+                if(tr.classList.contains('element-row')){
+                    let tds = [...tr.querySelectorAll('td')].filter(d=> d?.textContent && d?.textContent.trim() !== 'Sim' && d?.textContent.trim() !== 'Não')
+                        for(let td of tds){
+                        if (td.querySelector('span')){
+                            let texto = td.querySelector('span')?.textContent + ' - ' + td.querySelector('a')?.textContent
+                            textoProtocolo += '\n' + texto + '\n'
+                        } else {
+                            textoProtocolo += '\n' + td.textContent.trim() + '\n'
+                        }
+                    }
+                }
+                if(tr.classList.contains('detail-row')){
+                    let mat = [...tr.querySelectorAll('mat-list-item')].filter(d=> d?.textContent).map(d => d?.textContent.trim()).join('\n')
+                    textoProtocolo += '\n' + mat + '\n'
+                }
+            }
+            let chave = idg('sisbajudCertificar')
+            armazenar({[chave]: textoProtocolo})
+        }
     }
     //let botoes = elemento.querySelectorAll('button')
 }
@@ -108,7 +125,8 @@ async function sisbajudDetalhesAbriu(){
     return
 
     async function sisbajudCertificar() {
-        
+        let chave = idg('sisbajudCertificar')
+        let armazenamento = await obterArmazenamento(chave)
     }
 
     async function criaGIGeCHIP(){
