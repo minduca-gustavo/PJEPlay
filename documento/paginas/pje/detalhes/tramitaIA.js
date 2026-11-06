@@ -70,7 +70,7 @@ async function tramitaIAResumoRapidoLIQ1() {
     })
     let dataMaior = null
     let numeroProcesso = document.querySelector('pje-descricao-processo [role="button"]')?.textContent || ''
-    let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c)) && d?.nomeResponsavel) || []
+    let despachos = timelineLimpa.filter(d=> ['despacho', 'decisao', 'sentenca'].some(c => normalizar(d?.titulo).includes(c)) && (d?.nomeSignatario)) || []
     let teorDespachos = []
     for (let despacho of despachos){
         let teor = await rota_extrairTeorDocumento(idURL, despacho?.id) || ''

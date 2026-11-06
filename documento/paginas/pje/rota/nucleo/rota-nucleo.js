@@ -87,6 +87,7 @@ var JANELA = {
 	encaminharPostoAvancado:/\/pjekz\/processo\/\d*\/tarefa\/\d*\/posto-avancado\/encaminhar/,
 	escaninho:              /\/pjekz\/escaninho/,
 	sisbajudCadastrarMinuta:/sisbajud\.cnj\.jus\.br\/minuta\/\d+\/detalhar/,
+	sisbajudOrdemJudicial:	/sisbajud\.cnj\.jus\.br\/ordem-judicial\/\d+\/detalhar/,
 	retificar:              /\/pjekz\/processo\/\d*\/retificar/,
 	certificar:             /\/pjekz\/processo\/\d*\/documento\/anexar/,
 	minutar:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/minutar/,

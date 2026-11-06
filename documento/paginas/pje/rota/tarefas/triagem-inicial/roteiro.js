@@ -288,23 +288,23 @@ async function triagem_inicial_despachar(tipo) {
     let idTarefa =      tarefa[0]?.idTarefa || ''
     let recurso =       tarefa[0]?.nomeRecurso || ''
     if (!recurso || !idTarefa){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 5)
         return
     }
     let pageRecursos = dadosTriagemInicial?.recursos || await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos') || []
     if (!pageRecursos.length){
-        await rota_avisoObrigatorio('Ocorreu um erro. Atualize a página.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Atualize a página.', 5)
         return
     }
     let page =         pageRecursos?.find(r => r?.nome === recurso) || []
     if (!page?.caminhoRecurso){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 5)
         return
     }
     let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 5)
         return
     }
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
@@ -380,7 +380,7 @@ async function triagem_inicial_acoesDespachar(){
             window.close()
             return
         } else{ 
-            await rota_avisoObrigatorio('Não foi identificada audiência designada. Prossiga manualmente.', 30)
+            await rota_avisoObrigatorio('Não foi identificada audiência designada. Prossiga manualmente.', 5)
         }
         // chamada da ação conjunta
     }
@@ -433,7 +433,7 @@ async function triagem_inicial_designarAudiencia(tipo) {
     let nomeJanela =    'rotapje_triagem_inicial_designa_audiencia_' + dadosTriagemInicial.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 5)
         return
     }
     let url = location.origin + '/pjekz/pauta-audiencias' + parametros
@@ -537,7 +537,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
         let juizes = [...(await sel ('pautaDeAudienciaSeletorDeJuizOpcoes', '', true))]
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == sala)
         if (!juizSelecionado){
-            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
             return
         }
         metaQuadroDeHorarios = await sel('pautaDeAudienciaMetaQuadroHorariosVagos')
@@ -545,7 +545,7 @@ async function triagem_inicial_acoesDesignarAudienciaManual(manualOuErro) {
         clicar(juizSelecionado)
     }
     await suspender(1000)
-    rota_avisoObrigatorio(aviso, 15)
+    rota_avisoObrigatorio(aviso, 5)
     await aguardarElementoNovo(['pautaDeAudienciaInputNumeroProcessoDesignarAudiencia', 'pautaDeAudienciaInputLinkDesignarAudiencia'], {modo: 'e', timeout: 10 * 60 * 1000})
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
     await suspender(1000)
@@ -572,7 +572,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
         // procura o juiz
         let juizSelecionado = juizes.find(j => j.textContent?.trim() == horario.nomeDaSala)
         if (!juizSelecionado){
-            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+            await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
             return
         }
         // verifica se a sala que estava selecionada tem quadro
@@ -597,7 +597,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     let celulas = [...(await sel('pautaDeAudienciaCelulaDaTabela', '', true))]
     let celula = celulas.find(c=> c.ariaLabel && !c.ariaLabel.includes('não útil' || 'pauta'))
     if (!celula){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
         return
     }
     await suspender(1000)
@@ -611,7 +611,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     //preencher dados do processo e da audiencia
     let confirmacaoSala = await aguardarElementoNovo('pautaDeAudienciaConfirmacaoSala')
     if (!confirmacaoSala.textContent.includes(horario.nomeDaSala)){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
         return
     }
     let inputNumeroProcesso = await aguardarElementoNovo('pautaDeAudienciaInputNumeroProcessoDesignarAudiencia')
@@ -639,7 +639,7 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
     let botoesDesignar = [...(await sel('pautaDeAudienciaBotoesConfirmarCancelarDesignarAudiencia', '', true))]
     let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
     if (!botaoConfirmar){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
         return
     }
     //let botaoConfirmar = botoesDesignar.find(b => b.textContent.includes('Confirmar'))
@@ -719,7 +719,7 @@ async function triagem_inicial_certificar(tipo) {
     let nomeJanela =    'rotapje_triagem_inicial_certificar_' + dadosTriagemInicial.execucaoAtual
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 5)
         return
     }
     let url =           location.origin + '/pjekz/processo/' + id + '/documento/anexar' + parametros
@@ -965,7 +965,7 @@ async function triagem_inicial_acoesIntimar(){
     clicar(editorConteudo)
     await suspender(1000)
     if (!dados.tipos && !linkIntimar){
-        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 15)
+        await rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
         window.addEventListener('beforeunload', () => {
             if (dados.proximoPasso) {
                 comandar(dados.proximoPasso.comando, dados.proximoPasso.parametros)
@@ -994,7 +994,7 @@ async function triagem_inicial_acoesIntimar(){
         clicar('.botoes-acoes [aria-label="Finalizar minuta"]')
     } else {
         await navigator.clipboard.writeText(JSON.stringify(modelo))
-        rota_avisoObrigatorio('Houve um erro. O nome do modelo está salvo no CTRL + C. Utilize-o para inserir o modelo no editor e prossiga com a intimação das partes. Após finalizar, clique em "Próximo", no widget criado.', 15)
+        rota_avisoObrigatorio('Houve um erro. O nome do modelo está salvo no CTRL + C. Utilize-o para inserir o modelo no editor e prossiga com a intimação das partes. Após finalizar, clique em "Próximo", no widget criado.', 5)
         await criaDivFlutuante({
             id: 'rota_triagem_inicial_acoes_conjuntas_flutuante_erro_editor',
             titulo: 'Complete a intimação, e clique em próximo.'
@@ -1073,23 +1073,23 @@ async function triagem_inicial_aguardandoAudiencia(tipo) {
     let nomeJanela =    'rotapje_triagem_inicial_aguardandoAudiencia_' + dadosTriagemInicial.execucaoAtual
     await armazenar({'rotapje_triagem_inicial_aguardandoAudiencia': dadosTriagemInicial.execucaoAtual})
     if (!recurso || !idTarefa){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 5)
         return
     }
     let pageRecursos = dadosTriagemInicial?.recursos || await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos') || []
     if (!pageRecursos.length){
-        await rota_avisoObrigatorio('Ocorreu um erro. Atualize a página.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Atualize a página.', 5)
         return
     }
     let page =          pageRecursos.find(r => r?.nome === recurso)
     if (!page?.caminhoRecurso){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
+        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 5)
         return
     }
     let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
     let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
     if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
+        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 5)
         return
     }
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)

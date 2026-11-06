@@ -3,6 +3,7 @@ async function pautaAudienciasMeses(){
     if(!janela) return
     console.log('%c[Rota PJE]%c 4 audiências: ' + JSON.stringify(4), LOG.info, 'color:inherit')
     await aguardarElemento('pje-cabecalho-perfil .papel-usuario')
+    await suspender (500)
     let oj = document.querySelector('pje-cabecalho-perfil .papel-usuario')
     if (!oj.textContent.includes('CON1')) return
     let fitaId = idg('pautaAudiencias', 'meses')
@@ -12,6 +13,7 @@ async function pautaAudienciasMeses(){
         ancestral: document.body
     })
     await aguardarElemento('pje-calendario-pauta-audiencia .filtros')
+    await suspender(500)
     let elementoAnterior = document.querySelector('pje-calendario-pauta-audiencia .filtros')
     formataFitaSuperior(div)
     insereFitaSuperior(elementoAnterior, div)
