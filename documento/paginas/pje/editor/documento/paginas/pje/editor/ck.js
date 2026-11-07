@@ -42,6 +42,22 @@ document.addEventListener('rotapje_EditorSubstituirTexto', (evento) => {
 	}
 })
 
+document.addEventListener('rotapje_EditorInserirConteudoSeletor', async (evento) => {
+	let {seletor, inserir} = JSON.parse(evento.detail) || {}
+	let editavel = document.querySelector(seletor)
+	if(!editavel)
+		return
+	let editor = editavel.ckeditorInstance
+	if(!editor)
+		return
+	try {
+		let conteudo	= editor.getData()
+		let texto		= inserir  || ''
+		editor.setData(conteudo + texto)
+	} catch(erro){
+		console.error('❌ Erro ao inserir conteúdo:', erro)
+	}
+})
 
 document.addEventListener('rotapje_EditorInserirConteudo', async (evento) => {
 	let editavel = document.querySelector('pje-editor-documento [contenteditable="true"]')

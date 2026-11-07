@@ -89,17 +89,18 @@ async function sisbajudInicia(){
                         for(let td of tds){
                         if (td.querySelector('span')){
                             let texto = td.querySelector('span')?.textContent + ' - ' + td.querySelector('a')?.textContent
-                            textoProtocolo += '\n' + texto + '\n'
+                            textoProtocolo += '<p>' + texto + '</p>'
                         } else {
-                            textoProtocolo += '\n' + td.textContent.trim() + '\n'
+                            textoProtocolo += '<p>' + td.textContent.trim() + '</p>'
                         }
                     }
                 }
                 if(tr.classList.contains('detail-row')){
                     let mat = [...tr.querySelectorAll('mat-list-item')].filter(d=> d?.textContent).map(d => d?.textContent.trim()).join('\n')
-                    textoProtocolo += '\n' + mat + '\n'
+                    textoProtocolo += '<p>' + mat + '</p>'
                 }
             }
+            _baixarArquivo(textoProtocolo, 'sisbajud.html', 'text/html;charset=utf-8')
             let chave = idg('sisbajudCertificar')
             armazenar({[chave]: textoProtocolo})
         }
