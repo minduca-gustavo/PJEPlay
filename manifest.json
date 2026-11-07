@@ -85,7 +85,8 @@
 				"*://*.jus.br/pjekz/*"
 			],
 			"js":[
-				"documento/paginas/pje/requisicoes/xhr.js"
+				"documento/paginas/pje/requisicoes/xhr.js",
+				"documento/paginas/pje/editor/ck.js"
 			],
 			"all_frames":	true,
 			"world":			"MAIN",
@@ -180,6 +181,7 @@
 				"documento/paginas/pje/detalhes/tramitaIA.js",
 				"documento/paginas/pje/detalhes/fita-superior-detalhes.js",
 				"documento/paginas/pje/pauta-audiencias/pauta-audiencias.js",
+				"documento/paginas/pje/editor/editor.js",
 				"documento/paginas/pje/tarefa/minutar.js",
 				"documento/paginas/pje/tarefa/conclusao.js",
 				"documento/paginas/pje/tarefa/encaminharPostoAvancado.js",
