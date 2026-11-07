@@ -308,7 +308,7 @@ async function pje_processo_tarefa_editor_acionarBotoesDeNotificacaoDePartes(){
 function inserirTextoNoEditor(seletor, texto){
 	document.dispatchEvent(
 		new CustomEvent(
-			'rotapje_EditorInserirConteudoSeletor',
+			'rotapje_EditorInserirComSeletor',
 			{
 				detail: JSON.stringify({
 					seletor: seletor,

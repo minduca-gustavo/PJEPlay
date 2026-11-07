@@ -2,7 +2,8 @@ async function teste(){
   let janelas = [
     /ia\.jt\.jus\.br/,
     JANELA.meuPainel,
-    JANELA.painelGlobal
+    JANELA.painelGlobal,
+    JANELA.certificar
   ]
   let janela = janelas.some(j => j.test(window.location.href))
   if (!janela) return
@@ -21,6 +22,7 @@ async function teste(){
     testeJSON,
     testeIA,
     testePatch,
+    testeInserirTexto,
   }
   let funcao = confereJanela(/ia\.jt\.jus\.br/) ? testeIA : testeIA
   let botao = criaBotaoAzul({
@@ -28,7 +30,7 @@ async function teste(){
     ancestral: divId,
     texto: 'Teste',
     acao: async () => {
-      let resultado = await funcao(document.getElementById(divId + '_input').value)
+      let resultado = await testeInserirTexto(document.getElementById(divId + '_input').value)
       console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.rosa, 'color:inherit')
       //apresentaResultados(resultado)
     }
@@ -68,4 +70,7 @@ async function testeIA(parametro){
   let resultado = await rota_fetch_IAEnviaRequisicaoBack(parametro, idIA, aut)
   console.log('%c[Rota PJE]%c resultado: ' + JSON.stringify(resultado), LOG.teste, 'color:inherit', resultado)  
   alert (resultado)
+}
+async function testeInserirTexto(params) {
+  inserirTextoNoEditor('.area-conteudo [contenteditable]', params)
 }

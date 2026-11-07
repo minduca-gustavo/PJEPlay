@@ -42,7 +42,7 @@ document.addEventListener('rotapje_EditorSubstituirTexto', (evento) => {
 	}
 })
 
-document.addEventListener('rotapje_EditorInserirConteudoSeletor', async (evento) => {
+document.addEventListener('rotapje_EditorInserirComSeletor', async (evento) => {
 	let {seletor, inserir} = JSON.parse(evento.detail) || {}
 	let editavel = document.querySelector(seletor)
 	if(!editavel)
