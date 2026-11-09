@@ -581,6 +581,7 @@ async function tramitaIAResumoRapidoBusca(idBotao, novaChamada = false) {
             ancestral: idFundo
         })
         divDireita.style.width = '170px'
+        divDireita.style.overflowY = 'auto'
         let rodape = criaDiv({
             id: idDiv + '_rodape',
             ancestral: idDiv
@@ -599,12 +600,28 @@ async function tramitaIAResumoRapidoBusca(idBotao, novaChamada = false) {
             console.log('%c[Rota PJE]%c id' + JSON.stringify(id), LOG.aviso, 'color:inherit')
             let idDivResposta = idDiv + '_div_' + (id ? id : i)
             let idTitulo = idDiv + '_titulo_' + (id ? id : i)
+            criaDiv({
+                id: idTitulo + '_div',
+                ancestral: idRolante,
+                rowColumn: 'row'
+            })
             let subtitulo = criaSubTitulo({
                 id: idTitulo,
                 texto: titulo,
-                ancestral: idRolante
+                ancestral: idTitulo + '_div',
             })
             subtitulo.style.fontSize = '20px'
+            criaBotaoAzul({
+                id: idTitulo + '_copiar',
+                ancestral: idTitulo + '_div',
+                texto: 'Copiar 📋',
+                acao: async () => {
+                    navigator.clipboard.writeText(resposta)
+                    document.getElementById(idTitulo + '_copiar').textContent = 'Copiado ☑️'
+                    await suspender(2000)
+                    document.getElementById(idTitulo + '_copiar').textContent = 'Copiar 📋'
+                }
+            })
             criaTexto({
                 id: idDiv + '_resumo_' + (id ? id : i),
                 ancestral: idRolante,

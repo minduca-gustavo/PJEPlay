@@ -34,9 +34,11 @@ async function tramitaIAResumoRapidoCON1() {
         teorDocumentosPartes.push({id: documento?.id, informacoes: documento, teor})
     }
     // PRIMEIRO ASSISTENTE
+    let armazenamento = await obterArmazenamento(idg('resumoGeralCON1'))
+    let primeiraRespostaTF = armazenamento[idg('resumoGeralCON1')] || false
     let primeiroAssistenteEnvio = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
     let primeiroAssistente = '6ac138f2bb98490b4befd0e7'
-    let primeiraResposta = await rota_IAConsulta(primeiroAssistente, JSON.stringify(primeiroAssistenteEnvio)) || 'Ocorreu um erro'
+    let primeiraResposta = primeiraRespostaTF ? (await rota_IAConsulta(primeiroAssistente, JSON.stringify(primeiroAssistenteEnvio)) || 'Ocorreu um erro') : 'Não solicitado'
     // DOCUMENTOS SEGUNDO ASSISTENTE
     let processo = document.querySelector('pje-descricao-processo')?.textContent.match(_ROTA_CNJ_PADRAO) || ''
     if (!processo){
@@ -49,13 +51,15 @@ async function tramitaIAResumoRapidoCON1() {
     let tarefa = interceptador_lerTarefaMaisRecente() || await buscarTarefaMaisRecente(idURL) || null
     let chips = interceptador_ler('chips') || await buscarChips(idURL) || []
     chips = chips.map(d=> ({nome: d?.etiquetaInstancia?.etiqueta?.nome, data: d?.etiquetaInstancia?.etiqueta?.dataInclusao}))
+    armazenamento = await obterArmazenamento(idg('gestaoCON1'))
+    let segundaRespostaTF = armazenamento[idg('gestaoCON1')] || false
     let segundoAssistenteEnvio = {primeiraResposta, timelineLimpa, teorDespachos, teorAtas, chips, gigs, audienciaMarcada, tarefa}
     let segundoAssistente = '6ac7e7eb2d5c9cd657dd24f1'
-    let segundaResposta = await rota_IAConsulta(segundoAssistente, JSON.stringify(segundoAssistenteEnvio)) || 'Ocorreu um erro'
+    let segundaResposta = segundaRespostaTF ? (await rota_IAConsulta(segundoAssistente, JSON.stringify(segundoAssistenteEnvio)) || 'Ocorreu um erro') : 'Não solicitado'
     //_baixarArquivo(JSON.stringify(segundoAssistenteEnvio, null, 2), 'resumoRapidoCON1.json', 'application/json')
     return [
-        {titulo: 'Resumo Geral CON1', resposta: primeiraResposta}, 
-        {titulo: 'Gestão', resposta: segundaResposta},
+        {titulo: 'Resumo Geral CON1', resposta: primeiraResposta, id: idg('resumoGeralCON1')}, 
+        {titulo: 'Gestão', resposta: segundaResposta, id: idg('gestaoCON1')},
     ]
     
 }
