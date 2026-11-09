@@ -79,21 +79,30 @@ async function tramitaIAResumoRapidoLIQ1() {
         dataMaior = dataMaior > new Date(despacho?.data) ? dataMaior : despacho?.data
     }
     // ASSISTENTE
+    let armazenamento = await obterArmazenamento(idg('resumoGeralLIQ1'))
+    let resumoGeralLIQ1TF = armazenamento[idg('resumoGeralLIQ1')] || false
+    armazenamento = await obterArmazenamento(idg('obrigacoesDeFazerLIQ1'))
+    let obrigacoesDeFazerLIQ1TF = armazenamento[idg('obrigacoesDeFazerLIQ1')] || false
+    armazenamento = await obterArmazenamento(idg('informacoesProcessuaisLIQ1'))
+    let informacoesProcessuaisLIQ1TF = armazenamento[idg('informacoesProcessuaisLIQ1')] || false
     let assistenteEnvio = {timelineLimpa, teorDespachos, numeroProcesso}
     let assistente_resumoGeralLIQ1 = '6ae39ae8bac219ab06a6932d'
-    let resumoGeralLIQ1 = await rota_IAConsulta(assistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
     let assistente_obrigacoesDeFazerLIQ1 = '6aecc761296544c71127842a'
-    let obrigacoesDeFazerLIQ1 = await rota_IAConsulta(segundoAssistente, JSON.stringify(assistenteEnvio), [], ) || 'Ocorreu um erro'
-    let informacoesProcessuaisLIQ1 = await rota_IAConsulta('',`Utilize o buscador processual para buscar as seguintes informações no processo:
+    let [resumoGeralLIQ1, obrigacoesDeFazerLIQ1, informacoesProcessuaisLIQ1] = await Promise.all([
+    resumoGeralLIQ1TF ? (rota_IAConsulta(assistente_resumoGeralLIQ1, JSON.stringify(assistenteEnvio)).then(r => r || 'Ocorreu um erro')) : 'Não solicitado',
+    obrigacoesDeFazerLIQ1TF ? (rota_IAConsulta(assistente_obrigacoesDeFazerLIQ1, JSON.stringify(assistenteEnvio), [], ).then(r => r || 'Ocorreu um erro')) : 'Não solicitado',
+    informacoesProcessuaisLIQ1TF ? (rota_IAConsulta('',`Utilize o buscador processual para buscar as seguintes informações no processo:
 (i) o número do PIS do reclamante;
 (ii) o número da CTPS do reclamante;
 (iii) se a CTPS é física ou digital
 (iv) por DEPÓSITO RECURSAL ou DEPÓSITO JUDICIAL vinculados à reclamada, indicando o id do documento, se possível.
-número do processo: ` + numeroProcesso) || 'Ocorreu um erro'
+IMPORTANTE: Responda apenas utilzando texto, sem marcas de estilo.
+número do processo: ` + numeroProcesso).then(r => r || 'Ocorreu um erro')) : 'Não solicitado'
+])
     return [
-        {titulo: 'Resumo Geral LIQ1', resposta: resumoGeralLIQ1, id: 'resumoGeralLIQ1'}, 
-        {titulo: 'Obrigações de fazer LIQ1', resposta: obrigacoesDeFazerLIQ1, id: 'obrigacoesDeFazerLIQ1'}, 
-        {titulo: 'Informações processuais', resposta: informacoesProcessuaisLIQ1, id: 'informacoesProcessuaisLIQ1'}, 
+        {titulo: 'Resumo Geral LIQ1', resposta: resumoGeralLIQ1, id: idg('resumoGeralLIQ1')}, 
+        {titulo: 'Obrigações de fazer LIQ1', resposta: obrigacoesDeFazerLIQ1, id: idg('obrigacoesDeFazerLIQ1')}, 
+        {titulo: 'Informações processuais', resposta: informacoesProcessuaisLIQ1, id: idg('informacoesProcessuaisLIQ1')}, 
     ]
     
 }

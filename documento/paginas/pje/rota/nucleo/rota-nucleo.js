@@ -397,7 +397,8 @@ async function identificaUsuario(){
 		await suspender(500)
 	}
 
-	await armazenar({ rota_usuario: USUARIO })
+	await armazenar({ rotapje_usuario: USUARIO })
+	await armazenar({ rotapje_ultimaOrigem: location.origin})
 }
 
 // ── Avisos visuais ────────────────────────────────────────────

@@ -471,7 +471,7 @@ async function tramitaIAResumoRapido() {
     estiloBotaoFitaSuperior(botao)
 }
 
-async function tramitaIAResumoRapidoBusca(idBotao) {
+async function tramitaIAResumoRapidoBusca(idBotao, novaChamada = false) {
     document.getElementById(idBotao).disabled = true
     let ojs = [
         {
@@ -499,27 +499,31 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
         document.getElementById(idBotao).disabled = false
         return
     }
-    let resumo = montarResumo('carregando')
+    let resumo = await montarResumo('carregando')
     if (resumo) {
         document.getElementById(idBotao).disabled = false
         return
     }
     let resposta = await mapaFuncoes[funcao]()
     console.log('%c[Rota PJE]%c resumos: ' + JSON.stringify(resposta), LOG.teste, 'color:inherit')
-    montarResumo(resposta)
+    await montarResumo(resposta)
     document.getElementById(idBotao).disabled = false
     return
 
     
-    function montarResumo(dados){
+    async function montarResumo(dados){
         let idDiv = idg('tramitaIA', 'resumos')
-        if (document.getElementById(idDiv)){
-            if (document.getElementById(idDiv).style.display == 'none'){
-                document.getElementById(idDiv).style.display = 'flex'
-                return true
-            } else {
-                document.getElementById(idDiv)?.remove()
+        if(!novaChamada){
+            if (document.getElementById(idDiv)){
+                if (document.getElementById(idDiv).style.display == 'none'){
+                    document.getElementById(idDiv).style.display = 'flex'
+                    return true
+                } else {
+                    document.getElementById(idDiv)?.remove()
+                }
             }
+        } else {
+            document.getElementById(idDiv)?.remove()
         }
         let div = criaDiv({
             id: idDiv,
@@ -561,7 +565,7 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
             ancestral: idDiv,
             rowColumn: 'row'
         })
-        divFundo.style.height = '100%'
+        divFundo.style.height = '95%'
         let idRolante = idDiv + '_rolante'
         let divRolante = criaDiv({
             id: idRolante,
@@ -576,14 +580,25 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
             id: idDireita,
             ancestral: idFundo
         })
+        divDireita.style.width = '170px'
         let rodape = criaDiv({
             id: idDiv + '_rodape',
             ancestral: idDiv
         })
+                
         let i = 0
         for(let dado of dados){
-            let {resposta, titulo} = dado
-            let idTitulo = idDiv + '_titulo_' + i
+            if (i == 0){
+                criaTexto({
+                    id: idDireita + '_instrucao',
+                    texto: 'Clique nos botões para rolar para o tema correspondente. Utilize os checkbox para habilitar/desabilitar as consultas ao CHAT-JT.',
+                    ancestral: idDireita
+                })
+            }
+            let {resposta, titulo, id} = dado
+            console.log('%c[Rota PJE]%c id' + JSON.stringify(id), LOG.aviso, 'color:inherit')
+            let idDivResposta = idDiv + '_div_' + (id ? id : i)
+            let idTitulo = idDiv + '_titulo_' + (id ? id : i)
             let subtitulo = criaSubTitulo({
                 id: idTitulo,
                 texto: titulo,
@@ -591,20 +606,41 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
             })
             subtitulo.style.fontSize = '20px'
             criaTexto({
-                id: idDiv + '_resumo_' + i,
+                id: idDiv + '_resumo_' + (id ? id : i),
                 ancestral: idRolante,
                 texto: resposta
             })
-            criaBotaoAzul({
-                id: idDiv + '_botao_' + i,
-                texto: titulo, 
+            criaDiv({
+                id: idDivResposta,
                 ancestral: idDireita,
+                rowColumn: 'row'
+            })
+            if (id){
+                let armazenamento = await obterArmazenamento(id)
+                let check = await criaCheckBox({
+                    id,
+                    ancestral: idDivResposta,
+                    salvar: true
+                })
+                if (armazenamento?.[id]) clicar(id)
+            }
+            let botaoResumo = criaBotaoAzul({
+                id: idDiv + '_botao_' + (id ? id : i),
+                texto: titulo, 
+                ancestral: idDivResposta,
                 acao: () => {
                     document.getElementById(idTitulo)?.scrollIntoView({block: 'start'})
                 }
             })
+            botaoResumo.style.width = '100%'
             i++
         }
+        let botaoNovaConsulta = criaBotaoLaranja({
+            id: idDiv + '_botaoNovaConsulta',
+            texto: 'Nova consulta',
+            ancestral: idDireita,
+            acao: () => tramitaIAResumoRapidoBusca(idBotao, true)
+        })
         return null
     }
 }

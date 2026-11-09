@@ -21,6 +21,8 @@ async function sisbajudInicia(){
     botao.style.display = 'inline-block'
 
     async function abrirUrlSisbajud(parametro){
+        let armazenamento = await obterArmazenamento('rotapje_ultimaOrigem')
+        let ultimaOrigem = armazenamento?.rotapje_ultimaOrigem || 'https://pje.trt15.jus.br'
         if (parametro == 'criaGIGeCHIP'){
             aguardarElemento('.uikit-actions button[title="Protocolar Minuta"]')
             await suspender(300)
@@ -31,7 +33,7 @@ async function sisbajudInicia(){
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
             return
         }
-        let url = 'https://pje.trt15.jus.br/pje-consulta-api/api/processos/dadosbasicos/' + numero
+        let url = ultimaOrigem + '/pje-consulta-api/api/processos/dadosbasicos/' + numero
         let dadosBasicos = await NAVEGADOR.runtime.sendMessage({
 			requisicao: url,
 			configuracao: {
@@ -57,7 +59,7 @@ async function sisbajudInicia(){
             criaGIGeCHIP: 'detalhe',
             sisbajudCertificar: 'documento/anexar'
         }
-        let urlAbrir = 'https://pje.trt15.jus.br/pjekz/processo/' + dados[0]?.id + '/' + detalhe[parametro] +'?rotapje_sisbajud=' + parametro + '&rotapje_sisbajudExecucao=' + execucao
+        let urlAbrir = ultimaOrigem + '/pjekz/processo/' + dados[0]?.id + '/' + detalhe[parametro] +'?rotapje_sisbajud=' + parametro + '&rotapje_sisbajudExecucao=' + execucao
         abrirURL({url: urlAbrir})
         
     }
