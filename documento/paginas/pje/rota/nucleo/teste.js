@@ -1,3 +1,28 @@
+async function testeUm() {
+  await aguardarElemento('pje-cabecalho-documento mat-card')
+  let anterior = document.querySelector('pje-cabecalho-documento').firstChild
+  let botoes = [
+    {
+      id: idg('b1'),
+      texto: 'B1',
+      acao: () => alert('B1')
+    },
+    {
+      id: idg('b2'),
+      texto: 'B2',
+      acao: () => alert('B2')
+    }
+  ]
+  document.getElementById(idg('fita', 'teste'))?.remove()
+  let fita = fitaSuperiorCompleta({
+    id: idg('fita', 'teste'),
+    elementoAnterior: anterior,
+    botoes
+  })
+}
+
+//testeUm()
+
 async function teste(){
   let janelas = [
     /ia\.jt\.jus\.br/,

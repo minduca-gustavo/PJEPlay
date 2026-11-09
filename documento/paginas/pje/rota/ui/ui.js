@@ -2539,3 +2539,48 @@ function criaDivCentralPadrao({id, ancestral = document.body, titulo = '', cor =
     div.rodape = rodape
     return div
 }
+/**
+ * 
+ * @param {object} parametros
+ * @param {string} parametros.id - id da fita
+ * @param {string} parametros.cor - cor da fita
+ * @param {string||object} parametros.elementoAnterior - elemento ou seletor
+ * @param {string} parametros.ancestral - se tiver elemento anterior, não usa ancestral
+ * @param {array} parametros.botoes - um array de botoes, com id, texto, acao e parametro da ação (opcional)
+ * @returns 
+ */
+async function fitaSuperiorCompleta({
+    id,
+    cor = '#ffffff',
+    elementoAnterior = null,
+    ancestral = document.body,
+    botoes = []
+}){
+    let div = criaDiv({
+        id,
+        ancestral,
+        rowColumn: 'row'
+    })
+    formataFitaSuperior(div, cor)
+    if (elementoAnterior) {
+        if(typeof elementoAnterior == 'string') elementoAnterior = document.querySelector(elementoAnterior)
+        insereFitaSuperior(elementoAnterior, div)
+    }
+    let mFuncoes = {
+        criaBotaoAzul,
+        criaBotaoLaranja
+    }
+    let i = 0
+    for (let botao of botoes) {
+        let funcao = i % 2 == 0 ? 'criaBotaoAzul' : 'criaBotaoLaranja'
+        i++
+        let bot = mFuncoes[funcao]({
+            id: botao?.id,
+            texto: botao?.texto,
+            ancestral: id,
+            acao: () => botao?.acao(botao?.parametro)
+        })
+        await estiloBotaoFitaSuperior(bot)
+    }
+    return div
+}
