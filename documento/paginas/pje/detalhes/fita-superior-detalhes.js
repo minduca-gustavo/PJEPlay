@@ -583,8 +583,9 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
         let i = 0
         for(let dado of dados){
             let {resposta, titulo} = dado
+            let idTitulo = idDiv + '_titulo_' + i
             let subtitulo = criaSubTitulo({
-                id: idDiv + '_titulo_' + i,
+                id: idTitulo,
                 texto: titulo,
                 ancestral: idRolante
             })
@@ -598,7 +599,9 @@ async function tramitaIAResumoRapidoBusca(idBotao) {
                 id: idDiv + '_botao_' + i,
                 texto: titulo, 
                 ancestral: idDireita,
-                acao: () => document.getElementById(idDiv + '_titulo_' + i)?.scrollIntoView({block: 'nearest'})
+                acao: () => {
+                    document.getElementById(idTitulo)?.scrollIntoView({block: 'start'})
+                }
             })
             i++
         }

@@ -102,7 +102,6 @@ async function sisbajudInicia(){
                     textoProtocolo += '<p>' + mat + '</p>'
                 }
             }
-            _baixarArquivo(textoProtocolo, 'sisbajud.html', 'text/html;charset=utf-8')
             let chave = idg('sisbajudCertificar')
             armazenar({[chave]: textoProtocolo})
         }
@@ -157,7 +156,7 @@ async function sisbajudJanelaPJEAbriu(){
         let responsavel = usuarioArmazenado?.rota_usuario?.nome || null
         let salvar = responsavel ? true : false
         let fechar = responsavel ? true : false
-        let gig = await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'SISBAJUD', dias: 5, responsavel, salvar, observacao: 'Resposta SISBAJUD'})
+        let gig = await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'SISBAJUD - aguardar resposta', dias: 5, responsavel, salvar, observacao: 'Resposta SISBAJUD'})
         await aguardarElemento('simple-snack-bar')
         let sucesso = document.querySelector('simple-snack-bar')
         await aguardarElemento('pje-lista-etiquetas button[mattooltip="Incluir Chip Amarelo"]')
