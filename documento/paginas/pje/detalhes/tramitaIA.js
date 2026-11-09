@@ -64,6 +64,7 @@ async function tramitaIAResumoRapidoLIQ1() {
     let idURLMatch = location.href.match(/pjekz\/processo\/(\d+)\/detalhe/)
     let idURL = idURLMatch?.[1]
     // DOCUMENTOS COMUNS
+    
     let timeline = interceptador_lerTimeline() || await buscarDocumentos(idURL) || []
     let timelineLimpa = timeline.map(d => {
         return({id: d?.id, idUnicoDocumento: d?.idUnicoDocumento, titulo: d?.titulo, tipo: d?.tipo, data: d?.data, participacaoProcesso: d?.participacaoProcesso, nomeResponsavel: d?.nomeResponsavel})
@@ -79,13 +80,20 @@ async function tramitaIAResumoRapidoLIQ1() {
     }
     // ASSISTENTE
     let assistenteEnvio = {timelineLimpa, teorDespachos, numeroProcesso}
-    let assistente = '6ae39ae8bac219ab06a6932d'
-    let resposta = await rota_IAConsulta(assistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
-    let segundoAssistente = '6aecc761296544c71127842a'
-    let segundaResposta = await rota_IAConsulta(segundoAssistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
+    let assistente_resumoGeralLIQ1 = '6ae39ae8bac219ab06a6932d'
+    let resumoGeralLIQ1 = await rota_IAConsulta(assistente, JSON.stringify(assistenteEnvio)) || 'Ocorreu um erro'
+    let assistente_obrigacoesDeFazerLIQ1 = '6aecc761296544c71127842a'
+    let obrigacoesDeFazerLIQ1 = await rota_IAConsulta(segundoAssistente, JSON.stringify(assistenteEnvio), [], ) || 'Ocorreu um erro'
+    let informacoesProcessuaisLIQ1 = await rota_IAConsulta('',`Utilize o buscador processual para buscar as seguintes informações no processo:
+(i) o número do PIS do reclamante;
+(ii) o número da CTPS do reclamante;
+(iii) se a CTPS é física ou digital
+(iv) por DEPÓSITO RECURSAL ou DEPÓSITO JUDICIAL vinculados à reclamada, indicando o id do documento, se possível.
+número do processo: ` + numeroProcesso) || 'Ocorreu um erro'
     return [
-        {titulo: 'Resumo Geral LIQ1', resposta: resposta}, 
-        {titulo: 'Obrigações de fazer LIQ1', resposta: segundaResposta}, 
+        {titulo: 'Resumo Geral LIQ1', resposta: resumoGeralLIQ1, id: 'resumoGeralLIQ1'}, 
+        {titulo: 'Obrigações de fazer LIQ1', resposta: obrigacoesDeFazerLIQ1, id: 'obrigacoesDeFazerLIQ1'}, 
+        {titulo: 'Informações processuais', resposta: informacoesProcessuaisLIQ1, id: 'informacoesProcessuaisLIQ1'}, 
     ]
     
 }

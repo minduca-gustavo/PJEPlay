@@ -345,7 +345,7 @@ function rota_interfacePorContexto(){
 	//
 	guardaContraOJIncorreta()
 
-	sisbajudDetalhesAbriu()
+	sisbajudJanelaPJEAbriu()
 
 	// gigs — botão de copiar atendimento. Passada de recuperação:
 	// o observador central só vê o que é adicionado depois dele,

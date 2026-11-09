@@ -655,17 +655,21 @@ const ROTA_IA_TOOLS_PADRAO = [
 async function rota_fetch_IACriaConversa(assistantId = '', modelo = 'modelo_rapido'){
 	try{
 		relatar('POST ' + ROTA_IA_URL, assistantId, 'requisicao')
+		let body = assistantId ? JSON.stringify({
+				model: modelo,
+				assistantId: assistantId,
+				metadata: { _isCorisco: false }
+			}) : JSON.stringify({
+				model: modelo,
+				metadata: { _isCorisco: false }
+			})
 		let criada = await NAVEGADOR.runtime.sendMessage({
 			requisicao: ROTA_IA_URL,
 			configuracao: {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json', 'Accept': '*/*' },
-				body: JSON.stringify({
-					model: modelo,
-					assistantId: assistantId,
-					metadata: { _isCorisco: false }
-				})
+				body
 			}
 		})
 		if(!criada?.sucesso) throw new Error(criada?.erro || 'segundo plano não respondeu')
@@ -778,11 +782,11 @@ async function rota_IAEnviaConteudo(conteudo, nome = 'documento', conversationId
  * 'falha ao criar conversa' (geralmente falta de login) de
  * 'sem resposta da IA'.
  */
-async function rota_IAConsulta(assistente, texto, arquivos = []){
+async function rota_IAConsulta(assistente, texto, arquivos = [], ferramentas){
 	let conversa = await rota_fetch_IACriaConversa(assistente)
-	if(!conversa) throw new Error('falha ao criar conversa')
-	let resposta = await rota_fetch_IAEnviaRequisicao(texto, conversa.idIA, conversa.aut, arquivos)
-	if(resposta == null) throw new Error('sem resposta da IA')
+	if(!conversa) return 'Falha ao criar a conversa. Verifique se você está logado ao ChatJT.'
+	let resposta = await rota_fetch_IAEnviaRequisicao(texto, conversa.idIA, conversa.aut, arquivos, ferramentas)
+	if(resposta == null) return 'Sem resposta da IA. Tente novamente.'
 	return resposta
 }
 
