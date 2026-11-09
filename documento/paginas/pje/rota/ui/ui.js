@@ -2546,7 +2546,7 @@ function criaDivCentralPadrao({id, ancestral = document.body, titulo = '', cor =
  * @param {string} parametros.cor - cor da fita
  * @param {string||object} parametros.elementoAnterior - elemento ou seletor
  * @param {string} parametros.ancestral - se tiver elemento anterior, não usa ancestral
- * @param {array} parametros.botoes - um array de botoes, com id, texto, acao e parametro da ação (opcional)
+ * @param {array} parametros.botoes - um array de botoes, com id, texto, acao e parametro da ação (opcional), e tooltip
  * @returns 
  */
 async function fitaSuperiorCompleta({
@@ -2581,6 +2581,11 @@ async function fitaSuperiorCompleta({
             acao: () => botao?.acao(botao?.parametro)
         })
         await estiloBotaoFitaSuperior(bot)
+        criaTooltip({
+            id: botao?.id + '_tip',
+            texto: botao?.tooltip,
+            elemento: bot
+        })
     }
     return div
 }
