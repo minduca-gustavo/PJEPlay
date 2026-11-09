@@ -21,10 +21,12 @@ async function sisbajudInicia(){
     botao.style.display = 'inline-block'
 
     async function abrirUrlSisbajud(parametro){
-        aguardarElemento('.uikit-actions button[title="Protocolar Minuta"]')
-        await suspender(300)
-        clicar('.uikit-actions button[title="Protocolar Minuta"]')
-        let numero = document.querySelector('.sisbajud-label-valor')?.textContent.trim()
+        if (parametro == 'criaGIGeCHIP'){
+            aguardarElemento('.uikit-actions button[title="Protocolar Minuta"]')
+            await suspender(300)
+            clicar('.uikit-actions button[title="Protocolar Minuta"]')
+        }
+        let numero = [...document.querySelectorAll('.mat-card-content [class^=col-md]')].find(d => normalizar(d.textContent).includes('numero do processo'))?.querySelector('span')?.textContent.trim() || ''
         if (!numero){
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
             return
@@ -80,7 +82,7 @@ async function sisbajudInicia(){
         botao.style.display = 'inline-block'
 
         async function armazenaTextoCertidao(){
-            let textoProtocolo = [...document.querySelectorAll('div .row [class*="label"]')].map(d => d.textContent).join('\n')
+            let textoProtocolo = [...document.querySelectorAll('div .row [class*="label"]')].map(d => '<p>' + d?.textContent.trim() + '</p>').join('')
             let tReus = [...document.querySelectorAll('sisbajud-table-reus tr')]
             for (let tr of tReus){
                 //let texto = ''
@@ -96,7 +98,7 @@ async function sisbajudInicia(){
                     }
                 }
                 if(tr.classList.contains('detail-row')){
-                    let mat = [...tr.querySelectorAll('mat-list-item')].filter(d=> d?.textContent).map(d => d?.textContent.trim()).join('\n')
+                    let mat = [...tr.querySelectorAll('mat-list-item')].filter(d=> d?.textContent).map(d => '<p>' + d?.textContent.trim() + '</p>').join('')
                     textoProtocolo += '<p>' + mat + '</p>'
                 }
             }
@@ -108,7 +110,7 @@ async function sisbajudInicia(){
     //let botoes = elemento.querySelectorAll('button')
 }
 
-async function sisbajudDetalhesAbriu(){
+async function sisbajudJanelaPJEAbriu(){
     let janela = confereJanela(JANELA.detalhes, JANELA.certificar)
     if (!janela) return
     let parametros = new URLSearchParams(document.location.search);
@@ -128,6 +130,24 @@ async function sisbajudDetalhesAbriu(){
     async function sisbajudCertificar() {
         let chave = idg('sisbajudCertificar')
         let armazenamento = await obterArmazenamento(chave)
+        if (!armazenamento?.[chave]) {
+            rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
+            return
+        }
+        await aguardarElemento('.area-conteudo [contenteditable]')
+        await suspender(500)
+        inserirTextoNoEditor('.area-conteudo [contenteditable]', armazenamento?.[chave])
+        await aguardarElemento('pje-anexar-tipo-documento input[data-placeholder="Tipo de Documento"]')
+        console.log('%c[Rota PJE]%c 141 passou tipo: ' + JSON.stringify(141), LOG.info, 'color:inherit')
+        await suspender (500)
+        await preencherCampoComEscolhaDeOpcao('pje-anexar-tipo-documento input[data-placeholder="Tipo de Documento"]', 'Sisbajud (bloqueio)')
+        console.log('%c[Rota PJE]%c 144 passou descrição: ' + JSON.stringify(144), LOG.info, 'color:inherit')
+        await aguardarElemento('input[data-placeholder=Descrição]')
+        await suspender (500)
+        await preencher('input[data-placeholder=Descrição]', 'Sisbajud (bloqueio) - minuta')
+        await removerArmazenamento([chave])
+        removerArmazenamento('rotapje_sisbajudExecucao')
+        return
     }
 
     async function criaGIGeCHIP(){
