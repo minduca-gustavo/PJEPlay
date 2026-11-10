@@ -318,13 +318,19 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     .find(e => e.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamentação'))
     ?.querySelector('[contenteditable]')
   await focar(campoFundamentacao)
-  await suspender(3000)
-  if (!parametros.modelo) return
-  await digitarNoInput(await sel('elaborarDespachoBuscarModelos'), parametros.modelo)
-  let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
-  if (!opcaoModelo) return
-
-  let botaoInserir = await esperarEClicar('elaborarDespachoInserirModelo')
+  await suspender(2000)
+  if (parametros.modelo){
+    await digitarNoInput(await sel('elaborarDespachoBuscarModelos'), parametros.modelo)
+    let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
+    if (!opcaoModelo) return
+    let botaoInserir = await esperarEClicar('elaborarDespachoInserirModelo')
+    await pje_aguardarMensagem('Modelo de documento inserido')
+  }
+  await suspender(500)
+  if (parametros.texto){
+    inserirTextoNoEditor(campoFundamentacao, parametros.texto)
+  }
+  await suspender(500)
   return
 }
 
