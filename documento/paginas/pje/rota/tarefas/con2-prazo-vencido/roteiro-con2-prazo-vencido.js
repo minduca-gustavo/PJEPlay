@@ -221,7 +221,7 @@ async function con2_prazo_vencido_acoesRetificar(){
 async function con2_prazo_vencido_processarRecursos(recursos) {
     let confereExecucao = await execucaoAtualConferencia()
     if (!confereExecucao) return
-    if (confereSetor('CON2', 'Vara do trabalho')) {
+    if (!confereSetor('CON2', 'Vara do trabalho')) {
         rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON2, ou na Vara.', 5)
         return
     }
@@ -242,8 +242,8 @@ async function con2_prazo_vencido_processarRecursos(recursos) {
         recorrentes.push({marcado, idUnicoDocumento, recorrente})
     }
     let chave = idg('con2', 'prazoVencido', 'processar')
-    await armazenar({[chave]: recorrentes})
-    let urlInicio = definirURLDaTarefa(id) || ''
+    await armazenar({[chave]: {recorrentes, confereExecucao}})
+    let urlInicio = await definirURLDaTarefa(id) || ''
     if (!urlInicio) {
         rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
         return
@@ -298,18 +298,24 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
     if (!janela) return
     let chave = idg('con2', 'prazoVencido', 'processar')
     let armazenamento = await obterArmazenamento(chave)
-    let execucao = String(armazenamento[chave] || '')
     if (!armazenamento) return
+    let dados = armazenamento[chave] || null
+    if (!dados) return
+    let execucao = String(dados?.confereExecucao || '')
     let nomeJanela = window.name
-    if (!nomeJanela.includes(chave)) return
+    if (!nomeJanela.includes(execucao)) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
-    await con2_prazo_vencido_acoesDespachar()
+    await con2_prazo_vencido_acoesDespachar(dados?.recorrentes)
 }
 
 // DESPACHAR PASSO 3 - executa as ações
 
-async function con2_prazo_vencido_acoesDespachar(){
+async function con2_prazo_vencido_acoesDespachar(recorrentes){
+    alert (JSON.stringify(recorrentes))
+    return
+    let chave = idg('con2', 'prazoVencido', 'processar')
+    let armazenamento = await obterArmazenamento()
     let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
         obterArmazenamento('rotapje_con2_prazo_vencido_despachar_tipo').then(dados => dados?.rotapje_con2_prazo_vencido_despachar_tipo || ''),
         obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig || ''),

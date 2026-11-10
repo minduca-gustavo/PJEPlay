@@ -199,8 +199,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         })
         caixas.push(ancestral + '_check')
         check.style.gap = '0px'
-        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento, idSignatario})
+        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento, idSignatario, participacaoProcesso})
         clicar('#' + ancestral + '_check')
+        check.addEventListener('click', async () => await definirPreparo(ancestral, check, coluna))
         let textoAoLado = criaTexto({
             id: ancestral + '_texto',
             ancestral,
@@ -215,6 +216,82 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         })
         //let textoAoLado = document.querySelector('#' + ancestral + ' span')
         textoAoLado.addEventListener('click', () => comandar(['con2_prazo_vencido_abrir_documentos'],[recurso]))
+        await definirPreparo(ancestral, check, coluna)
+        
+        async function definirPreparo(ancestral, check, coluna){
+            console.log('%c[Rota PJE]%c check: ' + JSON.stringify(check), LOG.info, 'color:inherit', check)
+            if (!document.getElementById(ancestral + '_preparo')) {
+                let div = criaDiv({
+                    id: ancestral + '_preparo',
+                    ancestral: coluna,
+                    rowColumn: 'row'
+                })
+                div.style.marginLeft = '70px'
+            }
+            let remover = [...document.getElementById(ancestral + '_preparo').childNodes].map( d=> d.remove())
+            if (check.dataset.marcado == 0){
+                let chkTempestividade = await criaCheckBox({
+                    id: ancestral + '_tempestividade',
+                    ancestral: ancestral + '_preparo',
+                    textoAoLado: 'Intempestivo'
+                })
+                let chkCustas = await criaCheckBox({
+                    id: ancestral + '_custas',
+                    ancestral: ancestral + '_preparo',
+                    textoAoLado: 'Sem custas'
+                })
+                let chkDeposito = await criaCheckBox({
+                    id: ancestral + '_deposito',
+                    ancestral: ancestral + '_preparo',
+                    textoAoLado: 'Sem depósito / fiança'
+                })
+                chkTempestividade.addEventListener('click', () => {
+                    let recurso = JSON.parse(check.dataset.recurso)
+                    recurso.intempestivo = !recurso.intempestivo
+                    check.dataset.recurso = JSON.stringify(recurso)
+                })
+                chkCustas.addEventListener('click', () => {
+                    let recurso = JSON.parse(check.dataset.recurso)
+                    recurso.custasAusentes = !recurso.custasAusentes
+                    check.dataset.recurso = JSON.stringify(recurso)
+                })
+                chkDeposito.addEventListener('click', () => {
+                    let recurso = JSON.parse(check.dataset.recurso)
+                    recurso.depositoAusente = !recurso.custasAusentes
+                    check.dataset.recurso = JSON.stringify(recurso)
+                })
+                
+            } else {
+                let dados = JSON.parse(check.dataset.recurso)
+                if (normalizar(dados?.participacaoProcesso).includes('reu')){
+                    let chkRecolhidas = await criaCheckBox({
+                        id: ancestral + '_recolhidas',
+                        ancestral: ancestral + '_preparo',
+                        textoAoLado: 'Custas e depósito OK'
+                    })
+                    clicar('#' + ancestral + '_recolhidas')
+                    let chkDispensadas = await criaCheckBox({
+                        id: ancestral + '_dispensadas',
+                        ancestral: ancestral + '_preparo',
+                        textoAoLado: 'Dispensados'
+                    })
+                    chkRecolhidas.addEventListener('click', () => {
+                        let recurso = JSON.parse(check.dataset.recurso)
+                        recurso.preparo = 'recolhidas'
+                        check.dataset.recurso = JSON.stringify(recurso)
+                        alternaCheckBox(chkRecolhidas.id, false, chkRecolhidas, chkDispensadas)
+                    })
+                    chkDispensadas.addEventListener('click', () => {
+                        let recurso = JSON.parse(check.dataset.recurso)
+                        recurso.preparo = 'dispensadas'
+                        check.dataset.recurso = JSON.stringify(recurso)
+                        alternaCheckBox(chkDispensadas.id, false, chkRecolhidas, chkDispensadas)
+                    })
+                    check.dataset.recurso = JSON.stringify(recurso)
+                }
+            }
+        }
+
         let anexos = recurso?.anexos?.length ? recurso?.anexos : []
         if (anexos.length){
             let div = criaDiv({

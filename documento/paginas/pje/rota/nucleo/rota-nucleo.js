@@ -705,19 +705,27 @@ function confereSetor(...setor){
 	return setor.some(s => normalizar(document.querySelector('.oj-cargo')?.textContent).includes(normalizar(s)))
 }
 
+function alternaCheckBox(idCheck, ...checks){
+	for (let check of checks){
+		if (check.id.includes('caixa')) continue
+		if (check.id != idCheck && check.dataset.marcado == 1 && document.getElementById(idCheck).dataset.marcado == 1) clicar('#' + check.id)
+	}
+}
+
 async function definirURLDaTarefa(id){
 	let tarefa =  	await buscarTarefaMaisRecente(id)
-    let idTarefa =  tarefa[0]?.idTarefa || ''
+	let idTarefa =  tarefa[0]?.idTarefa || ''
     let recurso =   tarefa[0]?.nomeRecurso || ''
     if (!recurso || !idTarefa){
         return null
     }
     let recursos = interceptador_lerRecursos() || await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos') || []
 	let page =      recursos.find(r => r?.nome === recurso)
-    if (!page?.caminhoRecurso){
+	if (!page?.caminhoRecurso){
         return null
     }
     let url =       location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1]
+	return url
 }
 
 /**
