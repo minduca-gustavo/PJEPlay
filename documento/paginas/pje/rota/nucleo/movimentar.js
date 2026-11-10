@@ -92,7 +92,7 @@ const MAPA_ROTAS = {
       "Gravar os movimentos a serem lançados"
     ]
   },
-  'Prazos vencidos':{
+  'Prazos Vencidos':{
     alcanca: [
       "Análise",
     ]
