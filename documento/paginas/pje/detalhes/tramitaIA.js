@@ -38,7 +38,7 @@ async function tramitaIAResumoRapidoCON1() {
     let primeiraRespostaTF = armazenamento[idg('resumoGeralCON1')] || false
     let primeiroAssistenteEnvio = {timelineLimpa, teorDespachos, teorDocumentosPartes, teorAtas}
     let primeiroAssistente = '6ac138f2bb98490b4befd0e7'
-    let primeiraResposta = primeiraRespostaTF ? (await rota_IAConsulta(primeiroAssistente, JSON.stringify(primeiroAssistenteEnvio)) || 'Ocorreu um erro') : 'Não solicitado'
+    let primeiraResposta = primeiraRespostaTF ? (await rota_IAConsulta(primeiroAssistente, JSON.stringify(primeiroAssistenteEnvio)) || 'Ocorreu um erro') : 'Não solicitado (o checkbox não está clicado ao lado, efetue nova consulta).'
     // DOCUMENTOS SEGUNDO ASSISTENTE
     let processo = document.querySelector('pje-descricao-processo')?.textContent.match(_ROTA_CNJ_PADRAO) || ''
     if (!processo){
@@ -55,7 +55,7 @@ async function tramitaIAResumoRapidoCON1() {
     let segundaRespostaTF = armazenamento[idg('gestaoCON1')] || false
     let segundoAssistenteEnvio = {primeiraResposta, timelineLimpa, teorDespachos, teorAtas, chips, gigs, audienciaMarcada, tarefa}
     let segundoAssistente = '6ac7e7eb2d5c9cd657dd24f1'
-    let segundaResposta = segundaRespostaTF ? (await rota_IAConsulta(segundoAssistente, JSON.stringify(segundoAssistenteEnvio)) || 'Ocorreu um erro') : 'Não solicitado'
+    let segundaResposta = segundaRespostaTF ? (await rota_IAConsulta(segundoAssistente, JSON.stringify(segundoAssistenteEnvio)) || 'Ocorreu um erro') : 'Não solicitado (o checkbox não está clicado ao lado, efetue nova consulta).'
     //_baixarArquivo(JSON.stringify(segundoAssistenteEnvio, null, 2), 'resumoRapidoCON1.json', 'application/json')
     return [
         {titulo: 'Resumo Geral CON1', resposta: primeiraResposta, id: idg('resumoGeralCON1')}, 
@@ -93,15 +93,17 @@ async function tramitaIAResumoRapidoLIQ1() {
     let assistente_resumoGeralLIQ1 = '6ae39ae8bac219ab06a6932d'
     let assistente_obrigacoesDeFazerLIQ1 = '6aecc761296544c71127842a'
     let [resumoGeralLIQ1, obrigacoesDeFazerLIQ1, informacoesProcessuaisLIQ1] = await Promise.all([
-    resumoGeralLIQ1TF ? (rota_IAConsulta(assistente_resumoGeralLIQ1, JSON.stringify(assistenteEnvio)).then(r => r || 'Ocorreu um erro')) : 'Não solicitado',
-    obrigacoesDeFazerLIQ1TF ? (rota_IAConsulta(assistente_obrigacoesDeFazerLIQ1, JSON.stringify(assistenteEnvio), [], ).then(r => r || 'Ocorreu um erro')) : 'Não solicitado',
+    resumoGeralLIQ1TF ? (rota_IAConsulta(assistente_resumoGeralLIQ1, JSON.stringify(assistenteEnvio)).then(r => r || 'Ocorreu um erro')) : 'Não solicitado (o checkbox não está clicado ao lado, efetue nova consulta).',
+    obrigacoesDeFazerLIQ1TF ? (rota_IAConsulta(assistente_obrigacoesDeFazerLIQ1, JSON.stringify(assistenteEnvio), [], ).then(r => r || 'Ocorreu um erro')) : 'Não solicitado (o checkbox não está clicado ao lado, efetue nova consulta).',
     informacoesProcessuaisLIQ1TF ? (rota_IAConsulta('',`Utilize o buscador processual para buscar as seguintes informações no processo:
 (i) o número do PIS do reclamante;
 (ii) o número da CTPS do reclamante;
 (iii) se a CTPS é física ou digital
-(iv) por DEPÓSITO RECURSAL ou DEPÓSITO JUDICIAL vinculados à reclamada, indicando o id do documento, se possível.
-IMPORTANTE: Responda apenas utilzando texto, sem marcas de estilo.
-número do processo: ` + numeroProcesso).then(r => r || 'Ocorreu um erro')) : 'Não solicitado'
+(iv) por DEPÓSITO RECURSAL ou DEPÓSITO JUDICIAL vinculados à reclamada, indicando o id do documento (idUnicoDocumento), se possível.
+INSTRUÇÕES IMPORTANTES:
+1) Responda apenas utilzando texto, sem marcas de estilo.
+2) Ao referir-se a documentos, indique o id (idUnicoDocumento), normalmente encontrado na assinatura: "Documento assinado eletronicamente por XXXXXX, em DD/MM/AAAA, às HH:MM:SS - ID AQUI"
+Número do processo: ` + numeroProcesso).then(r => r || 'Ocorreu um erro')) : 'Não solicitado (o checkbox não está clicado ao lado, efetue nova consulta).'
 ])
     return [
         {titulo: 'Resumo Geral LIQ1', resposta: resumoGeralLIQ1, id: idg('resumoGeralLIQ1')}, 

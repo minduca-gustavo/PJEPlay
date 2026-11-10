@@ -588,6 +588,7 @@ async function tramitaIAResumoRapidoBusca(idBotao, novaChamada = false) {
         })
                 
         let i = 0
+        let novaBusca = false
         for(let dado of dados){
             if (i == 0){
                 criaTexto({
@@ -640,6 +641,7 @@ async function tramitaIAResumoRapidoBusca(idBotao, novaChamada = false) {
                     salvar: true
                 })
                 if (armazenamento?.[id]) clicar(id)
+                check.addEventListener('click', () => criaBotaoNovaBusca())
             }
             let botaoResumo = criaBotaoAzul({
                 id: idDiv + '_botao_' + (id ? id : i),
@@ -652,12 +654,18 @@ async function tramitaIAResumoRapidoBusca(idBotao, novaChamada = false) {
             botaoResumo.style.width = '100%'
             i++
         }
-        let botaoNovaConsulta = criaBotaoLaranja({
-            id: idDiv + '_botaoNovaConsulta',
-            texto: 'Nova consulta',
-            ancestral: idDireita,
-            acao: () => tramitaIAResumoRapidoBusca(idBotao, true)
-        })
+        
+        function criaBotaoNovaBusca(){
+            if (!novaBusca){
+                let botaoNovaConsulta = criaBotaoLaranja({
+                    id: idDiv + '_botaoNovaConsulta',
+                    texto: 'Nova consulta',
+                    ancestral: idDireita,
+                    acao: () => tramitaIAResumoRapidoBusca(idBotao, true)
+                })
+            }
+            novaBusca = true
+        }
         return null
     }
 }
