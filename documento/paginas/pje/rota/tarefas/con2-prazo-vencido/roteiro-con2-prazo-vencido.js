@@ -308,8 +308,26 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
 
 // DESPACHAR PASSO 3 - executa as ações
 
-async function con2_prazo_vencido_acoesDespachar(recorrentes){
-    alert (JSON.stringify(recorrentes))
+async function con2_prazo_vencido_acoesDespachar(recursos){
+    let texto = ''
+    if (!recurso.some(d => !d.marcado)){
+    }
+//    for (let recurso of recursos){
+//        let tempestividade = recurso.marcado || !recurso.intempestivo ? 'O recurso interposto é tempestivo.' : 'O recurso interposto é intempestivo'
+//        texto += `<p>Recurso id ${recurso.idUnicoDocumento}:</p>
+//<p>Pressupostos extrínsecos:</p>
+//<p>${tempestividade}</p>
+//<p></p>
+//<p></p>
+//<p></p>
+//<p></p>
+//<p></p>
+//<p></p>
+//<p></p>
+//<p></p>`
+//        
+//    }
+    alert (JSON.stringify(recursos))
     return
     let chave = idg('con2', 'prazoVencido', 'processar')
     let armazenamento = await obterArmazenamento()
