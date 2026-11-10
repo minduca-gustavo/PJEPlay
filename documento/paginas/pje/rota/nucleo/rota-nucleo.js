@@ -127,7 +127,15 @@ async function execucaoAtualConferencia(){
 	let wname = window.name
     let execArm = await obterArmazenamento('rotaExecucaoAtual')
     let execAtual = execArm?.rotaExecucaoAtual || ''
-    return wname.includes(execAtual)
+    return wname.includes(execAtual) ? execAtual : null
+}
+
+async function pje_aguardarMensagem(texto=''){
+	let elemento = await aguardarElemento(
+		'//snack-bar-container[.//span[contains(text(),"' + texto + '")]]',
+		{xpath:true}
+	)
+	return elemento
 }
 
 
@@ -693,6 +701,24 @@ async function rota_fetch_IACriaConversa(assistantId = '', modelo = 'modelo_rapi
 	}
 }
 
+function confereSetor(...setor){
+	return setor.some(s => normalizar(document.querySelector('.oj-cargo')?.textContent).includes(normalizar(s)))
+}
+
+async function definirURLDaTarefa(id){
+	let tarefa =  	await buscarTarefaMaisRecente(id)
+    let idTarefa =  tarefa[0]?.idTarefa || ''
+    let recurso =   tarefa[0]?.nomeRecurso || ''
+    if (!recurso || !idTarefa){
+        return null
+    }
+    let recursos = interceptador_lerRecursos() || await rota_fetch(location.origin + '/pje-seguranca/api/token/permissoes/recursos') || []
+	let page =      recursos.find(r => r?.nome === recurso)
+    if (!page?.caminhoRecurso){
+        return null
+    }
+    let url =       location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1]
+}
 
 /**
  * Envia um texto (e, opcionalmente, arquivos) para uma conversa e

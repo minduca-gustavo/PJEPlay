@@ -287,21 +287,19 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 // ------------------------------------------------------------
 async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametros) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
-  let selecao = await aguardarElementoNovo('conclusaoAoMagistradoSelecaoDeMagistrados')
-  clicar(selecao)
-  let juiz = parametros.juiz.toUpperCase()
-  await aguardarElementoNovo('conclusaoAoMagistradoOpcoesDeMagistrados')
-  let juizes = [...(await sel ('conclusaoAoMagistradoOpcoesDeMagistrados', '', true))]
-  let juizSelecionado = juizes.find(j => {
-    let texto = j.textContent?.trim() ?? ''
-    return texto.includes(juiz) || juiz.includes(texto)
-  })
-  if (!juizSelecionado) {
-    rota_avisoObrigatorio('Ocorreu um erro. Prossiga manualmente.', 5)
+  let idMagistrado = idg('escolheMagistrado', 'botao')
+  let armazenamento = await obterArmazenamento(idMagistrado) || {}
+  let opcao = armazenamento[idMagistrado] || ''
+  if (opcao){
+    console.log('%c[Rota PJE]%c 293 movimentar: ' + JSON.stringify(293), LOG.info, 'color:inherit')
+    await aguardarElemento('meta[id="rotapje-juiz_escolhido"]')
+    console.log('%c[Rota PJE]%c 295 movimentar: ' + JSON.stringify(295), LOG.info, 'color:inherit')
     return
   }
-  clicar(juizSelecionado)
-
+  await aguardarElemento('#rotapje_escolheMagistrado_botao_botao_planilha')
+  opcao = document.querySelector('#' + idMagistrado + '_botao_' + 'simetria') ? 'simetria' : 'planilha'
+  if(!document.querySelector('#' + idMagistrado + '_botao_' + opcao)) return
+  if(opcao) clicar('#' + idMagistrado + '_botao_' + opcao)
   return
 }
 

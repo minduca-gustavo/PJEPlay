@@ -216,9 +216,15 @@ async function con2_prazo_vencido_acoesRetificar(){
 //                   PROCESSAR RECURSO
 // _________________________________________________
 
+// PROCESSAR PASSO 1 - recebe os dados e abre a tela de tarefa
+
 async function con2_prazo_vencido_processarRecursos(recursos) {
     let confereExecucao = await execucaoAtualConferencia()
     if (!confereExecucao) return
+    if (confereSetor('CON2', 'Vara do trabalho')) {
+        rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON2, ou na Vara.', 5)
+        return
+    }
     let idURL = location.href.match(/processo\/(\d+)\/detalhe/)
     let id = idURL[1]
     /*
@@ -235,8 +241,16 @@ async function con2_prazo_vencido_processarRecursos(recursos) {
         }
         recorrentes.push({marcado, idUnicoDocumento, recorrente})
     }
-    alert(JSON.stringify(recorrentes))
-    
+    let chave = idg('con2', 'prazoVencido', 'processar')
+    await armazenar({[chave]: recorrentes})
+    let urlInicio = definirURLDaTarefa(id) || ''
+    if (!urlInicio) {
+        rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
+        return
+    }
+    let url = urlInicio + '?' + chave + '=' + confereExecucao
+    let nomeJanela = chave + '_' + confereExecucao
+    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
 
 //__________________________________________________
@@ -244,7 +258,7 @@ async function con2_prazo_vencido_processarRecursos(recursos) {
 //__________________________________________________
 
 // DESPACHAR PASSO 1 - recebe os dados e abre a tela de tarefa
-
+/*
 async function con2_prazo_vencido_despachar(tipo) {
     let confereExecucao = await execucaoAtualConferencia()
     if (!confereExecucao) return
@@ -277,16 +291,17 @@ async function con2_prazo_vencido_despachar(tipo) {
     }
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
-
+*/
 // DESPACHAR PASSO 2 - verifica se a janela aberta é a da extensão
 async function con2_prazo_vencido_aoAbrirDespachar(){
     let janela = confereJanela(JANELA.processoTarefa)
     if (!janela) return
-    let armazenamento = await obterArmazenamento('rotapje_con2_prazo_vencido_despachar')
-    let execucao = String(armazenamento?.rotapje_con2_prazo_vencido_despachar || '')
+    let chave = idg('con2', 'prazoVencido', 'processar')
+    let armazenamento = await obterArmazenamento(chave)
+    let execucao = String(armazenamento[chave] || '')
     if (!armazenamento) return
     let nomeJanela = window.name
-    if (!nomeJanela.includes('rotapje_con2_prazo_vencido_despachar')) return
+    if (!nomeJanela.includes(chave)) return
     if(execucao !== nomeJanela.split('_').pop()) return
     registrarListenerFechar(execucao)
     await con2_prazo_vencido_acoesDespachar()

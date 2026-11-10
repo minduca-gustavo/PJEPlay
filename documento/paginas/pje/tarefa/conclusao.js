@@ -14,6 +14,8 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
             return
         }
         clicar(opcaoJuiz)
+        interceptador_salvarMetaTag('juiz_escolhido', JSON.stringify(Date.now()))
+
         //alert (juizAEscolher)
         return
     }
@@ -23,6 +25,11 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
             tipo: 'simetria',
             texto: 'SIMETRIA',            
             parametro: 'juizSimetria'
+        },
+        {
+            tipo: 'simetriaPlanilha',
+            texto: 'SIMETRIA + PLANILHA - se não tiver GIG simetria, escolhe da planilha.',            
+            parametro: 'simetriaPlanilha'
         },
         {
             tipo: 'planilha',
@@ -80,6 +87,7 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     }
     let i = 0
     for (let botao of botoes){
+        if (botao?.tipo == 'simetriaPlanilha') continue
         let funcao = i % 2 == 0 ? 'criaBotaoLaranja' : 'criaBotaoAzul'
         let parametro = botao.parametro
         let juiz = juizes[botao.parametro]
@@ -95,6 +103,9 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     }
     let armazenamento = await obterArmazenamento(idMagistrado) || {}
     let opcao = armazenamento[idMagistrado] || ''
+    if (opcao == 'simetriaPlanilha'){
+        opcao = document.querySelector('#' + idMagistrado + '_botao_' + 'simetria') ? 'simetria' : 'planilha'
+    }
     if(!document.querySelector('#' + idMagistrado + '_botao_' + opcao)) return
     if(opcao) clicar('#' + idMagistrado + '_botao_' + opcao)
     console.log('%c[Rota PJE]%c opcao' + JSON.stringify(opcao), LOG.erro, 'color:inherit')
