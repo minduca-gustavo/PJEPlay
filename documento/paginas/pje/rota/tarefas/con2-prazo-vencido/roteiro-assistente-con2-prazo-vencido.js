@@ -227,6 +227,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                     rowColumn: 'row'
                 })
                 div.style.marginLeft = '70px'
+                div.style.flexWrap = 'wrap'
             }
             let remover = [...document.getElementById(ancestral + '_preparo').childNodes].map( d=> d.remove())
             if (check.dataset.marcado == 0){
@@ -257,7 +258,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                 })
                 chkDeposito.addEventListener('click', () => {
                     let recurso = JSON.parse(check.dataset.recurso)
-                    recurso.depositoAusente = !recurso.custasAusentes
+                    recurso.depositoAusente = !recurso.depositoAusente
                     check.dataset.recurso = JSON.stringify(recurso)
                 })
                 
@@ -279,15 +280,15 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                         let recurso = JSON.parse(check.dataset.recurso)
                         recurso.preparo = 'recolhidas'
                         check.dataset.recurso = JSON.stringify(recurso)
-                        alternaCheckBox(chkRecolhidas.id, false, chkRecolhidas, chkDispensadas)
+                        alternaCheckBox(chkRecolhidas.id, chkRecolhidas, chkDispensadas)
                     })
                     chkDispensadas.addEventListener('click', () => {
                         let recurso = JSON.parse(check.dataset.recurso)
                         recurso.preparo = 'dispensadas'
                         check.dataset.recurso = JSON.stringify(recurso)
-                        alternaCheckBox(chkDispensadas.id, false, chkRecolhidas, chkDispensadas)
+                        alternaCheckBox(chkDispensadas.id, chkRecolhidas, chkDispensadas)
                     })
-                    check.dataset.recurso = JSON.stringify(recurso)
+                    
                 }
             }
         }
@@ -337,9 +338,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             let elemento = document.getElementById(caixa)
             let marcado = elemento.dataset.marcado == 1 ? true : false
             let dataset = JSON.parse(elemento.dataset.recurso)
-            console.log('%c[Rota PJE]%c dataset: ' + JSON.stringify(dataset), LOG.info, 'color:inherit')
+            //console.log('%c[Rota PJE]%c dataset: ' + JSON.stringify(...dataset), LOG.info, 'color:inherit')
             let {idSignatario, idUnicoDocumento} = dataset
-            recursos.push({marcado, idUnicoDocumento, idSignatario})
+            recursos.push({marcado, ...dataset})
         }
         comandar(['con2_prazo_vencido_processar_recursos'], [recursos])
         
