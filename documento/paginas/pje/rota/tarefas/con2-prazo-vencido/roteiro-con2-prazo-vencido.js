@@ -309,17 +309,20 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function con2_prazo_vencido_acoesDespachar(recursos){
-    let recorrente = ''
+    let recorrente = []
     let preparo = ''
     let recursosProcessar = recursos.filter(d => d?.marcado)
     console.log('%c[Rota PJE]%c : ' + JSON.stringify(), LOG.info, 'color:inherit')
-    if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu')) && recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
-        recorrente = 'pelas partes '
-    } else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu'))){
-        recorrente = 'pelo(s) réu(s) '
-    } else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
-        recorrente = 'pelo(s) autor(es) '
+    for (let recurso of recursosProcessar){
+        recorrente.push('id ' + recurso.idUnicoDocumento + ',  por ' + recurso.recorrente[0]?.nome + ', ' + recurso.participacaoProcesso?.split(',')[0].trim().toLowerCase())
     }
+    //if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu')) && recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
+    //    recorrente = 'pelas partes '
+    //} else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu'))){
+    //    recorrente = 'pelo(s) réu(s) '
+    //} else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
+    //    recorrente = 'pelo(s) autor(es) '
+    //}
     if (recursosProcessar.some(d => d.preparo == 'recolhidas')){
         preparo = 'Regular a representação, recolhidas as custas e efetivado o depósito recursal.'
     } else if (recursosProcessar.some(d => d.preparo == 'dispensadas') && !recursosProcessar.some(d => d.preparo == 'recolhidas')){
@@ -328,7 +331,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
         preparo = 'Regular a representação.'
     }
     let textoProcessar = `<p>Pressupostos extrínsecos:</p>
-<p>O recurso interposto ` + recorrente + `é tempestivo.</p>
+<p>O(s) recurso(s) interposto(s), ` + recorrente.join(', ') + `é(são) tempestivo(s).</p>
 <p>` + preparo + `</p>
 <p>Pressupostos intrínsecos:</p>
 <p>Todas as matérias debatidas preenchem o requisito de admissibilidade.</p>
