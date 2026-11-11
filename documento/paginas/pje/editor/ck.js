@@ -44,7 +44,9 @@ document.addEventListener('rotapje_EditorSubstituirTexto', (evento) => {
 
 document.addEventListener('rotapje_EditorInserirComSeletor', async (evento) => {
 	let {seletor, inserir} = JSON.parse(evento.detail) || {}
-	let editavel = typeof seletor == 'string' ? document.querySelector(seletor) : seletor
+	let editavel = seletor == 'despacho' ?
+		[...document.querySelectorAll('.area-conteudo')].find(d => d?.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamenta'))?.querySelector('[contenteditable]')
+		: document.querySelector(seletor)
 	if(!editavel)
 		return
 	let editor = editavel.ckeditorInstance

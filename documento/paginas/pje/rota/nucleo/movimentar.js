@@ -328,10 +328,87 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   }
   await suspender(500)
   if (parametros.texto){
-    inserirTextoNoEditor(campoFundamentacao, parametros.texto)
+    inserirTextoNoEditor('despacho', parametros.texto)
+    await suspender(500)
+  }
+  if (parametros.descricao){
+    await aguardarElemento('input[data-placeholder="Descrição"]')
+    await suspender(500)
+    preencher('input[data-placeholder="Descrição"]', parametros.descricao)
   }
   await suspender(500)
+  if (parametros?.movimentos?.length){
+    let movimentos = parametros?.movimentos
+    clicar('button[aria-label="Salvar"]')
+    await pje_aguardarMensagem('Minuta salva')
+    await aguardarElemento('.mat-tab-labels')
+    await suspender(500)
+    while(![...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))){
+        await suspender()
+    }
+    let movimentoBotao = [...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))
+    clicar(movimentoBotao)
+    await aguardarElemento('pje-movimento mat-checkbox')
+    console.log('%c[Rota PJE]%c movimentos: ' + JSON.stringify(movimentos), LOG.info, 'color:inherit', movimentos)
+    for (let movimento of movimentos){
+      console.log('%c[Rota PJE]%c movimento: ' + JSON.stringify(movimento), LOG.info, 'color:inherit', movimento)
+      let opcoes = [...document.querySelectorAll('pje-movimento')] || []
+      if (!opcoes.length) continue
+      let opcaoElemento = opcoesIncluirExcluir(opcoes, movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)
+      let opcaoElementoClicar = opcaoElemento?.querySelector('input')
+      if(!opcaoElemento || !opcaoElementoClicar) continue
+      clicar(opcaoElementoClicar)
+      let i = 0
+      while(!opcoesIncluirExcluir([...document.querySelectorAll('pje-movimento')], movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)?.querySelector('mat-expansion-panel')){
+        await suspender()
+        console.log(i++)
+      }
+      if (!movimento?.opcoes?.length) continue
+      for (let opcao of movimento?.opcoes){
+        console.log('%c[Rota PJE]%c opcaoElemento: ' + JSON.stringify(opcaoElemento), LOG.info, 'color:inherit', opcaoElemento)
+        console.log('%c[Rota PJE]%c opcao?.nomeDoCampo: ' + JSON.stringify(opcao?.nomeDoCampo), LOG.info, 'color:inherit')
+        console.log('%c[Rota PJE]%c opcaoElemento.querySelectorAll: ' + JSON.stringify(!!opcaoElemento.querySelectorAll('mat-select')), LOG.info, 'color:inherit')
+        let elemento = opcoesIncluirExcluir([...opcaoElemento.querySelectorAll('mat-select')], opcao?.nomeDoCampo)
+        console.log('%c[Rota PJE]%c elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit')
+        await suspender(500)
+        await preencherCampoComEscolhaDeOpcao(elemento, opcao?.selecionar)
+      }
+      while(
+        !movimento?.opcoes?.some(m => [...document.querySelectorAll('.cartao-movimento')].some(d => normalizar(d?.textContent).includes(normalizar(m?.selecionar))))
+      ){
+        await suspender()
+        console.log('%c[Rota PJE]%c i++: ' + JSON.stringify(i++), LOG.info, 'color:inherit')
+      }
+    }
+    await aguardarElemento('button[mattooltip^="Gravar os movimentos"]')
+    clicar('button[mattooltip^="Gravar os movimentos"]')
+    await pje_aguardarMensagem('Movimentos gravados com sucesso')
+  }
+  await aguardarElemento('button[aria-label^="Salvar"]')
+  clicar('button[aria-label^="Salvar"]')
+  await pje_aguardarMensagem('Minuta salva')
   return
+}
+
+/* 
+while(![...document.querySelectorAll('pje-movimento')].find(d => normalizar(d.textContent).includes('recebido') && !normalizar(d.textContent).includes('nao'))?.querySelector('mat-expansion-panel')){
+  await suspender()
+  console.log(i++)
+}
+*/
+
+function opcoesIncluirExcluir(array, incluir = null, excluir = null){
+  console.log('%c[Rota PJE]%c array: ' + JSON.stringify(array), LOG.info, 'color:inherit', array)
+  console.log('%c[Rota PJE]%c incluir: ' + JSON.stringify(incluir), LOG.info, 'color:inherit')
+  console.log('%c[Rota PJE]%c excluir: ' + JSON.stringify(excluir), LOG.info, 'color:inherit')
+  if (!Array.isArray(array)) return null
+  let elemento = null
+  for (let opcao of array){
+    let incluirTF = incluir && normalizar(opcao?.textContent).includes(normalizar(incluir)) ? true : false
+    let excluirTF = !excluir || !normalizar(opcao?.textContent).includes(normalizar(excluir)) ? true : false
+    if (incluirTF && excluirTF) elemento = opcao
+  }
+  return elemento
 }
 
 async function esperarEClicar(elementoSeletorNovo, tempoEmSegundos = 30) {

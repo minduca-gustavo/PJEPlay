@@ -250,45 +250,6 @@ async function con2_prazo_vencido_processarRecursos(recursos) {
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
 
-//__________________________________________________
-//                      DESPACHAR
-//__________________________________________________
-
-// DESPACHAR PASSO 1 - recebe os dados e abre a tela de tarefa
-/*
-async function con2_prazo_vencido_despachar(tipo) {
-    let confereExecucao = await execucaoAtualConferencia()
-    if (!confereExecucao) return
-    let envio = tipo.tipo
-    await armazenar({
-        'rotapje_con2_prazo_vencido_despachar': dadosCon2PrazoVencido.execucaoAtual,
-        'rotapje_con2_prazo_vencido_despachar_tipo': envio,
-    })
-    let parametros =    '?rotapje_con2_prazo_vencido_despachar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rotapje_con2_prazo_vencido_despachar_tipo=' + envio
-    let nomeJanela =    'rotapje_con2_prazo_vencido_despachar_' + dadosCon2PrazoVencido.execucaoAtual
-    let id =            dadosCon2PrazoVencido?.processo?.id
-    let tarefa =        await buscarTarefaMaisRecente(id)
-    let idTarefa =      tarefa[0]?.idTarefa || ''
-    let recurso =       tarefa[0]?.nomeRecurso || ''
-    if (!recurso || !idTarefa){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
-        return
-    }
-    let page =          dadosCon2PrazoVencido?.recursos?.find(r => r?.nome === recurso)
-    if (!page?.caminhoRecurso){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
-        return
-    }
-    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
-    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
-    if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
-        return
-    }
-    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
-}
-*/
 // DESPACHAR PASSO 2 - verifica se a janela aberta é a da extensão
 async function con2_prazo_vencido_aoAbrirDespachar(){
     let janela = confereJanela(JANELA.processoTarefa)
@@ -309,53 +270,79 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function con2_prazo_vencido_acoesDespachar(recursos){
-    let texto = ''
-    if (!recurso.some(d => !d.marcado)){
+    let movimentos = []
+    let recorrente = []
+    let preparo = ''
+    let recursosProcessar = recursos.filter(d => d?.marcado)
+    let tipos = [
+        {
+            label: 'recurso ordinario (69)',
+            nome: 'Recurso Ordinário'
+        },
+        {
+            label: 'recurso adesivo (63)',
+            nome: 'Recurso Adesivo'
+        },
+    ]
+    console.log('%c[Rota PJE]%c : ' + JSON.stringify(), LOG.info, 'color:inherit')
+    for (let recurso of recursosProcessar){
+        let tipo = tipos.find(d => d.nome == recurso.tipo)?.label
+        recorrente.push('id ' + recurso.idUnicoDocumento + ',  por ' + recurso.recorrente[0]?.nome + ', ' + recurso.participacaoProcesso?.split(',')[0].trim().toLowerCase())
+        movimentos.push({checkbox: {incluir: 'recebido', naoIncluir: 'nao'}, opcoes: [{nomeDoCampo: 'nome do recurso', selecionar: tipo}, {nomeDoCampo: 'nome da parte', selecionar: recurso.recorrente[0]?.nome}]})
     }
-//    for (let recurso of recursos){
-//        let tempestividade = recurso.marcado || !recurso.intempestivo ? 'O recurso interposto é tempestivo.' : 'O recurso interposto é intempestivo'
-//        texto += `<p>Recurso id ${recurso.idUnicoDocumento}:</p>
-//<p>Pressupostos extrínsecos:</p>
-//<p>${tempestividade}</p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>`
-//        
-//    }
-    alert (JSON.stringify(recursos))
-    return
-    let chave = idg('con2', 'prazoVencido', 'processar')
-    let armazenamento = await obterArmazenamento()
-    let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
-        obterArmazenamento('rotapje_con2_prazo_vencido_despachar_tipo').then(dados => dados?.rotapje_con2_prazo_vencido_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig || ''),
-        obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.processo?.numero || '')
-    ])
-    if(!juizEnvio) {
-        juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
+    //if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu')) && recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
+    //    recorrente = 'pelas partes '
+    //} else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu'))){
+    //    recorrente = 'pelo(s) réu(s) '
+    //} else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
+    //    recorrente = 'pelo(s) autor(es) '
+    //}
+    if (recursosProcessar.some(d => d.preparo == 'recolhidas')){
+        preparo = 'Regular a representação, recolhidas as custas e efetivado o depósito recursal.'
+    } else if (recursosProcessar.some(d => d.preparo == 'dispensadas') && !recursosProcessar.some(d => d.preparo == 'recolhidas')){
+        preparo = 'Regular a representação, custas e depósito recursal dispensados.'
+    } else {
+        preparo = 'Regular a representação.'
     }
-    let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
-    let dados = await obterArmazenamento('rota_dadosCon2PrazoVencido')
-    let id = dados?.rota_dadosCon2PrazoVencido?.processo?.id
-    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
-    let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
-    let tiposAudiencia = {
-        'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
-        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
+    let textoProcessar = `<p>Pressupostos extrínsecos:</p>
+<p>O(s) recurso(s) interposto(s), ` + recorrente.join(', ') + `, é(são) tempestivo(s).</p>
+<p>` + preparo + `</p>
+<p>Pressupostos intrínsecos:</p>
+<p>Todas as matérias debatidas preenchem o requisito de admissibilidade.</p>
+<p>Apresente(m) o(s) recorrido(s) contrarrazões no prazo legal e, após, remetam-se os autos ao segundo grau.</p>
+<p>Intimem-se ainda os patronos das partes para que efetuem, se for o caso, seu cadastramento junto ao sistema PJe na 2ª instância.</p>
+`
+    let recursosDenegar = recursos.filter(d => !d?.marcado)
+    let recorrenteDenegar = []
+    let motivo = []
+    for (let recurso of recursosDenegar){
+        let tipo = tipos.find(d => d.nome == recurso.tipo)?.label
+        if (recurso.intempestivo){
+            motivo.push('intempestivo')
+        }
+        if (recurso.custasAusentes){
+            motivo.push('ausente o pagamento das custas')
+        }
+        if (recurso.depositoAusente){
+            motivo.push('ausente a comprovação do depósito recursal/seguro fiança')
+        }
+        if (recurso.alcada){
+            motivo.push('de alçada exclusiva de Vara do Trabalho, nos termos dos §§ 3º e 4º do art. 2º da Lei 5.584/1970')
+        }
+        recorrenteDenegar.push('id ' + recurso.idUnicoDocumento + ',  interposto por ' + recurso.recorrente[0]?.nome + ', pois ' + motivo.join(','))
+        movimentos.push({checkbox: {incluir: 'nao recebido'}, opcoes: [{nomeDoCampo: 'nome do recurso', selecionar: tipo}, {nomeDoCampo: 'nome da parte', selecionar: recurso.recorrente[0]?.nome}]})
     }
-    let modeloDespacho = ''
-    if (tipo !== 'con2_prazo_vencido_emendar'){
-        modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
-    }
-    await movimentar('Despacho', {
-        'Conclusão ao magistrado':{'juiz': juizEnvio},
-        'Elaborar despacho':{'modelo': modeloDespacho}
+    let textoDenegar = `<p>Denego seguimento ao(s) recurso(s) ordinário(s) ` + recorrenteDenegar.join(', ') + `.</p>`
+    let texto = (recursos.some(d => d?.marcado) ? textoProcessar : '') + '\n' + (recursos.some(d => !d?.marcado) ? textoDenegar : '')
+
+    
+    await movimentar('Admissibilidade de Recursos', {
+        'Elaborar decisão':{texto, movimentos, descricao: 'Decisão - Admissibilidade de Recursos'}
     })
+    
+    return
+    
+    
     if (modeloDespacho !== ''){
         let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
         clicar(elaborarDespachoBotaoEnviarParaAssinatura)
