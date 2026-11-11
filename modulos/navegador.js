@@ -27,6 +27,7 @@ async function extensao_recarregar(){
 }
 
 
+
 /**
  * Monta um caminho absoluto para um arquivo de uma string com um caminho partindo do manifest.json:
  * @param {string}	arquivo
