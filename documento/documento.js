@@ -33,6 +33,7 @@ obterArmazenamento().then(async armazenamento => {
 })
 
 document.addEventListener('rotapje_limparArmazenamento', async (evento) => {
+	console.log('%c[Rota PJE]%c ouviu' + JSON.stringify(36), LOG.aviso, 'color:inherit')
 	let {agora} = JSON.parse(evento.detail) || {}
 	await limparArmazenamento(CONFIGURACAO, agora)
 	interceptador_salvarMetaTag(idg('armazenamentoLimpo'))
