@@ -309,53 +309,85 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function con2_prazo_vencido_acoesDespachar(recursos){
-    let texto = ''
-    if (!recurso.some(d => !d.marcado)){
+    let recorrente = ''
+    let preparo = ''
+    let recursosProcessar = recursos.filter(d => d?.marcado)
+    console.log('%c[Rota PJE]%c : ' + JSON.stringify(), LOG.info, 'color:inherit')
+    if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu')) && recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
+        recorrente = 'pelas partes '
+    } else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu'))){
+        recorrente = 'pelo(s) réu(s) '
+    } else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
+        recorrente = 'pelo(s) autor(es) '
     }
-//    for (let recurso of recursos){
-//        let tempestividade = recurso.marcado || !recurso.intempestivo ? 'O recurso interposto é tempestivo.' : 'O recurso interposto é intempestivo'
-//        texto += `<p>Recurso id ${recurso.idUnicoDocumento}:</p>
-//<p>Pressupostos extrínsecos:</p>
-//<p>${tempestividade}</p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>
-//<p></p>`
-//        
-//    }
-    alert (JSON.stringify(recursos))
-    return
-    let chave = idg('con2', 'prazoVencido', 'processar')
-    let armazenamento = await obterArmazenamento()
-    let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
-        obterArmazenamento('rotapje_con2_prazo_vencido_despachar_tipo').then(dados => dados?.rotapje_con2_prazo_vencido_despachar_tipo || ''),
-        obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.juizSimetriaPeloGig || ''),
-        obterArmazenamento('rota_dadosCon2PrazoVencido').then(dados => dados?.rota_dadosCon2PrazoVencido?.processo?.numero || '')
-    ])
-    if(!juizEnvio) {
-        juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
+    if (recursosProcessar.some(d => d.preparo == 'recolhidas')){
+        preparo = 'Regular a representação, recolhidas as custas e efetivado o depósito recursal.'
+    } else if (recursosProcessar.some(d => d.preparo == 'dispensadas') && !recursosProcessar.some(d => d.preparo == 'recolhidas')){
+        preparo = 'Regular a representação, custas e depósito recursal dispensados.'
+    } else {
+        preparo = 'Regular a representação.'
     }
-    let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
-    let dados = await obterArmazenamento('rota_dadosCon2PrazoVencido')
-    let id = dados?.rota_dadosCon2PrazoVencido?.processo?.id
-    let audienciasMarcadas = await buscarAudienciasMarcadas(id) || {}
-    let tipoAudiencia = audienciasMarcadas?.tipo?.descricao || ''
-    let tiposAudiencia = {
-        'Inicial por videoconferência': 'SCBAU_TI_INI_ORD',
-        'Inicial por videoconferência (rito sumaríssimo)': 'SCBAU_TI_INI_SUM'
+    let textoProcessar = `<p>Pressupostos extrínsecos:</p>
+<p>O recurso interposto ` + recorrente + `é tempestivo.</p>
+<p>` + preparo + `</p>
+<p>Pressupostos intrínsecos:</p>
+<p>Todas as matérias debatidas preenchem o requisito de admissibilidade.</p>
+<p>Apresente(m) o(s) recorrido(s) contrarrazões no prazo legal e, após, remetam-se os autos ao segundo grau.</p>
+<p>Intimem-se ainda os patronos das partes para que efetuem, se for o caso, seu cadastramento junto ao sistema PJe na 2ª instância.</p>
+`
+    let recursosDenegar = recursos.filter(d => !d?.marcado)
+    let recorrenteDenegar = []
+    let motivo = []
+    for (let recurso of recursosDenegar){
+        if (recurso.intempestivo){
+            motivo.push('intempestivo')
+        }
+        if (recurso.custasAusentes){
+            motivo.push('ausente o pagamento das custas')
+        }
+        if (recurso.depositoAusente){
+            motivo.push('ausente a comprovação do depósito recursal/seguro fiança')
+        }
+        if (recurso.alcada){
+            motivo.push('de alçada exclusiva de Vara do Trabalho, nos termos dos §§ 3º e 4º do art. 2º da Lei 5.584/1970')
+        }
+        recorrenteDenegar.push('id ' + recurso.idUnicoDocumento + ',  interposto por ' + recurso.recorrente[0]?.nome + ', pois ' + motivo.join(','))
     }
-    let modeloDespacho = ''
-    if (tipo !== 'con2_prazo_vencido_emendar'){
-        modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
-    }
-    await movimentar('Despacho', {
-        'Conclusão ao magistrado':{'juiz': juizEnvio},
-        'Elaborar despacho':{'modelo': modeloDespacho}
+    let textoDenegar = `<p>Denego seguimento ao(s) recurso(s) ordinário(s) ` + recorrenteDenegar.join(', ') + `.</p>`
+    let texto = (recursos.some(d => d?.marcado) ? textoProcessar : '') + '\n' + (recursos.some(d => !d?.marcado) ? textoDenegar : '')
+
+    await movimentar('Admissibilidade de Recursos', {
+        'Elaborar decisão':{texto}
     })
+    await suspender(500)
+    await clicar('button[aria-label="Salvar"]')
+    pje_aguardarMensagem('Salvo com sucesso')
+    await aguardarElemento('.mat-tab-labels')
+    await suspender(500)
+    while(![...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))){
+        await suspender()
+    }
+    let movimento = [...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))
+    console.log('%c[Rota PJE]%c movimento: ' + JSON.stringify(movimento), LOG.info, 'color:inherit', movimento)
+    clicar(movimento)
+    await aguardarElemento('pje-movimento mat-checkbox')
+    let opcoes = [...document.querySelectorAll('pje-movimento mat-checkbox')]
+    if (recursosProcessar.length){
+        let opcao = opcoes.find(d => normalizar(d.textContent).includes('recebido') && !normalizar(d.textContent).includes('nao'))?.querySelector('input')
+        clicar(opcao)
+        let i = 0
+        while(![...document.querySelectorAll('pje-movimento')].find(d => normalizar(d.textContent).includes('recebido') && !normalizar(d.textContent).includes('nao'))?.querySelector('mat-expansion-panel')){
+            await suspender()
+            console.log(i++)
+        }
+    }
+    if (recursosDenegar.length){
+
+    }
+    alert('passei')
+    return
+    
+    
     if (modeloDespacho !== ''){
         let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
         clicar(elaborarDespachoBotaoEnviarParaAssinatura)

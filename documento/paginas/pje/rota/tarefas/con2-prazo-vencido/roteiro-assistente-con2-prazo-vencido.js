@@ -246,6 +246,11 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                     ancestral: ancestral + '_preparo',
                     textoAoLado: 'Sem depósito / fiança'
                 })
+                let chkAlcada = await criaCheckBox({
+                    id: ancestral + '_alcada',
+                    ancestral: ancestral + '_preparo',
+                    textoAoLado: 'Alçada'
+                })
                 chkTempestividade.addEventListener('click', () => {
                     let recurso = JSON.parse(check.dataset.recurso)
                     recurso.intempestivo = !recurso.intempestivo
@@ -259,6 +264,11 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                 chkDeposito.addEventListener('click', () => {
                     let recurso = JSON.parse(check.dataset.recurso)
                     recurso.depositoAusente = !recurso.depositoAusente
+                    check.dataset.recurso = JSON.stringify(recurso)
+                })
+                chkAlcada.addEventListener('click', () => {
+                    let recurso = JSON.parse(check.dataset.recurso)
+                    recurso.alcada = !recurso.alcada
                     check.dataset.recurso = JSON.stringify(recurso)
                 })
                 

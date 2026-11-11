@@ -328,7 +328,7 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
   }
   await suspender(500)
   if (parametros.texto){
-    inserirTextoNoEditor(campoFundamentacao, parametros.texto)
+    inserirTextoNoEditor('despacho', parametros.texto)
   }
   await suspender(500)
   return
