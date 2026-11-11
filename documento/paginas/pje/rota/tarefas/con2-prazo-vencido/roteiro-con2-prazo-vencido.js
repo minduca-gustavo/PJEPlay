@@ -250,45 +250,6 @@ async function con2_prazo_vencido_processarRecursos(recursos) {
     await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
 }
 
-//__________________________________________________
-//                      DESPACHAR
-//__________________________________________________
-
-// DESPACHAR PASSO 1 - recebe os dados e abre a tela de tarefa
-/*
-async function con2_prazo_vencido_despachar(tipo) {
-    let confereExecucao = await execucaoAtualConferencia()
-    if (!confereExecucao) return
-    let envio = tipo.tipo
-    await armazenar({
-        'rotapje_con2_prazo_vencido_despachar': dadosCon2PrazoVencido.execucaoAtual,
-        'rotapje_con2_prazo_vencido_despachar_tipo': envio,
-    })
-    let parametros =    '?rotapje_con2_prazo_vencido_despachar=' + dadosCon2PrazoVencido.execucaoAtual + 
-                        '&rotapje_con2_prazo_vencido_despachar_tipo=' + envio
-    let nomeJanela =    'rotapje_con2_prazo_vencido_despachar_' + dadosCon2PrazoVencido.execucaoAtual
-    let id =            dadosCon2PrazoVencido?.processo?.id
-    let tarefa =        await buscarTarefaMaisRecente(id)
-    let idTarefa =      tarefa[0]?.idTarefa || ''
-    let recurso =       tarefa[0]?.nomeRecurso || ''
-    if (!recurso || !idTarefa){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
-        return
-    }
-    let page =          dadosCon2PrazoVencido?.recursos?.find(r => r?.nome === recurso)
-    if (!page?.caminhoRecurso){
-        await rota_avisoObrigatorio('Ocorreu um erro. Tente novamente.', 30)
-        return
-    }
-    let url =           location.origin + '/pjekz/processo/' + id + '/tarefa/' + idTarefa + page?.caminhoRecurso.split('{idTarefa}')[1] + parametros
-    let setorProcesso = await aguardarElementoNovo('detalhesDoProcessoOJDoProcesso')
-    if (!setorProcesso.textContent.includes('CON1')) {
-        await rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON1.', 30)
-        return
-    }
-    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
-}
-*/
 // DESPACHAR PASSO 2 - verifica se a janela aberta é a da extensão
 async function con2_prazo_vencido_aoAbrirDespachar(){
     let janela = confereJanela(JANELA.processoTarefa)
@@ -309,12 +270,25 @@ async function con2_prazo_vencido_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function con2_prazo_vencido_acoesDespachar(recursos){
+    let movimentos = []
     let recorrente = []
     let preparo = ''
     let recursosProcessar = recursos.filter(d => d?.marcado)
+    let tipos = [
+        {
+            label: 'recurso ordinario (69)',
+            nome: 'Recurso Ordinário'
+        },
+        {
+            label: 'recurso adesivo (63)',
+            nome: 'Recurso Adesivo'
+        },
+    ]
     console.log('%c[Rota PJE]%c : ' + JSON.stringify(), LOG.info, 'color:inherit')
     for (let recurso of recursosProcessar){
+        let tipo = tipos.find(d => d.nome == recurso.tipo)?.label
         recorrente.push('id ' + recurso.idUnicoDocumento + ',  por ' + recurso.recorrente[0]?.nome + ', ' + recurso.participacaoProcesso?.split(',')[0].trim().toLowerCase())
+        movimentos.push({checkbox: {incluir: 'recebido', naoIncluir: 'nao'}, opcoes: [{nomeDoCampo: 'nome do recurso', selecionar: tipo}, {nomeDoCampo: 'nome da parte', selecionar: recurso.recorrente[0]?.nome}]})
     }
     //if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu')) && recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
     //    recorrente = 'pelas partes '
@@ -331,7 +305,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
         preparo = 'Regular a representação.'
     }
     let textoProcessar = `<p>Pressupostos extrínsecos:</p>
-<p>O(s) recurso(s) interposto(s), ` + recorrente.join(', ') + `é(são) tempestivo(s).</p>
+<p>O(s) recurso(s) interposto(s), ` + recorrente.join(', ') + `, é(são) tempestivo(s).</p>
 <p>` + preparo + `</p>
 <p>Pressupostos intrínsecos:</p>
 <p>Todas as matérias debatidas preenchem o requisito de admissibilidade.</p>
@@ -342,6 +316,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
     let recorrenteDenegar = []
     let motivo = []
     for (let recurso of recursosDenegar){
+        let tipo = tipos.find(d => d.nome == recurso.tipo)?.label
         if (recurso.intempestivo){
             motivo.push('intempestivo')
         }
@@ -355,39 +330,16 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
             motivo.push('de alçada exclusiva de Vara do Trabalho, nos termos dos §§ 3º e 4º do art. 2º da Lei 5.584/1970')
         }
         recorrenteDenegar.push('id ' + recurso.idUnicoDocumento + ',  interposto por ' + recurso.recorrente[0]?.nome + ', pois ' + motivo.join(','))
+        movimentos.push({checkbox: {incluir: 'nao recebido'}, opcoes: [{nomeDoCampo: 'nome do recurso', selecionar: tipo}, {nomeDoCampo: 'nome da parte', selecionar: recurso.recorrente[0]?.nome}]})
     }
     let textoDenegar = `<p>Denego seguimento ao(s) recurso(s) ordinário(s) ` + recorrenteDenegar.join(', ') + `.</p>`
     let texto = (recursos.some(d => d?.marcado) ? textoProcessar : '') + '\n' + (recursos.some(d => !d?.marcado) ? textoDenegar : '')
 
+    
     await movimentar('Admissibilidade de Recursos', {
-        'Elaborar decisão':{texto}
+        'Elaborar decisão':{texto, movimentos, descricao: 'Decisão - Admissibilidade de Recursos'}
     })
-    await suspender(500)
-    await clicar('button[aria-label="Salvar"]')
-    pje_aguardarMensagem('Salvo com sucesso')
-    await aguardarElemento('.mat-tab-labels')
-    await suspender(500)
-    while(![...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))){
-        await suspender()
-    }
-    let movimento = [...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))
-    console.log('%c[Rota PJE]%c movimento: ' + JSON.stringify(movimento), LOG.info, 'color:inherit', movimento)
-    clicar(movimento)
-    await aguardarElemento('pje-movimento mat-checkbox')
-    let opcoes = [...document.querySelectorAll('pje-movimento mat-checkbox')]
-    if (recursosProcessar.length){
-        let opcao = opcoes.find(d => normalizar(d.textContent).includes('recebido') && !normalizar(d.textContent).includes('nao'))?.querySelector('input')
-        clicar(opcao)
-        let i = 0
-        while(![...document.querySelectorAll('pje-movimento')].find(d => normalizar(d.textContent).includes('recebido') && !normalizar(d.textContent).includes('nao'))?.querySelector('mat-expansion-panel')){
-            await suspender()
-            console.log(i++)
-        }
-    }
-    if (recursosDenegar.length){
-
-    }
-    alert('passei')
+    
     return
     
     

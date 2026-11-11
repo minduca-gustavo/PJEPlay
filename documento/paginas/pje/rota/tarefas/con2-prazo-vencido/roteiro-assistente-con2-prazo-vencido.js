@@ -176,12 +176,12 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         texto: 'Recursos',
         ancestral: 'rota_corpo'
     })
-    let recursosPrimeiroGrau = documentosTimeline.filter(d => (normalizar(d?.tipo).includes('recurso') || normalizar(d?.titulo).includes('recurso')) && normalizar(d?.instancia).includes(normalizar('1º Grau'))) || []
+    let recursosPrimeiroGrau = documentosTimeline.filter(d => (normalizar(d?.tipo).includes('recurso') || normalizar(d?.titulo).includes('recurso')) && (normalizar(d?.participacaoProcesso).includes('autor') || normalizar(d?.participacaoProcesso).includes('reu')) && normalizar(d?.instancia).includes(normalizar('1º Grau'))) || []
     console.log('%c[Rota PJE]%c recursosUm' + JSON.stringify(recursosPrimeiroGrau), LOG.aviso, 'color:inherit', recursosPrimeiroGrau)
     let caixas = []
     for(let i = 0; i < recursosPrimeiroGrau.length; i++){
         let recurso = recursosPrimeiroGrau[i]
-        let {id, idUnicoDocumento, data, participacaoProcesso, titulo, idSignatario} = recurso || {}
+        let {id, idUnicoDocumento, data, participacaoProcesso, titulo, idSignatario, tipo} = recurso || {}
         let ancestral = idg(tarefaNome, bloco, JSON.stringify(i))
         let coluna = idg(tarefaNome, bloco, JSON.stringify(i), 'coluna')
         criaDiv({
@@ -199,7 +199,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         })
         caixas.push(ancestral + '_check')
         check.style.gap = '0px'
-        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento, idSignatario, participacaoProcesso})
+        check.dataset.recurso = JSON.stringify({id, idUnicoDocumento, idSignatario, participacaoProcesso, tipo})
         clicar('#' + ancestral + '_check')
         check.addEventListener('click', async () => await definirPreparo(ancestral, check, coluna))
         let textoAoLado = criaTexto({
@@ -336,6 +336,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         ancestral: 'rota_corpo',
         acao: () => processarRecursosSelecionados(caixas)
     })
+    botaoProcessar.style.width = '100%'
     criaTooltip({
         id: idg(tarefaNome, 'processar_tip'),
         texto: 'Somente os recursos selecionados serão processados. Aos demais será denegado seguimento.',
@@ -348,8 +349,6 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             let elemento = document.getElementById(caixa)
             let marcado = elemento.dataset.marcado == 1 ? true : false
             let dataset = JSON.parse(elemento.dataset.recurso)
-            //console.log('%c[Rota PJE]%c dataset: ' + JSON.stringify(...dataset), LOG.info, 'color:inherit')
-            let {idSignatario, idUnicoDocumento} = dataset
             recursos.push({marcado, ...dataset})
         }
         comandar(['con2_prazo_vencido_processar_recursos'], [recursos])
