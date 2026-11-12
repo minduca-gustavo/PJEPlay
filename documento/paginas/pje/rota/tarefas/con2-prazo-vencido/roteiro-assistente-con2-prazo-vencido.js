@@ -251,6 +251,11 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                     ancestral: ancestral + '_preparo',
                     textoAoLado: 'Alçada'
                 })
+                let chkNaoProcessar = await criaCheckBox({
+                    id: ancestral + '_naoProcessar',
+                    ancestral: ancestral + '_preparo',
+                    textoAoLado: 'Não processar'
+                })
                 chkTempestividade.addEventListener('click', () => {
                     let recurso = JSON.parse(check.dataset.recurso)
                     recurso.intempestivo = !recurso.intempestivo
@@ -271,6 +276,11 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                     recurso.alcada = !recurso.alcada
                     check.dataset.recurso = JSON.stringify(recurso)
                 })
+                chkNaoProcessar.addEventListener('click', () => {
+                    let recurso = JSON.parse(check.dataset.recurso)
+                    recurso.naoProcessar = !recurso.naoProcessar
+                    check.dataset.recurso = JSON.stringify(recurso)
+                })
                 
             } else {
                 let dados = JSON.parse(check.dataset.recurso)
@@ -278,9 +288,8 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                     let chkRecolhidas = await criaCheckBox({
                         id: ancestral + '_recolhidas',
                         ancestral: ancestral + '_preparo',
-                        textoAoLado: 'Custas e depósito OK'
+                        textoAoLado: 'Custas e depósito/fiança OK'
                     })
-                    clicar('#' + ancestral + '_recolhidas')
                     let chkDispensadas = await criaCheckBox({
                         id: ancestral + '_dispensadas',
                         ancestral: ancestral + '_preparo',
@@ -288,16 +297,21 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
                     })
                     chkRecolhidas.addEventListener('click', () => {
                         let recurso = JSON.parse(check.dataset.recurso)
-                        recurso.preparo = 'recolhidas'
+                        if (document.getElementById(ancestral + '_recolhidas').dataset.marcado == 1){
+                            recurso.preparo = 'recolhidas'
+                        }
                         check.dataset.recurso = JSON.stringify(recurso)
                         alternaCheckBox(chkRecolhidas.id, chkRecolhidas, chkDispensadas)
                     })
                     chkDispensadas.addEventListener('click', () => {
                         let recurso = JSON.parse(check.dataset.recurso)
-                        recurso.preparo = 'dispensadas'
+                        if (document.getElementById(ancestral + '_dispensadas').dataset.marcado == 1){
+                            recurso.preparo = 'dispensadas'
+                        }
                         check.dataset.recurso = JSON.stringify(recurso)
                         alternaCheckBox(chkDispensadas.id, chkRecolhidas, chkDispensadas)
                     })
+                    clicar('#' + ancestral + '_recolhidas')
                     
                 }
             }

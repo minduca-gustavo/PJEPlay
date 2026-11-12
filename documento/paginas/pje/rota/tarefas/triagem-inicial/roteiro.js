@@ -44,12 +44,18 @@ async function triagem_inicial_aoAbrirDetalhesDoProcesso(){
 //__________________________________________________
 
 async function triagem_inicial_janelaDetalhes(sessao){
+    await aguardarElemento('pje-descricao-processo .mat-tooltip-trigger')
+    await suspender (500)
+    if (!document.querySelector('.texto-tarefa-processo')){
+        await aguardarElemento('#rotapje-irParaAOJDesteProcesso_botao')
+        clicar('#rotapje-irParaAOJDesteProcesso_botao')
+    }
     await triagem_inicial_enviarParaRoteiroAssistente()
     let executar = await obterArmazenamento(['rota_triagem_inicial_janelaDetalhes'])
     if (executar.rota_triagem_inicial_janelaDetalhes === sessao) return
 
     
-    await rota_aguardarElemento('.tl-documento')
+    await aguardarElemento('.tl-documento')
     let peticoes = [...document.getElementsByClassName('tl-documento')]
     let peticaoInicial = peticoes.find(p => p.textContent.includes('Petição Inicial('))
     let botaoAnexos    = document.querySelectorAll(seletorPorVersao('detalhesDoProcessoBotaoAbrirAnexos'))

@@ -158,7 +158,7 @@ const EXECUTORES = {
 // rota_movimentar_lerTarefaAtual
 // ------------------------------------------------------------
 async function rota_movimentar_lerTarefaAtual() {
-  let elemento = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
+  let elemento = await aguardarElemento('.texto-tarefa-processo')
   return elemento?.textContent?.trim() ?? null
 }
 
@@ -286,7 +286,7 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 }
 
 async function rota_movimentar_listenersTrocaOJ() {
-  await aguardarElemento('meta["rotapje_listenerTrocaOJ"]')
+  await aguardarElemento('meta[id="rotapje-listenerTrocaOJ"]')
   await suspender()
   
   return
@@ -361,20 +361,24 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     clicar(movimentoBotao)
     await aguardarElemento('pje-movimento mat-checkbox')
     console.log('%c[Rota PJE]%c movimentos: ' + JSON.stringify(movimentos), LOG.info, 'color:inherit', movimentos)
+    let opcaoElemento
     for (let movimento of movimentos){
       console.log('%c[Rota PJE]%c movimento: ' + JSON.stringify(movimento), LOG.info, 'color:inherit', movimento)
-      let opcoes = [...document.querySelectorAll('pje-movimento')] || []
-      if (!opcoes.length) continue
-      let opcaoElemento = opcoesIncluirExcluir(opcoes, movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)
-      let opcaoElementoClicar = opcaoElemento?.querySelector('input')
-      if(!opcaoElemento || !opcaoElementoClicar) continue
-      clicar(opcaoElementoClicar)
       let i = 0
-      while(!opcoesIncluirExcluir([...document.querySelectorAll('pje-movimento')], movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)?.querySelector('mat-expansion-panel')){
-        await suspender()
-        console.log(i++)
+      if (!opcoesIncluirExcluir([...document.querySelectorAll('pje-movimento')], movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)?.querySelector('mat-expansion-panel')){
+        let opcoes = [...document.querySelectorAll('pje-movimento')] || []
+        if (!opcoes.length) continue
+        opcaoElemento = opcoesIncluirExcluir(opcoes, movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)
+        let opcaoElementoClicar = opcaoElemento?.querySelector('input')
+        if(!opcaoElemento || !opcaoElementoClicar) continue
+        clicar(opcaoElementoClicar)
+        
+        while(!opcoesIncluirExcluir([...document.querySelectorAll('pje-movimento')], movimento?.checkbox?.incluir, movimento?.checkbox?.naoIncluir)?.querySelector('mat-expansion-panel')){
+          await suspender()
+          console.log(i++)
+        }
+        if (!movimento?.opcoes?.length) continue
       }
-      if (!movimento?.opcoes?.length) continue
       for (let opcao of movimento?.opcoes){
         console.log('%c[Rota PJE]%c opcaoElemento: ' + JSON.stringify(opcaoElemento), LOG.info, 'color:inherit', opcaoElemento)
         console.log('%c[Rota PJE]%c opcao?.nomeDoCampo: ' + JSON.stringify(opcao?.nomeDoCampo), LOG.info, 'color:inherit')
@@ -503,10 +507,12 @@ async function movimentar(destino, params = {}) {
   console.log('%c[Rota PJE]%c tarefaAtual' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
     // se houver executor para a tarefa atual, roda antes de qualquer coisa
+  console.log('%c[Rota PJE]%c EXECUTORES: ' + JSON.stringify(EXECUTORES), LOG.info, 'color:inherit', EXECUTORES)
   let executorAtual = EXECUTORES[tarefaAtual]
-  console.log('%c[Rota PJE]%c executorAtual' + JSON.stringify(executorAtual), LOG.aviso, 'color:inherit')
-  if (executorAtual && params[tarefaAtual]) {
-    await executorAtual(tarefaAtual, params[tarefaAtual])
+  console.log('%c[Rota PJE]%c executorAtual' + JSON.stringify(executorAtual), LOG.aviso, 'color:inherit', executorAtual)
+  if (executorAtual) {
+    let parametros = params[tarefaAtual] || null
+    await executorAtual(tarefaAtual, parametros)
   }
   console.log('%c[Rota PJE]%c 507' + JSON.stringify(507), LOG.aviso, 'color:inherit')
   const caminho = rota_movimentar_encontrarCaminho(tarefaAtual, destino)

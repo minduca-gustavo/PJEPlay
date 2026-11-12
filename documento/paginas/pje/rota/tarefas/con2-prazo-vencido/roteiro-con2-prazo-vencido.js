@@ -45,6 +45,12 @@ async function con2_prazo_vencido_aoAbrirDetalhesDoProcesso(){
 //__________________________________________________
 
 async function con2_prazo_vencido_janelaDetalhes(sessao){
+    await aguardarElemento('pje-descricao-processo .mat-tooltip-trigger')
+    await suspender (500)
+    if (!document.querySelector('.texto-tarefa-processo')){
+        await aguardarElemento('#rotapje-irParaAOJDesteProcesso_botao')
+        clicar('#rotapje-irParaAOJDesteProcesso_botao')
+    }
     await con2_prazo_vencido_enviarParaRoteiroAssistente()
     let executar = await obterArmazenamento(['rota_con2_prazo_vencido_janelaDetalhes'])
     if (executar.rota_con2_prazo_vencido_janelaDetalhes === sessao) return
@@ -273,7 +279,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
     let movimentos = []
     let recorrente = []
     let preparo = ''
-    let recursosProcessar = recursos.filter(d => d?.marcado)
+    let recursosProcessar = recursos.filter(d => d?.marcado && !d?.naoProcessar)
     let tipos = [
         {
             label: 'recurso ordinario (69)',
@@ -284,7 +290,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
             nome: 'Recurso Adesivo'
         },
     ]
-    console.log('%c[Rota PJE]%c : ' + JSON.stringify(), LOG.info, 'color:inherit')
+    console.log('%c[Rota PJE]%c recursosProcessar: ', LOG.info, 'color:inherit', recursosProcessar)
     for (let recurso of recursosProcessar){
         let tipo = tipos.find(d => d.nome == recurso.tipo)?.label
         recorrente.push('id ' + recurso.idUnicoDocumento + ',  por ' + recurso.recorrente[0]?.nome + ', ' + recurso.participacaoProcesso?.split(',')[0].trim().toLowerCase())
@@ -305,7 +311,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
 <p>Apresente(m) o(s) recorrido(s) contrarrazões no prazo legal e, após, remetam-se os autos ao segundo grau.</p>
 <p>Intimem-se ainda os patronos das partes para que efetuem, se for o caso, seu cadastramento junto ao sistema PJe na 2ª instância.</p>
 `
-    let recursosDenegar = recursos.filter(d => !d?.marcado)
+    let recursosDenegar = recursos.filter(d => !d?.marcado && !d?.naoProcessar)
     let recorrenteDenegar = []
     let motivo = []
     for (let recurso of recursosDenegar){

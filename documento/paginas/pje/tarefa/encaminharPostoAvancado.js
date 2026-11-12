@@ -127,7 +127,11 @@ async function encaminharPostoAvancadoGigs(vara){
             }
         }
         await removerArmazenamento('rotapje_levaGigs')
-        window.name = ''
+        window.name = window.name.replaceAll('rotapje_levaGigs', '')
+        await suspender(2000)
+        if (!document.querySelector('.texto-tarefa-processo')){
+            window.location.reload()
+        }
         if (!continua) {
             await postTrocaDeOJ(perfilAnterior?.idPerfil)
             window.close()
@@ -154,7 +158,7 @@ async function encaminharPostoAvancadoGigs(vara){
             if (!perfil?.idPerfil) return
             let perfilAnterior = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(document.querySelector('.oj-cargo').textContent.split('/')[0].trim()))) || {}
             botao.addEventListener('click', levaGigSegueTarefa(true, perfil, perfilAnterior), { capture: true });
-            await interceptador_salvarMetaTag('rotapje_listenerTrocaOJ', true)
+            await interceptador_salvarMetaTag('listenerTrocaOJ', true)
             return
         } else {
             let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
@@ -165,7 +169,7 @@ async function encaminharPostoAvancadoGigs(vara){
                 if(!perfil?.idPerfil) continue
 
                 botao.addEventListener('click', levaGigSegueTarefa(false, perfil, perfilAnterior), { capture: true })
-                await interceptador_salvarMetaTag('rotapje_listenerTrocaOJ', true)
+                await interceptador_salvarMetaTag('listenerTrocaOJ', true)
             }
         }
         return

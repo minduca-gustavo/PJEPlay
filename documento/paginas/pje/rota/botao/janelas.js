@@ -472,7 +472,7 @@ function rota_abrirAssistente(idTarefa = '', execucao = '') {
 }
 
 function rota_nomeJanela(tipo, execucao) {
-    return 'rota-' + tipo + '-' + execucao
+    return 'rotapje_execucaoAssistida' + tipo + '-' + execucao
 }
 
 function abrirUrl(url, posicao = 'esquerdaAssistida', nomeJanela) {
@@ -680,7 +680,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 	if(_rota_cursor >= _rota_fila.length){
 		_rota_ativo       = false
-		_rota_processando = false   // ← ADICIONAR esta linha
+		_rota_processando = false
 		rota_exibirRelatorio()
 		return
 	}
@@ -694,6 +694,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 			rota_avisoTemporario('ID não encontrado: ' + item.numProc, 'erro', 4000)
 			_rota_processando = false   // ← adiciona
 			_rota_cursor++
+			interceptador_salvarMetaTag('cursor', 'ok')
 			await rota_processarCursor(slots, tarefaUnica, temporizador)
 			return
 		}
@@ -703,6 +704,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 	if(!urlSlots.length){
 		_rota_processando = false   // ← adiciona
 		_rota_cursor++
+		interceptador_salvarMetaTag('cursor', 'ok')
 		await rota_processarCursor(slots, tarefaUnica, temporizador)
 		return
 	}
@@ -819,7 +821,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 	_rota_processando = false      // ← libera antes de chamar recursivo
     _rota_cursor++
-	interceptador_salvarMetaTag('rotapje_cursor', 'ok')
+	interceptador_salvarMetaTag('cursor', 'ok')
     await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
 
@@ -1539,6 +1541,7 @@ async function _rota_salvarOrientacaoWidget(orientacao, slotIndex, nomeTarefa){
 // ── Relatório final ───────────────────────────────────────────
 
 function rota_exibirRelatorio(){
+	interceptador_salvarMetaTag('cursor', 'encerrar')
 	armazenar({ rotaAssistenteFechar: true })
     if(!_rota_relatorio.length){
         rota_avisoTemporario('Nenhum processo revisado.', 'info', 4000)
