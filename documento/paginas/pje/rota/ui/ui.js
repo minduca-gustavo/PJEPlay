@@ -1414,9 +1414,7 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     btnEncerrar.addEventListener('click', async () => {
         if (btnEncerrar.disabled) return
         btnProximo.disabled = btnEncerrar.disabled = true
-        await contentLimparArmazenamento()
-        let chave = idg('armazenamentoLimpo')
-        await aguardarElemento('meta[id="' + chave + '"]')
+        await limparArmazenamento(Date.now())
         await armazenar({ rotaSinalAssistente: { execucao: execucao(), acao: 'encerrar' } })
         await armazenar({ rotaAssistenteFechar: true })
     })
@@ -1426,18 +1424,7 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     return linha
 }
 
-async function contentLimparArmazenamento(){
-	document.dispatchEvent(
-		new CustomEvent(
-			'rotapje_limparArmazenamento',
-			{
-				detail: JSON.stringify({
-					agora: true
-				})
-			}
-		)
-	)
-}
+
 
 
 // ── criarCarregando / removerCarregando ───────────────────────

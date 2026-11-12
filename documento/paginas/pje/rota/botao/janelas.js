@@ -28,12 +28,13 @@ let _rota_tarefaUnica_ativa   = ''
 let _rota_temporizador_ativo  = { ativo: false, segundos: 30, opcoes: '' }
 
 // Salva fila + cursor + config da tarefa no storage antes de recarregar
-async function rota_fluxo_salvar(slots, tarefaUnica, temporizador){
+async function rota_fluxo_salvar(slots, tarefaUnica, temporizador, shift = false){
 	let cfg = await obterArmazenamento(['tarefaAtiva', 'tarefas', 'tarefaAtivaIsSistema'])
+	let somaCursor = shift ? 1 : 0
 	await armazenar({
 		[ROTA_KEY_FLUXO]: {
 			fila:        _rota_fila,
-			cursor:      _rota_cursor,
+			cursor:      _rota_cursor + somaCursor,
 			relatorio:   _rota_relatorio,
 			slots:       slots,
 			tarefaUnica: tarefaUnica,
@@ -599,7 +600,8 @@ function _rota_fecharTodasJanelas(){
 
 async function rota_iniciarFluxo({ fila }){
     if(_rota_ativo){
-        rota_avisoTemporario('Fluxo anterior cancelado. Iniciando novo…', 'info', 3000)
+        await limparArmazenamento(Date.now())
+		rota_avisoTemporario('Fluxo anterior cancelado. Iniciando novo…', 'info', 3000)
         rota_cancelarFluxoAtivo()
         await suspender(500)
     }
@@ -817,6 +819,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 
 	_rota_processando = false      // ← libera antes de chamar recursivo
     _rota_cursor++
+	interceptador_salvarMetaTag('rotapje_cursor', 'ok')
     await rota_processarCursor(slots, tarefaUnica, temporizador)
 }
 
@@ -1285,8 +1288,9 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 			localStorage.setItem('rotapje_nota_' + sessao, opcaoEscolhida || '')
 			rota_sinalizar(sessao, 'proximo')
 		})
-		btnEncerrar.addEventListener('click', () => {
+		btnEncerrar.addEventListener('click', async () => {
 			clearInterval(intervalo)
+			await limparArmazenamento(Date.now())
 			localStorage.setItem('rotapje_nota_' + sessao, opcaoEscolhida || '')
 			rota_sinalizar(sessao, 'encerrar')
 		})
@@ -1337,7 +1341,10 @@ function _rota_montarWidget(sessao, tarefaUnica, numProc, posSalva, slotIndex, n
 	btnEncerrar.textContent = '■ Encerrar'
 
 	btnProximo.addEventListener('click',  () => rota_sinalizar(sessao, 'proximo'))
-	btnEncerrar.addEventListener('click', () => rota_sinalizar(sessao, 'encerrar'))
+	btnEncerrar.addEventListener('click', async () => {
+		await limparArmazenamento(Date.now())
+		rota_sinalizar(sessao, 'encerrar')
+	})
 
 	let linhaBotoes = document.createElement('div')
 	Object.assign(linhaBotoes.style, { display:'flex', gap:'6px', marginBottom:'6px' })

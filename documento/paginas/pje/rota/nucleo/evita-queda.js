@@ -120,6 +120,17 @@ async function evitaQueda() {
         return
     }
 
+    if(typeof rota_fluxo_salvar === 'function' && window.name == 'rotapje_fluxoEmCurso'){
+        await aguardarElementoMudar('meta[id="rotapje_cursor"]')
+        await rota_fluxo_salvar(
+            _rota_slots_ativos,
+            _rota_tarefaUnica_ativa,
+            _rota_temporizador_ativo,
+            false
+        )
+    }
+    
+
     evitaQueda_gravarGuarda({tentativas: guarda.tentativas + 1, ultimo: Date.now()})
     window.location.reload()
 }

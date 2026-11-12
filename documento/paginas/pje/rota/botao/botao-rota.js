@@ -446,6 +446,7 @@ function rota_parsearListaComParametros(texto){
 // ════════════════════════════════════════════════════════════
 
 async function _rota_aoClicarTela(){
+	window.name = 'rotapje_fluxoEmCurso'
 	let fila = _rota_coletarFilaDaTela()
 	if(!fila.length){
 		rota_avisoTemporario('Nenhum número de processo encontrado na tela.', 'erro', 4000)
@@ -856,7 +857,7 @@ function _rota_aoClicarLista(btnRef){
 	btnPlay.addEventListener('mouseleave', () => { btnPlay.style.background = ROTA_C.laranja;    btnPlay.style.color = ROTA_C.azulEsc })
 
 	btnPlay.addEventListener('click', () => {
-
+		window.name = 'rotapje_fluxoEmCurso'
 		let fila = checkbox.checked
 			? rota_parsearListaComParametros(area.value).fila
 			: rota_parsearListaProcessos(area.value)

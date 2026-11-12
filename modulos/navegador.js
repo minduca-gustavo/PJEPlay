@@ -82,7 +82,16 @@ async function obterArmazenamento(
 	}
 }
 
-
+async function limparArmazenamento(agora = null){
+	let armazenamento = await obterArmazenamento()
+	for (let key of Object.keys(armazenamento)){
+		let timestamp = key.includes('rotaJanela') ? Number(key.match(/\d{13}/)[0]) : null
+		let comparacao = agora ? agora : new Date().setHours(0,0,0,0)
+		if (timestamp && (timestamp < comparacao)){
+			await removerArmazenamento(key)
+		}
+	}
+}
 
 /**
  * Define o ícone da extensão na barra de menu.

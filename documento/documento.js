@@ -32,23 +32,7 @@ obterArmazenamento().then(async armazenamento => {
 
 })
 
-document.addEventListener('rotapje_limparArmazenamento', async (evento) => {
-	console.log('%c[Rota PJE]%c ouviu' + JSON.stringify(36), LOG.aviso, 'color:inherit')
-	let {agora} = JSON.parse(evento.detail) || {}
-	await limparArmazenamento(CONFIGURACAO, agora)
-	interceptador_salvarMetaTag(idg('armazenamentoLimpo'))
-})
 
-async function limparArmazenamento(configuracao, agora = false){
-	console.log('%c[Rota PJE]%c agora' + JSON.stringify(agora), LOG.aviso, 'color:inherit')
-	for (let key of Object.keys(configuracao)){
-		let timestamp = key.includes('rotaJanela') ? Number(key.match(/\d{13}/)[0]) : null
-		let comparacao = agora ? Date.now() : new Date().setHours(0,0,0,0)
-		if (timestamp && (timestamp < comparacao)){
-			await removerArmazenamento(key)
-		}
-	}
-}
 
 async function otimizar(){
 
