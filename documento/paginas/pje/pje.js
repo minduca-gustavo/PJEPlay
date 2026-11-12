@@ -245,6 +245,7 @@ function rota_iniciarRoteiros(){
 	con2_prazo_vencido_aoAbrirRetificar()
 	con2_prazo_vencido_aoAbrirDespachar()
 	con2_prazo_vencido_aoAbrirAguardandoAudiencia()
+	con2_prazo_vencido_aoAbrirDevolver()
 
 	// tarefas/visualizador-de-documentos/roteiro-visualizador-de-documentos.js
 	visualizador_de_documentos_aoAbrirDetalhesDoProcesso()

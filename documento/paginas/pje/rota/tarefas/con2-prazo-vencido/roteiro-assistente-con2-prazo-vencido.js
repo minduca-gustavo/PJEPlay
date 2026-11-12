@@ -343,6 +343,18 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         elemento: botaoProcessar
     })
 
+    let botaoDevolver = criaBotaoAzul({
+        id: idg(tarefaNome, 'devolver'),
+        texto: 'Devolver para a vara de origem',
+        ancestral: 'rota_corpo',
+        acao: () => comandar(['con2_prazo_vencido_devolver'], [])
+    })
+    botaoDevolver.style.width = '100%'
+    criaTooltip({
+        id: idg(tarefaNome, 'processar_tip'),
+        texto: 'Devolve o processo para a vara de origem (para remeter o recurso).',
+        elemento: botaoDevolver
+    })
     async function processarRecursosSelecionados(caixas) {
         let recursos = []
         for (caixa of caixas){
@@ -354,6 +366,8 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         comandar(['con2_prazo_vencido_processar_recursos'], [recursos])
         
     }
+
+
     
     return
     // ___________________________________________________

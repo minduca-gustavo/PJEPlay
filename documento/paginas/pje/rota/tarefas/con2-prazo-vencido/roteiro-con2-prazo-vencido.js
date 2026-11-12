@@ -290,13 +290,6 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
         recorrente.push('id ' + recurso.idUnicoDocumento + ',  por ' + recurso.recorrente[0]?.nome + ', ' + recurso.participacaoProcesso?.split(',')[0].trim().toLowerCase())
         movimentos.push({checkbox: {incluir: 'recebido', naoIncluir: 'nao'}, opcoes: [{nomeDoCampo: 'nome do recurso', selecionar: tipo}, {nomeDoCampo: 'nome da parte', selecionar: recurso.recorrente[0]?.nome}]})
     }
-    //if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu')) && recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
-    //    recorrente = 'pelas partes '
-    //} else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('reu'))){
-    //    recorrente = 'pelo(s) réu(s) '
-    //} else if (recursosProcessar.some(d=> normalizar(d.participacaoProcesso).includes('autor'))){
-    //    recorrente = 'pelo(s) autor(es) '
-    //}
     if (recursosProcessar.some(d => d.preparo == 'recolhidas')){
         preparo = 'Regular a representação, recolhidas as custas e efetivado o depósito recursal.'
     } else if (recursosProcessar.some(d => d.preparo == 'dispensadas') && !recursosProcessar.some(d => d.preparo == 'recolhidas')){
@@ -342,43 +335,62 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
     
     return
     
-    
-    if (modeloDespacho !== ''){
-        let elaborarDespachoBotaoEnviarParaAssinatura = await aguardarElementoNovo('elaborarDespachoBotaoEnviarParaAssinatura')
-        clicar(elaborarDespachoBotaoEnviarParaAssinatura)
-        for(let i = 0; i < 30 * 2; i++){
-            let assinar = await sel('tarefaDoProcessoTituloDaTarefa')
-            if (assinar.textContent.includes('Assinar despacho')){
-                break
-            }
-            await suspender(500)
-        }
-        await suspender(2000)
-        if (audienciasMarcadas?.dataInicio) {
-            await armazenar({rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_despachar'})
-            window.close()
-        } else{ 
-            await rota_avisoObrigatorio('Não foi identificada audiência designada. Prossiga manualmente.', 30)
-        }
-        // chamada da ação conjunta
-    }
-    let emAndamento = await obterArmazenamento(['rota_acoes_conjuntas_con2_prazo_vencido_em_andamento'])
-    let chamadaPorAcaoConjunta = emAndamento?.rota_acoes_conjuntas_con2_prazo_vencido_em_andamento === 'con2_prazo_vencido_despachar'
-    if (chamadaPorAcaoConjunta || tipo !== 'con2_prazo_vencido_emendar') {
-        await criaDivFlutuante({
-            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
-            titulo: 'Execute o necessário e clique em próximo.'
-        })
-        await criaBotaoLaranja({
-            texto: '▶️ Próximo',
-            id: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante_botao',
-            ancestral: 'rota_con2_prazo_vencido_acoes_conjuntas_flutuante',
-            acao: () => armazenar({ rota_acoes_conjuntas_con2_prazo_vencido_pronta: 'con2_prazo_vencido_despachar' })
-        })
-    }
-    // Se for ação conjunta, aqui tem que ter uma chamada pra uma função que vai criar o botão próximo, ou então a própria chamada da ação conjunta
-    return
 
+
+}
+// _________________________________________________
+//                   DEVOLVER PARA A VARA DE ORIGEM
+// _________________________________________________
+
+// PROCESSAR PASSO 1 - recebe os dados e abre a tela de tarefa
+
+async function con2_prazo_vencido_devolver() {
+    let confereExecucao = await execucaoAtualConferencia()
+    if (!confereExecucao) return
+    if (!confereSetor('CON2')) {
+        rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON2.', 5)
+        return
+    }
+    let idURL = location.href.match(/processo\/(\d+)\/detalhe/)
+    let id = idURL[1]
+    let chave = idg('con2', 'prazoVencido', 'devolver')
+    await armazenar({[chave]: {confereExecucao}})
+    let urlInicio = await definirURLDaTarefa(id) || ''
+    if (!urlInicio) {
+        rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
+        return
+    }
+    let url = urlInicio + '?' + chave + '=' + confereExecucao
+    let nomeJanela = chave + '_' + confereExecucao
+    await abrirUrl(url, 'esquerdaAssistida', nomeJanela)
+}
+
+// DESPACHAR PASSO 2 - verifica se a janela aberta é a da extensão
+async function con2_prazo_vencido_aoAbrirDevolver(){
+    let janela = confereJanela(JANELA.processoTarefa)
+    console.log('%c[Rota PJE]%c janela 371' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
+    if (!janela) return
+    let chave = idg('con2', 'prazoVencido', 'devolver')
+    let armazenamento = await obterArmazenamento(chave)
+    console.log('%c[Rota PJE]%c armazenamento 371' + JSON.stringify(armazenamento), LOG.aviso, 'color:inherit')
+    if (!armazenamento) return
+    let dados = armazenamento[chave] || null
+    console.log('%c[Rota PJE]%c dados 371' + JSON.stringify(dados), LOG.aviso, 'color:inherit')
+    if (!dados) return
+    let execucao = String(dados?.confereExecucao || '')
+    console.log('%c[Rota PJE]%c execucao 371' + JSON.stringify(execucao), LOG.aviso, 'color:inherit')
+    let nomeJanela = window.name
+    if (!nomeJanela.includes(execucao)) return
+    registrarListenerFechar(execucao)
+    await con2_prazo_vencido_acoesDevolver()
+}
+
+// DESPACHAR PASSO 3 - executa as ações
+
+async function con2_prazo_vencido_acoesDevolver(){
+    console.log('%c[Rota PJE]%c acoes Devolver 371' + JSON.stringify(371), LOG.aviso, 'color:inherit')
+    await movimentar('Devolver processo para vara de origem')
+    return
 }
 
 //__________________________________________________
@@ -525,7 +537,8 @@ async function con2_prazo_vencido_acoesConjuntas(p){
 Object.assign(rota_acoes, {
     'con2_prazo_vencido_abrir_documentos':  async (p) => await con2_prazo_vencido_abrirDocumentos(p),
     'con2_prazo_vencido_retificar':         async (p) => await con2_prazo_vencido_retificarAutuacao(p),
-    'con2_prazo_vencido_processar_recursos':async (p) => await con2_prazo_vencido_processarRecursos(p)
+    'con2_prazo_vencido_processar_recursos':async (p) => await con2_prazo_vencido_processarRecursos(p),
+    'con2_prazo_vencido_devolver':          async (p) => await con2_prazo_vencido_devolver(p)
 })
 
 

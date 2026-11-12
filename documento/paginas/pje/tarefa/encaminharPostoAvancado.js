@@ -154,6 +154,7 @@ async function encaminharPostoAvancadoGigs(vara){
             if (!perfil?.idPerfil) return
             let perfilAnterior = perfis.find(d=> normalizar(d?.orgaoJulgador).includes(normalizar(document.querySelector('.oj-cargo').textContent.split('/')[0].trim()))) || {}
             botao.addEventListener('click', levaGigSegueTarefa(true, perfil, perfilAnterior), { capture: true });
+            await interceptador_salvarMetaTag('rotapje_listenerTrocaOJ', true)
             return
         } else {
             let botoes = [...document.querySelectorAll('pje-encaminhar-posto-avancado .opcoes button')]
@@ -164,6 +165,7 @@ async function encaminharPostoAvancadoGigs(vara){
                 if(!perfil?.idPerfil) continue
 
                 botao.addEventListener('click', levaGigSegueTarefa(false, perfil, perfilAnterior), { capture: true })
+                await interceptador_salvarMetaTag('rotapje_listenerTrocaOJ', true)
             }
         }
         return
@@ -178,7 +180,6 @@ async function encaminharPostoAvancadoGigs(vara){
 
                 botao.removeEventListener('click', listenerTemporario, { capture: true });
 
-                // --- SEU CÓDIGO AQUI ---
                 let armazenamento = await obterArmazenamento([idEncaminha])
                 let leva = armazenamento?.[idEncaminha]?.leva || false
                 let continua = armazenamento?.[idEncaminha]?.continua || false

@@ -145,10 +145,12 @@ const HUB = 'Análise'
 // EXECUTORES
 // ------------------------------------------------------------
 const EXECUTORES = {
-  'Conclusão ao magistrado':  rota_movimentar_executarConclusaoMagistrado,
-  'Elaborar despacho':        rota_movimentar_executarElaborarDespachoSentencaDecisao,
-  'Elaborar decisão':         rota_movimentar_executarElaborarDespachoSentencaDecisao,
-  'Elaborar sentença':        rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Conclusão ao magistrado':      rota_movimentar_executarConclusaoMagistrado,
+  'Elaborar despacho':            rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Elaborar decisão':             rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Elaborar sentença':            rota_movimentar_executarElaborarDespachoSentencaDecisao,
+  'Análise':                      rota_movimentar_listenersTrocaOJ,
+  'Encaminhar ao posto avançado': rota_movimentar_listenersTrocaOJ,
 }
 
 
@@ -159,6 +161,8 @@ async function rota_movimentar_lerTarefaAtual() {
   let elemento = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
   return elemento?.textContent?.trim() ?? null
 }
+
+
 
 // ------------------------------------------------------------
 // rota_movimentar_encontrarCaminho
@@ -279,6 +283,12 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
   monitorarBody(6000, 1)
   clicar (botao)
   await rota_movimentar_aguardarMudancaTarefa(tarefaAtual)
+}
+
+async function rota_movimentar_listenersTrocaOJ() {
+  await aguardarElemento('meta["rotapje_listenerTrocaOJ"]')
+  await suspender()
+  return
 }
 
 
@@ -484,20 +494,24 @@ async function rota_movimentar_retomar() {
 // movimentar
 // ------------------------------------------------------------
 async function movimentar(destino, params = {}) {
+  console.log('%c[Rota PJE]%c destino' + JSON.stringify(destino), LOG.aviso, 'color:inherit')
   await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
   await armazenar({rota_movimentar_destinoPendente: destino})
   await armazenar({rota_movimentar_params: params})
   let tarefaAtual = await rota_movimentar_lerTarefaAtual()
+  console.log('%c[Rota PJE]%c tarefaAtual' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
     // se houver executor para a tarefa atual, roda antes de qualquer coisa
   let executorAtual = EXECUTORES[tarefaAtual]
+  console.log('%c[Rota PJE]%c executorAtual' + JSON.stringify(executorAtual), LOG.aviso, 'color:inherit')
   if (executorAtual && params[tarefaAtual]) {
     await executorAtual(tarefaAtual, params[tarefaAtual])
   }
-  
+  console.log('%c[Rota PJE]%c 507' + JSON.stringify(507), LOG.aviso, 'color:inherit')
   const caminho = rota_movimentar_encontrarCaminho(tarefaAtual, destino)
   if (caminho === null) throw new Error(`Caminho não encontrado: "${tarefaAtual}" → "${destino}"`)
   if (caminho.length === 0) {
+    console.log('%c[Rota PJE]%c 511' + JSON.stringify(511), LOG.aviso, 'color:inherit')
     rota_movimentar_limparEstado()
     return
   }
