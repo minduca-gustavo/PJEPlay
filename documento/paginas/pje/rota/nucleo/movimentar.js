@@ -288,6 +288,7 @@ async function rota_movimentar_executarTransicaoSimples(tarefaAtual, nomeTarefaD
 async function rota_movimentar_listenersTrocaOJ() {
   await aguardarElemento('meta["rotapje_listenerTrocaOJ"]')
   await suspender()
+  
   return
 }
 
