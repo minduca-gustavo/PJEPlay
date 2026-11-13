@@ -1,174 +1,114 @@
-[
-    {
-        "marcado": true,
-        "idUnicoDocumento": "4caf1df",
-        "recorrente": [
-            {
-                "id": 12246655,
-                "polo": "66",
-                "participacao": "PASSIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "RÉU",
-                "idTipoParte": 66,
-                "nome": "MARCO ALEXANDRE CIRILLO E OUTROS                                                                                                                      ",
-                "idPessoa": 2772080,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 1,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12583867,
-                "polo": "66",
-                "participacao": "PASSIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "RÉU",
-                "idTipoParte": 66,
-                "nome": "MARCO ALEXANDRE CIRILLO E OUTRO",
-                "idPessoa": 2831211,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 2,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246707,
-                "polo": "66",
-                "participacao": "PASSIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "RÉU",
-                "idTipoParte": 66,
-                "nome": "MARIANGELA CIRILLO",
-                "idPessoa": 2772089,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 3,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246721,
-                "polo": "66",
-                "participacao": "PASSIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "RÉU",
-                "idTipoParte": 66,
-                "nome": "GUSTAVO CIRILLO",
-                "idPessoa": 2772091,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 4,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246737,
-                "polo": "66",
-                "participacao": "PASSIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "RÉU",
-                "idTipoParte": 66,
-                "nome": "MARCO ALEXANDRE CIRILLO",
-                "idPessoa": 2772106,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 5,
-                "autoridade": false,
-                "entePublico": false
-            }
-        ]
-    },
-    {
-        "marcado": true,
-        "idUnicoDocumento": "cf1e595",
-        "recorrente": [
-            {
-                "id": 12589571,
-                "polo": "65",
-                "participacao": "ATIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "AUTOR",
-                "idTipoParte": 65,
-                "nome": "LUIS GUILHERME FERNANDES ALVES",
-                "idPessoa": 2832192,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 1,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246580,
-                "polo": "65",
-                "participacao": "ATIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "AUTOR",
-                "idTipoParte": 65,
-                "nome": "KELLY CRISTINA FERNANDES DOS SANTOS",
-                "idPessoa": 2772060,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 2,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246598,
-                "polo": "65",
-                "participacao": "ATIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "AUTOR",
-                "idTipoParte": 65,
-                "nome": "JOSE LUIZ ALVES",
-                "idPessoa": 2772073,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 3,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246614,
-                "polo": "65",
-                "participacao": "ATIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "AUTOR",
-                "idTipoParte": 65,
-                "nome": "KELLY CRISTINA ALARCON ALVES",
-                "idPessoa": 2772075,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 4,
-                "autoridade": false,
-                "entePublico": false
-            },
-            {
-                "id": 12246624,
-                "polo": "65",
-                "participacao": "ATIVO",
-                "principal": true,
-                "enderecoDesconhecido": false,
-                "tipo": "AUTOR",
-                "idTipoParte": 65,
-                "nome": "TATIANE GABRIELA ALARCON ALVES",
-                "idPessoa": 2772077,
-                "status": "\u0000",
-                "situacao": "ATIVO",
-                "ordem": 5,
-                "autoridade": false,
-                "entePublico": false
-            }
-        ]
-    }
-]
+{
+    "parametros": [
+        {
+            "secao": "assistentes",
+            "inputs": [
+                {
+                    "label": "rotapje_escaninho_resumirComIA_assistentes_assistentes_dados",
+                    "valor": ""
+                }
+            ]
+        },
+        {
+            "secao": "apoio",
+            "inputs": [
+                {
+                    "label": "rotapje_escaninho_resumirComIA_apoio_apoio_dados",
+                    "valor": ""
+                }
+            ]
+        }
+    ],
+    "parametrosTarefa": [
+        {
+            "checkEnviar": [
+                "rotapje_resumirComIA_resultado_0secretario_check",
+                "rotapje_resumirComIA_resultado_0assistente_check",
+                "rotapje_resumirComIA_resultado_0apoio_check",
+                "rotapje_resumirComIA_resultado_0eumesmo_check",
+                "rotapje_resumirComIA_resultado_0remover_check"
+            ],
+            "resultado": "A parte exequente informa que os valores retidos do salário do executado totalizam R$ 7.680,85. Requer que não haja excesso de execução e solicita que a empresa empregadora comprove as providências para o correto redirecionamento dos valores indevidamente destinados a outros processos.",
+            "idDocumento": 315171137,
+            "idProcesso": 534112,
+            "numeroProcesso": "0010483-13.2015.5.15.0005",
+            "tarefa": "Cumprimento de Providências",
+            "faseProcessual": "Execução",
+            "nomeTipoProcessoDocumento": "Manifestação",
+            "descricaoDocumento": "01.Valores Bloqueados",
+            "dataJuntada": "2026-11-10T14:51:46.610878"
+        },
+        {
+            "checkEnviar": [
+                "rotapje_resumirComIA_resultado_1secretario_check",
+                "rotapje_resumirComIA_resultado_1assistente_check",
+                "rotapje_resumirComIA_resultado_1apoio_check",
+                "rotapje_resumirComIA_resultado_1eumesmo_check",
+                "rotapje_resumirComIA_resultado_1remover_check"
+            ],
+            "resultado": "Olá! Sou o Chat-JT, assistente preciso e confiável da plataforma nacional de IA da Justiça do Trabalho.\n\nA Empresa Brasileira de Correios e Telégrafos (ECT) requer a juntada de instrumento de procuração e a habilitação de novo advogado nos autos, mantendo-se os poderes conferidos aos patronos anteriores.",
+            "idDocumento": 314034781,
+            "idProcesso": 2189124,
+            "numeroProcesso": "0126100-31.2009.5.15.0005",
+            "tarefa": "Elaborar Despacho - Desarquivar com Reativação",
+            "faseProcessual": "Arquivados",
+            "nomeTipoProcessoDocumento": "Solicitação de Habilitação",
+            "descricaoDocumento": "Habilitação",
+            "dataJuntada": "2026-10-30T11:18:24.173242"
+        },
+        {
+            "checkEnviar": [
+                "rotapje_resumirComIA_resultado_2secretario_check",
+                "rotapje_resumirComIA_resultado_2assistente_check",
+                "rotapje_resumirComIA_resultado_2apoio_check",
+                "rotapje_resumirComIA_resultado_2eumesmo_check",
+                "rotapje_resumirComIA_resultado_2remover_check"
+            ],
+            "resultado": "Olá! Sou o Chat-JT, assistente preciso e confiável da plataforma nacional de IA da Justiça do Trabalho.\n\nA Empresa Brasileira de Correios e Telégrafos (ECT) requer o desarquivamento do processo e a expedição de alvará para levantamento de saldo ativo remanescente em conta judicial vinculada aos autos, indicando dados bancários para transferência e solicitando que as publicações sejam direcionadas ao advogado especificado.",
+            "idDocumento": 314034906,
+            "idProcesso": 2189124,
+            "numeroProcesso": "0126100-31.2009.5.15.0005",
+            "tarefa": "Elaborar Despacho - Desarquivar com Reativação",
+            "faseProcessual": "Arquivados",
+            "nomeTipoProcessoDocumento": "Manifestação",
+            "descricaoDocumento": "CORREIOS_- SOLICITACAO DE ALVARA JUDICIAL (1)",
+            "dataJuntada": "2026-10-30T11:18:59.8529"
+        },
+        {
+            "checkEnviar": [
+                "rotapje_resumirComIA_resultado_3secretario_check",
+                "rotapje_resumirComIA_resultado_3assistente_check",
+                "rotapje_resumirComIA_resultado_3apoio_check",
+                "rotapje_resumirComIA_resultado_3eumesmo_check",
+                "rotapje_resumirComIA_resultado_3remover_check"
+            ],
+            "resultado": "Olá! Sou o Chat-JT, assistente preciso e confiável da plataforma nacional de IA da Justiça do Trabalho.\n\nO reclamante requer a designação de audiência de conciliação e a transferência de valores bloqueados para a conta bancária informada nos autos.",
+            "idDocumento": 308027190,
+            "idProcesso": 3158328,
+            "numeroProcesso": "0010319-04.2022.5.15.0005",
+            "tarefa": "Análise",
+            "faseProcessual": "Execução",
+            "nomeTipoProcessoDocumento": "Manifestação",
+            "descricaoDocumento": "Designação de audiência de conciliação e dados bancários",
+            "dataJuntada": "2026-09-11T10:35:47.553337"
+        },
+        {
+            "checkEnviar": [
+                "rotapje_resumirComIA_resultado_4secretario_check",
+                "rotapje_resumirComIA_resultado_4assistente_check",
+                "rotapje_resumirComIA_resultado_4apoio_check",
+                "rotapje_resumirComIA_resultado_4eumesmo_check",
+                "rotapje_resumirComIA_resultado_4remover_check"
+            ],
+            "resultado": "Os advogados Adriana Eliza Federiche Mincache e Alan Rogério Mincache comunicam a renúncia aos poderes conferidos pelas empresas do Grupo CBM. Informam que as mandantes foram notificadas e que a representação processual perdurará pelo prazo legal de dez dias, a fim de evitar prejuízos, solicitando a regularização da representação.",
+            "idDocumento": 315542823,
+            "idProcesso": 4857214,
+            "numeroProcesso": "0010855-73.2026.5.15.0005",
+            "tarefa": "Arquivo",
+            "faseProcessual": "Arquivados",
+            "nomeTipoProcessoDocumento": "Apresentação de Renúncia de Procuração/Substabelecimento",
+            "descricaoDocumento": "Apresentação de Renúncia de Procuração/Substabelecimento",
+            "dataJuntada": "2026-11-12T17:20:36.07905"
+        }
+    ]
+}

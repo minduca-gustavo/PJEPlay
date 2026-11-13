@@ -261,7 +261,7 @@ async function escaninhoCriaBotao(){
                 //})
                 //console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
                 if (parametro == 'resumirComIA'){
-                    executarResumirComIA(parametros, div.rodape.id)
+                    consultarResumirComIA(parametros, div.rodape.id)
                     return
                 }
                 document.getElementById(ancestral)?.remove()
@@ -271,13 +271,13 @@ async function escaninhoCriaBotao(){
         
     }
 
-    async function executarResumirComIA(parametros, ancestralBotao){
+    async function consultarResumirComIA(parametros, ancestralBotao){
         let corpoId = idg('escaninho', 'resumirComIA') + '_corpo'
         let corpo = document.getElementById(corpoId)
         corpo.replaceChildren()
         let botao = document.getElementById(idg('escaninho', 'resumirComIA') + '_executar')
         botao.disabled = true
-        console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
+        //console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
         let divPlacarId = idg('escaninho', 'placar')
         let placar = criaSubTitulo({
             id: divPlacarId,
@@ -314,7 +314,7 @@ async function escaninhoCriaBotao(){
                 rowColumn: 'row-reverse'
             })
             let instrucao = 'Resuma o teor da petição, que segue abaixo, em até 50 palavras. Não apresente botões para nova consulta ou para fazer busca no processo: \n'
-            let consulta = rota_IAConsulta('', instrucao + teor)
+            let consulta = rota_IAConsulta('', instrucao + teor) || null
             consultas.push({
                 consulta,
                 idDocumento,
@@ -344,7 +344,7 @@ async function escaninhoCriaBotao(){
                 dataHoraAudiencia
             } = consulta
             let processo = numeroProcesso
-            let resultado = await consulta.consulta
+            let resultado = await consulta.consulta || 'Ocorreu um erro na consulta ao CHAT-JT.'
             let ancestral = idg('resumirComIA', 'resultado', JSON.stringify(i))
             formataDiv(document.getElementById(ancestral), 'branco', '98%', 'auto', 'relative', '0px', '0px', '')
             let opcoes = ['Secretário', 'Assistente', 'Apoio', 'Eu mesmo', 'Remover']
@@ -377,6 +377,7 @@ async function escaninhoCriaBotao(){
                 check.style.textAlign = 'center'
                 check.style.alignItems = 'flex-start'
                 check.style.justifyContent = 'center'
+                check.dataset.opcao = opcao
             }
             for (let elemento of checkAlternar){
                 document.getElementById(elemento.id)?.addEventListener('click', () => alternaCheckBox(elemento.id, ...(checkAlternar.map(d=> d.check))))
@@ -431,17 +432,26 @@ async function escaninhoCriaBotao(){
             i++
         }
         botao.remove()
-        criaBotaoLaranja({
+        let botaoExecutar = criaBotaoLaranja({
             id: idg('resumirComIA', 'marcarERemover'),
             ancestral: ancestralBotao,
             texto: 'Marcar/remover todos conforme selecionado',
             acao: () => {
-                console.log('%c[Rota PJE]%c parametrosTarefa', LOG.aviso, 'color:inherit', parametrosTarefa)
-                alert('Oi')
+                botaoExecutar.disabled = true
+                executarResumirComIA({parametros, consultas: parametrosTarefa})
             }
         })
-        textContent = 'Marcar/remover todos conforme selecionado'
-        botao.disabled = false
+
+        function executarResumirComIA(parametro){
+            let {parametros, consultas} = parametro
+            for (let consulta of consultas){
+                let checks = consulta?.checkEnviar
+                let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
+                let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
+            }
+            alert('oi')
+        }
+
     }
     async function removePeticoesPorTipoOuTitulo(idInput){
         let termos = document.getElementById(idInput).value || null
