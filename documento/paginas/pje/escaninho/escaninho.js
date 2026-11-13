@@ -261,7 +261,7 @@ async function escaninhoCriaBotao(){
                 //})
                 //console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
                 if (parametro == 'resumirComIA'){
-                    executarResumirComIA(parametros)
+                    executarResumirComIA(parametros, div.rodape.id)
                     return
                 }
                 document.getElementById(ancestral)?.remove()
@@ -271,7 +271,7 @@ async function escaninhoCriaBotao(){
         
     }
 
-    async function executarResumirComIA(parametros){
+    async function executarResumirComIA(parametros, ancestralBotao){
         let corpoId = idg('escaninho', 'resumirComIA') + '_corpo'
         let corpo = document.getElementById(corpoId)
         corpo.replaceChildren()
@@ -292,8 +292,19 @@ async function escaninhoCriaBotao(){
         }
         let consultas = []
         let i = 0
+        let checks = []
         for (let peticao of peticoes){
-            let {idDocumento, idProcesso, numeroProcesso} = peticao
+            let {
+                idDocumento,
+                idProcesso,
+                numeroProcesso,
+                faseProcessual,
+                tarefa,
+                dataHoraAudiencia,
+                descricaoDocumento,
+                nomeTipoProcessoDocumento,
+                dataJuntada
+            } = peticao
             let teor = await rota_extrairTeorDocumento(idProcesso, idDocumento) || null
             if (!teor) continue
             let idDiv = idg('resumirComIA', 'resultado', JSON.stringify(i))
@@ -304,17 +315,41 @@ async function escaninhoCriaBotao(){
             })
             let instrucao = 'Resuma o teor da petição, que segue abaixo, em até 50 palavras. Não apresente botões para nova consulta ou para fazer busca no processo: \n'
             let consulta = rota_IAConsulta('', instrucao + teor)
-            consultas.push({consulta, numeroProcesso})
+            consultas.push({
+                consulta,
+                idDocumento,
+                idProcesso,
+                numeroProcesso,
+                faseProcessual,
+                tarefa,
+                nomeTipoProcessoDocumento,
+                descricaoDocumento,
+                dataJuntada,
+                dataHoraAudiencia
+            })
             i++
         }
         i = 0
+        let parametrosTarefa = []
         for (let consulta of consultas){
-            let processo = consulta.numeroProcesso
+            let {
+                idDocumento,
+                idProcesso,
+                numeroProcesso,
+                tarefa,
+                faseProcessual,
+                nomeTipoProcessoDocumento,
+                descricaoDocumento,
+                dataJuntada,
+                dataHoraAudiencia
+            } = consulta
+            let processo = numeroProcesso
             let resultado = await consulta.consulta
             let ancestral = idg('resumirComIA', 'resultado', JSON.stringify(i))
             formataDiv(document.getElementById(ancestral), 'branco', '98%', 'auto', 'relative', '0px', '0px', '')
             let opcoes = ['Secretário', 'Assistente', 'Apoio', 'Eu mesmo', 'Remover']
             let checkAlternar = []
+            let checkEnviar = []
             for (let opcao of opcoes){
                 let idOpcao = normalizar(opcao).replaceAll(' ', '')
                 let div = criaDiv({
@@ -335,6 +370,7 @@ async function escaninhoCriaBotao(){
                     id: ancestral + idOpcao + '_check',
                     ancestral: ancestral + idOpcao,
                 })
+                checkEnviar.push(ancestral + idOpcao + '_check')
                 checkAlternar.push({id: ancestral + idOpcao + '_check', check})
                 check.style.display = 'flex'
                 check.style.height = '50%'
@@ -345,13 +381,67 @@ async function escaninhoCriaBotao(){
             for (let elemento of checkAlternar){
                 document.getElementById(elemento.id)?.addEventListener('click', () => alternaCheckBox(elemento.id, ...(checkAlternar.map(d=> d.check))))
             }
+            criaDiv({
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                ancestral
+            })
+            let subtitulo = criaSubTitulo({
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'subtitulo'),
+                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                texto: processo
+            })
+            subtitulo.style.color = '#005b89'
+            let texto = []
+            for (let [chave, valor] of Object.entries(consulta)){
+                if (chave == 'consulta' || chave == 'idDocumento' || chave == 'idProcesso' || chave == 'numeroProcesso') continue
+                let nome = {
+                    faseProcessual: 'Fase: ',
+                    tarefa: 'Tarefa: ',
+                    dataHoraAudiencia: 'Audiência: ',
+                    descricaoDocumento: 'Descrição: ',
+                    nomeTipoProcessoDocumento: 'Tipo: ',
+                    dataJuntada: 'Data de Juntada: '
+                }
+                valor = String(new Date(valor).toLocaleDateString()) != 'Invalid Date' ? new Date(valor).toLocaleDateString() : valor
+                texto.push(nome[chave] + valor)
+            }
+            let textoDescricao = criaTexto({
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), '_descricao'),
+                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                texto: texto.join(' / ')
+            })
             criaTexto({
                 id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i)),
-                ancestral,
-                texto: processo + ' - ' + resultado
+                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                texto: resultado
+            })
+            parametrosTarefa.push({
+                checkEnviar,
+                resultado,
+                idDocumento,
+                idProcesso,
+                numeroProcesso,
+                tarefa,
+                faseProcessual,
+                nomeTipoProcessoDocumento,
+                descricaoDocumento,
+                dataJuntada,
+                dataHoraAudiencia
             })
             i++
         }
+        botao.remove()
+        criaBotaoLaranja({
+            id: idg('resumirComIA', 'marcarERemover'),
+            ancestral: ancestralBotao,
+            texto: 'Marcar/remover todos conforme selecionado',
+            acao: () => {
+                console.log('%c[Rota PJE]%c parametrosTarefa', LOG.aviso, 'color:inherit', parametrosTarefa)
+                alert('Oi')
+            }
+        })
+        textContent = 'Marcar/remover todos conforme selecionado'
+        botao.disabled = false
     }
     async function removePeticoesPorTipoOuTitulo(idInput){
         let termos = document.getElementById(idInput).value || null
