@@ -443,11 +443,35 @@ async function escaninhoCriaBotao(){
         })
 
         function executarResumirComIA(parametro){
+            let opcoes = [
+                {
+                    escolha: 'Remover',
+                    label: 'remover'
+                },
+                {
+                    escolha: 'Eu mesmo',
+                    label: 'eumesmo'
+                },
+                {
+                    escolha: 'Assistente',
+                    label: 'assistentes'
+                },
+                {
+                    escolha: 'Secretário',
+                    label: 'secretarios'
+                },
+                {
+                    escolha: 'Apoio',
+                    label: 'apoio'
+                },
+            ]
             let {parametros, consultas} = parametro
             for (let consulta of consultas){
                 let checks = consulta?.checkEnviar
                 let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
+                let opcao = opcoes.find(d => d?.escolha == 'escolhido')?.label
+                let tabela = parametros.find(d => d?.secao == opcao) || {}
             }
             alert('oi')
         }
