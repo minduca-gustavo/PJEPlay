@@ -290,8 +290,67 @@ async function escaninhoCriaBotao(){
             rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
             return
         }
+        let consultas = []
+        let i = 0
         for (let peticao of peticoes){
-            
+            let {idDocumento, idProcesso, numeroProcesso} = peticao
+            let teor = await rota_extrairTeorDocumento(idProcesso, idDocumento) || null
+            if (!teor) continue
+            let idDiv = idg('resumirComIA', 'resultado', JSON.stringify(i))
+            criaDiv({
+                id: idDiv,
+                ancestral: corpoId,
+                rowColumn: 'row-reverse'
+            })
+            let instrucao = 'Resuma o teor da petição, que segue abaixo, em até 50 palavras. Não apresente botões para nova consulta ou para fazer busca no processo: \n'
+            let consulta = rota_IAConsulta('', instrucao + teor)
+            consultas.push({consulta, numeroProcesso})
+            i++
+        }
+        i = 0
+        for (let consulta of consultas){
+            let processo = consulta.numeroProcesso
+            let resultado = await consulta.consulta
+            let ancestral = idg('resumirComIA', 'resultado', JSON.stringify(i))
+            formataDiv(document.getElementById(ancestral), 'branco', '98%', 'auto', 'relative', '0px', '0px', '')
+            let opcoes = ['Secretário', 'Assistente', 'Apoio', 'Eu mesmo', 'Remover']
+            let checkAlternar = []
+            for (let opcao of opcoes){
+                let idOpcao = normalizar(opcao).replaceAll(' ', '')
+                let div = criaDiv({
+                    id: ancestral + idOpcao,
+                    ancestral,
+                })
+                let texto = criaTexto({
+                    id: ancestral + idOpcao + '_texto',
+                    ancestral: ancestral + idOpcao,
+                    texto: opcao
+                })
+                texto.style.display = 'flex'
+                texto.style.height = '50%'
+                texto.style.textAlign = 'center'
+                texto.style.alignItems = 'flex-end'
+                texto.style.justifyContent = 'center'
+                let check = await criaCheckBox({
+                    id: ancestral + idOpcao + '_check',
+                    ancestral: ancestral + idOpcao,
+                })
+                checkAlternar.push({id: ancestral + idOpcao + '_check', check})
+                check.style.display = 'flex'
+                check.style.height = '50%'
+                check.style.textAlign = 'center'
+                check.style.alignItems = 'flex-start'
+                check.style.justifyContent = 'center'
+            }
+            for (let elemento of checkAlternar){
+                document.getElementById(elemento.id)?.addEventListener('click', () => alternaCheckBox(elemento.id, ...(checkAlternar.map(d=> d.check))))
+            }
+            criaTexto({
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i)),
+                ancestral,
+                texto: processo + ' - ' + resultado
+            })
+            i++
         }
     }
     async function removePeticoesPorTipoOuTitulo(idInput){
