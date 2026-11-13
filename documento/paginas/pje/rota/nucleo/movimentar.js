@@ -158,8 +158,10 @@ const EXECUTORES = {
 // rota_movimentar_lerTarefaAtual
 // ------------------------------------------------------------
 async function rota_movimentar_lerTarefaAtual() {
-  let elemento = await aguardarElemento('.texto-tarefa-processo')
-  return elemento?.textContent?.trim() ?? null
+  await suspender(200)
+  await aguardarElemento('.texto-tarefa-processo')
+  await suspender(200)
+  return document.querySelector('.texto-tarefa-processo')?.textContent?.trim() ?? null
 }
 
 
