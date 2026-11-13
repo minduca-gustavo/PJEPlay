@@ -59,11 +59,18 @@ async function escaninhoCriaBotao(){
                 texto: 'Insere o GIG escolhido e remove do escaninho as petições que contenham no título ou tipo alguma das palavras escolhidas. DICA: FILTRE ANTES AS PETIÇÕES POR TIPO.',
                 textoBotao: 'Configurar e executar'
             },
+            {
+                id: 'resumirComIA',
+                titulo: 'Resumir petições com IA.',
+                texto: 'Resume as petições usando IA, e permite marcar assistente, secretário e apoio com um GIG contendo o resumo da petição, ou remover.',
+                textoBotao: 'Configurar e executar'
+            },
         ]
         let mFuncoes = {
             removePeticoesAnalisadas,
             removePeticoesPorTipoOuTitulo,
-            inserirGigPorTipoOuTitulo
+            inserirGigPorTipoOuTitulo,
+            resumirComIA
         }
         for (let script of scripts){
             let idGeral = idDiv + script?.id
@@ -104,15 +111,21 @@ async function escaninhoCriaBotao(){
             })
         }
     }
-    async function inserirGigPorTipoOuTitulo() {
+
+    async function resumirComIA() {
+        inserirGigPorTipoOuTitulo('resumirComIA')
+    }
+
+    async function inserirGigPorTipoOuTitulo(parametro) {
         document.getElementById(idg('escaninho', 'menu'))?.remove()
-        let ancestral = idg('escaninho', 'inserirGigPorTipoOuTitulo')
+        let ancestral = parametro == 'resumirComIA' ? idg('escaninho', 'resumirComIA') : idg('escaninho', 'inserirGigPorTipoOuTitulo')
         document.getElementById(ancestral)?.remove()
+        let diVTitulo = parametro == 'resumirComIA' ? 'Resumir petições usando IA' : 'Inserir GIG por Tipo ou Título'
         let div = criaDivCentralPadrao({
             id: ancestral,
             largura: '65%',
             altura: '65%',
-            titulo: 'Inserir GIG por Tipo ou Título'
+            titulo: diVTitulo
         })
         div.corpo.style.overflowY = 'auto'
         let secoes = [
@@ -120,9 +133,11 @@ async function escaninhoCriaBotao(){
                 label: 'secretarios',
                 titulo: 'Secretários de audiência',
                 oj: ['CON1'],
+                textoIA: 'Cadastre os secretários/juízes para serem marcados posteriormente à apresentação dos resumos.',
                 texto: 'Os gigs serão atribuídos aos secretários de acordo com o GIG Simetria ou de acordo com a planilha de Juízes (finais), no caso de legado.',
                 inputAnotacao: [
                     {
+                        resumoIA: true,
                         label: 'secretarios_dados',
                         texto: 'Insira abaixo os dados de JUIZ e SECRETÁRIO correspondente, separados por vírgula, um por linha.',
                         placeholder: 'Ex:\nFULANO DE TAL, beltrano de tal\nciclano de tal, fulano de tal'
@@ -137,9 +152,11 @@ async function escaninhoCriaBotao(){
             {
                 label: 'assistentes',
                 titulo: 'Assistentes de Juiz',
+                textoIA: 'Cadastre os assistentes/juízes para serem marcados posteriormente à apresentação dos resumos.',
                 texto: 'Os gigs serão atribuídos aos assistentes de acordo com o GIG Simetria (CON1 e CON2) ou de acordo com a planilha de Juízes (finais), no caso de legado.',
                 inputAnotacao: [
                     {
+                        resumoIA: true,
                         label: 'assistentes_dados',
                         texto: 'Insira abaixo os dados de JUIZ e SECRETÁRIO correspondente, separados por vírgula, um por linha.',
                         placeholder: 'Ex:\nFULANO DE TAL, beltrano de tal\nciclano de tal, fulano de tal'
@@ -154,9 +171,11 @@ async function escaninhoCriaBotao(){
             {
                 label: 'apoio',
                 titulo: 'Servidores de apoio',
+                textoIA: 'Cadastre os servidores de apoio e respectivos finais para serem marcados posteriormente à apresentação dos resumos.',
                 texto: 'Os gigs serão atribuídos aos servidores de apoio de acordo com o final indicado.',
                 inputAnotacao: [
                     {
+                        resumoIA: true,
                         label:'apoio_dados',
                         texto: 'Cole abaixo os dados dos servidores de apoio e finais, separados por vírgula, no formato "SERVIDOR, FINAIS", um por linha.',
                         placeholder: 'Ex: \nFULANO DE TAL, 01\nBELTRANO DE TAL, 2 3\nCiclano de tal, 456 7'
@@ -186,15 +205,18 @@ async function escaninhoCriaBotao(){
                 ancestral: idSecao,
                 texto: secao?.titulo
             })
+            let textoConteudo = parametro == 'resumirComIA' ? secao?.textoIA : secao?.texto
             let texto = criaTexto({
                 id: idSecao + '_texto',
                 ancestral: idSecao,
-                texto: secao?.texto
+                texto: textoConteudo
             })
             let inputsIds = []
             for (let input of secao?.inputAnotacao){
+                if (parametro == 'resumirComIA' && !input?.resumoIA) continue
+                let inputElementoId = idSecao + '_' + input?.label + (parametro == 'resumirComIA' ? /*'resumirComIA'*/ '' : '')
                 let inputElemento = criaInputAnotacao({
-                    id: idSecao + '_' + input?.label,
+                    id: inputElementoId,
                     textoEmCima: input?.texto,
                     ancestral: idSecao
                 })
@@ -204,23 +226,24 @@ async function escaninhoCriaBotao(){
                 inputElemento.label.style.whiteSpace = 'pre-wrap'
                 inputElemento.textarea.style.maxHeight = '150px'
                 inputElemento.textarea.style.overflowY = 'auto'
-                inputsIds.push(idSecao + '_' + input?.label)
+                inputsIds.push(inputElementoId)
                 let botao = criaBotaoAzul({
                     id: idSecao + '_' + input?.label + '_salvar',
                     ancestral: idSecao,
                     texto: 'Salvar',
                     acao: async () => {
                         let valor =
-                        await armazenar({[idSecao + '_' + input?.label]: document.getElementById(idSecao + '_' + input?.label)?.value || ''})
+                        await armazenar({[inputElementoId]: document.getElementById(idSecao + '_' + input?.label)?.value || ''})
                     }
                 })
             }
             inputsSecoes.push({label: secao?.label, inputs: inputsIds})
         }
+        let textoBotaoExecutar = parametro == 'resumirComIA' ? 'Resumir as petições da tela com IA.' : 'Percorrer todas as petições, inserir os GIGs e remover do escaninho'
         criaBotaoLaranja({
             id: ancestral + '_executar',
             ancestral: div.rodape.id,
-            texto: 'Percorrer todas as petições, inserir os GIGs e remover do escaninho',
+            texto: textoBotaoExecutar,
             acao: () => {
                 let parametros = []
                 for (let secao of inputsSecoes){
@@ -237,11 +260,19 @@ async function escaninhoCriaBotao(){
                 //    return {label: d, valor}
                 //})
                 //console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.erro, 'color:inherit', parametros)
+                if (parametro == 'resumirComIA'){
+                    executarResumirComIA(parametros)
+                    return
+                }
                 document.getElementById(ancestral)?.remove()
                 percorrePeticoes({rechamada: false, funcao: 'gigPorTituloOuTipo', parametros})
             }
         })
         
+    }
+
+    async function executarResumirComIA(parametros){
+
     }
     async function removePeticoesPorTipoOuTitulo(idInput){
         let termos = document.getElementById(idInput).value || null
