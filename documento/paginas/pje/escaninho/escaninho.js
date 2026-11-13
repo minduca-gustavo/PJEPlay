@@ -515,9 +515,6 @@ async function escaninhoCriaBotao(){
                 },
             ]
             let {parametros, consultas, gigs} = parametro
-            console.log('%c[Rota PJE]%c parametros 518: ' + JSON.stringify(parametros), LOG.info, 'color:inherit')
-            console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs), LOG.info, 'color:inherit', gigs)
-            return
             for (let consulta of consultas){
                 let {
                     resultado,
@@ -533,12 +530,15 @@ async function escaninhoCriaBotao(){
                 let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
                 let opcao = opcoes.find(d => d?.escolha == 'escolhido')?.label
+                let gig = {}
+                gig.observacao = resultado
+                gig.tipoAtividade = document.getElementById(ancestral + '_gigInserir_' + 'menu')?.textContent || 'prazo'
+                let tipoPrazo = gigs.find(g => g == gig.tipoAtividade) || 0
+                let prazo = definirTipoDePrazo(tipoPrazo)
+                gig[prazo.label] = prazo.valor
                 if (opcao == 'eumesmo'){
                     let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
                     let responsavel = normalizar(document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent)
-                    let observacao = resultado
-                    let tipoAtividade = document.getElementById(ancestral + '_gigInserir_' + 'menu')?.textContent || 'prazo'
-                    let gig = {}
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'remover'){
@@ -556,6 +556,9 @@ async function escaninhoCriaBotao(){
                         l.textContent.includes(dataJuntada)
                     )
                 }
+            }
+            function definirTipoDePrazo(entrada){
+
             }
             alert('oi')
         }
