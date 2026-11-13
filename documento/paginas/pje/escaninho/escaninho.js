@@ -272,7 +272,27 @@ async function escaninhoCriaBotao(){
     }
 
     async function executarResumirComIA(parametros){
-
+        let corpoId = idg('escaninho', 'resumirComIA') + '_corpo'
+        let corpo = document.getElementById(corpoId)
+        corpo.replaceChildren()
+        let botao = document.getElementById(idg('escaninho', 'resumirComIA') + '_executar')
+        botao.disabled = true
+        console.log('%c[Rota PJE]%c parametros' + JSON.stringify(parametros), LOG.aviso, 'color:inherit', parametros)
+        let divPlacarId = idg('escaninho', 'placar')
+        let placar = criaSubTitulo({
+            id: divPlacarId,
+            ancestral: corpoId,
+            texto: 'Aguarde. Iniciando busca do teor das petições e consultas ao Chat-JT.'
+        })
+        let interceptados = interceptador_ler('peticoes_juntadas') || {}
+        let peticoes = interceptados?.resultado || []
+        if(!peticoes){
+            rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
+            return
+        }
+        for (let peticao of peticoes){
+            
+        }
     }
     async function removePeticoesPorTipoOuTitulo(idInput){
         let termos = document.getElementById(idInput).value || null
