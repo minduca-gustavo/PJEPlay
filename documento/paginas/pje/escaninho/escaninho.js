@@ -188,6 +188,23 @@ async function escaninhoCriaBotao(){
                 ],
             },
         ]
+        if (parametro = 'resumirComIA'){
+            let secao = {
+                label: 'gigs',
+                titulo: 'Gigs disponíveis',
+                textoIA: 'Insira aqui os GIGs e prazos respectivos que aparecerão no menu para escolha de GIGs após a consulta à IA, separados por vírgula. O primeiro GIG inserido será o que aparecerá no menu (escolher o mais usado poupará dois cliques).',
+                inputAnotacao: [
+                    {
+                        resumoIA: true,
+                        label: 'gigs_input',
+                        texto: 'Insira abaixo os gigs, seguidos dos prazos, separados por vírgula, um por linha. Aceita como prazo dataAudiencia que será substituída pela data de hoje, se não houver audiência marcada.',
+                        placeholder: 'Ex:\n prazo, 5\nAcordo, 01/01/2027\nAUDIÊNCIA, dataAudiencia'
+                    },
+                ],
+            }
+            let secoesAtuais = secoes
+            secoes = [secao, ...secoes]
+        }
         let inputsSecoes = []
         for (let secao of secoes){
             if(secao?.oj){
@@ -293,6 +310,7 @@ async function escaninhoCriaBotao(){
         let consultas = []
         let i = 0
         let checks = []
+        let gigs = parametros?.find(d=> d?.secao == 'gigs')?.inputs[0]?.valor?.split(/\r?\n/).map(d => normalizar(d).trim()) || ['prazo, 0']
         for (let peticao of peticoes){
             let {
                 idDocumento,
@@ -305,7 +323,7 @@ async function escaninhoCriaBotao(){
                 nomeTipoProcessoDocumento,
                 dataJuntada
             } = peticao
-            let teor = await rota_extrairTeorDocumento(idProcesso, idDocumento) || null
+            let teor = location.origin.includes('pje-web-hm') ? 'Teor teste ambiente de homologação.' : await rota_extrairTeorDocumento(idProcesso, idDocumento) || null
             if (!teor) continue
             let idDiv = idg('resumirComIA', 'resultado', JSON.stringify(i))
             criaDiv({
@@ -314,7 +332,7 @@ async function escaninhoCriaBotao(){
                 rowColumn: 'row-reverse'
             })
             let instrucao = 'Resuma o teor da petição, que segue abaixo, em até 50 palavras. Não apresente botões para nova consulta ou para fazer busca no processo: \n'
-            let consulta = rota_IAConsulta('', instrucao + teor) || null
+            let consulta = location.origin.includes('pje-web-hm') ? '' : rota_IAConsulta('', instrucao + teor) || null
             consultas.push({
                 consulta,
                 idDocumento,
@@ -344,7 +362,7 @@ async function escaninhoCriaBotao(){
                 dataHoraAudiencia
             } = consulta
             let processo = numeroProcesso
-            let resultado = await consulta.consulta || 'Ocorreu um erro na consulta ao CHAT-JT.'
+            let resultado = location.origin.includes('pje-web-hm') ? 'Teste ambiente de homologação.' : await consulta.consulta || 'Ocorreu um erro na consulta ao CHAT-JT.'
             let ancestral = idg('resumirComIA', 'resultado', JSON.stringify(i))
             formataDiv(document.getElementById(ancestral), 'branco', '98%', 'auto', 'relative', '0px', '0px', '')
             let opcoes = ['Secretário', 'Assistente', 'Apoio', 'Eu mesmo', 'Remover']
@@ -379,6 +397,31 @@ async function escaninhoCriaBotao(){
                 check.style.justifyContent = 'center'
                 check.dataset.opcao = opcao
             }
+            let div = criaDiv({
+                id: ancestral + '_gigInserir',
+                ancestral,
+            })
+            let textoMenu = criaTexto({
+                id: ancestral + '_gigInserir_' + 'texto',
+                ancestral: ancestral + '_gigInserir',
+                texto: 'Gig a inserir'
+            })
+            textoMenu.style.display = 'flex'
+            textoMenu.style.height = '50%'
+            textoMenu.style.textAlign = 'center'
+            textoMenu.style.alignItems = 'flex-end'
+            textoMenu.style.justifyContent = 'center'
+            let menu = criaMenuSuspenso({
+                id: ancestral + '_gigInserir_' + 'menu',
+                ancestral: ancestral + '_gigInserir',
+                opcoes: gigs?.map(d => d.split(',')[0]?.trim()),
+                valorInicial: gigs[0].split(',')[0]?.trim()
+            })
+            menu.style.display = 'flex'
+            menu.style.height = '50%'
+            menu.style.textAlign = 'center'
+            menu.style.alignItems = 'flex-start'
+            menu.style.justifyContent = 'center'
             for (let elemento of checkAlternar){
                 document.getElementById(elemento.id)?.addEventListener('click', () => alternaCheckBox(elemento.id, ...(checkAlternar.map(d=> d.check))))
             }
@@ -403,6 +446,7 @@ async function escaninhoCriaBotao(){
                     nomeTipoProcessoDocumento: 'Tipo: ',
                     dataJuntada: 'Data de Juntada: '
                 }
+                if (String(valor) == 'undefined') continue
                 valor = String(new Date(valor).toLocaleDateString()) != 'Invalid Date' ? new Date(valor).toLocaleDateString() : valor
                 texto.push(nome[chave] + valor)
             }
@@ -436,13 +480,18 @@ async function escaninhoCriaBotao(){
             id: idg('resumirComIA', 'marcarERemover'),
             ancestral: ancestralBotao,
             texto: 'Marcar/remover todos conforme selecionado',
-            acao: () => {
+            acao: async () => {
                 botaoExecutar.disabled = true
-                executarResumirComIA({parametros, consultas: parametrosTarefa})
+                await executarResumirComIA({parametros, consultas: parametrosTarefa, gigs})
+                finalizar()
             }
         })
 
-        function executarResumirComIA(parametro){
+        function finalizar(){
+
+        }
+
+        async function executarResumirComIA(parametro){
             let opcoes = [
                 {
                     escolha: 'Remover',
@@ -465,13 +514,48 @@ async function escaninhoCriaBotao(){
                     label: 'apoio'
                 },
             ]
-            let {parametros, consultas} = parametro
+            let {parametros, consultas, gigs} = parametro
+            console.log('%c[Rota PJE]%c parametros 518: ' + JSON.stringify(parametros), LOG.info, 'color:inherit')
+            console.log('%c[Rota PJE]%c gigs: ' + JSON.stringify(gigs), LOG.info, 'color:inherit', gigs)
+            return
             for (let consulta of consultas){
+                let {
+                    resultado,
+                    numeroProcesso,
+                    tarefa,
+                    faseProcessual,
+                    nomeTipoProcessoDocumento,
+                    descricaoDocumento,
+                    dataJuntada,
+                    dataHoraAudiencia
+                } = consulta
                 let checks = consulta?.checkEnviar
                 let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
                 let opcao = opcoes.find(d => d?.escolha == 'escolhido')?.label
+                if (opcao == 'eumesmo'){
+                    let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
+                    let responsavel = normalizar(document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent)
+                    let observacao = resultado
+                    let tipoAtividade = document.getElementById(ancestral + '_gigInserir_' + 'menu')?.textContent || 'prazo'
+                    let gig = {}
+                    await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
+                }
+                if (opcao == 'remover'){
+                    let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
+                    await removerDoEscaninhoEInserirGigs(numeroProcesso, null, linha, false)
+                }
                 let tabela = parametros.find(d => d?.secao == opcao) || {}
+                function definirLinha(l){
+                    return (
+                        l.textContent.includes(numeroProcesso) &&
+                        l.textContent.includes(tarefa) &&
+                        l.textContent.includes(faseProcessual) &&
+                        l.textContent.includes(nomeTipoProcessoDocumento) &&
+                        l.textContent.includes(descricaoDocumento) &&
+                        l.textContent.includes(dataJuntada)
+                    )
+                }
             }
             alert('oi')
         }
@@ -793,18 +877,18 @@ async function escaninhoCriaBotao(){
             }
         }
         
-        async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null) {
+        async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null, linha = null, placar = true) {
             console.log('%c[Rota PJE]%c gig532' + JSON.stringify(numeroProcesso), LOG.aviso, 'color:inherit')
             //return
             let mensagemPlacar = gig ? 'Inserindo GIGs e removendo do escaninho...' : 'Removendo do escaninho...'
-            atualizaPlacar(mensagemPlacar)
+            if (placar) atualizaPlacar(mensagemPlacar)
             await aguardarElemento('pje-data-table tr')
-            let linhas = [...document.querySelectorAll('pje-data-table tr')]
-            let linhaExcluir = linhas.find(l => l.textContent.includes(numeroProcesso)) || null
+            let linhas = !linha ? [...document.querySelectorAll('pje-data-table tr')] : []
+            let linhaExcluir = linha ? linha : linhas.find(l => l.textContent.includes(numeroProcesso)) || null
             if (!linhaExcluir) return null
             if (gig){
                 await aguardarElemento('pje-gigs-icone-gigs button')
-                let gigClicar = document.querySelector('pje-gigs-icone-gigs button[aria-label*="' + numeroProcesso + '"]')
+                let gigClicar = linha ? linha.querySelector('pje-gigs-icone-gigs button') : document.querySelector('pje-gigs-icone-gigs button[aria-label*="' + numeroProcesso + '"]')
                 if (!gigClicar) return null
                 clicar(gigClicar)
                 await aguardarElemento('pje-gigs-lista-atividades #nova-atividade')
@@ -821,7 +905,8 @@ async function escaninhoCriaBotao(){
             }
             await aguardarElemento('button[name$="' + numeroProcesso + '"]')
             await suspender()
-            clicar('button[name$="' + numeroProcesso + '"]')
+            let seletorBotao = linha ? linha.querySelector('button[mattooltip^="Remover"]') : 'button[name$="' + numeroProcesso + '"]'
+            clicar(seletorBotao)
             await suspender()
             await aguardarElemento('.mat-dialog-actions button')
             let botao = [...document.querySelectorAll('.mat-dialog-actions button')].find(b => b.textContent == 'Sim')

@@ -655,7 +655,7 @@ function _ui_escurecerHex(hex, porcentagem) {
     const b = Math.max(0, Math.min(255, Math.floor(( num        & 0xff) * fator)))
     return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')
 }
-
+/*
 function criaMenuSuspenso({ id, opcoes = [], valorInicial, ancestral, cor = 'azul', acao }) {
     const { cor: corBase, corHover } = _ui_resolveCor(cor)
 
@@ -793,7 +793,186 @@ function criaMenuSuspenso({ id, opcoes = [], valorInicial, ancestral, cor = 'azu
     _ui_inserir(container, ancestral)
     return container
 }
+*/
 
+function criaMenuSuspenso({ id, opcoes = [], valorInicial, ancestral, cor = 'azul', acao }) {
+    const { cor: corBase, corHover } = _ui_resolveCor(cor)
+
+    const opcoesNormalizadas = opcoes.map(o =>
+        typeof o === 'string' ? { valor: o, texto: o } : o
+    )
+
+    // ── container ───────────────────────────────────────────────
+    // (a lista NÃO fica mais dentro dele: é anexada ao <body> ao abrir,
+    //  então o container não precisa mais ancorar nada)
+    const container = _ui_el('div', {
+        position:    'relative',
+        marginLeft:  '3px',
+        marginRight: '3px',
+    })
+    container.id = id
+
+    // ── "botão" visível (mesma cara dos demais botões) ─────────
+    const botao = _ui_el('div', {
+        ..._ui_estiloBotao(corBase, corHover),
+        display:        'flex',
+        alignItems:     'center',
+        justifyContent: 'space-between',
+        marginLeft:     '0',
+        marginRight:    '0',
+        userSelect:     'none',
+    })
+    botao.tabIndex = 0
+
+    const textoSpan = _ui_el('span', {
+        overflow:     'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace:   'nowrap',
+    })
+    textoSpan.id = id + '-texto'
+
+    const seta = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    seta.setAttribute('viewBox', '0 0 10 6')
+    seta.setAttribute('width', '10')
+    seta.setAttribute('height', '6')
+    seta.style.marginLeft = '8px'
+    seta.style.flexShrink = '0'
+    seta.style.transition = 'transform 0.15s'
+    seta.innerHTML = '<path d="M0 0 L5 6 L10 0 Z" fill="#ffffff"></path>'
+
+    botao.appendChild(textoSpan)
+    botao.appendChild(seta)
+    _ui_hoverBotao(botao, corBase, corHover)
+
+    // ── lista de opções (fica fora do DOM até abrir) ────────────
+    // position:fixed + anexada ao <body>: escapa de overflow/stacking
+    // context do painel e é posicionada pelas coordenadas do botão.
+    const ALTURA_MAX_LISTA = 200
+    const lista = _ui_el('div', {
+        position:     'fixed',
+        top:          '0',
+        left:         '0',
+        background:   UI_CORES.branco,
+        border:       '1px solid ' + UI_CORES.borda,
+        borderRadius: '6px',
+        boxShadow:    '0 4px 12px rgba(0,0,0,0.15)',
+        maxHeight:    ALTURA_MAX_LISTA + 'px',
+        overflowY:    'auto',
+        boxSizing:    'border-box',
+        zIndex:       '2147483647',
+        display:      'block',
+    })
+    lista.id = id + '-lista'
+
+    let valorAtual = valorInicial ?? opcoesNormalizadas[0]?.valor
+    let aberto = false
+
+    function _renderTexto() {
+        const op = opcoesNormalizadas.find(o => o.valor === valorAtual)
+        textoSpan.textContent = op ? op.texto : ''
+    }
+
+    function _posicionar() {
+        const r = botao.getBoundingClientRect()
+        const altura = Math.min(lista.scrollHeight, ALTURA_MAX_LISTA)
+        const cabeEmbaixo = r.bottom + 4 + altura <= window.innerHeight
+        const top = cabeEmbaixo ? r.bottom + 4 : Math.max(0, r.top - 4 - altura)
+
+        lista.style.top   = top + 'px'
+        lista.style.left  = r.left + 'px'
+        lista.style.width = r.width + 'px'
+    }
+
+    // ── handlers globais: só existem enquanto o menu está aberto ─
+    function _cliqueFora(e) {
+        if (!container.isConnected) return _fechar()
+        if (container.contains(e.target) || lista.contains(e.target)) return
+        _fechar()
+    }
+    function _rolagem(e) {
+        // rolar a própria lista não deve fechá-la
+        if (lista.contains(e.target)) return
+        _fechar()
+    }
+    function _redimensionou() { _fechar() }
+
+    function _fechar() {
+        if (!aberto) return
+        aberto = false
+        lista.remove()
+        seta.style.transform = 'rotate(0deg)'
+        document.removeEventListener('click', _cliqueFora)
+        window.removeEventListener('scroll', _rolagem, true)
+        window.removeEventListener('resize', _redimensionou)
+    }
+
+    function _abrir() {
+        if (aberto) return
+        aberto = true
+        document.body.appendChild(lista)
+        _posicionar()
+        seta.style.transform = 'rotate(180deg)'
+        document.addEventListener('click', _cliqueFora)
+        window.addEventListener('scroll', _rolagem, true)
+        window.addEventListener('resize', _redimensionou)
+    }
+
+    function _alternar() {
+        aberto ? _fechar() : _abrir()
+    }
+
+    opcoesNormalizadas.forEach(op => {
+        const item = _ui_el('div', {
+            padding:    '7px 12px',
+            fontSize:   '12px',
+            // fallback: a variável pode não existir fora do painel (lista está no <body>)
+            fontFamily: 'var(--extensao-rotapje-fonte, "Segoe UI", system-ui, sans-serif)',
+            color:      UI_CORES.texto,
+            cursor:     'pointer',
+        })
+        item.textContent = op.texto
+        item.addEventListener('mouseenter', () => item.style.background = UI_CORES.fundo)
+        item.addEventListener('mouseleave', () => item.style.background = 'transparent')
+        item.addEventListener('click', () => {
+            valorAtual = op.valor
+            _renderTexto()
+            _fechar()
+            // dispara 'change' como um <select> nativo faria
+            container.dispatchEvent(new CustomEvent('change', { detail: { valor: valorAtual, opcao: op } }))
+            if (typeof acao === 'function') acao(valorAtual, op)
+        })
+        lista.appendChild(item)
+    })
+
+    botao.addEventListener('click', (e) => {
+        e.stopPropagation()
+        _alternar()
+    })
+
+    // acessibilidade básica: Enter/Espaço abre-fecha, Esc fecha
+    botao.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            _alternar()
+        }
+        if (e.key === 'Escape') _fechar()
+    })
+
+    // ── expõe .value, como um <select> nativo ────────────────────
+    Object.defineProperty(container, 'value', {
+        get: () => valorAtual,
+        set: (novoValor) => {
+            valorAtual = novoValor
+            _renderTexto()
+        },
+    })
+
+    _renderTexto()
+    container.appendChild(botao)
+    // a lista NÃO é anexada ao container (vai para o <body> em _abrir)
+    _ui_inserir(container, ancestral)
+    return container
+}
 
 // ── criaBotaoComInputAzul ─────────────────────────────────────
 //

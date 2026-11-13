@@ -1,4 +1,42 @@
 {
+    "vendoAgora": [
+        {
+            "secao": "gigs",
+            "inputs": [
+                {
+                    "label": "rotapje_escaninho_resumirComIA_gigs_gigs_input",
+                    "valor": ""
+                }
+            ]
+        },
+        {
+            "secao": "secretarios",
+            "inputs": [
+                {
+                    "label": "rotapje_escaninho_resumirComIA_secretarios_secretarios_dados",
+                    "valor": ""
+                }
+            ]
+        },
+        {
+            "secao": "assistentes",
+            "inputs": [
+                {
+                    "label": "rotapje_escaninho_resumirComIA_assistentes_assistentes_dados",
+                    "valor": ""
+                }
+            ]
+        },
+        {
+            "secao": "apoio",
+            "inputs": [
+                {
+                    "label": "rotapje_escaninho_resumirComIA_apoio_apoio_dados",
+                    "valor": ""
+                }
+            ]
+        }
+    ],
     "parametros": [
         {
             "secao": "assistentes",
