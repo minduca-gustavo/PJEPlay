@@ -59,12 +59,12 @@ async function escaninhoCriaBotao(){
                 texto: 'Insere o GIG escolhido e remove do escaninho as petições que contenham no título ou tipo alguma das palavras escolhidas. DICA: FILTRE ANTES AS PETIÇÕES POR TIPO.',
                 textoBotao: 'Configurar e executar'
             },
-            {
-                id: 'resumirComIA',
-                titulo: 'Resumir petições com IA.',
-                texto: 'Resume as petições usando IA, e permite marcar assistente, secretário e apoio com um GIG contendo o resumo da petição, ou remover.',
-                textoBotao: 'Configurar e executar'
-            },
+            //{
+            //    id: 'resumirComIA',
+            //    titulo: 'Resumir petições com IA.',
+            //    texto: 'Resume as petições usando IA, e permite marcar assistente, secretário e apoio com um GIG contendo o resumo da petição, ou remover.',
+            //    textoBotao: 'Configurar e executar'
+            //},
         ]
         let mFuncoes = {
             removePeticoesAnalisadas,

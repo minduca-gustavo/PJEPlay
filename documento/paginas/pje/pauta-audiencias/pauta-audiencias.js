@@ -45,8 +45,12 @@ async function pautaAudienciasMeses(){
     }
     console.log('%c[Rota PJE]%c meses: ' + JSON.stringify(meses), LOG.info, 'color:inherit')
     async function irParaMes(ano, mes){
-        await aguardarElemento('mat-datepicker-toggle button')
         await suspender(500)
+        if (document.querySelector('button[id="pautaMensal"]')){
+            clicar('button[id="pautaMensal"]')
+        }
+        await suspender(500)
+        await aguardarElemento('mat-datepicker-toggle button')
         clicar('mat-datepicker-toggle button')
         await aguardarElemento('mat-multi-year-view tbody')
         await suspender(500)

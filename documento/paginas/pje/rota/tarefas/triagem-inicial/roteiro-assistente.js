@@ -224,8 +224,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
 
     // Container vazio: preenchido/atualizado por renderizarHorariosVagos() com os botões de horário + linha manual.
     criaDiv({ id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'), ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna') })
-
-    criaBotaoLaranjaComCheckBox({
+    let checkDespacharCertificar = false
+    await criaBotaoLaranjaComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
         idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
         texto: 'Despachar designando.',
@@ -234,9 +234,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
             comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao'}])
         },
-        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
+        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
+        salvar: true
     })
-    criaBotaoLaranjaComCheckBox({
+    if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))?.dataset.marcado == 1) checkDespacharCertificar = true
+    await criaBotaoLaranjaComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna'),
         idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna', 'checkbox'),
         texto: 'Despachar REDESIGNAÇÃO - MODELO SIMPLES DE REDESIGNAÇÃO.',
@@ -245,9 +247,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
             comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_redesignacao'}])
         },
-        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
+        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
+        salvar: true
     })
-    criaBotaoLaranjaComCheckBox({
+    if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna', 'checkbox'))?.dataset.marcado == 1) checkDespacharCertificar = true
+    await criaBotaoLaranjaComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao'),
         idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'),
         texto: 'Certificar a designação, intimar e encaminhar para aguardando audiência.',
@@ -256,14 +260,16 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
             comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}])
         },
-        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao')
+        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
+        salvar: true
     })
+    if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))?.dataset.marcado == 1) checkDespacharCertificar = true
     
 
     let checkBoxDespacho = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
-    if (checkBoxDespacho) checkBoxDespacho.click()
+    if (checkBoxDespacho && !checkDespacharCertificar) checkBoxDespacho.click()
 
-    criaBotaoAzulComCheckBox({
+    await criaBotaoAzulComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig'),
         idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'),
         texto: 'Colocar GIG de acompanhamento.',
@@ -272,9 +278,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
             comandar(['triagem_inicial_gig'], [{tipo: 'triagem_inicial_gig_acompanhamento'}])
         },
+        salvar: true
     })
-    let checkBoxGig = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
-    if (checkBoxGig) checkBoxGig.click()
+    //let checkBoxGig = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
+    //if (checkBoxGig) checkBoxGig.click()
 
     // ── Renderização (e re-renderização) dos horários vagos ───
     //
@@ -284,7 +291,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     //   de 'coluna', pois a opção manual também precisa participar do
     //   "Executar" (grupo_designacao).
     // Pode ser chamada de novo (troca de sala) sem duplicar nada, pois sempre limpa antes de recriar.
-    function renderizarHorariosVagos(dadosAtual) {
+    async function renderizarHorariosVagos(dadosAtual) {
         let horariosVagos = dadosAtual?.rota_dadosTriagemInicial?.horariosVagos
         console.log('%c[Rota PJE]%c horariosVagos: ' + JSON.stringify(horariosVagos), LOG.rosa, 'color:inherit')
         console.log('%c[Rota PJE]%c dadosAtual?.rota_dadosTriagemInicial?.sala?.nome: ' + JSON.stringify(dadosAtual?.rota_dadosTriagemInicial?.sala?.nome), LOG.rosa, 'color:inherit')
@@ -303,6 +310,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         let checkBoxPreMarcadoTipoAudiencia = false
         let i = 0
         if (horariosVagos?.length) {
+            let horarioInicialPreMarcar = ''
             for (i; i < horariosVagos.length; i++) {
                 let horario = horariosVagos[i]
                 let horarioInicial = new Date(horario.horarioInicial)
@@ -311,7 +319,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 let sala = dadosAtual?.rota_dadosTriagemInicial?.sala?.nome
                 horario.processo = processo
                 horario.nomeDaSala = sala
-                let linha = criaBotaoAzulComCheckBox({
+                let linha = await criaBotaoAzulComCheckBox({
                     id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
                     idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
                     texto: horarioInicialBotao,
@@ -320,21 +328,28 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                         await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
                         comandar(['triagem_inicial_designa_audiencia'], [{horario}])
                     },
-                    grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+                    grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao'),
+                    salvar: true
                 })
                 linha.dataset.horario = JSON.stringify(horario)
-                if (horario.descricaoTipoAudiencia.includes('Inicial') && !checkBoxPreMarcadoTipoAudiencia) {
-                    let checkBox = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))
-                    if (checkBox) checkBox.click()
+                if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))?.dataset.marcado == 1) {
+                    console.log('%c[Rota PJE]%c 333 aqui: ' + JSON.stringify(333), LOG.info, 'color:inherit')
                     checkBoxPreMarcadoTipoAudiencia = true
                 }
+                if (horario.descricaoTipoAudiencia.includes('Inicial')) horarioInicialPreMarcar = i
             }
+            if (!checkBoxPreMarcadoTipoAudiencia){
+                console.log('%c[Rota PJE]%c 336 aqui: ' + JSON.stringify(336), LOG.info, 'color:inherit')
+                let checkBox = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + horarioInicialPreMarcar, 'checkbox'))
+                if (checkBox) checkBox.click()
+            }
+            
         }
 
         // Opção "manual" sempre presente, sempre como linha com checkbox do
         // grupo_designacao — assim ela sempre participa do "Executar",
         // exista ou não horário vago disponível pra sala escolhida.
-        let linhaManual = criaBotaoAzulComCheckBox({
+        let linhaManual = await criaBotaoAzulComCheckBox({
             id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i),
             idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'),
             texto: 'Designar audiência manualmente em outra sala/horário',
@@ -343,7 +358,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
                 comandar(['triagem_inicial_designa_audiencia'], [{horario: {tipo: 'manual', processo: dadosAtual?.rota_dadosTriagemInicial?.processo?.numero, sala: dadosAtual?.rota_dadosTriagemInicial?.sala?.nome, link: inputLinkAudiencia.value}}])
             },
-            grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')
+            grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao'),
+            salvar: true
         })
         linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dadosAtual?.rota_dadosTriagemInicial?.processo?.numero, sala: dadosAtual?.rota_dadosTriagemInicial?.sala?.nome, link: inputLinkAudiencia.value})
 
@@ -354,7 +370,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         }
     }
 
-    renderizarHorariosVagos(dados)
+    await renderizarHorariosVagos(dados)
 
     // ── Troca de sala: pede novos horários e re-renderiza só a lista acima ──
     selectSala?.addEventListener('change', async () => {
@@ -371,7 +387,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     NAVEGADOR.storage.onChanged.addListener(async (mudancas) => {
         if (!mudancas['rota_triagem_inicial_horariosAtualizados']) return
         let dadosAtualizados = await obterArmazenamento(['rota_dadosTriagemInicial'])
-        renderizarHorariosVagos(dadosAtualizados)
+        await renderizarHorariosVagos(dadosAtualizados)
         if (selectSala) {
             selectSala.style.pointerEvents = ''
             selectSala.style.opacity = '1'

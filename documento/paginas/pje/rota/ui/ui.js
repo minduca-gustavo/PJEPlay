@@ -500,9 +500,9 @@ function criaBotaoLaranja({ id, texto = 'OK', ancestral, acao }) {
 //
 // criaBotaoAzulComCheckBox({ id, idCheckbox, texto, ancestral, acao })
 
-function criaBotaoAzulComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao, grupo}) {
+async function criaBotaoAzulComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao, grupo, salvar}) {
     return _ui_botaoComCheckBox({
-        id, idCheckbox, texto, ancestral, acao, grupo, 
+        id, idCheckbox, texto, ancestral, acao, grupo, salvar,
         cor: UI_CORES.azul, corHover: UI_CORES.azulHover,
     })
 }
@@ -514,15 +514,15 @@ function criaBotaoAzulComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, aca
 //
 // criaBotaoLaranjaComCheckBox({ id, idCheckbox, texto, ancestral, acao })
 
-function criaBotaoLaranjaComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao, grupo }) {
-    return _ui_botaoComCheckBox({
-        id, idCheckbox, texto, ancestral, acao, grupo,
+async function criaBotaoLaranjaComCheckBox({ id, idCheckbox, texto = 'OK', ancestral, acao, grupo, salvar }) {
+    return await _ui_botaoComCheckBox({
+        id, idCheckbox, texto, ancestral, acao, grupo, salvar,
         cor: UI_CORES.laranja, corHover: UI_CORES.laranjaHover,
     })
 }
 
 // Implementação compartilhada dos botões com checkbox
-function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, corHover, grupo }) {
+async function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, corHover, grupo, salvar = false }) {
     // Container linha
     const linha = _ui_el('div', {
         display:     'flex',
@@ -565,14 +565,15 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
     if (grupo) chk.dataset.grupo = grupo
 
     // Função de desmarcar exposta no elemento
-    chk.desmarcar = () => {
+    chk.desmarcar = async () => {
         chk.dataset.marcado  = '0'
         chk.style.background = UI_CORES.branco
         chk.style.borderColor= UI_CORES.borda
         chk.textContent      = ''
+        if (salvar) await armazenar ({[idCheckbox]: false})
     }
 
-    chk.addEventListener('click', () => {
+    chk.addEventListener('click', async () => {
         if (chk.dataset.marcado === '1') {
             chk.desmarcar()
         } else {
@@ -582,7 +583,7 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
             chk.style.borderColor= cor
             chk.textContent      = '✓'
             chk.style.color      = '#ffffff'
-
+            if (salvar) await armazenar ({[idCheckbox]: true})
             // Desmarca os demais do mesmo grupo
             if (grupo) {
                 document.querySelectorAll(`[data-grupo="${grupo}"]`).forEach(outro => {
@@ -593,10 +594,13 @@ function _ui_botaoComCheckBox({ id, idCheckbox, texto, ancestral, acao, cor, cor
             }
         }
     })
-
+    
     linha.appendChild(btn)
     linha.appendChild(chk)
     _ui_inserir(linha, ancestral)
+    let armazenamento = await obterArmazenamento(idCheckbox) || {}
+    let marcado = armazenamento[idCheckbox] || null
+    if (marcado && salvar) document.getElementById(idCheckbox).click()
     return linha
 }
 

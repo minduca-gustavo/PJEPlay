@@ -44,9 +44,8 @@ document.addEventListener('rotapje_EditorSubstituirTexto', (evento) => {
 
 document.addEventListener('rotapje_EditorInserirComSeletor', async (evento) => {
 	let {seletor, inserir} = JSON.parse(evento.detail) || {}
-	let editavel = seletor == 'despacho' ?
-		[...document.querySelectorAll('.area-conteudo')].find(d => d?.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamenta'))?.querySelector('[contenteditable]')
-		: document.querySelector(seletor)
+	
+	let editavel = definirSeletor(seletor)
 	if(!editavel)
 		return
 	let editor = editavel.ckeditorInstance
@@ -77,3 +76,9 @@ document.addEventListener('rotapje_EditorInserirConteudo', async (evento) => {
 		console.error('❌ Erro ao inserir conteúdo:', erro)
 	}
 })
+
+function definirSeletor(seletor){
+	if (seletor == 'despacho') return [...document.querySelectorAll('.area-conteudo')].find(d => d?.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamenta'))?.querySelector('[contenteditable]')
+	if (seletor == 'assinatura') return [...document.querySelectorAll('.area-conteudo')].find(d => d?.querySelector('.placeholder-conteudo')?.textContent.includes('Assinatura'))?.querySelector('[contenteditable]')
+	return document.querySelector(seletor) ?? null
+}

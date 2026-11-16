@@ -287,6 +287,8 @@ async function rota_aoAbrir(){
 	// ── Telas normais: respeita o interruptor ──────────────────
 	if(!habilitado) return
 
+	comunicacoesProcessuaisMinutas()
+
 	pautaEletronicaAbriu()
 
 	pautaAudienciasMeses()
