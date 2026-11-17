@@ -1000,7 +1000,7 @@ async function triagem_inicial_acoesIntimar(){
         if (todosPreenchidos){
             break
         }
-        await suspender (1000)
+        await suspender ((i + 1) * 1000)
         inserirTextoNoEditor('assinatura', '.')
     }
     await suspender()

@@ -499,40 +499,57 @@ async function rota_movimentar_retomar() {
 
 // ------------------------------------------------------------
 // movimentar
+// Recalcula o caminho a cada passo a partir da tarefa REAL,
+// porque algumas transições são condicionais (ex.: cancelar
+// expedientes pode cair em "Análise" ou em "Aguardando prazo").
 // ------------------------------------------------------------
 async function movimentar(destino, params = {}) {
   console.log('%c[Rota PJE]%c destino' + JSON.stringify(destino), LOG.aviso, 'color:inherit')
   await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
   await armazenar({rota_movimentar_destinoPendente: destino})
   await armazenar({rota_movimentar_params: params})
+
   let tarefaAtual = await rota_movimentar_lerTarefaAtual()
   console.log('%c[Rota PJE]%c tarefaAtual' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
-    // se houver executor para a tarefa atual, roda antes de qualquer coisa
-  console.log('%c[Rota PJE]%c EXECUTORES: ' + JSON.stringify(EXECUTORES), LOG.info, 'color:inherit', EXECUTORES)
+
+  // se houver executor para a tarefa atual, roda antes de qualquer coisa
   let executorAtual = EXECUTORES[tarefaAtual]
   console.log('%c[Rota PJE]%c executorAtual' + JSON.stringify(executorAtual), LOG.aviso, 'color:inherit', executorAtual)
   if (executorAtual) {
     let parametros = params[tarefaAtual] || null
     await executorAtual(tarefaAtual, parametros)
   }
-  console.log('%c[Rota PJE]%c 507' + JSON.stringify(507), LOG.aviso, 'color:inherit')
-  const caminho = rota_movimentar_encontrarCaminho(tarefaAtual, destino)
-  if (caminho === null) throw new Error(`Caminho não encontrado: "${tarefaAtual}" → "${destino}"`)
-  if (caminho.length === 0) {
-    console.log('%c[Rota PJE]%c 511' + JSON.stringify(511), LOG.aviso, 'color:inherit')
-    rota_movimentar_limparEstado()
-    return
-  }
-  for (const proximaTarefa of caminho) {
+
+  // valida a rota antes de começar (falha cedo se não houver caminho)
+  const caminhoInicial = rota_movimentar_encontrarCaminho(tarefaAtual, destino)
+  if (caminhoInicial === null) throw new Error(`Caminho não encontrado: "${tarefaAtual}" → "${destino}"`)
+
+  // dá um passo por vez e reavalia onde o processo realmente caiu
+  let guarda = 0
+  while (tarefaAtual !== destino) {
+    if (++guarda > 15) throw new Error(`Rota excedeu o limite de passos: "${tarefaAtual}" → "${destino}"`)
+
+    const caminho = rota_movimentar_encontrarCaminho(tarefaAtual, destino)
+    if (caminho === null) throw new Error(`Caminho não encontrado: "${tarefaAtual}" → "${destino}"`)
+
+    const proximaTarefa = caminho[0]
     await rota_movimentar_executarTransicaoSimples(tarefaAtual, proximaTarefa)
+
+    const tarefaAnterior = tarefaAtual
     tarefaAtual = await rota_movimentar_lerTarefaAtual()
+    if (tarefaAtual !== proximaTarefa) {
+      console.log(
+        '%c[Rota PJE]%c desvio: esperado "' + proximaTarefa + '", caiu em "' + tarefaAtual + '" (saiu de "' + tarefaAnterior + '")',
+        LOG.aviso, 'color:inherit'
+      )
+    }
+
     const executorProximo = EXECUTORES[tarefaAtual]
     if (executorProximo && params[tarefaAtual]) {
       await executorProximo(tarefaAtual, params[tarefaAtual])
     }
-    
   }
-  
+
   rota_movimentar_limparEstado()
 }
