@@ -69,15 +69,19 @@ async function liquidAIGerarPJC(){
             },
             {
                 tipo: 'Histórico',
-                modelo: `Histórico: Salário Base - R$ 2.000,00 - abril/2023 a dezembro/2023.
+                modelo: `Históricos Salariais
 
-Histórico: Salário Base - R$ 2.200,00 - janeiro/2024 a dezembro/2024.
+Histórico: Salário Base
 
-Histórico: Salário Base - R$ 2.500,00 - janeiro/2025 a fevereiro/2025.
+    Valor: R$ 2.200,00. Período - janeiro/2024 a dezembro/2024.
 
-Histórico: Horas extras pagas - R$ 700,00 - abril/2023 a junho/2024.
+    Valor: R$ 2.500,00. Período - janeiro/2025 a fevereiro/2025.
 
-Histórico: Horas extras pagas - R$ 500,00 - julho/2024 a fevereiro/2025.`
+Histórico: Horas extras pagas
+
+    Valor: R$ 700,00. Período - abril/2023 a junho/2024.
+
+    Valor: R$ 500,00. Período - julho/2024 a fevereiro/2025.`
             }
         ]
 
@@ -301,8 +305,13 @@ Histórico: Horas extras pagas - R$ 500,00 - julho/2024 a fevereiro/2025.`
         
         // HISTÓRICO SALARIAL
         let historicos = []
-        let linhasHistoricos = linhas.filter(d => normalizar(d).includes('historico :') || normalizar(d).includes('historico:')) || []
+        let linhasIndex = linhas.findIndex(d => normalizar(d).includes('historicos salariais') || normalizar(d).includes('historico:')) || null
+        let linhasHistoricos = linhasIndex ? linhas.slice(linhasIndex) : []
+        let nome = ''
         for (let historico of linhasHistoricos){
+            if (normalizar(historico).includes('historico:') || normalizar(historico).includes('historico :')){
+                nome = historico?.split(':')
+            }
             let nome = normalizar(historico.split(':')[1].split('-')[0].trim()).toUpperCase() || ''
             let valor = tratarValor(historico.split('-')[1].trim()) || ''
             let periodo = historico.split('-')[2].trim() || ''
