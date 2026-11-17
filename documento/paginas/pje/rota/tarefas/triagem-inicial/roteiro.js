@@ -684,8 +684,8 @@ async function triagem_inicial_colocarGigDeAcompanhamento() {
     } else {
         dataGig = new Date(hoje + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
     }
-    let usuarioObter = await obterArmazenamento('rota_usuario')
-    let usuario = usuarioObter?.rota_usuario.nome || ''
+    let usuarioObter = await obterArmazenamento('rotapje_usuario')
+    let usuario = usuarioObter?.rotapje_usuario.nome || ''
     let mostrarOuEsconder = await aguardarElementoNovo('detalhesDoProcessoMostrarOuEsconderGigs')
     if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') {
         await suspender(1000)

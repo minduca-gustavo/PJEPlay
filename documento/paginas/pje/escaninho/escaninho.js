@@ -59,12 +59,12 @@ async function escaninhoCriaBotao(){
                 texto: 'Insere o GIG escolhido e remove do escaninho as petições que contenham no título ou tipo alguma das palavras escolhidas. DICA: FILTRE ANTES AS PETIÇÕES POR TIPO.',
                 textoBotao: 'Configurar e executar'
             },
-            //{
-            //    id: 'resumirComIA',
-            //    titulo: 'Resumir petições com IA.',
-            //    texto: 'Resume as petições usando IA, e permite marcar assistente, secretário e apoio com um GIG contendo o resumo da petição, ou remover.',
-            //    textoBotao: 'Configurar e executar'
-            //},
+            {
+                id: 'resumirComIA',
+                titulo: 'Resumir petições com IA.',
+                texto: 'Resume as petições usando IA, e permite marcar assistente, secretário e apoio com um GIG contendo o resumo da petição, ou remover.',
+                textoBotao: 'Configurar e executar'
+            },
         ]
         let mFuncoes = {
             removePeticoesAnalisadas,
@@ -73,11 +73,14 @@ async function escaninhoCriaBotao(){
             resumirComIA
         }
         for (let script of scripts){
+            if (script.id == 'resumirComIA') continue
+            console.log('%c[Rota PJE]%c script: ' + JSON.stringify(script), LOG.info, 'color:inherit', script)
             let idGeral = idDiv + script?.id
             let ancestral = idGeral + '_div'
             let idInput = script?.input ? idGeral + '_input' : ''
             let armazenamentoInput = await obterArmazenamento(idInput) || {}
             let inputValue = armazenamentoInput?.[idInput] || ''
+            let funcao = mFuncoes[script.id]
             let divIntermediaria = criaDiv({
                 id: ancestral,
                 ancestral: div?.corpo?.id, 
@@ -88,7 +91,7 @@ async function escaninhoCriaBotao(){
                 id: idGeral + '_botao',
                 texto: script?.textoBotao,
                 ancestral,
-                acao: () => mFuncoes[script.id](idInput)
+                acao: () => funcao(idInput)
             })
             if (script?.input){
                 let input = criaInput({
@@ -117,6 +120,7 @@ async function escaninhoCriaBotao(){
     }
 
     async function inserirGigPorTipoOuTitulo(parametro) {
+        console.log('%c[Rota PJE]%c parametro: ' + JSON.stringify(parametro), LOG.info, 'color:inherit', parametro)
         document.getElementById(idg('escaninho', 'menu'))?.remove()
         let ancestral = parametro == 'resumirComIA' ? idg('escaninho', 'resumirComIA') : idg('escaninho', 'inserirGigPorTipoOuTitulo')
         document.getElementById(ancestral)?.remove()
@@ -188,7 +192,7 @@ async function escaninhoCriaBotao(){
                 ],
             },
         ]
-        if (parametro = 'resumirComIA'){
+        if (parametro == 'resumirComIA'){
             let secao = {
                 label: 'gigs',
                 titulo: 'Gigs disponíveis',
@@ -203,7 +207,7 @@ async function escaninhoCriaBotao(){
                 ],
             }
             let secoesAtuais = secoes
-            secoes = [secao, ...secoes]
+            secoes = [secao, ...secoesAtuais]
         }
         let inputsSecoes = []
         for (let secao of secoes){
@@ -534,18 +538,33 @@ async function escaninhoCriaBotao(){
                 gig.observacao = resultado
                 gig.tipoAtividade = document.getElementById(ancestral + '_gigInserir_' + 'menu')?.textContent || 'prazo'
                 let tipoPrazo = gigs.find(g => g == gig.tipoAtividade) || 0
-                let prazo = definirTipoDePrazo(tipoPrazo)
+                let prazo = definirTipoDePrazo(tipoPrazo, dataHoraAudiencia)
+                console.log('%c[Rota PJE]%c prazo: ' + JSON.stringify(prazo), LOG.info, 'color:inherit', prazo)
                 gig[prazo.label] = prazo.valor
+                console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig), LOG.info, 'color:inherit', gig)
+                let tabela = parametros.find(d => d?.secao == opcao) || {}
+                console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela), LOG.info, 'color:inherit')
                 if (opcao == 'eumesmo'){
                     let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
-                    let responsavel = normalizar(document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent)
+                    gig.responsavel = normalizar(document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent)
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'remover'){
                     let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, null, linha, false)
                 }
-                let tabela = parametros.find(d => d?.secao == opcao) || {}
+                if (opcao == 'assistentes'){
+                    
+                    await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
+                }
+                if (opcao == 'secretarios'){
+                    
+                    await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
+                }
+                if (opcao == 'apoio'){
+                    
+                    await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
+                }
                 function definirLinha(l){
                     return (
                         l.textContent.includes(numeroProcesso) &&
@@ -557,8 +576,27 @@ async function escaninhoCriaBotao(){
                     )
                 }
             }
-            function definirTipoDePrazo(entrada){
-
+            function definirTipoDePrazo(entrada, dataHoraAudiencia = null){
+                let prazo = {}
+                entrada = JSON.stringify(entrada)
+                if (entrada.match(/\d{2}\/\d{2}\/\d{4}/)){
+                    prazo.label = 'dataPrazo'
+                    prazo.valor = entrada
+                    return prazo
+                }
+                if (entrada == 'dataAudiencia' && dataHoraAudiencia){
+                    prazo.label = 'dataPrazo'
+                    prazo.valor = new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString()
+                    return prazo
+                }
+                if (entrada.match(/\d+/)){
+                    prazo.label = 'dias'
+                    prazo.valor = entrada
+                    return prazo
+                }
+                prazo.label = 'dataPrazo'
+                prazo.valor = new Date().toLocaleDateString()
+                return prazo
             }
             alert('oi')
         }

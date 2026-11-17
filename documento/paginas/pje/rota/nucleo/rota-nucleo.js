@@ -94,6 +94,7 @@ var JANELA = {
 	conclusao:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/conclusao/,
 	pautaEletronica:		/pautaeletronica\/pautaAudiencia/,
 	pec:                    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
+	pecTarefa:              /\/pjekz\/processo\/\d*\/tarefa\/\d*\/comunicacoesprocessuais\/minutas/,
 	pericias:               /\/pjekz\/processo\/\d*\/pericias/,
 	processoTarefa:         /\/pjekz\/processo\/\d*\/tarefa\/\d*\/*/,
 	pautaAudiencias:        /\/pjekz\/pauta-audiencias/,
@@ -377,7 +378,6 @@ function _ass_nomeTarefa(id){
 
 let USUARIO = {
 	nome: null,
-	idPerfil: null,
 }
 
 let paginasConfereUSUARIO = [

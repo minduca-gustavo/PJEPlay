@@ -366,10 +366,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         linhaManual.dataset.horario = JSON.stringify({tipo: 'manual', processo: dadosAtual?.rota_dadosTriagemInicial?.processo?.numero, sala: dadosAtual?.rota_dadosTriagemInicial?.sala?.nome, link: inputLinkAudiencia.value})
 
         // Sem horário vago, a manual é a única opção — pré-marca ela.
-        if (!horariosVagos?.length && !checkBoxPreMarcadoTipoAudiencia) {
-            let checkBoxManual = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))
-            if (checkBoxManual) checkBoxManual.click()
-        }
+        //if (!horariosVagos?.length && !checkBoxPreMarcadoTipoAudiencia) {
+        //    let checkBoxManual = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + i, 'checkbox'))
+        //    if (checkBoxManual) checkBoxManual.click()
+        //}
     }
 
     await renderizarHorariosVagos(dados)
@@ -397,16 +397,19 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'))?.style.setProperty('opacity', '1')
     })
 
-
+    let armazenamentoUsuario = await obterArmazenamento('rotapje_usuario') || {}
+    let usuario = armazenamentoUsuario?.rotapje_usuario || ''
+    console.log('%c[Rota PJE]%c usuario: ' + JSON.stringify(usuario), LOG.info, 'color:inherit')
+    if (!normalizar(usuario?.nome).includes('gustavo mariano coutinho de souza')) return
     let botaoLote = criaBotaoAzul({
         id: idg(tarefaNome, 'tramitaEmLote', 'botao'),
         ancestral: 'rota_corpo',
         texto: 'Tramitar em lote',
         acao: async () => await tramitaEmLote()
     })
-    botaoLote.style.background = '#780000'
+    botaoLote.style.background = '#c1121f'
     botaoLote.style.width = '100%'
-    _ui_hoverBotao(botaoLote, '#780000', '#c1121f')
+    _ui_hoverBotao(botaoLote, '#c1121f', '#780000')
     criaTooltip({
         id: idg(tarefaNome, 'tramitaEmLote', 'tip'),
         texto: 'Tramita em lote executando as ações que estão selecionadas no botão "Executar todas"',

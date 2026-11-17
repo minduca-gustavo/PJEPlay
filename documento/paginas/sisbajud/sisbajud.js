@@ -154,8 +154,8 @@ async function sisbajudJanelaPJEAbriu(){
     async function criaGIGeCHIP(){
         await aguardarElemento('pje-historico button.botao-esconder-gigs')
         if (!document.querySelector('.conteudo-historico #gigs')) clicar('pje-historico button.botao-esconder-gigs')
-        let usuarioArmazenado = await obterArmazenamento('rota_usuario') || {}
-        let responsavel = usuarioArmazenado?.rota_usuario?.nome || null
+        let usuarioArmazenado = await obterArmazenamento('rotapje_usuario') || {}
+        let responsavel = usuarioArmazenado?.rotapje_usuario?.nome || null
         let salvar = responsavel ? true : false
         let fechar = responsavel ? true : false
         let gig = await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'SISBAJUD - aguardar resposta', dias: 5, responsavel, salvar, observacao: 'Resposta SISBAJUD'})
