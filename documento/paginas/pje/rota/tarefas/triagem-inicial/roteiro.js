@@ -994,7 +994,16 @@ async function triagem_inicial_acoesIntimar(){
     }
     await suspender(1000)
     await aguardarElemento('.botoes-acoes [aria-label="Finalizar minuta"]')
-    let todosPreenchidos = ![...document.querySelectorAll('pje-editor-documento [contenteditable]')].some(d=> d.innerText == '\n')
+    let todosPreenchidos = false
+    for (let i = 0; i < 2; i++){
+        todosPreenchidos = ![...document.querySelectorAll('pje-editor-documento [contenteditable]')].some(d=> d.innerText == '\n')
+        if (todosPreenchidos){
+            break
+        }
+        await suspender (1000)
+        inserirTextoNoEditor('assinatura', '.')
+    }
+    await suspender()
     if(todosPreenchidos){
         await suspender(1000)
         clicar('.botoes-acoes [aria-label="Finalizar minuta"]')

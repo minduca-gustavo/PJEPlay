@@ -419,7 +419,6 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     let loteArmazenamento = await obterArmazenamento(loteChave) || false
     let loteTramitar = loteArmazenamento[loteChave] || false
     if (loteTramitar) {
-        window.name = 'tramitaEmLotey'
         botaoLote.textContent = 'Parar Tramitação em Lote'
         document.getElementById(idg(tarefaNome, 'tramitaEmLote', 'tip') + '-tip').textContent = 'Cancelará a tramitação em lote, mas o processo atual irá até o fim.'
         NAVEGADOR.storage.onChanged.addListener(function ouvirTramitarEmLote(mudancas) {
