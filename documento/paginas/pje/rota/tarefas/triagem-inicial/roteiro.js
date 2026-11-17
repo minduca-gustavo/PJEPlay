@@ -1159,6 +1159,7 @@ async function triagem_inicial_acoesConjuntas(p){
         i++
     }
     await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+    await armazenar({rotapje_tramitarEmLoteClicarProximo: true})
     return
 }
 

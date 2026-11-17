@@ -266,8 +266,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))?.dataset.marcado == 1) checkDespacharCertificar = true
     
 
-    let checkBoxDespacho = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
-    if (checkBoxDespacho && !checkDespacharCertificar) checkBoxDespacho.click()
+    //let checkBoxDespacho = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
+    //if (checkBoxDespacho && !checkDespacharCertificar) checkBoxDespacho.click()
 
     await criaBotaoAzulComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig'),
@@ -280,6 +280,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         },
         salvar: true
     })
+    
+    
     //let checkBoxGig = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))
     //if (checkBoxGig) checkBoxGig.click()
 
@@ -338,11 +340,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 }
                 if (horario.descricaoTipoAudiencia.includes('Inicial')) horarioInicialPreMarcar = i
             }
-            if (!checkBoxPreMarcadoTipoAudiencia){
-                console.log('%c[Rota PJE]%c 336 aqui: ' + JSON.stringify(336), LOG.info, 'color:inherit')
-                let checkBox = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + horarioInicialPreMarcar, 'checkbox'))
-                if (checkBox) checkBox.click()
-            }
+            //if (!checkBoxPreMarcadoTipoAudiencia){
+            //    console.log('%c[Rota PJE]%c 336 aqui: ' + JSON.stringify(336), LOG.info, 'color:inherit')
+            //    let checkBox = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'horario' + horarioInicialPreMarcar, 'checkbox'))
+            //    if (checkBox) checkBox.click()
+            //}
             
         }
 
@@ -394,6 +396,42 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         }
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'))?.style.setProperty('opacity', '1')
     })
+
+
+    let botaoLote = criaBotaoAzul({
+        id: idg(tarefaNome, 'tramitaEmLote', 'botao'),
+        ancestral: 'rota_corpo',
+        texto: 'Tramitar em lote',
+        acao: async () => await tramitaEmLote()
+    })
+    botaoLote.style.background = '#780000'
+    botaoLote.style.width = '100%'
+    _ui_hoverBotao(botaoLote, '#780000', '#c1121f')
+    criaTooltip({
+        id: idg(tarefaNome, 'tramitaEmLote', 'tip'),
+        texto: 'Tramita em lote executando as ações que estão selecionadas no botão "Executar todas"',
+        elemento: botaoLote
+    })
+    let loteChave = idg('triagem_inicial', 'tramitaEmLote')
+    let loteArmazenamento = await obterArmazenamento(loteChave) || false
+    let loteTramitar = loteArmazenamento[loteChave] || false
+    if (loteTramitar) {
+        window.name = 'tramitaEmLotey'
+        botaoLote.textContent = 'Parar Tramitação em Lote'
+        document.getElementById(idg(tarefaNome, 'tramitaEmLote', 'tip') + '-tip').textContent = 'Cancelará a tramitação em lote, mas o processo atual irá até o fim.'
+        NAVEGADOR.storage.onChanged.addListener(function ouvirTramitarEmLote(mudancas) {
+            if (mudancas['rotapje_tramitarEmLoteClicarProximo']?.newValue === true) {
+                console.log('%c[Rota PJE]%c 424' + JSON.stringify(424), LOG.aviso, 'color:inherit')
+                NAVEGADOR.storage.onChanged.removeListener(ouvirTramitarEmLote)
+                console.log('%c[Rota PJE]%c 424' + JSON.stringify(424), LOG.aviso, 'color:inherit')
+                armazenar({ rotapje_tramitarEmLoteClicarProximo: false })
+                console.log('%c[Rota PJE]%c 424' + JSON.stringify(424), LOG.aviso, 'color:inherit')
+                tramitaEmLote(true)
+            }
+        })
+        document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'executar')).click()
+    }
+
 
     console.log('%c[Rota PJE]%c blocos criados', LOG.teste, 'color:inherit')
     
@@ -447,8 +485,39 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     
 }
 
+async function tramitaEmLote(clicarProximo = false) {
+    console.log('%c[Rota PJE]%c 489' + JSON.stringify(489), LOG.aviso, 'color:inherit')
+    if (clicarProximo){
+        let texto = document.querySelector('#nav-posicao.assistente-posicao').textContent
+        let numeros = texto.split('/').map(d => Number(d.trim()))
+        if (numeros[0] == numeros[1]) return
+        document.getElementById('rota-btn-nav-proximo').click()
+        return
+    }
+    let loteChave = idg('triagem_inicial', 'tramitaEmLote')
+    let loteArmazenamento = await obterArmazenamento(loteChave) || false
+    let loteTramitar = loteArmazenamento[loteChave] || false
+    await armazenar({[loteChave]: !loteTramitar})
+    if(!loteTramitar){
+        document.getElementById(idg('triagem_inicial', 'tramitaEmLote', 'botao')).textContent = 'Parar Tramitação em Lote'
+        document.getElementById(idg('triagem_inicial', 'tramitaEmLote', 'tip') + '-tip').textContent = 'Cancelará a tramitação em lote, mas o processo atual irá até o fim.'
+        document.getElementById(idg('triagem_inicial', 'designa_audiencia', 'acoes_conjuntas', 'executar')).click()
+        NAVEGADOR.storage.onChanged.addListener(function ouvirTramitarEmLote(mudancas) {
+            if (mudancas['rotapje_tramitarEmLoteClicarProximo']?.newValue === true) {
+                NAVEGADOR.storage.onChanged.removeListener(ouvirTramitarEmLote)
+                armazenar({ rotapje_tramitarEmLoteClicarProximo: false })
+                tramitaEmLote(true)
+            }
+        })
+    } else {
+        document.getElementById(idg('triagem_inicial', 'tramitaEmLote', 'botao')).textContent = 'Tramitar em lote'
+        document.getElementById(idg('triagem_inicial', 'tramitaEmLote', 'tip') + '-tip').textContent = 'Tramita em lote executando as ações que estão selecionadas no botão "Executar todas"'
+    }
+}
 
-
+rotaRegistrarAcoes({
+    'tramitarEmLote_clicarProximo':        async (p) => await tramitaEmLote(p),
+})
 
 // Auto-executa ao carregar o script
 triagem_assistente_iniciar()

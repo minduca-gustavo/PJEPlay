@@ -722,6 +722,7 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador){
 		rotaTotalProcessos:   _rota_fila.length,
 		rota_dadosProntos:    false,
 		rotaSinalAssistente:  null,      // ← adicionar
+		rotapje_tramitarEmLoteClicarProximo: false,
 	})
 
 	// Reabre assistente se for tarefa do sistema
