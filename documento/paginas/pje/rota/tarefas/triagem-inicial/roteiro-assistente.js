@@ -445,6 +445,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: 'rota_corpo',
         texto: 'Insira abaixo os textos que você deseja que sejam incluídos nos textos de notificação ou despacho. Se os checkboxes estiverem clicados, será utilizado um modelo SIMPLES, constando apenas a data da audiência e link, seguido do texto.'
     })
+    let inputsUsuario = []
     for(let i = 0; i < 2; i++){
         let idPadrao = idg(tarefaNome, 'textoUsuario', JSON.stringify(i))
         let divUsuario = criaDiv({
@@ -473,39 +474,45 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             ancestral: idPadrao + '_div',
         })
         inputUsuario.style.width = '100%'
+        inputsUsuario.push(idPadrao + '_input')
         if (textoArmazenado) inputUsuario.textarea.value = textoArmazenado
-        inputUsuario.addEventListener('change', async () => await atualizarTextoModelo(idPadrao + '_input', idPadrao + '_textoModelo', idPadrao + 'textoModelo_subtitulo'))
-        let textoModeloSubtitulo = criaSubTitulo({
-            id: idPadrao + 'textoModelo_subtitulo',
-            ancestral: 'rota_corpo',
-            texto: ''
-        })
-        let textoModelo = criaTexto({
-            id: idPadrao + '_textoModelo',
-            ancestral: 'rota_corpo',
-            texto: ''
-        })
+        inputUsuario.addEventListener('change', async () => await atualizarTextoModelo(inputsUsuario, idg(tarefaNome, 'textoUsuario', 'textoModelo'), idg(tarefaNome, 'textoUsuario', 'textoModelo_subtitulo')))
+        atualizarTextoModelo(inputsUsuario, idg(tarefaNome, 'textoUsuario', 'textoModelo'), idg(tarefaNome, 'textoUsuario', 'textoModelo_subtitulo'))
     }
+    let textoModeloSubtitulo = criaSubTitulo({
+        id: idg(tarefaNome, 'textoUsuario', 'textoModelo_subtitulo'),
+        ancestral: 'rota_corpo',
+        texto: ''
+    })
+    let textoModelo = criaTexto({
+        id: idg(tarefaNome, 'textoUsuario', 'textoModelo'),
+        ancestral: 'rota_corpo',
+        texto: ''
+    })
     // not geral 1278250
     // des geral 1278254
-    async function atualizarTextoModelo(input, texto, titulo){
+    async function atualizarTextoModelo(inputs, texto, titulo){
         console.log('%c[Rota PJE]%c 456, chamou: ' + JSON.stringify(456), LOG.info, 'color:inherit')
-        let inputTexto = document.getElementById(input)?.value
-        if (!inputTexto){
-            document.getElementById(texto)?.remove()
-            document.getElementById(titulo)?.remove()
+        let textoFinal = ''
+        for (let input of inputs){
+            let inputTexto = document.getElementById(input)?.value
+            if (inputTexto) textoFinal += '\n' + inputTexto
+            await armazenar({[input]: inputTexto})
+        }
+        if (!textoFinal){
+            document.getElementById(texto).textContent = ''
+            document.getElementById(titulo).textContent = ''
             return
         }
         let textoDiv = document.getElementById(texto)
         let subtitulo = document.getElementById(titulo)
-        await armazenar({[input]: inputTexto})
         subtitulo.textContent = 'Os textos ficarão assim:'
         textoDiv.textContent = `Despacho:
 
 Vistos, etc.
 Designo audiência #{processo.audiencia.tipo}, em #{processo.audiencia.dataHora}. O link da audiência, para partes, advogados e testemunhas é:
 #{processo.audiencia.link}
-` + inputTexto + `
+` + textoFinal + `
 
 ==============
 
@@ -516,7 +523,7 @@ Ficam as partes intimadas da audiência designada, conforme dados abaixo:
 2- Data : #{processoTrfHome.dataAudiencia}
 3- Link da audiência: O link da audiência, para partes, advogados e testemunhas, é o que segue:
 #{processo.audiencia.link}
-` + inputTexto
+` + textoFinal
         return
     }
 
