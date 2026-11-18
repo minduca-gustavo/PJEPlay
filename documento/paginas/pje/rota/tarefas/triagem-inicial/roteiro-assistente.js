@@ -401,6 +401,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'))?.style.setProperty('opacity', '1')
     })
 
+
+
     let armazenamentoUsuario = await obterArmazenamento('rotapje_usuario') || {}
     let usuario = armazenamentoUsuario?.rotapje_usuario || ''
     console.log('%c[Rota PJE]%c usuario: ' + JSON.stringify(usuario), LOG.info, 'color:inherit')
@@ -438,6 +440,36 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'executar')).click()
     }
 
+    criaTexto({
+        id: idg(tarefaNome, 'textoUsuario', 'titulo'),
+        ancestral: 'rota_corpo',
+        texto: 'Insira abaixo o texto que você deseja que seja incluído nos textos de notificação ou despacho. Se houver texto abaixo, será utilizado um modelo SIMPLES, constando apenas a data da audiência e link, seguido do texto.'
+    })
+    let input = criaInputAnotacao({
+        id: idg(tarefaNome, 'textoUsuario', 'input'),
+        ancestral: 'rota_corpo',
+    })
+    input.addEventListener('change', () => atualizarTextoModelo(idg(tarefaNome, 'textoUsuario', 'input'), idg(tarefaNome, 'textoModelo'), idg(tarefaNome, 'textoModelo', 'subtitulo')))
+    let textoModeloSubtitulo = criaSubTitulo({
+        id: idg(tarefaNome, 'textoModelo', 'subtitulo'),
+        ancestral: 'rota_corpo',
+        texto: ''
+    })
+    let textoModelo = criaTexto({
+        id: idg(tarefaNome, 'textoModelo'),
+        ancestral: 'rota_corpo',
+        texto: ''
+    })
+
+    function atualizarTextoModelo(input, texto, titulo){
+        console.log('%c[Rota PJE]%c 456, chamou: ' + JSON.stringify(456), LOG.info, 'color:inherit')
+        let inputTexto = document.getElementById(input)?.value
+        let textoDiv = document.getElementById(texto)
+        let subtitulo = document.getElementById(titulo)
+        subtitulo.textContent = 'O texto ficará assim:'
+        textoDiv.textContent = inputTexto
+        return
+    }
 
     console.log('%c[Rota PJE]%c blocos criados', LOG.teste, 'color:inherit')
     
