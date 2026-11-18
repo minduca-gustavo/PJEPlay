@@ -189,17 +189,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
             inputLinkAudiencia.placeholder = ''
         }
     }
-    criaBotaoLaranja({
-        id: idg(tarefaNome, bloco, 'certificar_novo_link_e_intimar'),
-        texto: 'Certificar novo link e intimar.',
-        ancestral: idg(tarefaNome, bloco),
-        acao: async () => {
-            let inputLink = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
-            let link = inputLink?.value
-            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-            comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_novo_link_e_intimar', link: link}])
-        },
-    })
+    
     criaSubTitulo({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'subtitulo'),
         texto: 'Ações conjuntas',
@@ -264,7 +254,21 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         salvar: true
     })
     if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))?.dataset.marcado == 1) checkDespacharCertificar = true
-    
+    await criaBotaoLaranjaComCheckBox({
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'certificar_link_e_intimar'),
+        idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'certificar_link_e_intimar', 'checkbox'),
+        texto: 'Certificar novo link e intimar.',
+        ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        acao: async () => {
+            let inputLink = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
+            let link = inputLink?.value
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_novo_link_e_intimar', link: link}])
+        },
+        grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
+        salvar: true
+    })
+    if (document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certificar_link_e_intimar', 'checkbox'))?.dataset.marcado == 1) checkDespacharCertificar = true
 
     //let checkBoxDespacho = document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))
     //if (checkBoxDespacho && !checkDespacharCertificar) checkBoxDespacho.click()
@@ -466,6 +470,10 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
             comandos.push('triagem_inicial_certidao')
             dados.push({tipo: 'triagem_inicial_certificar_designacao'})
+        }
+        if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certificar_link_e_intimar', 'checkbox'))) {
+            comandos.push('triagem_inicial_certidao')
+            dados.push({tipo: 'triagem_inicial_certificar_novo_link_e_intimar', link: link})
         }
 
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))) {

@@ -786,9 +786,9 @@ async function triagem_inicial_acoesCertificar(){
             intimar: {tipo: 'triagem_inicial_intimar_designacao'}
         },
         'triagem_inicial_certificar_novo_link_e_intimar': {
-            texto: 'Certifico o novo link da audiência, conforme segue:\n' + link, 
+            texto: 'Certifico o link da audiência, conforme segue:\n' + link, 
             tipo: 'Certidão', 
-            descricao: 'Certifica NOVO LINK',
+            descricao: 'Certifica LINK',
             intimar: {tipo: 'triagem_inicial_intimar_link', link: link}
         }
     }
@@ -805,9 +805,9 @@ async function triagem_inicial_acoesCertificar(){
         await selecionarOpcaoDeModelo(dados.modelo)
         await esperarEClicar('elaborarDespachoInserirModelo')
     } else if (dados.texto){
-        let campoTexto = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
+        let campoTexto = await aguardarElemento('.area-conteudo[contenteditable]')
         await suspender(1000)
-        await preencherCKEditorExecCommand(campoTexto, dados.texto)
+        await inserirTextoNoEditor('.area-conteudo[contenteditable]', dados.texto)
     } else {
         rota_avisoObrigatorio('Prossiga manualmente.', 5)
         return
@@ -905,7 +905,7 @@ async function triagem_inicial_acoesIntimar(){
         'triagem_inicial_intimar_link':{
             tipoExpediente: 'Intimação',
             descricao: 'Intimação - informa novo link',
-            texto: 'Ficam as partes intimadas do novo link da audiência designada:\n' + linkIntimar + '\nSe o caso, será encaminhada por E-Carta.\nNAO APAGAR NENHUM CARACTERE DESTA LINHA. ESTE DOCUMENTO SERA ENVIADO VIA ECARTA (TIPO CARTA_SIMPLES).',
+            texto: '<p>Ficam as partes intimadas do link da audiência designada:</p><p>' + linkIntimar + '</p><p>Se o caso, será encaminhada por E-Carta.</p><p>NAO APAGAR NENHUM CARACTERE DESTA LINHA. ESTE DOCUMENTO SERA ENVIADO VIA ECARTA (TIPO CARTA_SIMPLES).</p>',
             textoConfirmacaoAto: 'Ato elaborado com sucesso. Tipo de documento selecionado: IntimaçãoX',
             textoConfirmacaoPolo: 'IntimaçãoTipo de Expediente',
             seletorBotaoPolo: 'prepararExpedientesBotaoPoloAtivoEPassivo',
@@ -982,7 +982,7 @@ async function triagem_inicial_acoesIntimar(){
     let modelo = ''
     if (linkIntimar){
         await suspender(1000)
-        await preencherCKEditorExecCommand(editorConteudo, dados.texto)
+        await inserirTextoNoEditor('.area-conteudo[contenteditable]', dados.texto)
     } else {
         modelo = modeloIntimacao 
                   || dados.tipos.find(t => tipoAudienciaIntimar.toLowerCase().includes(t.tipo))?.modelo 
@@ -1060,6 +1060,9 @@ async function triagem_inicial_acoesIntimar(){
     window.addEventListener('beforeunload', () => {
         if (dados.proximoPasso) {
             comandar(dados.proximoPasso.comando, dados.proximoPasso.parametros)
+        } 
+        else {
+            armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_certidao' })
         }
     })
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto:'Expediente(s) assinado(s) com sucesso.X'})
