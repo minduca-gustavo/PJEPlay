@@ -443,31 +443,80 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaTexto({
         id: idg(tarefaNome, 'textoUsuario', 'titulo'),
         ancestral: 'rota_corpo',
-        texto: 'Insira abaixo o texto que você deseja que seja incluído nos textos de notificação ou despacho. Se houver texto abaixo, será utilizado um modelo SIMPLES, constando apenas a data da audiência e link, seguido do texto.'
+        texto: 'Insira abaixo os textos que você deseja que sejam incluídos nos textos de notificação ou despacho. Se os checkboxes estiverem clicados, será utilizado um modelo SIMPLES, constando apenas a data da audiência e link, seguido do texto.'
     })
-    let input = criaInputAnotacao({
-        id: idg(tarefaNome, 'textoUsuario', 'input'),
-        ancestral: 'rota_corpo',
-    })
-    input.addEventListener('change', () => atualizarTextoModelo(idg(tarefaNome, 'textoUsuario', 'input'), idg(tarefaNome, 'textoModelo'), idg(tarefaNome, 'textoModelo', 'subtitulo')))
-    let textoModeloSubtitulo = criaSubTitulo({
-        id: idg(tarefaNome, 'textoModelo', 'subtitulo'),
-        ancestral: 'rota_corpo',
-        texto: ''
-    })
-    let textoModelo = criaTexto({
-        id: idg(tarefaNome, 'textoModelo'),
-        ancestral: 'rota_corpo',
-        texto: ''
-    })
-
-    function atualizarTextoModelo(input, texto, titulo){
+    for(let i = 0; i < 2; i++){
+        let idPadrao = idg(tarefaNome, 'textoUsuario', JSON.stringify(i))
+        let divUsuario = criaDiv({
+            id: idPadrao + '_div',
+            ancestral: 'rota_corpo',
+            rowColumn: 'row'
+        })
+        divUsuario.style.marginLeft  = '6px'
+        divUsuario.style.marginRight = '6px'
+        let check = await criaCheckBox({
+            id: idPadrao + '_check',
+            ancestral: idPadrao + '_div',
+            salvar: true
+        })
+        criaTooltip({
+            id: idPadrao + '_check_tip',
+            texto: 'Clique / desclique para utilizar ou não o texto',
+            elemento: check
+        })
+        let armazenamento = await obterArmazenamento(idPadrao + '_input') || {}
+        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.info, 'color:inherit', armazenamento)
+        let textoArmazenado = armazenamento[idPadrao + '_input'] || ''
+        console.log('%c[Rota PJE]%c textoArmazenado: ' + JSON.stringify(textoArmazenado), LOG.info, 'color:inherit', textoArmazenado)
+        let inputUsuario = criaInputAnotacao({
+            id: idPadrao + '_input',
+            ancestral: idPadrao + '_div',
+        })
+        inputUsuario.style.width = '100%'
+        if (textoArmazenado) inputUsuario.textarea.value = textoArmazenado
+        inputUsuario.addEventListener('change', async () => await atualizarTextoModelo(idPadrao + '_input', idPadrao + '_textoModelo', idPadrao + 'textoModelo_subtitulo'))
+        let textoModeloSubtitulo = criaSubTitulo({
+            id: idPadrao + 'textoModelo_subtitulo',
+            ancestral: 'rota_corpo',
+            texto: ''
+        })
+        let textoModelo = criaTexto({
+            id: idPadrao + '_textoModelo',
+            ancestral: 'rota_corpo',
+            texto: ''
+        })
+    }
+    // not geral 1278250
+    // des geral 1278254
+    async function atualizarTextoModelo(input, texto, titulo){
         console.log('%c[Rota PJE]%c 456, chamou: ' + JSON.stringify(456), LOG.info, 'color:inherit')
         let inputTexto = document.getElementById(input)?.value
+        if (!inputTexto){
+            document.getElementById(texto)?.remove()
+            document.getElementById(titulo)?.remove()
+            return
+        }
         let textoDiv = document.getElementById(texto)
         let subtitulo = document.getElementById(titulo)
-        subtitulo.textContent = 'O texto ficará assim:'
-        textoDiv.textContent = inputTexto
+        await armazenar({[input]: inputTexto})
+        subtitulo.textContent = 'Os textos ficarão assim:'
+        textoDiv.textContent = `Despacho:
+
+Vistos, etc.
+Designo audiência #{processo.audiencia.tipo}, em #{processo.audiencia.dataHora}. O link da audiência, para partes, advogados e testemunhas é:
+#{processo.audiencia.link}
+` + inputTexto + `
+
+==============
+
+Notificação:
+
+Ficam as partes intimadas da audiência designada, conforme dados abaixo:
+1- Classe do Processo: #{processo.classeJudicial}.  Tipo de Audiência: #{processo.audiencia.tipo}.
+2- Data : #{processoTrfHome.dataAudiencia}
+3- Link da audiência: O link da audiência, para partes, advogados e testemunhas, é o que segue:
+#{processo.audiencia.link}
+` + inputTexto
         return
     }
 
