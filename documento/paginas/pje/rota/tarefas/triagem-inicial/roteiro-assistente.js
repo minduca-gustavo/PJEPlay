@@ -440,92 +440,62 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'executar')).click()
     }
 
+    let idUsuario = idg(tarefaNome, 'usuario')
+
     criaTexto({
-        id: idg(tarefaNome, 'textoUsuario', 'titulo'),
+        id: idUsuario + '_instrucao',
         ancestral: 'rota_corpo',
-        texto: 'Insira abaixo os textos que você deseja que sejam incluídos nos textos de notificação ou despacho. Se os checkboxes estiverem clicados, será utilizado um modelo SIMPLES, constando apenas a data da audiência e link, seguido do texto.'
+        texto: 'Insira abaixo os modelos de despacho para posterior uso.'
     })
     let inputsUsuario = []
-    for(let i = 0; i < 2; i++){
-        let idPadrao = idg(tarefaNome, 'textoUsuario', JSON.stringify(i))
-        let divUsuario = criaDiv({
-            id: idPadrao + '_div',
-            ancestral: 'rota_corpo',
-            rowColumn: 'row'
-        })
-        divUsuario.style.marginLeft  = '6px'
-        divUsuario.style.marginRight = '6px'
-        let check = await criaCheckBox({
-            id: idPadrao + '_check',
-            ancestral: idPadrao + '_div',
-            salvar: true
-        })
-        criaTooltip({
-            id: idPadrao + '_check_tip',
-            texto: 'Clique / desclique para utilizar ou não o texto',
-            elemento: check
-        })
-        let armazenamento = await obterArmazenamento(idPadrao + '_input') || {}
-        console.log('%c[Rota PJE]%c armazenamento: ' + JSON.stringify(armazenamento), LOG.info, 'color:inherit', armazenamento)
-        let textoArmazenado = armazenamento[idPadrao + '_input'] || ''
-        console.log('%c[Rota PJE]%c textoArmazenado: ' + JSON.stringify(textoArmazenado), LOG.info, 'color:inherit', textoArmazenado)
-        let inputUsuario = criaInputAnotacao({
-            id: idPadrao + '_input',
-            ancestral: idPadrao + '_div',
-        })
-        inputUsuario.style.width = '100%'
-        inputsUsuario.push(idPadrao + '_input')
-        if (textoArmazenado) inputUsuario.textarea.value = textoArmazenado
-        inputUsuario.addEventListener('change', async () => await atualizarTextoModelo(inputsUsuario, idg(tarefaNome, 'textoUsuario', 'textoModelo'), idg(tarefaNome, 'textoUsuario', 'textoModelo_subtitulo')))
-        atualizarTextoModelo(inputsUsuario, idg(tarefaNome, 'textoUsuario', 'textoModelo'), idg(tarefaNome, 'textoUsuario', 'textoModelo_subtitulo'))
-    }
-    let textoModeloSubtitulo = criaSubTitulo({
-        id: idg(tarefaNome, 'textoUsuario', 'textoModelo_subtitulo'),
-        ancestral: 'rota_corpo',
-        texto: ''
+    
+    criaDiv({
+        id: idUsuario + '_div',
+        ancestral: 'rota_corpo'
     })
-    let textoModelo = criaTexto({
-        id: idg(tarefaNome, 'textoUsuario', 'textoModelo'),
-        ancestral: 'rota_corpo',
-        texto: ''
-    })
-    // not geral 1278250
-    // des geral 1278254
-    async function atualizarTextoModelo(inputs, texto, titulo){
-        console.log('%c[Rota PJE]%c 456, chamou: ' + JSON.stringify(456), LOG.info, 'color:inherit')
-        let textoFinal = ''
-        for (let input of inputs){
-            let inputTexto = document.getElementById(input)?.value
-            if (inputTexto) textoFinal += '\n' + inputTexto
-            await armazenar({[input]: inputTexto})
+
+    await renderizarModelos()
+
+    
+    async function renderizarModelos() {
+        let idInputs = []
+        let modelosArmazenados = await obterArmazenamento(idUsuario) || {}
+        let modelos = modelosArmazenados[idUsuario] || []
+        let modelo = modelos.find(d=> d.juiz == normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)) || {}
+        let modelosSalvos = modelo?.modelosSalvos || []
+        for (let i = 0; i < modelosSalvos.length + 1; i++){
+            criaDiv({
+                id: idUsuario + '_div_' + JSON.stringify(i),
+                ancestral: idUsuario + '_div',
+                rowColumn: 'row'
+            })
+            await criaCheckBox({
+                id: idUsuario + '_checkBox_' + JSON.stringify(i),
+                ancestral: idUsuario + '_div_' + JSON.stringify(i),
+                salvar: true
+            })
+            let idInput = idUsuario + '_input_' + JSON.stringify(i)
+            let inputUsuario = criaInput({
+                id: idInput,
+                ancestral: idUsuario + '_div_' + JSON.stringify(i),
+                placeholder: 'Insira o título do seu modelo aqui e clique em 💾 para salvar.'
+            })
+            idInputs.push(idInput)
+            let botaoSalvar = criaBotaoAzul({
+                id: idUsuario + '_salvar_' + JSON.stringify(i),
+                ancestral: idUsuario + '_div_' + JSON.stringify(i),
+                texto: '💾',
+                acao: async () => {
+                    let conteudo = idInputs.map(d => document.getElementById(d).value) || []
+                    let modelo = modelos.find(d=> d.juiz == normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent))
+                    modelo.modelosSalvos = conteudo
+                }
+            })
         }
-        if (!textoFinal){
-            document.getElementById(texto).textContent = ''
-            document.getElementById(titulo).textContent = ''
-            return
-        }
-        let textoDiv = document.getElementById(texto)
-        let subtitulo = document.getElementById(titulo)
-        subtitulo.textContent = 'Os textos ficarão assim:'
-        textoDiv.textContent = `Despacho:
-
-Vistos, etc.
-Designo audiência #{processo.audiencia.tipo}, em #{processo.audiencia.dataHora}. O link da audiência, para partes, advogados e testemunhas é:
-#{processo.audiencia.link}
-` + textoFinal + `
-
-==============
-
-Notificação:
-
-Ficam as partes intimadas da audiência designada, conforme dados abaixo:
-1- Classe do Processo: #{processo.classeJudicial}.  Tipo de Audiência: #{processo.audiencia.tipo}.
-2- Data : #{processoTrfHome.dataAudiencia}
-3- Link da audiência: O link da audiência, para partes, advogados e testemunhas, é o que segue:
-#{processo.audiencia.link}
-` + textoFinal
-        return
+        
     }
+
+
 
     console.log('%c[Rota PJE]%c blocos criados', LOG.teste, 'color:inherit')
     
