@@ -215,14 +215,21 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     // Container vazio: preenchido/atualizado por renderizarHorariosVagos() com os botões de horário + linha manual.
     criaDiv({ id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'), ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna') })
     let checkDespacharCertificar = false
+    function definirModeloEscolhido (){
+        let divUsuario = document.getElementById('rotapje_triagem_inicial_usuario_div')
+        let marcado = [...divUsuario.querySelectorAll('div')].find(d => d.querySelector('div').dataset.marcado == 1) || null
+        let modelo = marcado ? marcado.querySelector('input').value || null : null
+        return modelo
+    }
     await criaBotaoLaranjaComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
         idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
         texto: 'Despachar designando.',
         ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: async () => {
+            let modelo = definirModeloEscolhido()
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao'}])
+            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao', modelo}])
         },
         grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
         salvar: true
@@ -234,8 +241,9 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         texto: 'Despachar REDESIGNAÇÃO - MODELO SIMPLES DE REDESIGNAÇÃO.',
         ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: async () => {
+            let modelo = definirModeloEscolhido()
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_redesignacao'}])
+            comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_redesignacao', modelo}])
         },
         grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
         salvar: true
@@ -247,8 +255,9 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         texto: 'Certificar a designação, intimar e encaminhar para aguardando audiência.',
         ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'), 
         acao: async () => {
+            let modelo = definirModeloEscolhido()
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-            comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao'}])
+            comandar(['triagem_inicial_certidao'], [{tipo: 'triagem_inicial_certificar_designacao', modelo}])
         },
         grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
         salvar: true
@@ -480,15 +489,23 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 ancestral: idUsuario + '_div_' + JSON.stringify(i),
                 placeholder: 'Insira o título do seu modelo aqui e clique em 💾 para salvar.'
             })
+            inputUsuario.value = modelosSalvos[i] || ''
             idInputs.push(idInput)
             let botaoSalvar = criaBotaoAzul({
                 id: idUsuario + '_salvar_' + JSON.stringify(i),
                 ancestral: idUsuario + '_div_' + JSON.stringify(i),
                 texto: '💾',
                 acao: async () => {
-                    let conteudo = idInputs.map(d => document.getElementById(d).value) || []
-                    let modelo = modelos.find(d=> d.juiz == normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent))
-                    modelo.modelosSalvos = conteudo
+                    let conteudo = idInputs.map(d => document.getElementById(d).value.trim()).filter(v => v != '') || []
+                    let indice = modelos.findIndex(d => d.juiz == juiz)
+                    if (indice == -1) {
+                        let juiz = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
+                        modelos.push({ juiz, modelosSalvos: conteudo })
+                    } else {
+                        modelos[indice] = { ...modelos[indice], modelosSalvos: conteudo } // substitui
+                    }
+                    await armazenar({[idUsuario]: modelos})
+                    renderizarModelos()
                 }
             })
         }
