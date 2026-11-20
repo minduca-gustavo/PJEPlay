@@ -217,7 +217,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     let checkDespacharCertificar = false
     function definirModeloEscolhido (){
         let divUsuario = document.getElementById('rotapje_triagem_inicial_usuario_div')
-        let marcado = [...divUsuario.querySelectorAll('div')].find(d => d.querySelector('div').dataset.marcado == 1) || null
+        let marcado = [...divUsuario.querySelectorAll('div')].find(d => d.querySelector('div')?.dataset.marcado == 1) || null
         let modelo = marcado ? marcado.querySelector('input').value || null : null
         return modelo
     }
