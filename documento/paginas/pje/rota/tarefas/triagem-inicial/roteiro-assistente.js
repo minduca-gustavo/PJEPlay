@@ -1,3 +1,6 @@
+// TESTAR LINK
+
+
 // ============================================================
 // tarefas/triagem-inicial/roteiro-assistente.js
 // Roteiro da janela assistente para a Triagem Inicial.
@@ -180,7 +183,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         acao: () => triagem_inicial_salvar_link_da_audiencia()
     })
     let linkSalvo = await obterArmazenamento(['rota_triagem_inicial_linkDaAudiencia'])
-    let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia || ''
+    let salaAtual = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
+    let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia[salaAtual] || ''
     let inputLinkAudiencia = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
     if (inputLinkAudiencia) {
         inputLinkAudiencia.placeholder = 'digite aqui o link do zoom'
@@ -395,7 +399,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         selectSala.style.pointerEvents = 'none'
         selectSala.style.opacity = '0.6'
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'))?.style.setProperty('opacity', '0.5')
-
+        await renderizarModelos()
         comandar(['triagem_inicial_atualiza_horarios_vagos'], [{ salaId: selectSala.value }])
     })
 
@@ -467,6 +471,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
 
     
     async function renderizarModelos() {
+        document.getElementById(idUsuario + '_div').replaceChildren()
         let idInputs = []
         let modelosArmazenados = await obterArmazenamento(idUsuario) || {}
         let modelos = modelosArmazenados[idUsuario] || []
@@ -561,8 +566,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     async function triagem_inicial_salvar_link_da_audiencia() {
         let inputLinkAudiencia = document.getElementById(idg(tarefaNome, 'designa_audiencia', 'input_link_da_audiencia'))
         let linkSalvar = inputLinkAudiencia.value
+        let sala = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
+        let salvar = {}
+        salvar[sala] = linkSalvar
         if (linkSalvar){
-            await armazenar({ rota_triagem_inicial_linkDaAudiencia: linkSalvar })
+            await armazenar({ rota_triagem_inicial_linkDaAudiencia: salvar })
         } else {
             await removerArmazenamento('rota_triagem_inicial_linkDaAudiencia')
         }
