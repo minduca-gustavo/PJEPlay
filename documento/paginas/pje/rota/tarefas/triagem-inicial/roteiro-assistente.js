@@ -184,7 +184,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     })
     let linkSalvo = await obterArmazenamento(['rota_triagem_inicial_linkDaAudiencia'])
     let salaAtual = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
-    let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia[salaAtual] || ''
+    let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia?.[salaAtual] || ''
     let inputLinkAudiencia = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
     if (inputLinkAudiencia) {
         inputLinkAudiencia.placeholder = 'digite aqui o link do zoom'
