@@ -333,10 +333,11 @@ async function triagem_inicial_aoAbrirDespachar(){
 // DESPACHAR PASSO 3 - executa as ações
 
 async function triagem_inicial_acoesDespachar(){
-    let [tipo, juizEnvio, numeroProcesso] = await Promise.all([
+    let [tipo, juizEnvio, numeroProcesso, modeloEscolhido] = await Promise.all([
         obterArmazenamento('rotapje_triagem_inicial_despachar_tipo').then(dados => dados?.rotapje_triagem_inicial_despachar_tipo || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.sala?.nome || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || '')
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || ''),
+        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.modelo || '')
     ])
     //let modelos = await lerGit('rotapje_modelos_triagem.json') || []
     //let modelo = modelos?.find(d => d?.sala == juizEnvio) || {}
@@ -360,9 +361,9 @@ async function triagem_inicial_acoesDespachar(){
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo[tipoAudiencia]), LOG.info, 'color:inherit')
     if (!modeloDespacho && tipo !== 'triagem_inicial_emendar'){
         if (tipo == 'triagem_inicial_despachar_redesignacao'){
-            modeloDespacho = 'SCBAU_TI_REDESIGNA'
+            modeloDespacho = modeloEscolhido ? modeloEscolhido : 'SCBAU_TI_REDESIGNA'
         } else {
-            modeloDespacho = tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
+            modeloDespacho = modeloEscolhido ? modeloEscolhido : tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
         }
     }
     await movimentar('Despacho', {
@@ -878,6 +879,7 @@ async function triagem_inicial_acoesIntimar(){
     let tiposIntimar = await obterArmazenamento('rotapje_triagem_inicial_intimar_tipo')
     let tipoIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.tipo
     let linkIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.link
+    let modeloEscolhido = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.modelo || null
     let dadosTI            = await obterArmazenamento('rota_dadosTriagemInicial')
     let juizEnvio          = dadosTI?.rota_dadosTriagemInicial?.sala?.nome || ''
     let numeroProcesso     = dadosTI?.rota_dadosTriagemInicial?.processo?.numero || ''
@@ -915,8 +917,8 @@ async function triagem_inicial_acoesIntimar(){
             tipoExpediente: 'Notificação inicial',
             descricao: 'Notificação Inicial - Designação de audiência',
             tipos:[
-                {tipo:'inicial', modelo:'SCBAU_TI_NOT_INI'},
-                {tipo:'una', modelo:'SCBAU_TI_NOT_UNA'}
+                {tipo: 'inicial', modelo: modeloEscolhido ? modeloEscolhido : 'SCBAU_TI_NOT_INI'},
+                {tipo: 'una', modelo: modeloEscolhido ? modeloEscolhido : 'SCBAU_TI_NOT_UNA'}
             ],
             textoConfirmacaoAto: 'Modelo de documento inserido com sucesso no editorX',
             textoConfirmacaoPolo: 'Notificação inicialTipo de Expediente',
@@ -988,7 +990,11 @@ async function triagem_inicial_acoesIntimar(){
                   || dados.tipos.find(t => tipoAudienciaIntimar.toLowerCase().includes(t.tipo))?.modelo 
                   || null
         await digitarNoInput(inputModelo, modelo)
-        await selecionarOpcaoDeModelo(modelo)
+        let modeloEncontrado = await selecionarOpcaoDeModelo(modelo, 15)
+        if (!modeloEncontrado){
+            await rotinaErro(modeloEncontrado)
+            return
+        }
         await suspender(1000)
         await esperarEClicar('elaborarDespachoInserirModelo')
     }
@@ -1008,6 +1014,10 @@ async function triagem_inicial_acoesIntimar(){
         await suspender(1000)
         clicar('.botoes-acoes [aria-label="Finalizar minuta"]')
     } else {
+        await rotinaErro(modelo)
+        return
+    }
+    async function rotinaErro(modelo){
         await navigator.clipboard.writeText(JSON.stringify(modelo))
         rota_avisoObrigatorio('Houve um erro. O nome do modelo está salvo no CTRL + C. Utilize-o para inserir o modelo no editor e prossiga com a intimação das partes. Após finalizar, clique em "Próximo", no widget criado.', 5)
         await criaDivFlutuante({
@@ -1023,7 +1033,6 @@ async function triagem_inicial_acoesIntimar(){
                 window.close()
             }
         })
-        return
     }
     await aguardarElementoNovo('prepararExpedientesMensagemModeloInserido', {texto: dados.textoConfirmacaoAto})
     let i = 0
