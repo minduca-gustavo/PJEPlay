@@ -481,7 +481,9 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
 async function triagem_inicial_acoesDesignarAudiencia(){
     let dados = await obterArmazenamento('rotapje_triagem_inicial_designa_audiencia_tipo')
     let buscaLink = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
-    let link = buscaLink?.rota_triagem_inicial_linkDaAudiencia || ''
+    let linkArmazenado = buscaLink?.rota_triagem_inicial_linkDaAudiencia || {}
+    let nomeDaSala = dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horário?.nomeDaSala || null
+    let link = nomeDaSala ? linkArmazenado[nomeDaSala] || '' : ''
     
     //if (!dados) return
     if (dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.tipo == 'manual'){
