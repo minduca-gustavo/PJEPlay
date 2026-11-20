@@ -399,6 +399,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         selectSala.style.pointerEvents = 'none'
         selectSala.style.opacity = '0.6'
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'))?.style.setProperty('opacity', '0.5')
+        
         await renderizarModelos()
         comandar(['triagem_inicial_atualiza_horarios_vagos'], [{ salaId: selectSala.value }])
     })
