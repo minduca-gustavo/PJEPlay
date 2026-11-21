@@ -276,7 +276,8 @@ async function triagem_inicial_despachar(tipo) {
     let execArm = await obterArmazenamento('rotaExecucaoAtual')
     let execAtual = execArm?.rotaExecucaoAtual || ''
     if (!wname.includes(execAtual)) return
-    let envio = tipo.tipo
+    console.log('%c[Rota PJE]%c tipo' + JSON.stringify(tipo), LOG.aviso, 'color:inherit', tipo)
+    let envio = tipo
     await armazenar({
         'rotapje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rotapje_triagem_inicial_despachar_tipo': envio,
@@ -334,16 +335,17 @@ async function triagem_inicial_aoAbrirDespachar(){
 
 async function triagem_inicial_acoesDespachar(){
     let [tipo, juizEnvio, numeroProcesso, modeloEscolhido] = await Promise.all([
-        obterArmazenamento('rotapje_triagem_inicial_despachar_tipo').then(dados => dados?.rotapje_triagem_inicial_despachar_tipo || ''),
+        obterArmazenamento('rotapje_triagem_inicial_despachar_tipo').then(dados => dados?.rotapje_triagem_inicial_despachar_tipo?.tipo || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.sala?.nome || ''),
         obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.numero || ''),
-        obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.modelo || '')
+        obterArmazenamento('rotapje_triagem_inicial_despachar_tipo').then(dados => dados?.rotapje_triagem_inicial_despachar_tipo?.modelo || '')
     ])
+    console.log('%c[Rota PJE]%c modeloEscolhido' + JSON.stringify(modeloEscolhido), LOG.aviso, 'color:inherit')
     //let modelos = await lerGit('rotapje_modelos_triagem.json') || []
     //let modelo = modelos?.find(d => d?.sala == juizEnvio) || {}
-    if(!juizEnvio) {
-        juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
-    }
+    //if(!juizEnvio) {
+    //    juizEnvio = await modelo_buscarJuizesNoModelo(numeroProcesso) || ''
+    //}
     let tarefa = await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
     let dados = await obterArmazenamento('rota_dadosTriagemInicial')
     let id = dados?.rota_dadosTriagemInicial?.processo?.id
@@ -356,14 +358,16 @@ async function triagem_inicial_acoesDespachar(){
     }
     //let modelosDespacho = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
     let modeloDespacho = ''
+    console.log('%c[Rota PJE]%c modeloEscolhido' + JSON.stringify(modeloEscolhido), LOG.aviso, 'color:inherit', modeloEscolhido)
     console.log('%c[Rota PJE]%c modeloDespacho: ' + JSON.stringify(modeloDespacho), LOG.teste, 'color:inherit')
+    
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo), LOG.info, 'color:inherit')
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo[tipoAudiencia]), LOG.info, 'color:inherit')
     if (!modeloDespacho && tipo !== 'triagem_inicial_emendar'){
         if (tipo == 'triagem_inicial_despachar_redesignacao'){
             modeloDespacho = modeloEscolhido ? modeloEscolhido : 'SCBAU_TI_REDESIGNA'
         } else {
-            modeloDespacho = modeloEscolhido ? modeloEscolhido : tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD'
+            modeloDespacho = modeloEscolhido ? modeloEscolhido : (tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD')
         }
     }
     await movimentar('Despacho', {
@@ -482,9 +486,8 @@ async function triagem_inicial_acoesDesignarAudiencia(){
     let dados = await obterArmazenamento('rotapje_triagem_inicial_designa_audiencia_tipo')
     let buscaLink = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
     let linkArmazenado = buscaLink?.rota_triagem_inicial_linkDaAudiencia || {}
-    let nomeDaSala = dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horário?.nomeDaSala || null
+    let nomeDaSala = normalizar(dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.nomeDaSala) || null
     let link = nomeDaSala ? linkArmazenado[nomeDaSala] || '' : ''
-    
     //if (!dados) return
     if (dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.tipo == 'manual'){
         await triagem_inicial_acoesDesignarAudienciaManual('manual')

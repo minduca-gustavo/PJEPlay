@@ -233,6 +233,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         acao: async () => {
             let modelo = definirModeloEscolhido()
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            console.log('%c[Rota PJE]%c modelo' + JSON.stringify(modelo), LOG.aviso, 'color:inherit')
             comandar(['triagem_inicial_despachar'], [{tipo: 'triagem_inicial_despachar_designacao', modelo}])
         },
         grupo: idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_despacho_ou_certidao'),
