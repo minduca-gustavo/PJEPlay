@@ -100,7 +100,7 @@ const MAPA_ROTAS = {
   'Conclusão ao magistrado': {
     alcanca: [
       { nome: 'Análise', ariaLabel: 'Cancelar Conclusão' },
-      "Despacho", 
+      { nome: 'Despacho', destino: 'Elaborar despacho'}, 
       "Sentença",
       "Sentença Parcial", 
       "Extinção da Execução", 
@@ -207,7 +207,9 @@ function rota_movimentar_resolverAriaLabel(tarefaAtual, nomeTarefaDestino) {
     typeof item === 'string' ? item === nomeTarefaDestino : item.nome === nomeTarefaDestino
   )
   if (!entrada) return nomeTarefaDestino
-  return typeof entrada === 'string' ? entrada : (entrada.ariaLabel ?? entrada.nome)
+  if (typeof entrada === 'string') return entrada
+  if (!!entrada.ariaLabel) return entrada.ariaLabel
+  return entrada.nome
 }
 
 
@@ -508,7 +510,7 @@ async function movimentar(destino, params = {}) {
   await aguardarElementoNovo('tarefaDoProcessoTituloDaTarefa')
   await armazenar({rota_movimentar_destinoPendente: destino})
   await armazenar({rota_movimentar_params: params})
-
+  let destinoDefinido = definirDestino(destino)
   let tarefaAtual = await rota_movimentar_lerTarefaAtual()
   console.log('%c[Rota PJE]%c tarefaAtual' + JSON.stringify(tarefaAtual), LOG.aviso, 'color:inherit')
   if (!tarefaAtual) throw new Error('Não foi possível identificar a tarefa atual.')
@@ -527,7 +529,8 @@ async function movimentar(destino, params = {}) {
 
   // dá um passo por vez e reavalia onde o processo realmente caiu
   let guarda = 0
-  while (tarefaAtual !== destino) {
+  while (tarefaAtual !== destino && tarefaAtual !== destinoDefinido) {
+    console.log('%c[Rota PJE]%c destinoDefinido' + JSON.stringify(destinoDefinido), LOG.aviso, 'color:inherit')
     if (++guarda > 15) throw new Error(`Rota excedeu o limite de passos: "${tarefaAtual}" → "${destino}"`)
 
     const caminho = rota_movimentar_encontrarCaminho(tarefaAtual, destino)
@@ -552,4 +555,13 @@ async function movimentar(destino, params = {}) {
   }
 
   rota_movimentar_limparEstado()
+}
+
+function definirDestino(destino){
+  let retorno = destino
+  for (let [chave, valor] of Object.entries(MAPA_ROTAS)){
+    let encontrado = valor?.alcanca?.find(d=> d?.nome == destino)?.destino || null
+    if (encontrado) retorno = encontrado
+  }
+  return retorno
 }

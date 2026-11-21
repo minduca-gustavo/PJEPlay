@@ -553,18 +553,21 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         }
 
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'))) {
+            let modelo = definirModeloEscolhido()
             comandos.push('triagem_inicial_despachar')
-            dados.push({tipo: 'triagem_inicial_despachar_designacao'})
+            dados.push({tipo: 'triagem_inicial_despachar_designacao', modelo})
         }
 
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'redesigna', 'checkbox'))) {
+            let modelo = definirModeloEscolhido()
             comandos.push('triagem_inicial_despachar')
-            dados.push({tipo: 'triagem_inicial_despachar_redesignacao'})
+            dados.push({tipo: 'triagem_inicial_despachar_redesignacao', modelo})
         }
 
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certidao', 'checkbox'))) {
+            let modelo = definirModeloEscolhido()
             comandos.push('triagem_inicial_certidao')
-            dados.push({tipo: 'triagem_inicial_certificar_designacao'})
+            dados.push({tipo: 'triagem_inicial_certificar_designacao', modelo})
         }
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'certificar_link_e_intimar', 'checkbox'))) {
             comandos.push('triagem_inicial_certidao')
