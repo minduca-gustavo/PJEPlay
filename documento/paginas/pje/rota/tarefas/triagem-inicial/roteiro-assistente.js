@@ -436,6 +436,23 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         texto: 'Tramita em lote executando as ações que estão selecionadas no botão "Executar todas"',
         elemento: botaoLote
     })
+    
+    let idUsuario = idg(tarefaNome, 'usuario')
+    
+    criaTexto({
+        id: idUsuario + '_instrucao',
+        ancestral: 'rota_corpo',
+        texto: 'Insira abaixo os modelos de despacho para posterior uso.'
+    })
+    let inputsUsuario = []
+    
+    criaDiv({
+        id: idUsuario + '_div',
+        ancestral: 'rota_corpo'
+    })
+    
+    await renderizarModelos()
+    
     let loteChave = idg('triagem_inicial', 'tramitaEmLote')
     let loteArmazenamento = await obterArmazenamento(loteChave) || false
     let loteTramitar = loteArmazenamento[loteChave] || false
@@ -454,23 +471,6 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         })
         document.getElementById(idg(tarefaNome, bloco, 'acoes_conjuntas', 'executar')).click()
     }
-
-    let idUsuario = idg(tarefaNome, 'usuario')
-
-    criaTexto({
-        id: idUsuario + '_instrucao',
-        ancestral: 'rota_corpo',
-        texto: 'Insira abaixo os modelos de despacho para posterior uso.'
-    })
-    let inputsUsuario = []
-    
-    criaDiv({
-        id: idUsuario + '_div',
-        ancestral: 'rota_corpo'
-    })
-
-    await renderizarModelos()
-
     
     async function renderizarModelos() {
         let linkSalvo = await obterArmazenamento(['rota_triagem_inicial_linkDaAudiencia'])
