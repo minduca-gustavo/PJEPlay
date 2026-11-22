@@ -325,15 +325,13 @@ async function rota_movimentar_executarConclusaoMagistrado(tarefaAtual, parametr
 async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtual, parametros = null) {
   // fase 1 — entra na tarefa Conclusão ao magistrado
   if (!parametros) return
-  let elemento = await aguardarElementoNovo(['elaborarDespachoCorpoDoDocumentoFundamentacao', 'elaborarDespachoBuscarModelos'], {modo: 'e', timeout: 60000})
-  if (!elemento) return
-  let campoTexto = [...selecionar('.editor-container', '', true)]
-  if (!campoTexto) return null
-  let campoFundamentacao = campoTexto
-    .find(e => e.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamentação'))
-    ?.querySelector('[contenteditable]')
-  await focar(campoFundamentacao)
-  await suspender(2000)
+  await aguardarElemento('.area-conteudo[contenteditable]')
+  await suspender(1000)
+  let campoFundamentacao = [...document.querySelectorAll('.area-conteudo')].
+    find(d => d.querySelector('.placeholder-conteudo')?.textContent.includes('Fundamenta')).
+    querySelector('[contenteditable]')
+  focar(campoFundamentacao)
+  await suspender(1000)
   if (parametros.modelo){
     await digitarNoInput(await sel('elaborarDespachoBuscarModelos'), parametros.modelo)
     let opcaoModelo = await selecionarOpcaoDeModelo(parametros.modelo)
