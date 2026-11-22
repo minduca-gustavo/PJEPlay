@@ -277,7 +277,7 @@ async function triagem_inicial_despachar(tipo) {
     let execAtual = execArm?.rotaExecucaoAtual || ''
     if (!wname.includes(execAtual)) return
     console.log('%c[Rota PJE]%c tipo' + JSON.stringify(tipo), LOG.aviso, 'color:inherit', tipo)
-    let envio = tipo
+    let envio = tipo?.tipo
     await armazenar({
         'rotapje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rotapje_triagem_inicial_despachar_tipo': envio,
