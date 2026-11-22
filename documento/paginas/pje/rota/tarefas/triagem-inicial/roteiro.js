@@ -358,6 +358,7 @@ async function triagem_inicial_acoesDespachar(){
     }
     //let modelosDespacho = await buscaModeloTriagem(juizEnvio, tipoAudiencia) || {}
     let modeloDespacho = ''
+    let descricao = ''
     console.log('%c[Rota PJE]%c modeloEscolhido' + JSON.stringify(modeloEscolhido), LOG.aviso, 'color:inherit', modeloEscolhido)
     console.log('%c[Rota PJE]%c modeloDespacho: ' + JSON.stringify(modeloDespacho), LOG.teste, 'color:inherit')
     
@@ -366,13 +367,15 @@ async function triagem_inicial_acoesDespachar(){
     if (!modeloDespacho && tipo !== 'triagem_inicial_emendar'){
         if (tipo == 'triagem_inicial_despachar_redesignacao'){
             modeloDespacho = modeloEscolhido ? modeloEscolhido : 'SCBAU_TI_REDESIGNA'
+            descricao = 'Despacho - Redesignação de audiência'
         } else {
             modeloDespacho = modeloEscolhido ? modeloEscolhido : (tiposAudiencia[tipoAudiencia] || 'SCBAU_TI_INI_ORD')
+            descricao = 'Despacho - Designação de audiência'
         }
     }
     await movimentar('Despacho', {
         'Conclusão ao magistrado':{'juiz': juizEnvio},
-        'Elaborar despacho':{'modelo': modeloDespacho}
+        'Elaborar despacho':{'modelo': modeloDespacho, descricao}
     })
     if (modeloDespacho !== ''){
         await aguardarElemento('.botoes-acoes [aria-label^="Enviar"]')
@@ -484,8 +487,8 @@ async function triagem_inicial_aoAbrirDesignarAudiencia(){
 
 async function triagem_inicial_acoesDesignarAudiencia(){
     let dados = await obterArmazenamento('rotapje_triagem_inicial_designa_audiencia_tipo')
-    let buscaLink = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
-    let linkArmazenado = buscaLink?.rota_triagem_inicial_linkDaAudiencia || {}
+    let buscaLink = await obterArmazenamento('rotapje_triagem_inicial_linkDaAudiencia')
+    let linkArmazenado = buscaLink?.rotapje_triagem_inicial_linkDaAudiencia || {}
     let nomeDaSala = normalizar(dados?.rotapje_triagem_inicial_designa_audiencia_tipo?.horario?.nomeDaSala) || null
     let link = nomeDaSala ? linkArmazenado[nomeDaSala] || '' : ''
     //if (!dados) return

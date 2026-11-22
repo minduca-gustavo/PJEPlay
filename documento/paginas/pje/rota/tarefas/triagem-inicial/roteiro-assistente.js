@@ -182,9 +182,9 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: idg(tarefaNome, bloco),
         acao: () => triagem_inicial_salvar_link_da_audiencia()
     })
-    //let linkSalvo = await obterArmazenamento(['rota_triagem_inicial_linkDaAudiencia'])
+    //let linkSalvo = await obterArmazenamento(['rotapje_triagem_inicial_linkDaAudiencia'])
     //let salaAtual = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
-    //let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia?.[salaAtual] || ''
+    //let link = linkSalvo?.rotapje_triagem_inicial_linkDaAudiencia?.[salaAtual] || ''
     //let inputLinkAudiencia = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
     //if (inputLinkAudiencia) {
     //    inputLinkAudiencia.placeholder = 'digite aqui o link do zoom'
@@ -486,9 +486,9 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     }
     
     async function renderizarModelos() {
-        let linkSalvo = await obterArmazenamento(['rota_triagem_inicial_linkDaAudiencia'])
+        let linkSalvo = await obterArmazenamento(['rotapje_triagem_inicial_linkDaAudiencia'])
         let salaAtual = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
-        let link = linkSalvo?.rota_triagem_inicial_linkDaAudiencia?.[salaAtual] || ''
+        let link = linkSalvo?.rotapje_triagem_inicial_linkDaAudiencia?.[salaAtual] || ''
         let inputLinkAudiencia = document.getElementById(idg(tarefaNome, bloco, 'input_link_da_audiencia'))
         if (inputLinkAudiencia) {
             inputLinkAudiencia.placeholder = 'digite aqui o link do zoom'
@@ -600,16 +600,14 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         if (comandos.length) comandar(['triagem_inicial_acoes_conjuntas'], [{comandos: comandos, parametros: dados}])
     }
     async function triagem_inicial_salvar_link_da_audiencia() {
-        let armazenamento = await obterArmazenamento('rota_triagem_inicial_linkDaAudiencia')
-        let links = armazenamento?.rota_triagem_inicial_linkDaAudiencia || {} 
+        let armazenamento = await obterArmazenamento('rotapje_triagem_inicial_linkDaAudiencia') || {}
+        let links = armazenamento?.rotapje_triagem_inicial_linkDaAudiencia || {} 
         let inputLinkAudiencia = document.getElementById(idg(tarefaNome, 'designa_audiencia', 'input_link_da_audiencia'))
         let linkSalvar = inputLinkAudiencia.value
         let sala = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
         links[sala] = linkSalvar
         if (linkSalvar){
-            await armazenar({ rota_triagem_inicial_linkDaAudiencia: links })
-        } else {
-            await removerArmazenamento('rota_triagem_inicial_linkDaAudiencia')
+            await armazenar({ rotapje_triagem_inicial_linkDaAudiencia: links })
         }
     }
     
