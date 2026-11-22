@@ -1011,7 +1011,7 @@ async function triagem_inicial_acoesIntimar(){
     await preencherCKEditorExecCommand(editorAssinatura, '.')
     await suspender(2000)
     //let conteudoPrincipal = await aguardarElementoNovo('elaborarAtoConteudoPrincipalDaMinuta')
-    await focar(editorConteudo)
+    focar(editorConteudo)
     clicar(editorConteudo)
     await suspender(1000)
     if (!dados.tipos && !linkIntimar){

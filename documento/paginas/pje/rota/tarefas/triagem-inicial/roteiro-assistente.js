@@ -505,6 +505,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         let juizInput = normalizar(document.getElementById('rotapje_triagem_inicial_designa_audiencia_menu_suspenso_juizes-texto').textContent)
         let modelo = modelos.find(d=> d.juiz == juizInput) || {}
         let modelosSalvos = modelo?.modelosSalvos || []
+        let idChecks = []
         for (let i = 0; i < modelosSalvos.length + 1; i++){
             criaDiv({
                 id: idUsuario + '_div_' + JSON.stringify(i),
@@ -516,6 +517,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 ancestral: idUsuario + '_div_' + JSON.stringify(i),
                 salvar: true
             })
+            idChecks.push(idUsuario + '_checkBox_' + JSON.stringify(i))
             let idInput = idUsuario + '_input_' + JSON.stringify(i)
             let inputUsuario = criaInput({
                 id: idInput,
@@ -541,6 +543,9 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                     renderizarModelos()
                 }
             })
+        }
+        for (let id of idChecks){
+            document.getElementById(id).addEventListener('click', () => alternaCheckBox(id, ...idChecks))
         }
         
     }

@@ -57,7 +57,7 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = '', dataPr
     }
     if (responsavel){
         let inputResponsavel = await aguardarElementoNovo('detalhesDoProcessoInputResponsavelGigs')
-        await focar(inputResponsavel)
+        focar(inputResponsavel)
         await suspender (200)
         let preenchimento = await preencherCampoComEscolhaDeOpcao(inputResponsavel, responsavel)
         if (!preenchimento) sucesso = false
@@ -83,7 +83,7 @@ async function inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade = '', dataPr
     await suspender (200)
     let inputTipoAtividade = document.querySelector('pje-gigs-cadastro-atividades #tipoAtividade')
     if (inputTipoAtividade.value != tipoAtividade && tipoAtividade){
-        await focar(inputTipoAtividade)
+        focar(inputTipoAtividade)
         let preenchimento = await preencherCampoComEscolhaDeOpcao(inputTipoAtividade, tipoAtividade)
         if (!preenchimento) sucesso = false
     }
