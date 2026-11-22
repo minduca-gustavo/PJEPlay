@@ -1,3 +1,12 @@
+// página 564. falta completar o GIG pra mandar, ou seja, incluir 
+// observação, responsável, etc.
+// parece que está fácil continuar, a estrutura parece ser a mesma,
+//
+//
+//
+//
+//
+
 function escaninhoFuncoes(){
     //return
     console.log('%c[Rota PJE]%c 123456: ' + JSON.stringify(123456), LOG.info, 'color:inherit')
@@ -521,6 +530,7 @@ async function escaninhoCriaBotao(){
             let {parametros, consultas, gigs} = parametro
             for (let consulta of consultas){
                 let {
+                    idProcesso,
                     resultado,
                     numeroProcesso,
                     tarefa,
@@ -554,7 +564,13 @@ async function escaninhoCriaBotao(){
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, null, linha, false)
                 }
                 if (opcao == 'assistentes'){
-                    
+                    let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
+                    if (!juiz) continue
+                    let juizLinha = tabela.find(d => normalizar(d).includes(normalizar(juiz))) || ''
+                    if(!juizLinha) continue
+                    let responsavel = juizLinha.split(',')[1].trim() || ''
+                    if(!responsavel) continue
+
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'secretarios'){
@@ -833,7 +849,9 @@ async function escaninhoCriaBotao(){
             return {removeuTF, dadosBuscados:{idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada, removido: removeuTF ? 'SIM' : 'NÃO', gig}}
             //alert (JSON.stringify(parametros))
             async function escaninhoDefineJuiz(idProcesso, numeroProcesso) {
-                let juiz = await defineJuizSimetria(idProcesso) || ''
+                let secoes = ['CON1', 'CON2']
+                let simetriaTF = secoes.some(d=> document.querySelector('.papel-usuario')?.textContent.includes(d))
+                let juiz = simetriaTF ? await defineJuizSimetria(idProcesso) || '' : false
                 if (!juiz){
                     let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
                     let vara = historico
