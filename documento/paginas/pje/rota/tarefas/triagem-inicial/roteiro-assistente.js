@@ -216,6 +216,18 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna')
     })
 
+    await criaBotaoLaranjaComCheckBox({
+        id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'cancelar'),
+        idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'cancelar', 'checkbox'),
+        texto: 'Cancela audiência designada.',
+        ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
+        acao: async () => {
+            await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
+            comandar(['triagem_inicial_detalhes'], [{tipo: 'triagem_inicial_cancelarAudiencia'}])
+        },
+        salvar: true
+    })
+
     // Container vazio: preenchido/atualizado por renderizarHorariosVagos() com os botões de horário + linha manual.
     criaDiv({ id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'lista_horarios'), ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna') })
     let checkDespacharCertificar = false
@@ -225,6 +237,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         let modelo = marcado ? marcado.querySelector('input').value || null : null
         return modelo
     }
+    
     await criaBotaoLaranjaComCheckBox({
         id: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho'),
         idCheckbox: idg(tarefaNome, bloco, 'acoes_conjuntas', 'despacho', 'checkbox'),
@@ -294,7 +307,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         ancestral: idg(tarefaNome, bloco, 'acoes_conjuntas', 'coluna'),
         acao: async () => {
             await removerArmazenamento('rota_acoes_conjuntas_triagem_inicial_em_andamento')
-            comandar(['triagem_inicial_gig'], [{tipo: 'triagem_inicial_gig_acompanhamento'}])
+            comandar(['triagem_inicial_detalhes'], [{tipo: 'triagem_inicial_gig_acompanhamento'}])
         },
         salvar: true
     })
@@ -544,6 +557,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         const comandos = []
         const dados = []
 
+        if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'cancelar', 'checkbox'))) {
+            comandos.push('triagem_inicial_detalhes')
+            dados.push({tipo: 'triagem_inicial_cancelarAudiencia'})
+        }
+        
         const chkDesignacao = document.querySelector(`[data-grupo="${idg(tarefaNome, bloco, 'acoes_conjuntas', 'grupo_designacao')}"][data-marcado="1"]`)
         console.log('%c[Rota PJE]%c chkDesignacao: ' + JSON.stringify(chkDesignacao), LOG.teste, 'color:inherit')
         if (chkDesignacao) {
@@ -575,7 +593,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         }
 
         if (chkEstaMarcado(idg(tarefaNome, bloco, 'acoes_conjuntas', 'gig', 'checkbox'))) {
-            comandos.push('triagem_inicial_gig')
+            comandos.push('triagem_inicial_detalhes')
             dados.push({tipo: 'triagem_inicial_gig_acompanhamento'})
         }
         console.log('%c[Rota PJE]%c quantos comandos: ' + comandos.length, LOG.teste, 'color:inherit')

@@ -668,39 +668,73 @@ async function triagem_inicial_acoesDesignarAudienciaAutomaticamente(horario) {
 //                      COLOCAR GIG DE ACOMPANHAMENTO
 //__________________________________________________
 
-async function triagem_inicial_colocarGigDeAcompanhamento() {
+async function triagem_inicial_acoesDetalhes(parametro) {
+    let {tipo} = parametro
     let wname = window.name
     let execArm = await obterArmazenamento('rotaExecucaoAtual')
     let execAtual = execArm?.rotaExecucaoAtual || ''
     if (!wname.includes(execAtual)) return
-    let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
-    let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
-    if (!audienciaMarcadaHorario){
-        rota_avisoObrigatorio('Não há audiências marcadas.', 5)
-        return
+    if (tipo == 'triagem_inicial_gig_acompanhamento'){
+        await colocarGigAcompanhamento()
     }
-    let audienciaMarcadaNumero = audienciaMarcadaHorario ? new Date(audienciaMarcadaHorario).getTime() : NaN
-    let hoje = new Date().getTime()
-    let trintaDiasAntes = audienciaMarcadaNumero - 30 * 24 * 60 * 60 * 1000
-    let dataGig
-    if (hoje < trintaDiasAntes) {
-        dataGig = new Date(trintaDiasAntes).toLocaleDateString('pt-BR')
-    } else if (audienciaMarcadaNumero - hoje < 10 * 24 * 60 * 60 * 1000) {
-        dataGig = new Date(audienciaMarcadaNumero).toLocaleDateString('pt-BR')
-    } else {
-        dataGig = new Date(hoje + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
+    if (tipo == 'triagem_inicial_cancelarAudiencia'){
+        await cancelarAudienciaDesignada()
     }
-    let usuarioObter = await obterArmazenamento('rotapje_usuario')
-    let usuario = usuarioObter?.rotapje_usuario.nome || ''
-    let mostrarOuEsconder = await aguardarElementoNovo('detalhesDoProcessoMostrarOuEsconderGigs')
-    if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') {
-        await suspender(1000)
-        clicar(mostrarOuEsconder)
+    
+    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_detalhes' })
+
+    async function cancelarAudienciaDesignada(){
+        await aguardarElemento('pje-resumo-processo .mat-card')
+        let botao = document.querySelector('pje-link-cancelamento-pauta-audiencia a') || null
+        if (!botao){
+            rota_avisoObrigatorio('Não há audiência designada.', 2)
+            return
+        }
+        await suspender(500)
+        clicar('pje-link-cancelamento-pauta-audiencia a')
+        let dialogo = await aguardarElemento('mat-dialog-container .mat-dialog-actions')
+        await suspender(500)
+        let botaoSim = [...document.querySelectorAll('mat-dialog-container button')].find(d=> d.textContent.includes('Sim'))
+        clicar(botaoSim)
+        while(dialogo.isConnected){
+            await suspender(1000)
+        }
+        await aguardarElemento('mat-dialog-container .icone-sucesso')
+        await suspender(500)
+        clicar([...document.querySelectorAll('mat-dialog-container button')].find(d=> d.textContent.includes('OK')))
+        await suspender(500)
     }
-    await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
-    await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'Audiência', dataPrazo: dataGig, dias: '', responsavel: usuario.trim().toUpperCase(), observacao: 'Acompanhamento - Triagem Inicial', salvar: true})
-    //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
-    await armazenar({ rota_acoes_conjuntas_triagem_inicial_pronta: 'triagem_inicial_gig' })
+
+    async function colocarGigAcompanhamento(){
+        let id = await obterArmazenamento('rota_dadosTriagemInicial').then(dados => dados?.rota_dadosTriagemInicial?.processo?.id || '')
+        let audienciaMarcadaHorario = await buscarAudienciasMarcadas(id).then(dados=> dados?.dataInicio || '')
+        if (!audienciaMarcadaHorario){
+            rota_avisoObrigatorio('Não há audiências marcadas.', 5)
+            return
+        }
+        let audienciaMarcadaNumero = audienciaMarcadaHorario ? new Date(audienciaMarcadaHorario).getTime() : NaN
+        let hoje = new Date().getTime()
+        let trintaDiasAntes = audienciaMarcadaNumero - 30 * 24 * 60 * 60 * 1000
+        let dataGig
+        if (hoje < trintaDiasAntes) {
+            dataGig = new Date(trintaDiasAntes).toLocaleDateString('pt-BR')
+        } else if (audienciaMarcadaNumero - hoje < 10 * 24 * 60 * 60 * 1000) {
+            dataGig = new Date(audienciaMarcadaNumero).toLocaleDateString('pt-BR')
+        } else {
+            dataGig = new Date(hoje + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR')
+        }
+        let usuarioObter = await obterArmazenamento('rotapje_usuario')
+        let usuario = usuarioObter?.rotapje_usuario.nome || ''
+        let mostrarOuEsconder = await aguardarElementoNovo('detalhesDoProcessoMostrarOuEsconderGigs')
+        if (mostrarOuEsconder.ariaLabel == 'Mostrar o GIGS') {
+            await suspender(1000)
+            clicar(mostrarOuEsconder)
+        }
+        await aguardarElementoNovo('detalhesDoProcessoBotaoNovaAtividadeGigs')
+        await inserirGigsNaTelaDeDetalhesDoProcesso({tipoAtividade: 'Audiência', dataPrazo: dataGig, dias: '', responsavel: usuario.trim().toUpperCase(), observacao: 'Acompanhamento - Triagem Inicial', salvar: true})
+        await suspender(500)
+        //rota_avisoTemporario(JSON.stringify(dataGig), tipo = 'info', ms = 2000)
+    }
 }
 
 
@@ -1209,7 +1243,7 @@ rotaRegistrarAcoes({
     'triagem_inicial_despachar':                async (p) => await triagem_inicial_despachar(p),
     'triagem_inicial_atualiza_janela_detalhes': async (p) => await triagem_inicial_atualizaJanelaDetalhes(p),
     'triagem_inicial_atualiza_horarios_vagos':  async (p) => await triagem_inicial_atualizaHorariosVagos(p),
-    'triagem_inicial_gig':                      async (p) => await triagem_inicial_colocarGigDeAcompanhamento(p),
+    'triagem_inicial_detalhes':                 async (p) => await triagem_inicial_acoesDetalhes(p),
     'triagem_inicial_certidao':                 async (p) => await triagem_inicial_certificar(p),
     'triagem_inicial_retificar':                async (p) => await triagem_inicial_retificarAutuacao(p),
     'triagem_inicial_intimar':                  async (p) => await triagem_inicial_intimar(p),
