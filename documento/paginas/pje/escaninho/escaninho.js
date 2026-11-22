@@ -1,7 +1,7 @@
-// página 564. falta completar o GIG pra mandar, ou seja, incluir 
+// linha 564. falta completar o GIG pra mandar, ou seja, incluir 
 // observação, responsável, etc.
 // parece que está fácil continuar, a estrutura parece ser a mesma,
-//
+// linha 85 liga/desliga
 //
 //
 //
@@ -82,7 +82,7 @@ async function escaninhoCriaBotao(){
             resumirComIA
         }
         for (let script of scripts){
-            if (script.id == 'resumirComIA') continue
+            //if (script.id == 'resumirComIA') continue
             console.log('%c[Rota PJE]%c script: ' + JSON.stringify(script), LOG.info, 'color:inherit', script)
             let idGeral = idDiv + script?.id
             let ancestral = idGeral + '_div'
@@ -424,8 +424,9 @@ async function escaninhoCriaBotao(){
             textoMenu.style.textAlign = 'center'
             textoMenu.style.alignItems = 'flex-end'
             textoMenu.style.justifyContent = 'center'
+            let idMenu = ancestral + '_gigInserir_' + 'menu'
             let menu = criaMenuSuspenso({
-                id: ancestral + '_gigInserir_' + 'menu',
+                id: idMenu,
                 ancestral: ancestral + '_gigInserir',
                 opcoes: gigs?.map(d => d.split(',')[0]?.trim()),
                 valorInicial: gigs[0].split(',')[0]?.trim()
@@ -474,6 +475,7 @@ async function escaninhoCriaBotao(){
                 texto: resultado
             })
             parametrosTarefa.push({
+                idMenu,
                 checkEnviar,
                 resultado,
                 idDocumento,
@@ -528,8 +530,10 @@ async function escaninhoCriaBotao(){
                 },
             ]
             let {parametros, consultas, gigs} = parametro
+            console.log('%c[Rota PJE]%c 533' + JSON.stringify(533), LOG.aviso, 'color:inherit', parametros)
             for (let consulta of consultas){
                 let {
+                    idMenu,
                     idProcesso,
                     resultado,
                     numeroProcesso,
@@ -543,10 +547,11 @@ async function escaninhoCriaBotao(){
                 let checks = consulta?.checkEnviar
                 let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
-                let opcao = opcoes.find(d => d?.escolha == 'escolhido')?.label
+                let opcao = opcoes.find(d => d?.escolha == escolhido)?.label
+                console.log('%c[Rota PJE]%c opcao' + JSON.stringify(opcao), LOG.aviso, 'color:inherit')
                 let gig = {}
                 gig.observacao = resultado
-                gig.tipoAtividade = document.getElementById(ancestral + '_gigInserir_' + 'menu')?.textContent || 'prazo'
+                gig.tipoAtividade = document.getElementById(idMenu)?.textContent || 'prazo'
                 let tipoPrazo = gigs.find(g => g == gig.tipoAtividade) || 0
                 let prazo = definirTipoDePrazo(tipoPrazo, dataHoraAudiencia)
                 console.log('%c[Rota PJE]%c prazo: ' + JSON.stringify(prazo), LOG.info, 'color:inherit', prazo)
@@ -570,11 +575,17 @@ async function escaninhoCriaBotao(){
                     if(!juizLinha) continue
                     let responsavel = juizLinha.split(',')[1].trim() || ''
                     if(!responsavel) continue
-
+                    gig.responsavel = responsavel
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'secretarios'){
-                    
+                    let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
+                    if (!juiz) continue
+                    let juizLinha = tabela.find(d => normalizar(d).includes(normalizar(juiz))) || ''
+                    if(!juizLinha) continue
+                    let responsavel = juizLinha.split(',')[1].trim() || ''
+                    if(!responsavel) continue
+                    gig.responsavel = responsavel
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'apoio'){
@@ -614,7 +625,7 @@ async function escaninhoCriaBotao(){
                 prazo.valor = new Date().toLocaleDateString()
                 return prazo
             }
-            alert('oi')
+            //alert('oi')
         }
 
     }
@@ -936,45 +947,45 @@ async function escaninhoCriaBotao(){
             }
         }
         
-        async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null, linha = null, placar = true) {
-            console.log('%c[Rota PJE]%c gig532' + JSON.stringify(numeroProcesso), LOG.aviso, 'color:inherit')
-            //return
-            let mensagemPlacar = gig ? 'Inserindo GIGs e removendo do escaninho...' : 'Removendo do escaninho...'
-            if (placar) atualizaPlacar(mensagemPlacar)
-            await aguardarElemento('pje-data-table tr')
-            let linhas = !linha ? [...document.querySelectorAll('pje-data-table tr')] : []
-            let linhaExcluir = linha ? linha : linhas.find(l => l.textContent.includes(numeroProcesso)) || null
-            if (!linhaExcluir) return null
-            if (gig){
-                await aguardarElemento('pje-gigs-icone-gigs button')
-                let gigClicar = linha ? linha.querySelector('pje-gigs-icone-gigs button') : document.querySelector('pje-gigs-icone-gigs button[aria-label*="' + numeroProcesso + '"]')
-                if (!gigClicar) return null
-                clicar(gigClicar)
-                await aguardarElemento('pje-gigs-lista-atividades #nova-atividade')
-                let gigSucesso = await inserirGigsNaTelaDeDetalhesDoProcesso(gig)
-                let botoes = [...document.querySelectorAll('pje-gigs-cadastro-atividades mat-card-actions button')]
-                let texto = gigSucesso ? 'Salvar' : 'Cancelar'
-                await suspender(500)
-                clicar(botoes.find(b => normalizar(b.textContent).includes(normalizar(texto))))
-                await suspender(500)
-                await aguardarElemento('pje-gigs-dados-processo button[mattooltip="Fechar"]')
-                await suspender(500)
-                clicar('pje-gigs-dados-processo button[mattooltip="Fechar"]')
-                if (!gigSucesso) return null
-            }
-            await aguardarElemento('button[name$="' + numeroProcesso + '"]')
-            await suspender()
-            let seletorBotao = linha ? linha.querySelector('button[mattooltip^="Remover"]') : 'button[name$="' + numeroProcesso + '"]'
-            clicar(seletorBotao)
-            await suspender()
-            await aguardarElemento('.mat-dialog-actions button')
-            let botao = [...document.querySelectorAll('.mat-dialog-actions button')].find(b => b.textContent == 'Sim')
-            clicar(botao)
-            while (botao.isConnected){
-                await suspender()
-            }
-            return true
+        
+    }
+    async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null, linha = null, placar = true) {
+        console.log('%c[Rota PJE]%c gig532' + JSON.stringify(numeroProcesso), LOG.aviso, 'color:inherit')
+        //return
+        let mensagemPlacar = gig ? 'Inserindo GIGs e removendo do escaninho...' : 'Removendo do escaninho...'
+        if (placar) atualizaPlacar(mensagemPlacar)
+        await aguardarElemento('pje-data-table tr')
+        let linhas = !linha ? [...document.querySelectorAll('pje-data-table tr')] : []
+        let linhaExcluir = linha ? linha : linhas.find(l => l.textContent.includes(numeroProcesso)) || null
+        if (!linhaExcluir) return null
+        if (gig){
+            await aguardarElemento('pje-gigs-icone-gigs button')
+            let gigClicar = linha ? linha.querySelector('pje-gigs-icone-gigs button') : document.querySelector('pje-gigs-icone-gigs button[aria-label*="' + numeroProcesso + '"]')
+            if (!gigClicar) return null
+            clicar(gigClicar)
+            await aguardarElemento('pje-gigs-lista-atividades #nova-atividade')
+            let gigSucesso = await inserirGigsNaTelaDeDetalhesDoProcesso(gig)
+            let botoes = [...document.querySelectorAll('pje-gigs-cadastro-atividades mat-card-actions button')]
+            let texto = gigSucesso ? 'Salvar' : 'Cancelar'
+            await suspender(500)
+            clicar(botoes.find(b => normalizar(b.textContent).includes(normalizar(texto))))
+            await suspender(500)
+            await aguardarElemento('pje-gigs-dados-processo button[mattooltip="Fechar"]')
+            await suspender(500)
+            clicar('pje-gigs-dados-processo button[mattooltip="Fechar"]')
+            if (!gigSucesso) return null
         }
-
+        await aguardarElemento('button[name$="' + numeroProcesso + '"]')
+        await suspender()
+        let seletorBotao = linha ? linha.querySelector('button[mattooltip^="Remover"]') : 'button[name$="' + numeroProcesso + '"]'
+        clicar(seletorBotao)
+        await suspender()
+        await aguardarElemento('.mat-dialog-actions button')
+        let botao = [...document.querySelectorAll('.mat-dialog-actions button')].find(b => b.textContent == 'Sim')
+        clicar(botao)
+        while (botao.isConnected){
+            await suspender()
+        }
+        return true
     }
 }
