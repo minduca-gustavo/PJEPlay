@@ -257,18 +257,12 @@ async function rota_movimentar_encontrarBotao(label, timeoutEmSegundos = 30) {
       ?? document.querySelector(`[aria-label*="${label}"]`)
     if (porAriaLabel) return porAriaLabel
 
-    const botoes = [...document.querySelectorAll('.botao-app, .botao-skinny, button')]
-    const textos = [...document.querySelectorAll('.texto-botao-skinny')]
-      .map(t => t.closest('button'))
-      .filter(b => b && !b.classList.contains('botao-app') && !b.classList.contains('botao-skinny'))
-    if (botoes){
-    }
-    const encontrado = [...botoes, ...textos].find(b =>
+    const botao = [...document.querySelectorAll('button')].find(b =>
       b.querySelector('.texto-botao-app')?.textContent?.trim() === label
       || b.querySelector('.texto-botao-skinny')?.textContent?.trim() === label 
       || b.textContent?.trim() === label 
     )
-    if (encontrado) return encontrado
+    if (botao) return botao
 
     await suspender(500)
   }
