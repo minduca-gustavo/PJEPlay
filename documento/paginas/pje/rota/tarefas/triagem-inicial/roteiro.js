@@ -277,13 +277,13 @@ async function triagem_inicial_despachar(tipo) {
     let execAtual = execArm?.rotaExecucaoAtual || ''
     if (!wname.includes(execAtual)) return
     console.log('%c[Rota PJE]%c tipo' + JSON.stringify(tipo), LOG.aviso, 'color:inherit', tipo)
-    let envio = tipo?.tipo
+    let envio = tipo
     await armazenar({
         'rotapje_triagem_inicial_despachar': dadosTriagemInicial.execucaoAtual,
         'rotapje_triagem_inicial_despachar_tipo': envio,
     })
     let parametros =    '?rotapje_triagem_inicial_despachar=' + dadosTriagemInicial.execucaoAtual + 
-                        '&rotapje_triagem_inicial_despachar_tipo=' + envio
+                        '&rotapje_triagem_inicial_despachar_tipo=' + envio?.tipo
     let nomeJanela =    'rotapje_triagem_inicial_despachar_' + dadosTriagemInicial.execucaoAtual
     let id =            dadosTriagemInicial?.processo?.id
     let audienciasMarcadas = await buscarAudienciasMarcadas(id) || null
@@ -361,7 +361,6 @@ async function triagem_inicial_acoesDespachar(){
     let descricao = ''
     console.log('%c[Rota PJE]%c modeloEscolhido' + JSON.stringify(modeloEscolhido), LOG.aviso, 'color:inherit', modeloEscolhido)
     console.log('%c[Rota PJE]%c modeloDespacho: ' + JSON.stringify(modeloDespacho), LOG.teste, 'color:inherit')
-    
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo), LOG.info, 'color:inherit')
     //console.log('%c[Rota PJE]%c modelo[tipoAudiencia]: ' + JSON.stringify(modelo[tipoAudiencia]), LOG.info, 'color:inherit')
     if (!modeloDespacho && tipo !== 'triagem_inicial_emendar'){
@@ -762,6 +761,7 @@ async function triagem_inicial_certificar(tipo) {
     await armazenar({
         'rotapje_triagem_inicial_certificar': dadosTriagemInicial.execucaoAtual,
         'rotapje_triagem_inicial_certificar_tipo': tipo,
+        'rotapje_triagem_inicial_intimar_modelo': tipo?.modelo
     })
     let parametros =    '?rotapje_triagem_inicial_certificar=' + dadosTriagemInicial.execucaoAtual + 
                         '&rotapje_triagem_inicial_certificar_tipo=' + envio
@@ -880,6 +880,7 @@ async function triagem_inicial_acoesCertificar(){
 // INTIMAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
 async function triagem_inicial_intimar(tipo) {
+    //console.log('%c[Rota PJE]%c tipo: ' + JSON.stringify(tipo), LOG.info, 'color:inherit', tipo)
     let wname = window.name
     let execArm = await obterArmazenamento('rotaExecucaoAtual')
     let execAtual = execArm?.rotaExecucaoAtual || ''
@@ -921,7 +922,8 @@ async function triagem_inicial_acoesIntimar(){
     let tiposIntimar = await obterArmazenamento('rotapje_triagem_inicial_intimar_tipo')
     let tipoIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.tipo
     let linkIntimar = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.link
-    let modeloEscolhido = tiposIntimar?.rotapje_triagem_inicial_intimar_tipo?.modelo || null
+    let modeloArmazenado = await obterArmazenamento('rotapje_triagem_inicial_intimar_modelo')
+    let modeloEscolhido = modeloArmazenado?.rotapje_triagem_inicial_intimar_modelo || null
     let dadosTI            = await obterArmazenamento('rota_dadosTriagemInicial')
     let juizEnvio          = dadosTI?.rota_dadosTriagemInicial?.sala?.nome || ''
     let numeroProcesso     = dadosTI?.rota_dadosTriagemInicial?.processo?.numero || ''

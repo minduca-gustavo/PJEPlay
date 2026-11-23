@@ -178,7 +178,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         id: idg(tarefaNome, bloco, 'salvar_link_da_audiencia'),
         idInput: idg(tarefaNome, bloco, 'input_link_da_audiencia'),
         texto: 'Salvar link',
-        textoEmCima: 'Digite abaixo o link da audiência para preenchimento automático no momento da designação e despacho.',
+        textoEmCima: 'Digite abaixo o link da audiência para preenchimento automático no momento da designação e despacho. O link agora é salvo relacionado ao JUIZ, portanto, vários links podem ser salvos, basta alterar o juiz no menu acima.',
         ancestral: idg(tarefaNome, bloco),
         acao: () => triagem_inicial_salvar_link_da_audiencia()
     })
@@ -233,8 +233,11 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     let checkDespacharCertificar = false
     function definirModeloEscolhido (){
         let divUsuario = document.getElementById('rotapje_triagem_inicial_usuario_div')
+        console.log('%c[Rota PJE]%c 236: ' + JSON.stringify(236), LOG.info, 'color:inherit', divUsuario)
         let marcado = [...divUsuario.querySelectorAll('div')].find(d => d.querySelector('div')?.dataset.marcado == 1) || null
+        console.log('%c[Rota PJE]%c 238: ' + JSON.stringify(238), LOG.info, 'color:inherit', marcado)
         let modelo = marcado ? marcado.querySelector('input').value || null : null
+        console.log('%c[Rota PJE]%c 240: ' + JSON.stringify(240), LOG.info, 'color:inherit', modelo)
         return modelo
     }
     
@@ -455,7 +458,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     criaTexto({
         id: idUsuario + '_instrucao',
         ancestral: 'rota_corpo',
-        texto: 'Insira abaixo os modelos de despacho para posterior uso.'
+        texto: 'Insira abaixo os modelos de despacho e SALVE para posterior uso.\nO modelo selecionado será utilizado no despacho de designação ou na intimação.'
     })
     let inputsUsuario = []
     
@@ -507,11 +510,12 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
         let modelosSalvos = modelo?.modelosSalvos || []
         let idChecks = []
         for (let i = 0; i < modelosSalvos.length + 1; i++){
-            criaDiv({
+            let div = criaDiv({
                 id: idUsuario + '_div_' + JSON.stringify(i),
                 ancestral: idUsuario + '_div',
                 rowColumn: 'row'
             })
+            div.style.margin = '4px'
             await criaCheckBox({
                 id: idUsuario + '_checkBox_' + JSON.stringify(i),
                 ancestral: idUsuario + '_div_' + JSON.stringify(i),
@@ -524,6 +528,7 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                 ancestral: idUsuario + '_div_' + JSON.stringify(i),
                 placeholder: 'Insira o título do seu modelo aqui e clique em 💾 para salvar.'
             })
+            inputUsuario.container.style.width = '100%'
             inputUsuario.value = modelosSalvos[i] || ''
             idInputs.push(idInput)
             let botaoSalvar = criaBotaoAzul({
@@ -543,6 +548,8 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
                     renderizarModelos()
                 }
             })
+            botaoSalvar.style.marginBottom = 'inherit'
+            botaoSalvar.style.padding = '0px 10px'
         }
         for (let id of idChecks){
             document.getElementById(id).addEventListener('click', () => alternaCheckBox(id, ...idChecks))

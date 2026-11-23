@@ -557,8 +557,8 @@ async function escaninhoCriaBotao(){
                 console.log('%c[Rota PJE]%c prazo: ' + JSON.stringify(prazo), LOG.info, 'color:inherit', prazo)
                 gig[prazo.label] = prazo.valor
                 console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig), LOG.info, 'color:inherit', gig)
-                let tabela = parametros.find(d => d?.secao == opcao) || {}
-                console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela), LOG.info, 'color:inherit')
+                let tabela = parametros.find(d => d?.secao == opcao)?.inputs[0].valor.split(/\r?\n/) || ''
+                console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela), LOG.info, 'color:inherit', tabela)
                 if (opcao == 'eumesmo'){
                     let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
                     gig.responsavel = normalizar(document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent)
@@ -569,6 +569,7 @@ async function escaninhoCriaBotao(){
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, null, linha, false)
                 }
                 if (opcao == 'assistentes'){
+                    let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
                     let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
                     if (!juiz) continue
                     let juizLinha = tabela.find(d => normalizar(d).includes(normalizar(juiz))) || ''
@@ -579,6 +580,7 @@ async function escaninhoCriaBotao(){
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'secretarios'){
+                    let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
                     let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
                     if (!juiz) continue
                     let juizLinha = tabela.find(d => normalizar(d).includes(normalizar(juiz))) || ''
@@ -589,7 +591,13 @@ async function escaninhoCriaBotao(){
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 if (opcao == 'apoio'){
-                    
+                    let linha = [...document.querySelectorAll('tr')].find(l => definirLinha(l))
+                    let anoProcesso = numeroProcesso.slice(11, 15)
+                    let final = Number(anoProcesso) < 2010 ? numeroProcesso.slice(4, 5) : numeroProcesso.slice(6, 7)
+                    let linhaApoio = dados.find(d => normalizar(d).includes(String(final))) || ''
+                    if(!linhaApoio) continue
+                    let responsavel = linhaApoio.split(',')[0].trim() || ''
+                    if(!responsavel) continue
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, linha, false)
                 }
                 function definirLinha(l){
@@ -616,6 +624,12 @@ async function escaninhoCriaBotao(){
                     prazo.valor = new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString()
                     return prazo
                 }
+                if(entrada == 0){
+                    prazo.label = 'hoje'
+                    prazo.valor = true
+                    return prazo
+                }
+
                 if (entrada.match(/\d+/)){
                     prazo.label = 'dias'
                     prazo.valor = entrada
@@ -859,20 +873,8 @@ async function escaninhoCriaBotao(){
             }
             return {removeuTF, dadosBuscados:{idProcesso, numeroProcesso, descricaoDocumento, nomeTipoProcessoDocumento, dataJuntada, removido: removeuTF ? 'SIM' : 'NÃO', gig}}
             //alert (JSON.stringify(parametros))
-            async function escaninhoDefineJuiz(idProcesso, numeroProcesso) {
-                let secoes = ['CON1', 'CON2']
-                let simetriaTF = secoes.some(d=> document.querySelector('.papel-usuario')?.textContent.includes(d))
-                let juiz = simetriaTF ? await defineJuizSimetria(idProcesso) || '' : false
-                if (!juiz){
-                    let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
-                    let vara = historico
-                        .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
-                        ?.orgaoJulgadorOrigem?.descricao || ''
-                    juiz = await defineJuizPlanilha(vara, numeroProcesso) || ''
-                }
-                return juiz
-            }
         }
+        
 
         async function porTipoOuTitulo({parametros, peticao}) {
             let {descricaoDocumento, nomeTipoProcessoDocumento, numeroProcesso, dataJuntada} = peticao
@@ -949,6 +951,21 @@ async function escaninhoCriaBotao(){
         
         
     }
+
+    async function escaninhoDefineJuiz(idProcesso, numeroProcesso) {
+        let secoes = ['CON1', 'CON2']
+        let simetriaTF = secoes.some(d=> document.querySelector('.papel-usuario')?.textContent.includes(d))
+        let juiz = simetriaTF ? await defineJuizSimetria(idProcesso) || '' : false
+        if (!juiz){
+            let historico = await buscarHistoricoDeslocamentos(idProcesso) || []
+            let vara = historico
+                .find(h => h?.orgaoJulgadorOrigem?.descricao?.includes('Vara do Trabalho'))
+                ?.orgaoJulgadorOrigem?.descricao || ''
+            juiz = await defineJuizPlanilha(vara, numeroProcesso) || ''
+        }
+        return juiz
+    }
+
     async function removerDoEscaninhoEInserirGigs(numeroProcesso, gig = null, linha = null, placar = true) {
         console.log('%c[Rota PJE]%c gig532' + JSON.stringify(numeroProcesso), LOG.aviso, 'color:inherit')
         //return
