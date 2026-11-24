@@ -2199,12 +2199,14 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
             let textoBotao = doc?.titulo.length > 20 ? doc?.titulo.slice(0, 20) + '...' : doc?.titulo
             
             let idBotao = id + '_' + (doc?.idUnicoDocumento) + '_botao'
-            criaBotaoAzul({
+            let bot = criaBotaoAzul({
                 id: idBotao,
                 ancestral: idTabela,
                 texto: textoBotao,
                 acao: () => abrir(doc)
             })
+            bot.style.background = '#777777'
+            _ui_hoverBotao(bot, '#777777', '#555555')
             criaTooltip({
                 id: idBotao + '_tip',
                 texto: doc?.titulo + '\n' + defineTextoBotaoTermo(termo, 0, 0, false) + ' - ' + 'Id ' + doc?.idUnicoDocumento + ' - ' + doc?.data.slice(8, 10) + '/' + doc?.data.slice(5, 7) + '/' + doc?.data.slice(0, 4),

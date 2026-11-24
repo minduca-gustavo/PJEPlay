@@ -79,9 +79,11 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     if (movimentos) {
         solucaoMovimento = movimentos.filter(m=> m?.titulo.includes('Julgado(s)') || m?.titulo.includes('Extinto')) || null
     }
+    let dataSolucaoMaisAntiga = new Date()
     console.log('%c[Rota PJE]%c solucaoMovimento: ' + JSON.stringify(solucaoMovimento), LOG.rosa, 'color:inherit')
     for (let mov of solucaoMovimento) {
         let {data} = mov
+        dataSolucaoMaisAntiga = new Date(data) < dataSolucaoMaisAntiga ? new Date(data) : dataSolucaoMaisAntiga
         let movimento = ''
         if (mov?.titulo.includes('Julgado(s) ')){
             movimento = (mov?.titulo.split('Julgado(s) ')[1])
@@ -108,12 +110,17 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     let idBusca = processo.id || idURL
     if (!idBusca) return
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
+    let buscaExpedientes = await buscarProcesso(idBusca, '/expedientes?pagina=1&tamanhoPagina=1000&instancia=1') || {}
+    let expedientes = buscaExpedientes?.resultado.filter(d => new Date(d.fimDoPrazoLegal) > dataSolucaoMaisAntiga)
+    console.log('%c[Rota PJE]%c dataSolucaoMaisAntiga' + JSON.stringify(dataSolucaoMaisAntiga), LOG.aviso, 'color:inherit')
+    console.log('%c[Rota PJE]%c expedientes' + JSON.stringify(expedientes), LOG.aviso, 'color:inherit', expedientes)
     
-    dadosCon2PrazoVencido.solucao                  = solucao
-    dadosCon2PrazoVencido.timeline                 = timeline
-    dadosCon2PrazoVencido.partes                  = partes
-    dadosCon2PrazoVencido.processo                = processo
-    dadosCon2PrazoVencido.recursos                = recursos
+    dadosCon2PrazoVencido.solucao       = solucao
+    dadosCon2PrazoVencido.timeline      = timeline
+    dadosCon2PrazoVencido.partes        = partes
+    dadosCon2PrazoVencido.processo      = processo
+    dadosCon2PrazoVencido.recursos      = recursos
+    dadosCon2PrazoVencido.expedientes   = expedientes
     
     await armazenar({ rota_dadosCon2PrazoVencido: dadosCon2PrazoVencido })
     await armazenar({ rota_dadosCon2PrazoVencidoNumero: processo.numero })
