@@ -363,6 +363,7 @@ async function escaninhoCriaBotao(){
         i = 0
         let parametrosTarefa = []
         for (let consulta of consultas){
+            atualizaPlacar('Consultando ' + JSON.stringify(i++) + ' / ' + consultas.length)
             let {
                 idDocumento,
                 idProcesso,
@@ -490,12 +491,14 @@ async function escaninhoCriaBotao(){
             })
             i++
         }
+        atualizaPlacar('Consulta finalizada.')
         botao.remove()
         let botaoExecutar = criaBotaoLaranja({
             id: idg('resumirComIA', 'marcarERemover'),
             ancestral: ancestralBotao,
             texto: 'Marcar/remover todos conforme selecionado',
             acao: async () => {
+                let remover = document.getElementById(divPlacarId)?.remove()
                 botaoExecutar.disabled = true
                 await executarResumirComIA({parametros, consultas: parametrosTarefa, gigs})
                 finalizar()
@@ -503,12 +506,13 @@ async function escaninhoCriaBotao(){
         })
 
         function finalizar(){
-
+            
         }
 
         async function executarResumirComIA(parametro){
-            let removerId = 'rotapje_escaninho_resumirComIA'
-            let remover = document.getElementById('rotapje_escaninho_resumirComIA')?.remove()
+            let esconderId = 'rotapje_escaninho_resumirComIA'
+            let esconder = document.getElementById(esconderId) || null
+            if (esconder) esconder.style.display = 'none'
             let idExecucao = idg('escaninho', 'resumirComIA', 'execucao')
             let divExecucao = criaDivCentralPadrao({
                 id: idExecucao,
@@ -551,6 +555,7 @@ async function escaninhoCriaBotao(){
             let i = 0
             for (let consulta of consultas){
                 i++
+                console.log('%c[Rota PJE]%c i' + JSON.stringify(i), LOG.aviso, 'color:inherit')
                 atualizaPlacar('Executando: ' + JSON.stringify(i) + ' / ' + consultas.length)
                 let {
                     idMenu,
@@ -565,8 +570,11 @@ async function escaninhoCriaBotao(){
                     dataHoraAudiencia
                 } = consulta
                 let checks = consulta?.checkEnviar
+                console.log('%c[Rota PJE]%c checks' + JSON.stringify(checks), LOG.aviso, 'color:inherit', checks)
                 let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
+                console.log('%c[Rota PJE]%c idCheck' + JSON.stringify(idCheck), LOG.aviso, 'color:inherit')
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
+                console.log('%c[Rota PJE]%c escolhido' + JSON.stringify(escolhido), LOG.aviso, 'color:inherit', escolhido)
                 let opcao = opcoes.find(d => d?.escolha == escolhido)?.label
                 console.log('%c[Rota PJE]%c opcao' + JSON.stringify(opcao), LOG.aviso, 'color:inherit')
                 let gig = {}
@@ -978,6 +986,8 @@ async function escaninhoCriaBotao(){
 
     function atualizaPlacar(texto){
         let placar = document.getElementById(idg('escaninho', 'placar'))
+        console.log('%c[Rota PJE]%c placar' + JSON.stringify(placar), LOG.aviso, 'color:inherit', placar)
+        console.log('%c[Rota PJE]%c texto' + JSON.stringify(texto), LOG.aviso, 'color:inherit')
         if (!placar) return
         placar.textContent = texto
         return
