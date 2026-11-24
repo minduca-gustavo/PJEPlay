@@ -516,7 +516,8 @@ async function escaninhoCriaBotao(){
                 largura:    '30%',
                 altura:     'auto',
                 top:        '78px',
-                left:       '85px'
+                left:       '85px',
+                transform: ''
             })
             let texto = criaSubTitulo({
                 id: idg('escaninho', 'placar'),
