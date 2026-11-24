@@ -507,6 +507,22 @@ async function escaninhoCriaBotao(){
         }
 
         async function executarResumirComIA(parametro){
+            let removerId = 'rotapje_escaninho_resumirComIA'
+            let remover = document.getElementById('rotapje_escaninho_resumirComIA')?.remove()
+            let idExecucao = idg('escaninho', 'resumirComIA', 'execucao')
+            let divExecucao = criaDivCentralPadrao({
+                id: idExecucao,
+                titulo:     'Executando',
+                largura:    '30%',
+                altura:     'auto',
+                top:        '78px',
+                left:       '85px'
+            })
+            let texto = criaSubTitulo({
+                id: idg('escaninho', 'placar'),
+                texto: 'Aguarde a conclusão da tarefa. Iniciando.',
+                ancestral: divExecucao.corpo.id
+            })
             let opcoes = [
                 {
                     escolha: 'Remover',
@@ -531,7 +547,10 @@ async function escaninhoCriaBotao(){
             ]
             let {parametros, consultas, gigs} = parametro
             console.log('%c[Rota PJE]%c 533' + JSON.stringify(533), LOG.aviso, 'color:inherit', parametros)
+            let i = 0
             for (let consulta of consultas){
+                i++
+                atualizaPlacar('Executando: ' + JSON.stringify(i) + ' / ' + consultas.length)
                 let {
                     idMenu,
                     idProcesso,
