@@ -437,21 +437,22 @@ ${formatarPartes(dados?.rota_dadosTriagemInicial?.partes)}`,
     let armazenamentoUsuario = await obterArmazenamento('rotapje_usuario') || {}
     let usuario = armazenamentoUsuario?.rotapje_usuario || ''
     console.log('%c[Rota PJE]%c usuario: ' + JSON.stringify(usuario), LOG.info, 'color:inherit')
-    if (!normalizar(usuario?.nome).includes('gustavo mariano coutinho de souza')) return
-    let botaoLote = criaBotaoAzul({
-        id: idg(tarefaNome, 'tramitaEmLote', 'botao'),
-        ancestral: 'rota_corpo',
-        texto: 'Tramitar em lote',
-        acao: async () => await tramitaEmLote()
-    })
-    botaoLote.style.background = '#c1121f'
-    botaoLote.style.width = '100%'
-    _ui_hoverBotao(botaoLote, '#c1121f', '#780000')
-    criaTooltip({
-        id: idg(tarefaNome, 'tramitaEmLote', 'tip'),
-        texto: 'Tramita em lote executando as ações que estão selecionadas no botão "Executar todas"',
-        elemento: botaoLote
-    })
+    if (normalizar(usuario?.nome).includes('gustavo mariano coutinho de souza')) {
+        let botaoLote = criaBotaoAzul({
+            id: idg(tarefaNome, 'tramitaEmLote', 'botao'),
+            ancestral: 'rota_corpo',
+            texto: 'Tramitar em lote',
+            acao: async () => await tramitaEmLote()
+        })
+        botaoLote.style.background = '#c1121f'
+        botaoLote.style.width = '100%'
+        _ui_hoverBotao(botaoLote, '#c1121f', '#780000')
+        criaTooltip({
+            id: idg(tarefaNome, 'tramitaEmLote', 'tip'),
+            texto: 'Tramita em lote executando as ações que estão selecionadas no botão "Executar todas"',
+            elemento: botaoLote
+        })
+    }
     
     let idUsuario = idg(tarefaNome, 'usuario')
     

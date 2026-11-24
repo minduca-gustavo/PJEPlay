@@ -82,7 +82,7 @@ async function escaninhoCriaBotao(){
             resumirComIA
         }
         for (let script of scripts){
-            //if (script.id == 'resumirComIA') continue
+            if (script.id == 'resumirComIA') continue
             console.log('%c[Rota PJE]%c script: ' + JSON.stringify(script), LOG.info, 'color:inherit', script)
             let idGeral = idDiv + script?.id
             let ancestral = idGeral + '_div'
