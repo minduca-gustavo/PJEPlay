@@ -210,7 +210,7 @@ async function escaninhoCriaBotao(){
                     {
                         resumoIA: true,
                         label: 'gigs_input',
-                        texto: 'Insira abaixo os gigs, seguidos dos prazos, separados por vírgula, um por linha. Aceita como prazo dataAudiencia que será substituída pela data de hoje, se não houver audiência marcada.',
+                        texto: 'Insira abaixo os gigs, seguidos dos prazos, separados por vírgula, um por linha. Aceita como prazo dataAudiencia que será substituída pela data de hoje, se não houver audiência marcada, e dataPeticao.',
                         placeholder: 'Ex:\n prazo, 5\nAcordo, 01/01/2027\nAUDIÊNCIA, dataAudiencia'
                     },
                 ],
@@ -360,10 +360,10 @@ async function escaninhoCriaBotao(){
             })
             i++
         }
-        i = 0
+        let j = 0
         let parametrosTarefa = []
         for (let consulta of consultas){
-            atualizaPlacar('Consultando ' + JSON.stringify(i++) + ' / ' + consultas.length)
+            atualizaPlacar('Consultando ' + JSON.stringify(j + 1) + ' / ' + consultas.length)
             let {
                 idDocumento,
                 idProcesso,
@@ -377,12 +377,15 @@ async function escaninhoCriaBotao(){
             } = consulta
             let processo = numeroProcesso
             let resultado = location.origin.includes('pje-web-hm') ? 'Teste ambiente de homologação.' : await consulta.consulta || 'Ocorreu um erro na consulta ao CHAT-JT.'
-            let ancestral = idg('resumirComIA', 'resultado', JSON.stringify(i))
-            formataDiv(document.getElementById(ancestral), 'branco', '98%', 'auto', 'relative', '0px', '0px', '')
+            let ancestral = idg('resumirComIA', 'resultado', JSON.stringify(j))
+            //formataDiv(document.getElementById(ancestral), 'branco', '98%', 'auto', 'relative', '0px', '0px', '')
             let opcoes = ['Secretário', 'Assistente', 'Apoio', 'Eu mesmo', 'Remover']
             let checkAlternar = []
             let checkEnviar = []
             for (let opcao of opcoes){
+                if (!['CON1', 'CON2'].some(d=> document.querySelector('.papel-usuario')?.textContent.includes(d)) && opcao === 'Secretário'){
+                    continue
+                }
                 let idOpcao = normalizar(opcao).replaceAll(' ', '')
                 let div = criaDiv({
                     id: ancestral + idOpcao,
@@ -441,12 +444,12 @@ async function escaninhoCriaBotao(){
                 document.getElementById(elemento.id)?.addEventListener('click', () => alternaCheckBox(elemento.id, ...(checkAlternar.map(d=> d.check))))
             }
             criaDiv({
-                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j), 'div'),
                 ancestral
             })
             let subtitulo = criaSubTitulo({
-                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'subtitulo'),
-                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j), 'subtitulo'),
+                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j), 'div'),
                 texto: processo
             })
             subtitulo.style.color = '#005b89'
@@ -466,13 +469,13 @@ async function escaninhoCriaBotao(){
                 texto.push(nome[chave] + valor)
             }
             let textoDescricao = criaTexto({
-                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), '_descricao'),
-                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j), '_descricao'),
+                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j), 'div'),
                 texto: texto.join(' / ')
             })
             criaTexto({
-                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i)),
-                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(i), 'div'),
+                id: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j)),
+                ancestral: idg('resumirComIA', 'resultado', 'peticao', JSON.stringify(j), 'div'),
                 texto: resultado
             })
             parametrosTarefa.push({
@@ -489,7 +492,7 @@ async function escaninhoCriaBotao(){
                 dataJuntada,
                 dataHoraAudiencia
             })
-            i++
+            j++
         }
         atualizaPlacar('Consulta finalizada.')
         botao.remove()
@@ -500,13 +503,18 @@ async function escaninhoCriaBotao(){
             acao: async () => {
                 let remover = document.getElementById(divPlacarId)?.remove()
                 botaoExecutar.disabled = true
-                await executarResumirComIA({parametros, consultas: parametrosTarefa, gigs})
-                finalizar()
+                let resultado = await executarResumirComIA({parametros, consultas: parametrosTarefa, gigs})
+                await finalizar(resultado)
             }
         })
 
-        function finalizar(){
-            
+        async function finalizar(resultado){
+            _baixarArquivo(resultado, 'resultadoEscaninho' + new Date().toLocaleDateString() + '.txt', 'text/plain')
+            atualizaPlacar('Um arquivo foi baixado contendo o relatório da atividade')
+            await suspender(4000)
+            let idExecucao = idg('escaninho', 'resumirComIA', 'execucao')
+            let remover = document.getElementById(idExecucao)?.remove()
+            escaninhoMenu()
         }
 
         async function executarResumirComIA(parametro){
@@ -553,6 +561,7 @@ async function escaninhoCriaBotao(){
             let {parametros, consultas, gigs} = parametro
             console.log('%c[Rota PJE]%c 533' + JSON.stringify(533), LOG.aviso, 'color:inherit', parametros)
             let i = 0
+            let resultados = ''
             for (let consulta of consultas){
                 i++
                 console.log('%c[Rota PJE]%c i' + JSON.stringify(i), LOG.aviso, 'color:inherit')
@@ -570,30 +579,27 @@ async function escaninhoCriaBotao(){
                     dataHoraAudiencia
                 } = consulta
                 let checks = consulta?.checkEnviar
-                console.log('%c[Rota PJE]%c checks' + JSON.stringify(checks), LOG.aviso, 'color:inherit', checks)
                 let idCheck = checks.find(d => document.getElementById(d)?.dataset.marcado == 1) || null
-                console.log('%c[Rota PJE]%c idCheck' + JSON.stringify(idCheck), LOG.aviso, 'color:inherit')
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
-                console.log('%c[Rota PJE]%c escolhido' + JSON.stringify(escolhido), LOG.aviso, 'color:inherit', escolhido)
                 let opcao = opcoes.find(d => d?.escolha == escolhido)?.label
-                console.log('%c[Rota PJE]%c opcao' + JSON.stringify(opcao), LOG.aviso, 'color:inherit')
                 let gig = {}
                 gig.observacao = resultado
                 gig.tipoAtividade = document.getElementById(idMenu)?.textContent || 'prazo'
-                let tipoPrazo = gigs.find(g => g == gig.tipoAtividade) || 0
-                let prazo = definirTipoDePrazo(tipoPrazo, dataHoraAudiencia)
-                console.log('%c[Rota PJE]%c prazo: ' + JSON.stringify(prazo), LOG.info, 'color:inherit', prazo)
+                let tipoPrazo = gigs.find(g => g.includes(gig.tipoAtividade))?.split(',')[1].trim() || 0
+                let prazo = definirTipoDePrazo(tipoPrazo, dataHoraAudiencia, dataJuntada)
+                console.log('%c[Rota PJE]%c 651 prazo: ' + JSON.stringify(prazo), LOG.info, 'color:inherit', prazo)
                 gig[prazo.label] = prazo.valor
-                console.log('%c[Rota PJE]%c gig: ' + JSON.stringify(gig), LOG.info, 'color:inherit', gig)
                 let tabela = parametros.find(d => d?.secao == opcao)?.inputs[0].valor.split(/\r?\n/) || ''
-                console.log('%c[Rota PJE]%c tabela: ' + JSON.stringify(tabela), LOG.info, 'color:inherit', tabela)
+                console.log('%c[Rota PJE]%c 651 gig: ' + JSON.stringify(gig), LOG.info, 'color:inherit', gig)
                 if (opcao == 'eumesmo'){
                     let linha = definirLinha(consulta)
+                    if (!linha) continue
                     gig.responsavel = normalizar(document.querySelector('pje-cabecalho-perfil .nome-usuario')?.textContent)
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, consulta, false)
                 }
                 if (opcao == 'remover'){
                     let linha = definirLinha(consulta)
+                    if (!linha) continue
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, null, consulta, false)
                 }
                 if (opcao == 'assistentes'){
@@ -632,19 +638,32 @@ async function escaninhoCriaBotao(){
                     if(!responsavel) continue
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, consulta, false)
                 }
-                
+                if (!gig.responsavel){
+                    gig.responsavel = ''
+                }
+                let opcaoResultado = opcoes.find(d => d.label == opcao)?.escolha || 'Nenhuma ação'
+                if (i == 1){
+                    resultados += ['Número do Processo', 'Marcação'].join('\t') + '\n'
+                }
+                resultados += [numeroProcesso, opcaoResultado].join('\t') + '\n'
             }
-            function definirTipoDePrazo(entrada, dataHoraAudiencia = null){
+            return resultados
+            function definirTipoDePrazo(entrada, dataHoraAudiencia = null, dataJuntada = null){
                 let prazo = {}
-                entrada = JSON.stringify(entrada)
+                entrada = String(entrada)
                 if (entrada.match(/\d{2}\/\d{2}\/\d{4}/)){
                     prazo.label = 'dataPrazo'
                     prazo.valor = entrada
                     return prazo
                 }
-                if (entrada == 'dataAudiencia' && dataHoraAudiencia){
+                if (entrada == 'dataaudiencia' && !!dataHoraAudiencia){
                     prazo.label = 'dataPrazo'
-                    prazo.valor = new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString()
+                    prazo.valor = JSON.stringify(new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString())
+                    return prazo
+                }
+                if (entrada == 'datapeticao' && !!dataJuntada){
+                    prazo.label = 'dataPrazo'
+                    prazo.valor = JSON.stringify(new Date(dataJuntada).toLocaleDateString() || new Date().toLocaleDateString())
                     return prazo
                 }
                 if(entrada == 0){
@@ -652,7 +671,6 @@ async function escaninhoCriaBotao(){
                     prazo.valor = true
                     return prazo
                 }
-
                 if (entrada.match(/\d+/)){
                     prazo.label = 'dias'
                     prazo.valor = entrada
