@@ -334,7 +334,8 @@ async function escaninhoCriaBotao(){
                 dataHoraAudiencia,
                 descricaoDocumento,
                 nomeTipoProcessoDocumento,
-                dataJuntada
+                dataJuntada,
+                poloPeticionante
             } = peticao
             let teor = location.origin.includes('pje-web-hm') ? 'Teor teste ambiente de homologação.' : await rota_extrairTeorDocumento(idProcesso, idDocumento) || null
             if (!teor) continue
@@ -356,7 +357,8 @@ async function escaninhoCriaBotao(){
                 nomeTipoProcessoDocumento,
                 descricaoDocumento,
                 dataJuntada,
-                dataHoraAudiencia
+                dataHoraAudiencia,
+                poloPeticionante
             })
             i++
         }
@@ -373,7 +375,8 @@ async function escaninhoCriaBotao(){
                 nomeTipoProcessoDocumento,
                 descricaoDocumento,
                 dataJuntada,
-                dataHoraAudiencia
+                dataHoraAudiencia,
+                poloPeticionante
             } = consulta
             let processo = numeroProcesso
             let resultado = location.origin.includes('pje-web-hm') ? 'Teste ambiente de homologação.' : await consulta.consulta || 'Ocorreu um erro na consulta ao CHAT-JT.'
@@ -462,7 +465,8 @@ async function escaninhoCriaBotao(){
                     dataHoraAudiencia: 'Audiência: ',
                     descricaoDocumento: 'Descrição: ',
                     nomeTipoProcessoDocumento: 'Tipo: ',
-                    dataJuntada: 'Data de Juntada: '
+                    dataJuntada: 'Data de Juntada: ',
+                    poloPeticionante: 'Polo: '
                 }
                 if (String(valor) == 'undefined') continue
                 valor = String(new Date(valor).toLocaleDateString()) != 'Invalid Date' ? new Date(valor).toLocaleDateString() : valor
@@ -1016,8 +1020,8 @@ async function escaninhoCriaBotao(){
         let linha = [...document.querySelectorAll('tr')].find(l => l.textContent.includes(numeroProcesso) &&
             l.textContent.includes(tarefa) &&
             l.textContent.includes(faseProcessual) &&
-            l.textContent.includes(nomeTipoProcessoDocumento) &&
-            l.textContent.includes(descricaoDocumento) &&
+            l.textContent.includes(nomeTipoProcessoDocumento.trim()) &&
+            l.textContent.includes(descricaoDocumento.trim()) &&
             l.textContent.includes(new Date(dataJuntada).toLocaleDateString())
         ) || null
         return linha
