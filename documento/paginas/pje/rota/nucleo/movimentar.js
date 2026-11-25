@@ -382,13 +382,14 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
         let elemento = opcoesIncluirExcluir([...opcaoElemento.querySelectorAll('mat-select')], opcao?.nomeDoCampo)
         console.log('%c[Rota PJE]%c elemento: ' + JSON.stringify(elemento), LOG.info, 'color:inherit')
         await suspender(500)
-        await preencherCampoComEscolhaDeOpcao(elemento, opcao?.selecionar)
+        await preencherCampoComEscolhaDeOpcao(elemento, opcao?.selecionar.trim())
       }
       while(
-        !movimento?.opcoes?.some(m => [...document.querySelectorAll('.cartao-movimento')].some(d => normalizar(d?.textContent).includes(normalizar(m?.selecionar))))
+        !movimento?.opcoes?.some(m => [...document.querySelectorAll('.cartao-movimento')].some(d => normalizar(d?.textContent).includes(normalizar(m?.selecionar.trim()))))
       ){
         await suspender()
         console.log('%c[Rota PJE]%c i++: ' + JSON.stringify(i++), LOG.info, 'color:inherit')
+        if (i == 15) return
       }
     }
     await aguardarElemento('button[mattooltip^="Gravar os movimentos"]')

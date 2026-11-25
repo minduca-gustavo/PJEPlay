@@ -205,7 +205,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             tipoPrazo = expediente.tipoPrazo
             prazoLegal = expediente.prazoLegal
         }
-        let parteTipo = partesProcesso.ATIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso.PASSIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || ''
+        let parteTipo = partesProcesso.ATIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso.PASSIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso.TERCEIROS.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || ''
         partes.push({nomePessoaParte: expediente.nomePessoaParte, tipo: parteTipo})
     }
     datas.push({data, partes, tipoPrazo, prazoLegal})
