@@ -378,6 +378,7 @@ function _ass_nomeTarefa(id){
 
 let USUARIO = {
 	nome: null,
+	perfil: null
 }
 
 let paginasConfereUSUARIO = [
@@ -395,16 +396,12 @@ let paginasConfereUSUARIO = [
 
 async function identificaUsuario(){
 	if(!paginasConfereUSUARIO.some(p => LOCAL.includes(p))) return
-
-	for(let i = 0; i < 20; i++){
-		const el = selecionar('.nome-usuario')
-		if(el?.textContent?.trim()){
-			USUARIO.nome = el.textContent.trim()
-			break
-		}
-		await suspender(500)
-	}
-
+	await aguardarElemento('.nome-usuario')
+	await suspender()
+	let el = selecionar('.nome-usuario')
+	if(el?.textContent?.trim()) USUARIO.nome = el.textContent.trim()
+	let papel = [...document.querySelectorAll('.papel-usuario')][1]?.textContent || ''
+	if (papel) USUARIO.perfil = papel
 	await armazenar({ rotapje_usuario: USUARIO })
 	await armazenar({ rotapje_ultimaOrigem: location.origin})
 }

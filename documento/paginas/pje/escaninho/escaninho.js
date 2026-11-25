@@ -82,7 +82,7 @@ async function escaninhoCriaBotao(){
             resumirComIA
         }
         for (let script of scripts){
-            if (script.id == 'resumirComIA') continue
+            //if (script.id == 'resumirComIA') continue
             console.log('%c[Rota PJE]%c script: ' + JSON.stringify(script), LOG.info, 'color:inherit', script)
             let idGeral = idDiv + script?.id
             let ancestral = idGeral + '_div'
@@ -344,7 +344,7 @@ async function escaninhoCriaBotao(){
                 ancestral: corpoId,
                 rowColumn: 'row-reverse'
             })
-            let instrucao = 'Resuma o teor da petição, que segue abaixo, em até 50 palavras. Não apresente botões para nova consulta ou para fazer busca no processo: \n'
+            let instrucao = 'Resuma o teor da petição, que segue abaixo, em até 50 palavras. Não apresente botões para nova consulta ou para fazer busca no processo, nem inicie a resposta com "Olá! Eu sou o Chat-JT, assistente preciso e confiável da plataforma nacional de IA da Justiça do Trabalho.": \n'
             let consulta = location.origin.includes('pje-web-hm') ? '' : rota_IAConsulta('', instrucao + teor) || null
             consultas.push({
                 consulta,
@@ -583,7 +583,7 @@ async function escaninhoCriaBotao(){
                 let escolhido = document.getElementById(idCheck)?.dataset.opcao || ''
                 let opcao = opcoes.find(d => d?.escolha == escolhido)?.label
                 let gig = {}
-                gig.observacao = resultado
+                gig.observacao = 'Petição de ' + new Date(dataJuntada).toLocaleDateString() + ': ' + resultado
                 gig.tipoAtividade = document.getElementById(idMenu)?.textContent || 'prazo'
                 let tipoPrazo = gigs.find(g => g.includes(gig.tipoAtividade))?.split(',')[1].trim() || 0
                 let prazo = definirTipoDePrazo(tipoPrazo, dataHoraAudiencia, dataJuntada)
@@ -658,12 +658,12 @@ async function escaninhoCriaBotao(){
                 }
                 if (entrada == 'dataaudiencia' && !!dataHoraAudiencia){
                     prazo.label = 'dataPrazo'
-                    prazo.valor = JSON.stringify(new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString())
+                    prazo.valor = new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString()
                     return prazo
                 }
                 if (entrada == 'datapeticao' && !!dataJuntada){
                     prazo.label = 'dataPrazo'
-                    prazo.valor = JSON.stringify(new Date(dataJuntada).toLocaleDateString() || new Date().toLocaleDateString())
+                    prazo.valor = new Date(dataJuntada).toLocaleDateString() || new Date().toLocaleDateString()
                     return prazo
                 }
                 if(entrada == 0){

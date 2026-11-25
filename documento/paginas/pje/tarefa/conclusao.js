@@ -32,6 +32,11 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
             parametro: 'simetriaPlanilha'
         },
         {
+            tipo: 'perfilEstagiario',
+            texto: 'ESTAGIÁRIO - SIMETRIA + PLANILHA pelo código da vara.',
+            parametro: 'juizEstagiario'
+        },
+        {
             tipo: 'planilha',
             texto: 'JUIZ DA PLANILHA',
             parametro: 'juizPlanilha'
@@ -58,13 +63,16 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     let processo = document.querySelector('pje-descricao-processo [role="button"]').textContent
     let juizSimetria =  await defineJuizSimetria(idURL)
     let juizPlanilha =  await defineJuizPlanilha(vara, processo)
+    let juizEstagiario = juizSimetria ? juizSimetria : await defineJuizPlanilha('estagiario', processo)
+    console.log('%c[Rota PJE]%c juizEstagiario: ' + JSON.stringify(juizEstagiario), LOG.info, 'color:inherit')
     let juizTitular =   await defineJuizApi('titular')
     let juizUltima =    await defineJuizApi('ultima')
     let juizes = {
         juizSimetria,
         juizPlanilha,
         juizTitular,
-        juizUltima
+        juizUltima,
+        juizEstagiario
     }
     async function defineJuizApi(parametro) {
         let interceptado = interceptador_ler('magistrados') || {}
@@ -88,6 +96,9 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
     let i = 0
     for (let botao of botoes){
         if (botao?.tipo == 'simetriaPlanilha') continue
+        let perfilEstagiarioArmazenado = await obterArmazenamento('rotapje_usuario')
+        let perfilEstagiario = normalizar(perfilEstagiarioArmazenado?.rotapje_usuario?.perfil).includes('estagiario')
+        if (!perfilEstagiario && botao?.tipo == 'perfilEstagiario') continue
         let funcao = i % 2 == 0 ? 'criaBotaoLaranja' : 'criaBotaoAzul'
         let parametro = botao.parametro
         let juiz = juizes[botao.parametro]
@@ -140,6 +151,9 @@ async function escolheMagistrado(ancestral, vara, juizAEscolher = '') {
             ancestral: divId
         })
         for (let botao of botoes){
+            let perfilEstagiarioArmazenado = await obterArmazenamento('rotapje_usuario')
+            let perfilEstagiario = normalizar(perfilEstagiarioArmazenado?.rotapje_usuario?.perfil).includes('estagiario')
+            if (!perfilEstagiario && botao?.tipo == 'perfilEstagiario') continue
             let idCheck = divId + '_check_' + botao.tipo
             if (botao.tipo == 'configura') continue
             let check = await criaCheckBox({
@@ -178,16 +192,87 @@ async function defineJuizSimetria(id) {
     return juiz
 }
 async function defineJuizPlanilha(vara, processo) {
+    let varaEstagiario = ''
+    if(vara = 'estagiario'){
+        let varas = [
+            {
+                nome: '1ª Vara do Trabalho de Bauru',
+                codigo: '0005'
+            },
+            {
+                nome: '2ª Vara do Trabalho de Bauru',
+                codigo: '0089'
+            },
+            {
+                nome: '3ª Vara do Trabalho de Bauru',
+                codigo: '0090'
+            },
+            {
+                nome: '4ª Vara do Trabalho de Bauru',
+                codigo: '0091'
+            },
+            {
+                nome: 'Vara do Trabalho de Botucatu',
+                codigo: '0025'
+            },
+            {
+                nome: 'Vara do Trabalho de Itápolis',
+                codigo: '0049'
+            },
+            {
+                nome: 'Vara do Trabalho de Avaré',
+                codigo: '0031'
+            },
+            {
+                nome: 'Vara do Trabalho de Garça',
+                codigo: '0098'
+            },
+            {
+                nome: '1ª Vara do Trabalho de Jaú',
+                codigo: '0024'
+            },
+            {
+                nome: '2ª Vara do Trabalho de Jaú',
+                codigo: '0055'
+            },
+            {
+                nome: '1ª Vara do Trabalho de Lençóis Paulista',
+                codigo: '0074'
+            },
+            {
+                nome: '2ª Vara do Trabalho de Lençóis Paulista',
+                codigo: '0149'
+            },
+            {
+                nome: '1ª Vara do Trabalho de Marília',
+                codigo: '0033'
+            },
+            {
+                nome: '2ª Vara do Trabalho de Marília',
+                codigo: '0101'
+            },
+            {
+                nome: 'Vara do Trabalho de Ourinhos',
+                codigo: '0030'
+            },
+            {
+                nome: 'Vara do Trabalho de Pederneiras',
+                codigo: '0144'
+            },
+            {
+                nome: 'Vara do Trabalho de Santa Cruz do Rio Pardo',
+                codigo: '0143'
+            }
+        ]
+        let codigoVara = processo.split('\.').pop()
+        varaEstagiario = varas.find(v => v.codigo == codigoVara)?.nome
+    }
     let anoProcesso = processo.slice(11, 15)
     let final = Number(anoProcesso) < 2010 ? processo.slice(4, 5) : processo.slice(6, 7)
     let git = await lerGit('rotapje_finais.json') || []
-    console.log('%c[Rota PJE]%c git: ' + JSON.stringify(git), LOG.info, 'color:inherit')
-    let varasObjetos = git.filter(d => d?.Vara == vara) || []
-    console.log('%c[Rota PJE]%c varasObjetos: ' + JSON.stringify(varasObjetos), LOG.info, 'color:inherit')
+    let varaComparar = varaEstagiario ? varaEstagiario : vara
+    let varasObjetos = git.filter(d => d?.Vara == varaComparar) || []
     let varaDigito = varasObjetos.find(d => d?.Dígitos.includes(final)) || {}
-    console.log('%c[Rota PJE]%c vara: ' + JSON.stringify(vara), LOG.info, 'color:inherit')
-    console.log('%c[Rota PJE]%c varaDigito: ' + JSON.stringify(varaDigito), LOG.aviso, 'color:inherit')
     let juiz = varaDigito.Magistrado || null
-    console.log('%c[Rota PJE]%c juiz: ' + JSON.stringify(juiz), LOG.info, 'color:inherit')
     return juiz ?? null
 }
