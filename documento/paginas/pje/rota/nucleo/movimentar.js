@@ -344,10 +344,10 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     preencher('input[data-placeholder="Descrição"]', parametros.descricao)
   }
   await suspender(500)
+  clicar('button[aria-label="Salvar"]')
+  await pje_aguardarMensagem('Minuta salva')
   if (parametros?.movimentos?.length){
     let movimentos = parametros?.movimentos
-    clicar('button[aria-label="Salvar"]')
-    await pje_aguardarMensagem('Minuta salva')
     await aguardarElemento('.mat-tab-labels')
     await suspender(500)
     while(![...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Movimentos'))){
@@ -395,6 +395,25 @@ async function rota_movimentar_executarElaborarDespachoSentencaDecisao(tarefaAtu
     await aguardarElemento('button[mattooltip^="Gravar os movimentos"]')
     clicar('button[mattooltip^="Gravar os movimentos"]')
     await pje_aguardarMensagem('Movimentos gravados com sucesso')
+  }
+  if (parametros?.prazo){
+    console.log('%c[Rota PJE]%c parametros?.prazo: ' + JSON.stringify(parametros?.prazo), LOG.info, 'color:inherit')
+    if (typeof (Number(parametros?.prazo)) == 'number'){
+      await aguardarElemento('.mat-tab-labels')
+      await suspender(500)
+      while(![...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Intimações'))){
+          await suspender()
+      }
+      let intimacoesBotao = [...document.querySelector('.mat-tab-labels').children].find(d=> d?.textContent.includes('Intimações'))
+      clicar(intimacoesBotao)
+      await aguardarElemento('pje-alterar-prazo-lote mat-select')
+      await suspender()
+      preencherCampoComEscolhaDeOpcao('pje-alterar-prazo-lote mat-select', Number(parametros?.prazo))
+      await aguardarElemento('button[mattooltip^="Gravar a intima"]')
+      await suspender()
+      clicar('button[mattooltip^="Gravar a intima"]')
+      await pje_aguardarMensagem('Intimações gravadas')
+    }
   }
   await aguardarElemento('button[aria-label^="Salvar"]')
   clicar('button[aria-label^="Salvar"]')

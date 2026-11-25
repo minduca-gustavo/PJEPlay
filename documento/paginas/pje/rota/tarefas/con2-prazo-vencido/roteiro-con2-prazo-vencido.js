@@ -344,7 +344,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
 
     
     await movimentar('Admissibilidade de Recursos', {
-        'Elaborar decisão':{texto, movimentos, descricao: 'Decisão - Admissibilidade de Recursos'}
+        'Elaborar decisão':{texto, movimentos, descricao: 'Decisão - Admissibilidade de Recursos', prazo: 8}
     })
     
     return
