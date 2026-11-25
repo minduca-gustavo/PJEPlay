@@ -111,10 +111,20 @@ Clique para fixar/desafixar.`,
                 ancestral: idg(tarefaNome, bloco, nomeTabela, 'linha' + linha),
             })
             celula.style.width = '100%'
-            
+            let possiveis = [
+                {
+                    solucao: 'arquivado o processo',
+                    label: 'Arquivado o processo'
+                },
+                {
+                    solucao: 'nao acolhidos',
+                    label: 'Não acolhidos os Embargos de Declaração'
+                }
+            ]
+            let solucaoAjustada = possiveis.find(p => normalizar(solucao?.movimento).includes(p.solucao))?.label || null
             let plaquinha = criaPlaquinhaComTooltip({
                 id: idg(tarefaNome, bloco, nomeTabela, 'plaquinha' + i),
-                texto: solucao?.movimento.split('-', 2)[0].trim(),
+                texto: solucaoAjustada ? solucaoAjustada : solucao?.movimento.split('-', 2)[0].trim(),
                 cor: corDaSolucao(solucao?.movimento),
                 tooltip: solucao?.movimento + ' - ' + solucao?.data,
                 ancestral: idg(tarefaNome, bloco, nomeTabela, 'celula' + i)
@@ -128,9 +138,11 @@ Clique para fixar/desafixar.`,
         }
 
         function corDaSolucao(solucao) {
-            if (normalizar(solucao).includes('improcedentes') || normalizar(solucao).includes('extinto')) return 'vermelho'
+            let vermelho = ['improcedentes', 'extinto', 'nao acolhidos', 'arquivado o processo']
+            if (vermelho.some(c => normalizar(solucao).includes(c))) return 'vermelho'
             if (normalizar(solucao).includes('em parte'))    return 'amarelo'
-            if (normalizar(solucao).includes('procedentes')) return 'verde'
+            let verde = ['procedentes', 'acolhidos']
+            if (verde.some(c=> normalizar(solucao).includes(c))) return 'verde'
             return ''
         }
 
@@ -162,7 +174,7 @@ Clique para fixar/desafixar.`,
 ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         ancestral: idg(tarefaNome, bloco)
     })
-
+    console.log('%c[Rota PJE]%c dados?.rota_dadosCon2PrazoVencido?.partes: ' + JSON.stringify(dados?.rota_dadosCon2PrazoVencido?.partes), LOG.info, 'color:inherit')
     criaBotaoAzul({
          id: idg(tarefaNome, bloco, 'retificar_partes'),
          texto: 'Retificar autuação',
@@ -182,6 +194,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
     let data = null
     let tipoPrazo = null
     let prazoLegal = null
+    let partesProcesso = dados?.rota_dadosCon2PrazoVencido?.partes
     for (let expediente of expedientes){
         if (expediente.fimDoPrazoLegal != data){
             if (data){
@@ -191,8 +204,9 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             data = expediente.fimDoPrazoLegal
             tipoPrazo = expediente.tipoPrazo
             prazoLegal = expediente.prazoLegal
-        } 
-        partes.push(expediente.nomePessoaParte)
+        }
+        let parteTipo = partesProcesso.ATIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso.PASSIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || ''
+        partes.push({nomePessoaParte: expediente.nomePessoaParte, tipo: parteTipo})
     }
     datas.push({data, partes, tipoPrazo, prazoLegal})
     console.log('%c[Rota PJE]%c datas' + JSON.stringify(datas), LOG.aviso, 'color:inherit')
@@ -203,7 +217,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             id: idg(tarefaNome, bloco, String(i), 'texto'),
             ancestral: 'rota_corpo',
             texto: `🗓️ ${new Date(data).toLocaleDateString()}:
-    🧑 partes: ${partes.join(',')}
+    🧑 partes: ${partes.map(p => p.nomePessoaParte + ' - ' + p.tipo).join(', ')}
     📅 dias: ${prazoLegal} ${tipoPrazo}
 
 `

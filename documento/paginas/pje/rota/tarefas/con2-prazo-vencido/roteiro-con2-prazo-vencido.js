@@ -76,8 +76,9 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     let movimentos = await buscarMovimentos(idURL) || null
     let solucaoMovimento = null
     let solucao = []
+    let solucoesPossiveis = ['Julgado(s)', 'Extinto', 'Arquivado o processo', 'Não acolhidos']
     if (movimentos) {
-        solucaoMovimento = movimentos.filter(m=> m?.titulo.includes('Julgado(s)') || m?.titulo.includes('Extinto')) || null
+        solucaoMovimento = movimentos.filter(m=> solucoesPossiveis.some(d=> m?.titulo.includes(d))) || null
     }
     let dataSolucaoMaisAntiga = new Date()
     console.log('%c[Rota PJE]%c solucaoMovimento: ' + JSON.stringify(solucaoMovimento), LOG.rosa, 'color:inherit')
