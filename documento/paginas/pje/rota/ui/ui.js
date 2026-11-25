@@ -2055,7 +2055,7 @@ async function criaVisualizadorDeDocumentos({ancestral, timeline = [], id, termo
     let armazenamento = await obterArmazenamento(id)
     let ordemSalva = armazenamento[id] ?? null
     let maisAntigo = false
-    if (!ordemSalva) maisAntigo = ordemSalva?.maisAntigo
+    if (ordemSalva) maisAntigo = ordemSalva?.maisAntigo
     let arrayTermos = [... new Set (termos.split(',').map(d => normalizar(d).trim().toLowerCase()))]
     let termosIds = []
     for (let termo of arrayTermos){
@@ -2215,19 +2215,21 @@ termosIds: [{"termo":"certidao","documentos":[{"id":"b008161","titulo":"Certidã
         }
     }
     function alternaCor(idBotao, id, tudoAzul = true){
-        let botao = [...document.querySelectorAll('button[id^="' + idBotao + '"]')]
-        let botoes = [...document.querySelectorAll('button[id^="' + id + '"]')]
+        let grade = document.getElementById(id + '_gradeTipos')
+        let botoes = grade ? [...grade.querySelectorAll('button')] : []
         for (let bot of botoes){
             bot.style.background = UI_CORES.azul
             _ui_hoverBotao(bot, UI_CORES.azul, UI_CORES.azulHover)
         }
         if (!tudoAzul){
-            for (let bot of botao){
+            let ativos = [idBotao + '_botaoPrincipal', idBotao + '_botaoSecundario']
+                .map(i => document.getElementById(i))
+                .filter(Boolean)
+            for (let bot of ativos){
                 bot.style.background = '#00aa77'
                 _ui_hoverBotao(bot, '#00aa77', '#009977')
             }
         }
-
     }
     function criaBotaoTermos({id, texto, ancestral, acaoPrincipal, acaoSecundaria, tooltip}){
         let divId = id

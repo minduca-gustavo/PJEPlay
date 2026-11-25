@@ -205,6 +205,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             texto: `🗓️ ${new Date(data).toLocaleDateString()}:
     🧑 partes: ${partes.join(',')}
     📅 dias: ${prazoLegal} ${tipoPrazo}
+
 `
         })
     }
