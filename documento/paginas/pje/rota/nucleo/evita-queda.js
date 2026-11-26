@@ -126,13 +126,16 @@ async function evitaQueda() {
             aguardarElemento('meta[id="rotapje-cursor"]'),
             suspender(2000)
         ])
-        if (!interceptador_ler('cursor') || interceptador_ler('cursor') != 'ok') await armazenar({rotapje_fluxoSemRetomada: true})
-        await rota_fluxo_salvar(
-            _rota_slots_ativos,
-            _rota_tarefaUnica_ativa,
-            _rota_temporizador_ativo,
-            false
-        )
+        /*if (interceptador_ler('cursor') == 'ok'){*/
+            await rota_fluxo_salvar(
+                _rota_slots_ativos,
+                _rota_tarefaUnica_ativa,
+                _rota_temporizador_ativo,
+                false
+            )
+        /*} else {*/
+            await removerArmazenamento('rotapje_fluxo_retomar')
+        //}
         console.log('%c[Rota PJE]%c 126 evita: ' + JSON.stringify(126), LOG.info, 'color:inherit')
         document.querySelector('meta[id="rotapje-cursor"]')?.remove()
     }

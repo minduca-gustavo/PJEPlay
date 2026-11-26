@@ -56,14 +56,9 @@ async function rota_fluxo_retomar(){
 	_rota_cursor    = dados.cursor ?? 0
 	_rota_relatorio = dados.relatorio || []
 	_rota_ativo     = true
-	let semRetomadaArmazenado = await obterArmazenamento('rotapje_fluxoSemRetomada') 
-	let semRetomada = semRetomadaArmazenado?.rotapje_fluxoSemRetomada || false
-	if (semRetomada){
-		await armazenar({rotapje_fluxoSemRetomada: false})
-	}
-	/*if (!semRetomada)*/ _rota_geracaoFluxo++
+	_rota_geracaoFluxo++
 	rota_avisoTemporario('🔄 Retomando fluxo após atualização…', 'info', 3000)
-	await rota_processarCursor(dados.slots, dados.tarefaUnica, dados.temporizador, semRetomada)
+	await rota_processarCursor(dados.slots, dados.tarefaUnica, dados.temporizador)
 }
 
 
@@ -511,32 +506,25 @@ function rota_sinalizar(sessao, acao){
 	localStorage.setItem(ROTA_KEY_BASE + sessao, acao)
 }
 
-function rota_aguardarSinal(sessao, geracao, timeout = 28800000, teste){
-	console.log('%c[Rota PJE]%c testeFluxo: ' + JSON.stringify(teste), LOG.info, 'color:inherit')
-	console.log('%c[Rota PJE]%c testeFluxogeracao: ' + JSON.stringify(geracao), LOG.info, 'color:inherit')
-	console.log('%c[Rota PJE]%c testeFluxogeracao: ' + JSON.stringify(sessao), LOG.info, 'color:inherit')
+function rota_aguardarSinal(sessao, geracao, timeout = 28800000){
     return new Promise(resolver => {
-		let inicio    = Date.now()
+        let inicio    = Date.now()
         let ocupado   = false   // impede ticks sobrepostos (o tick é assíncrono)
         let resolvido = false
-		
+
         function finalizar(valor){
-			if(resolvido) return
+            if(resolvido) return
             resolvido = true
             clearInterval(tick)
             resolver(valor)
         }
-		
+
         let tick = setInterval(async () => {
-			if(resolvido || ocupado) {
-				console.log('%c[Rota PJE]%c testeFluxo: ' + JSON.stringify(teste), LOG.info, 'color:inherit')
-				return
-			}
+            if(resolvido || ocupado) return
             ocupado = true
             try{
-				// Fluxo cancelado ou substituído: esta espera morre em silêncio
-                if(geracao !== _rota_geracaoFluxo){ finalizar('cancelado'); console.log('%c[Rota PJE]%c testeFluxo: ' + JSON.stringify(teste), LOG.info, 'color:inherit');return }
-				
+                // Fluxo cancelado ou substituído: esta espera morre em silêncio
+                if(geracao !== _rota_geracaoFluxo){ finalizar('cancelado'); return }
 
                 // Sinal das janelas PJe via localStorage (já é por sessão)
                 let sinal = localStorage.getItem(ROTA_KEY_BASE + sessao)
@@ -680,7 +668,7 @@ async function rota_iniciarFluxo({ fila }){
 let _rota_processando = false
 
 
-async function rota_processarCursor(slots, tarefaUnica, temporizador, semRetomada = false){
+async function rota_processarCursor(slots, tarefaUnica, temporizador){
     if(!_rota_ativo) return
     if(_rota_processando) return   // ← trava
     _rota_processando = true
@@ -720,34 +708,22 @@ async function rota_processarCursor(slots, tarefaUnica, temporizador, semRetomad
 		await rota_processarCursor(slots, tarefaUnica, temporizador)
 		return
 	}
-	const novoExecucao = String(Date.now())
-	let somaCursor = 0
-	if (!semRetomada) {
-		_rota_fecharTodasJanelas()  // fecha tudo, inclusive assistente anterior
-		await armazenar({
-			rotaExecucaoAtual:    novoExecucao,
-			rotaProcessoAtual:    item.numProc,
-			rotaSinalAssistente:  null,      // ← adicionar
-		})
-		somaCursor = 1
-	}
+
+	_rota_fecharTodasJanelas()  // fecha tudo, inclusive assistente anterior
 	await suspender(300)
-	
+
+	const novoExecucao = String(Date.now())
 	let execucao = novoExecucao   // ← adiciona isso
 	let sessao   = novoExecucao   // ← adiciona isso
-	
 	await armazenar({
-		rotaPosicaoAtual:     _rota_cursor + somaCursor,
+		rotaExecucaoAtual:    novoExecucao,
+		rotaProcessoAtual:    item.numProc,
+		rotaPosicaoAtual:     _rota_cursor + 1,
 		rotaTotalProcessos:   _rota_fila.length,
 		rota_dadosProntos:    false,
+		rotaSinalAssistente:  null,      // ← adicionar
 		rotapje_tramitarEmLoteClicarProximo: false,
 	})
-	if(semRetomada) {
-		let sessaoArmazenada = await obterArmazenamento('rotaExecucaoAtual')
-		let sessao = sessaoArmazenada?.rotaExecucaoAtual || novoExecucao
-		await rota_aguardarSinal(sessao, geracao, 28800000, 'gustavo')
-		return
-	}
 
 	// Reabre assistente se for tarefa do sistema
 	let cfgTarefa = await obterArmazenamento(['tarefaAtiva'])
