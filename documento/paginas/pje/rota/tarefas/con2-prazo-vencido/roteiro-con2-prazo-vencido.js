@@ -113,10 +113,12 @@ async function con2_prazo_vencido_enviarParaRoteiroAssistente(){
     let partes = await buscarProcesso(idBusca, '/partes?retornaEndereco=true') || []
     let buscaExpedientes = await buscarProcesso(idBusca, '/expedientes?pagina=1&tamanhoPagina=1000&instancia=1') || {}
     let expedientes = buscaExpedientes?.resultado.filter(d => new Date(d.fimDoPrazoLegal) > dataSolucaoMaisAntiga)
+    movimentos = movimentos?.filter(d => new Date(d.data) > dataSolucaoMaisAntiga)
     console.log('%c[Rota PJE]%c dataSolucaoMaisAntiga' + JSON.stringify(dataSolucaoMaisAntiga), LOG.aviso, 'color:inherit')
     console.log('%c[Rota PJE]%c expedientes' + JSON.stringify(expedientes), LOG.aviso, 'color:inherit', expedientes)
     
     dadosCon2PrazoVencido.solucao       = solucao
+    dadosCon2PrazoVencido.movimentos    = movimentos
     dadosCon2PrazoVencido.timeline      = timeline
     dadosCon2PrazoVencido.partes        = partes
     dadosCon2PrazoVencido.processo      = processo
@@ -340,7 +342,7 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
         movimentos.push({checkbox: {incluir: 'nao recebido'}, opcoes: [{nomeDoCampo: 'nome do recurso', selecionar: tipo}, {nomeDoCampo: 'nome da parte', selecionar: recurso.recorrente[0]?.nome}]})
     }
     let textoDenegar = `<p>Denego seguimento ao(s) recurso(s) ordinário(s) ` + recorrenteDenegar.join(', ') + `.</p>`
-    let texto = (recursos.some(d => d?.marcado) ? textoProcessar : '') + '\n' + (recursos.some(d => !d?.marcado) ? textoDenegar : '')
+    let texto = (recursos.some(d => d?.marcado) ? textoProcessar : '') + '\n' + (recursos.some(d => !d?.marcado && !d?.naoProcessar) ? textoDenegar : '')
 
     
     await movimentar('Admissibilidade de Recursos', {
@@ -358,17 +360,21 @@ async function con2_prazo_vencido_acoesDespachar(recursos){
 
 // PROCESSAR PASSO 1 - recebe os dados e abre a tela de tarefa
 
-async function con2_prazo_vencido_devolver() {
+async function con2_prazo_vencido_devolverRemeter(parametro) {
     let confereExecucao = await execucaoAtualConferencia()
     if (!confereExecucao) return
-    if (!confereSetor('CON2')) {
+    if (parametro == 'devolver' && confereSetor('Vara do ')) {
+        rota_avisoObrigatorio('Este processo já está na Vara.', 5)
+        return
+    }
+    if (parametro == 'devolver' && !confereSetor('CON2')) {
         rota_avisoObrigatorio('Esta funcionalidade deve ser executada em processos que estão na CON2.', 5)
         return
     }
     let idURL = location.href.match(/processo\/(\d+)\/detalhe/)
     let id = idURL[1]
-    let chave = idg('con2', 'prazoVencido', 'devolver')
-    await armazenar({[chave]: {confereExecucao}})
+    let chave = idg('con2', 'prazoVencido', 'devolverRemeter')
+    await armazenar({[chave]: {confereExecucao, parametro}})
     let urlInicio = await definirURLDaTarefa(id) || ''
     if (!urlInicio) {
         rota_avisoObrigatorio('Ocorreu um erro. Atualize a página e tente novamente.', 5)
@@ -384,7 +390,7 @@ async function con2_prazo_vencido_aoAbrirDevolver(){
     let janela = confereJanela(JANELA.processoTarefa)
     console.log('%c[Rota PJE]%c janela 371' + JSON.stringify(janela), LOG.aviso, 'color:inherit')
     if (!janela) return
-    let chave = idg('con2', 'prazoVencido', 'devolver')
+    let chave = idg('con2', 'prazoVencido', 'devolverRemeter')
     let armazenamento = await obterArmazenamento(chave)
     console.log('%c[Rota PJE]%c armazenamento 371' + JSON.stringify(armazenamento), LOG.aviso, 'color:inherit')
     if (!armazenamento) return
@@ -396,14 +402,16 @@ async function con2_prazo_vencido_aoAbrirDevolver(){
     let nomeJanela = window.name
     if (!nomeJanela.includes(execucao)) return
     registrarListenerFechar(execucao)
-    await con2_prazo_vencido_acoesDevolver()
+    await con2_prazo_vencido_acoesDevolver(dados?.parametro)
 }
 
 // DESPACHAR PASSO 3 - executa as ações
 
-async function con2_prazo_vencido_acoesDevolver(){
+async function con2_prazo_vencido_acoesDevolver(parametro){
     console.log('%c[Rota PJE]%c acoes Devolver 371' + JSON.stringify(371), LOG.aviso, 'color:inherit')
-    await movimentar('Devolver processo para vara de origem')
+    if (parametro == 'devolver'){
+        await movimentar('Devolver processo para vara de origem')
+    }
     return
 }
 
@@ -552,7 +560,7 @@ Object.assign(rota_acoes, {
     'con2_prazo_vencido_abrir_documentos':  async (p) => await con2_prazo_vencido_abrirDocumentos(p),
     'con2_prazo_vencido_retificar':         async (p) => await con2_prazo_vencido_retificarAutuacao(p),
     'con2_prazo_vencido_processar_recursos':async (p) => await con2_prazo_vencido_processarRecursos(p),
-    'con2_prazo_vencido_devolver':          async (p) => await con2_prazo_vencido_devolver(p)
+    'con2_prazo_vencido_devolverRemeter':   async (p) => await con2_prazo_vencido_devolverRemeter(p),
 })
 
 

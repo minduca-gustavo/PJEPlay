@@ -153,7 +153,7 @@ Clique para fixar/desafixar.`,
     criaTitulo({ id: idg(tarefaNome, bloco, 'titulo'), texto: 'Documentos do Processo', ancestral: idg(tarefaNome, bloco) })
     
     let documentosTimeline = dados?.rota_dadosCon2PrazoVencido?.timeline || []
-    let valores = 'sentenca, recurso, deposito, custas, seguro, fianca, procuracao, substabelecimento'
+    let valores = 'sentenca, recurso, deposito, custas, seguro, fianca, procuracao, substabelecimento, contrarrazoes, contrarrazao'
     criaVisualizadorDeDocumentos({
         id: idg(tarefaNome, bloco, 'visualizador'),
         ancestral: idg(tarefaNome, bloco),
@@ -205,7 +205,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
             tipoPrazo = expediente.tipoPrazo
             prazoLegal = expediente.prazoLegal
         }
-        let parteTipo = partesProcesso.ATIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso.PASSIVO.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso.TERCEIROS.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || ''
+        let parteTipo = partesProcesso?.ATIVO?.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso?.PASSIVO?.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || partesProcesso?.TERCEIROS?.find(d=> d.nome == expediente.nomePessoaParte)?.tipo || ''
         partes.push({nomePessoaParte: expediente.nomePessoaParte, tipo: parteTipo})
     }
     datas.push({data, partes, tipoPrazo, prazoLegal})
@@ -231,7 +231,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         texto: 'Recursos',
         ancestral: 'rota_corpo'
     })
-    let recursosPrimeiroGrau = documentosTimeline.filter(d => (normalizar(d?.tipo).includes('recurso') || normalizar(d?.titulo).includes('recurso')) && (normalizar(d?.participacaoProcesso).includes('autor') || normalizar(d?.participacaoProcesso).includes('reu')) && normalizar(d?.instancia).includes(normalizar('1º Grau'))) || []
+    let recursosPrimeiroGrau = documentosTimeline.filter(d => (normalizar(d?.tipo).includes('recurso') || normalizar(d?.titulo).includes('recurso')) && (['autor', 'reu', 'procurador', 'advogado'].some(c=> normalizar(d?.participacaoProcesso).includes(c))) && normalizar(d?.instancia).includes(normalizar('1º Grau')) && !normalizar(d?.tipo).includes('contrarraz') && !normalizar(d?.titulo).includes('contrarraz')) || []
     console.log('%c[Rota PJE]%c recursosUm' + JSON.stringify(recursosPrimeiroGrau), LOG.aviso, 'color:inherit', recursosPrimeiroGrau)
     let caixas = []
     for(let i = 0; i < recursosPrimeiroGrau.length; i++){
@@ -406,24 +406,67 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         acao: () => processarRecursosSelecionados(caixas)
     })
     botaoProcessar.style.width = '100%'
+    botaoProcessar.style.marginBottom = '4px'
     criaTooltip({
         id: idg(tarefaNome, 'processar_tip'),
         texto: 'Somente os recursos selecionados serão processados. Aos demais será denegado seguimento.',
         elemento: botaoProcessar
     })
 
+    criaTitulo({
+        id: idg(tarefaNome, bloco, 'titulo_processados'),
+        texto: 'Recursos processados',
+        ancestral: 'rota_corpo'
+    })
+
+    let movimentos = dados?.rota_dadosCon2PrazoVencido?.movimentos
+    let processados = movimentos.filter(d=> d.titulo.includes('Recebido(s) o(s)'))
+    console.log('%c[Rota PJE]%c processados: ' + JSON.stringify(processados), LOG.info, 'color:inherit')
+    let k = 0
+    console.log('%c[Rota PJE]%c Object.values(partesProcesso): ' + JSON.stringify(Object.values(partesProcesso)), LOG.info, 'color:inherit', Object.values(partesProcesso))
+    let recorrentes = []
+    for (let processado of processados){
+        let parte = Object.values(partesProcesso).map(d => d.find(d => normalizar(processado?.titulo).includes(normalizar(d?.nome).trim())))
+        let chk = await criaCheckBox({
+            id: idg(tarefaNome, bloco, 'processados', String(k)),
+            ancestral: 'rota_corpo',
+            textoAoLado: '    🟢 ' + processado?.titulo + ' - ' + new Date(processado?.data).toLocaleDateString() + '\n'
+        })
+        if (((new Date() - new Date(processado?.data)) / 1000 / 60 / 60 / 24) < 365) chk.click()
+        recorrentes.push(parte)
+        k++
+    }
+
     let botaoDevolver = criaBotaoAzul({
         id: idg(tarefaNome, 'devolver'),
         texto: 'Devolver para a vara de origem',
         ancestral: 'rota_corpo',
-        acao: () => comandar(['con2_prazo_vencido_devolver'], [])
+        acao: () => comandar(['con2_prazo_vencido_devolverRemeter'], ['devolver'])
     })
     botaoDevolver.style.width = '100%'
+    botaoDevolver.style.marginBottom = '4px'
+
     criaTooltip({
         id: idg(tarefaNome, 'processar_tip'),
         texto: 'Devolve o processo para a vara de origem (para remeter o recurso).',
         elemento: botaoDevolver
     })
+    
+    let botaoRemeter = criaBotaoAzul({
+        id: idg(tarefaNome, 'remeter'),
+        texto: 'Remeter para a instância superior',
+        ancestral: 'rota_corpo',
+        acao: () => comandar(['con2_prazo_vencido_devolverRemeter'], ['remeter'])
+    })
+    botaoRemeter.style.width = '100%'
+    botaoRemeter.style.marginBottom = '4px'
+    
+    criaTooltip({
+        id: idg(tarefaNome, 'remeter_tip'),
+        texto: 'Remete para a instância superior, considerando os recursos já processados.',
+        elemento: botaoDevolver
+    })
+
     async function processarRecursosSelecionados(caixas) {
         let recursos = []
         for (caixa of caixas){

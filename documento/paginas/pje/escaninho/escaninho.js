@@ -64,7 +64,7 @@ async function escaninhoCriaBotao(){
             },
             {
                 id: 'inserirGigPorTipoOuTitulo',
-                titulo: 'Insergir GIG e remover por tipo ou título.',
+                titulo: 'Inserir GIG e remover por tipo ou título.',
                 texto: 'Insere o GIG escolhido e remove do escaninho as petições que contenham no título ou tipo alguma das palavras escolhidas. DICA: FILTRE ANTES AS PETIÇÕES POR TIPO.',
                 textoBotao: 'Configurar e executar'
             },
@@ -210,7 +210,7 @@ async function escaninhoCriaBotao(){
                     {
                         resumoIA: true,
                         label: 'gigs_input',
-                        texto: 'Insira abaixo os gigs, seguidos dos prazos, separados por vírgula, um por linha. Aceita como prazo dataAudiencia que será substituída pela data de hoje, se não houver audiência marcada, e dataPeticao.',
+                        texto: 'Insira abaixo os gigs, seguidos dos prazos, separados por vírgula, um por linha. Aceita como prazo dataAudiencia que será substituída pela data de hoje, se não houver audiência marcada.',/*, e dataPeticao.',*/
                         placeholder: 'Ex:\n prazo, 5\nAcordo, 01/01/2027\nAUDIÊNCIA, dataAudiencia'
                     },
                 ],
@@ -610,11 +610,17 @@ async function escaninhoCriaBotao(){
                     let linha = definirLinha(consulta)
                     if (!linha) continue
                     let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
-                    if (!juiz) continue
+                    if (!juiz) {
+                        resultados += [numeroProcesso, 'Não foi encontrado juiz'].join('\t') + '\n'
+                        continue
+                    }
                     let juizLinha = tabela.find(d => normalizar(d).includes(normalizar(juiz))) || ''
                     if(!juizLinha) continue
                     let responsavel = juizLinha.split(',')[1].trim() || ''
-                    if(!responsavel) continue
+                    if(!responsavel) {
+                        resultados += [numeroProcesso, 'Não foi possível identificar o responsável'].join('\t') + '\n'
+                        continue
+                    }
                     gig.responsavel = responsavel
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, consulta, false)
                 }
@@ -622,11 +628,17 @@ async function escaninhoCriaBotao(){
                     let linha = definirLinha(consulta)
                     if (!linha) continue
                     let juiz = await escaninhoDefineJuiz(idProcesso, numeroProcesso) || ''
-                    if (!juiz) continue
+                    if (!juiz) {
+                        resultados += [numeroProcesso, 'Não foi encontrado juiz'].join('\t') + '\n'
+                        continue
+                    }
                     let juizLinha = tabela.find(d => normalizar(d).includes(normalizar(juiz))) || ''
                     if(!juizLinha) continue
                     let responsavel = juizLinha.split(',')[1].trim() || ''
-                    if(!responsavel) continue
+                    if(!responsavel) {
+                        resultados += [numeroProcesso, 'Não foi possível identificar o responsável'].join('\t') + '\n'
+                        continue
+                    }
                     gig.responsavel = responsavel
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, consulta, false)
                 }
@@ -639,7 +651,10 @@ async function escaninhoCriaBotao(){
                     if(!linhaApoio) continue
                     let responsavel = linhaApoio.split(',')[0].trim() || ''
                     gig.responsavel = responsavel
-                    if(!responsavel) continue
+                    if(!responsavel) {
+                        resultados += [numeroProcesso, 'Não foi possível identificar o responsável'].join('\t') + '\n'
+                        continue
+                    }
                     await removerDoEscaninhoEInserirGigs(numeroProcesso, gig, consulta, false)
                 }
                 if (!gig.responsavel){
@@ -665,11 +680,11 @@ async function escaninhoCriaBotao(){
                     prazo.valor = new Date(dataHoraAudiencia).toLocaleDateString() || new Date().toLocaleDateString()
                     return prazo
                 }
-                if (entrada == 'datapeticao' && !!dataJuntada){
-                    prazo.label = 'dataPrazo'
-                    prazo.valor = new Date(dataJuntada).toLocaleDateString() || new Date().toLocaleDateString()
-                    return prazo
-                }
+                //if (entrada == 'datapeticao' && !!dataJuntada){
+                //    prazo.label = 'dataPrazo'
+                //    prazo.valor = new Date(dataJuntada).toLocaleDateString() || new Date().toLocaleDateString()
+                //    return prazo
+                //}
                 if(entrada == 0){
                     prazo.label = 'hoje'
                     prazo.valor = true
