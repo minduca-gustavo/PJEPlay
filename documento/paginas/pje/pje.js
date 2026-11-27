@@ -171,7 +171,10 @@ async function rota_iniciarInfra(){
 function rota_iniciarPermanentes(){
 
 	// nucleo/evita-queda.js
-	window.addEventListener('focus', () => evitaQueda())
+	window.addEventListener('focus', () => {
+		evitaQueda()
+		botaoRotaIniciar().catch(e => relatar('Botão Rota:', e, 'erro'))
+	})
 	evitaQueda()
 
 	// nucleo/gigs.js — o Angular renderiza a tabela em momentos

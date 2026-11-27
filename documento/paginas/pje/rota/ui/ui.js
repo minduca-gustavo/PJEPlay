@@ -1217,7 +1217,7 @@ async function criaCheckBox({ id, textoAoLado = '', ancestral, salvar = false })
         aplicarVisual(novoEstado)
         if (salvar) await armazenar({ [id]: novoEstado })
     }
-
+    linha.caixa = chk
     aplicarVisual(false)
     linha.addEventListener('click', alternar)
     linha.appendChild(chk)

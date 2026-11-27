@@ -1080,13 +1080,14 @@ async function enfileirar(telaOuLista){
 	})?.seletor ?? 'pje-descricao-processo [role="link"]'
 	console.log('%c[Rota PJE]%c seletor: ' + JSON.stringify(seletor), LOG.info, 'color:inherit')
 	let processos = [...document.querySelectorAll(seletor)].map(d=> d.textContent.match(ROTA_REGEX_CNJ)[0]).filter(d => !!d)
-	if (!processos){
+	if (!processos.length){
 		rota_avisoObrigatorio ('Não foram encontrados processos na tela', 2)
+		return
 	}
 	let fila = processos.map(d=> {return {numProc: d}})
 	armazenarFilaEAbrirAssistente(fila)
 	async function armazenarFilaEAbrirAssistente(fila) {
-		armazenar({rotapje_fila: fila})
+		armazenar({rotapje_fila: fila, rotapje_filaPosicao: 0})
 		let sistemaArmazenado = await obterArmazenamento('tarefaAtivaIsSistema')
 		let sistema = sistemaArmazenado?.tarefaAtivaIsSistema || false
 		let url = extensao_raiz('navegador/paginas/novoAssistente/assistente.htm')

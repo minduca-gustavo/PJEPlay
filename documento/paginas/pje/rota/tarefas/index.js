@@ -74,6 +74,7 @@ const ROTA_CATALOGO = [
     */
 ]
 
+armazenar({tarefasDoSistema: ROTA_CATALOGO})
 
 // ── Buscar tarefa por ID ──────────────────────────────────────
 
