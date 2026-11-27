@@ -32,6 +32,9 @@ async function teste(){
   ]
   let janela = janelas.some(j => j.test(window.location.href))
   if (!janela) return
+  aguardarElemento('#brasao-republica')
+  criaNovoBotaoRota()
+  return
   let divId = idg('teste')
   let el = [...document.querySelectorAll('#' + divId)].forEach(e => e.remove())
   let div = criaDiv({
@@ -68,6 +71,78 @@ async function teste(){
   })
 }
 //teste()
+
+function criaNovoBotaoRota(){
+  let ancestral = idg('novoBotaoRota')
+  let remover = document.getElementById(ancestral)?.remove()
+  let div = criaDiv({
+    id: ancestral,
+    ancestral: document.body,
+  })
+  div.style.width = '130px'
+  div.style.height = '65px'
+  div.style.gap = '0px'
+  div.style.position = 'fixed'
+  div.style.left = 'max(15%, 360px)'
+  div.style.top= '0px'
+  div.style.zIndex= '99999999'
+  let divSuperior = criaDiv({
+    id: ancestral + '_superior',
+    ancestral,
+    rowColumn: 'row'
+  })
+  divSuperior.style.gap = '0px'
+  divSuperior.style.height = '40px'
+  let divEsquerda = criaDiv({
+    id: ancestral + '_esquerda',
+    ancestral: ancestral + '_superior'
+  })
+  divEsquerda.style.width = '0px'
+  divEsquerda.style.height = '0px'
+  divEsquerda.style.borderRight = '20px solid #000000'
+  divEsquerda.style.borderBottom = '20px solid transparent'
+  divEsquerda.style.borderTop = '20px solid transparent'
+  
+  let divCentral = criaDiv({
+    id: ancestral + '_central',
+    ancestral: ancestral + '_superior'
+  })
+  divCentral.style.width = '110px'
+  divCentral.style.height = '28px'
+  divCentral.style.background = '#000000'
+  divCentral.style.alignSelf = 'center'
+  //divCentral.style.borderRight = '40px solid #000000'
+  //divCentral.style.borderBottom = '20px solid transparent'
+  //divCentral.style.borderTop = '20px solid transparent'
+  
+  let divDireita = criaDiv({
+    id: ancestral + '_esquerda',
+    ancestral: ancestral + '_superior'
+  })
+  divDireita.style.width = '0px'
+  divDireita.style.height = '0px'
+  divDireita.style.borderLeft = '20px solid #000000'
+  divDireita.style.borderBottom = '20px solid transparent'
+  divDireita.style.borderTop = '20px solid transparent'
+  //divDireita.style.background = '#000000'
+
+
+  let divInferior = criaDiv({
+    id: ancestral + '_inferior',
+    ancestral
+  })
+  divInferior.style.height = '25px'
+  let botaoTroca = criaBotaoLaranja({
+    id: ancestral + 'trocaTarefa',
+    ancestral: ancestral + '_inferior',
+    texto: 'Troca tarefa'
+  })
+  botaoTroca.style.height = '100%'
+  botaoTroca.style.width = '94px'
+  botaoTroca.style.padding = '2px'
+  botaoTroca.style.padding = '2px'
+
+}
 
 function testePatch(){
   let teste = interceptador_ler('agrupamento_tarefas_processos')

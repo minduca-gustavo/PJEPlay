@@ -279,9 +279,29 @@ function _rota_criarBotaoDOM(id){
 	zTarefa.addEventListener('mouseleave', () => hoverTarefa(false))
 
 	// Cliques
-	zTela.addEventListener('click',   e => { e.stopPropagation(); _rota_aoClicarTela() })
-	zLista.addEventListener('click',  e => { e.stopPropagation(); _rota_aoClicarLista(btn) })
-	zTarefa.addEventListener('click', e => { e.stopPropagation(); _rota_aoClicarTarefa(btn) })
+	zTela.addEventListener('click',   e => {
+		if(location.href.includes('pje-web-hm')){
+			enfileirar('tela')
+			return
+		}
+		e.stopPropagation()
+		_rota_aoClicarTela() 
+
+	})
+	zLista.addEventListener('click',  e => {
+		e.stopPropagation()
+		_rota_aoClicarLista(btn) 
+
+	})
+	zTarefa.addEventListener('click', e => {
+		if(location.href.includes('pje-web-hm')){
+			abrirTarefasExistentes()
+			
+		}
+		e.stopPropagation()
+		_rota_aoClicarTarefa(btn) 
+
+	})
 
 	btn.appendChild(wrap)
 
@@ -877,6 +897,10 @@ function _rota_aoClicarLista(btnRef){
 		}
 
 		_rota_fecharPainelLista()
+		if (location.href.includes('pje-web-hm')){
+			enfileirar(fila)
+			return
+		}
 
 		rota_avisoTemporario('▶ ' + fila.length + ' processo(s) na lista. Iniciando…', 'info', 4000)
 		rota_iniciarFluxo({ fila })
@@ -1018,3 +1042,76 @@ async function _rota_garantirOJCorreta(numero, dadosBasicos = null){
 	}
 
 }
+
+// -----------------------------------------------
+// FUNÇÕES NOVAS DE ENFILEIRAR
+// -----------------------------------------------
+async function enfileirar(telaOuLista){
+	let filaEmExecucaoArmazenada = await obterArmazenamento('rotapje_filaEmExecucao')
+	if (filaEmExecucaoArmazenada?.rotapje_filaEmExecucao) {
+		rota_avisoObrigatorio('Já há uma fila em execuçao. Feche a janela assistente para iniciar uma nova.')
+		return
+	}
+	if (telaOuLista !== 'tela'){
+		armazenarFilaEAbrirAssistente(telaOuLista)
+		return
+	}
+	let janelas = [
+		{
+			janela: JANELA.pautaAudiencias,
+			seletor: 'a [role="presentation"]'
+		},
+		{
+			janela: JANELA.atasAudiencias,
+			seletor: 'a[role="link"]'
+		},
+		{
+			janela: JANELA.pautaPericias,
+			seletor: 'pje-celula-dados-basicos-processo'
+		},
+		{
+			janela: [JANELA.gigsRelatorios, JANELA.meuPainel],
+			seletor: 'pje-gigs-abrir-tarefa [role="link"]'
+		}
+	]
+	let seletor = janelas.find(j => {
+		let js = Array.isArray(j.janela) ? confereJanela(...j.janela) : confereJanela(j.janela)
+		return js
+	})?.seletor ?? 'pje-descricao-processo [role="link"]'
+	console.log('%c[Rota PJE]%c seletor: ' + JSON.stringify(seletor), LOG.info, 'color:inherit')
+	let processos = [...document.querySelectorAll(seletor)].map(d=> d.textContent.match(ROTA_REGEX_CNJ)[0]).filter(d => !!d)
+	if (!processos){
+		rota_avisoObrigatorio ('Não foram encontrados processos na tela', 2)
+	}
+	let fila = processos.map(d=> {return {numProc: d}})
+	armazenarFilaEAbrirAssistente(fila)
+	async function armazenarFilaEAbrirAssistente(fila) {
+		armazenar({rotapje_fila: fila})
+		let sistemaArmazenado = await obterArmazenamento('tarefaAtivaIsSistema')
+		let sistema = sistemaArmazenado?.tarefaAtivaIsSistema || false
+		let url = extensao_raiz('navegador/paginas/novoAssistente/assistente.htm')
+		let dimensoes = sistema ? {} : {centralizada: true, largura: 350, altura: 700}
+		console.log('%c[Rota PJE]%c {url, ...dimensoes}: ', LOG.info, 'color:inherit', {url, ...dimensoes})
+		armazenar({rotapje_filaEmExecucao: true})
+		abrirURL({url, ...dimensoes})
+	}
+}
+
+function abrirTarefasExistentes(){
+	
+}
+
+/*
+let {
+		url						= 'about:blank',
+		centralizada	= false,
+		largura				= 0,
+		altura				= 0,
+		horizontal		= 0,
+		vertical			= 0,
+		chave					= '',
+		tipo					= 'normal',
+		incognito			= false,
+		ativa					= true,
+} = configuracao
+*/

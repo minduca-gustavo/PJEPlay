@@ -53,6 +53,8 @@ async function escaninhoCriaBotao(){
                 id: 'removePeticoesAnalisadas',
                 titulo: 'Remove petições analisadas.',
                 texto: 'Remove do escaninho as petições de processos que já têm despacho, sentença ou ata de audiência posterior.',
+                input: 'Se houver qualquer dos documentos clicados posteriores à petição, ela será removida:',
+                checkBoxes: ['Sentença', 'Despacho', 'Decisão', 'Ata da audiência'],
                 textoBotao: 'Iniciar'
             },
             {
@@ -102,13 +104,40 @@ async function escaninhoCriaBotao(){
                 ancestral,
                 acao: () => funcao(idInput)
             })
-            if (script?.input){
+            if (script?.input && !script?.checkBoxes){
                 let input = criaInput({
                     id: idInput,
                     textoEmCima: script?.input,
                     ancestral,
                 })
                 input.value = inputValue
+            }
+            if (script?.checkBoxes){
+                criaDiv({
+                    id: idInput,
+                    ancestral
+                })
+                criaTexto({
+                    id: idInput + '_texto',
+                    ancestral: idInput,
+                    texto: script?.input
+                })
+                criaDiv({
+                    id: idInput + '_chks',
+                    ancestral: idInput,
+                    rowColumn: 'row'
+                })
+                let ch = 0
+                for (let check of script?.checkBoxes){
+                    let chk = await criaCheckBox({
+                        id: idInput + '_chk_' + String(ch),
+                        ancestral: idInput + '_chks',
+                        salvar: true,
+                        textoAoLado: check
+                    })
+                    chk.dataset.tipo = normalizar(check)
+                    ch++
+                }
             }
             let texto = criaTexto({
                 id: idGeral + '_texto',
@@ -713,8 +742,10 @@ async function escaninhoCriaBotao(){
         let termosArray = termos.split(',').map(d=> normalizar(d?.trim()))
         percorrePeticoes({rechamada: false, funcao: 'porTipoOuTitulo',parametros: termosArray})
     }
-    async function removePeticoesAnalisadas(){
-        percorrePeticoes({rechamada: false, funcao: 'analisadas', parametros: []})
+    async function removePeticoesAnalisadas(ancestral){
+        let checks = [...document.getElementById(ancestral).querySelectorAll('div [data-marcado]')]
+        let parametros = checks.filter(d => d?.dataset?.marcado == 1).map(d=> d?.dataset?.tipo)
+        percorrePeticoes({rechamada: false, funcao: 'analisadas', parametros})
     }
     async function percorrePeticoes({rechamada, funcao, parametros}) {
         let idDivMenu = idg('escaninho', 'menu')
@@ -792,12 +823,13 @@ async function escaninhoCriaBotao(){
 
         
 
-        async function analisadas({peticao}) {
+        async function analisadas({parametros, peticao}) {
+            console.log('%c[Rota PJE]%c parametros: ' + JSON.stringify(parametros), LOG.info, 'color:inherit')
             let {numeroProcesso, idProcesso, dataJuntada, idDocumento} = peticao
             let timeline = await buscarDocumentos(idProcesso) || []
             if (!timeline.length) return {removeuTF: false, dadosBuscados: null} 
             let remover = timeline.some(d => d?.data > dataJuntada &&
-                ['despacho', 'decisao', 'sentenca', 'ata da audiencia'].some(c=> normalizar(d?.titulo).includes(c) || normalizar(d?.tipo).includes(c)) && 
+                parametros.some(c=> normalizar(d?.titulo).includes(c) || normalizar(d?.tipo).includes(c)) && 
                 d?.usuarioInterno)
             let removeuTF = false
             if (remover){

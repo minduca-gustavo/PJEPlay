@@ -1607,6 +1607,10 @@ function criaBotaoProximoEEncerrar({ id, ancestral }) {
     return linha
 }
 
+function trocarCorDoBotao(botao, cor, hover){
+    botao.style.background = cor
+    _ui_hoverBotao(botao, cor, hover)
+}
 
 
 

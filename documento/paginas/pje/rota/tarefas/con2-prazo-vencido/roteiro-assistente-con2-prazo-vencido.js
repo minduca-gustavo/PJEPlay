@@ -413,6 +413,7 @@ ${formatarPartes(dados?.rota_dadosCon2PrazoVencido?.partes)}`,
         elemento: botaoProcessar
     })
 
+    return
     criaTitulo({
         id: idg(tarefaNome, bloco, 'titulo_processados'),
         texto: 'Recursos processados',

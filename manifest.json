@@ -1,5 +1,5 @@
 {
-	"version":					"2.2.68",
+	"version":					"2.2.71",
 	"short_name":				"RotaPJE",
 	"name":							"Rota PJE",
 	"description":			"Atua como auxiliar para a execução de tarefas no PJE, fornecendo um roteiro operacional e recursos adicionais para facilitar o uso do sistema.",
@@ -74,7 +74,8 @@
 				"documento/paginas/pje/rota/assistente-janela/pagina.htm",
 				"documento/paginas/pje/rota/assistente-janela/assistente.js",
 				"documento/paginas/pje/rota/assistente-janela/conector.js",
-				"navegador/paginas/menu/menu-gestor.htm"
+				"navegador/paginas/menu/menu-gestor.htm",
+				"navegador/paginas/novoAssistente/assistente.htm"
 			]
 		}
 	],

@@ -92,6 +92,7 @@ var JANELA = {
 	certificar:             /\/pjekz\/processo\/\d*\/documento\/anexar/,
 	minutar:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/minutar/,
 	conclusao:				/\/pjekz\/processo\/\d*\/tarefa\/\d*\/conclusao/,
+	pautaPericias:			/\/pjekz\/painel\/pauta-pericias/,
 	pautaEletronica:		/pautaeletronica\/pautaAudiencia/,
 	pec:                    /\/pjekz\/processo\/\d*\/comunicacoesprocessuais\/minutas/,
 	pecTarefa:              /\/pjekz\/processo\/\d*\/tarefa\/\d*\/comunicacoesprocessuais\/minutas/,
