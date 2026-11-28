@@ -135,9 +135,10 @@ async function novoAssistente() {
             botFila.style.padding = '2px 4px'
             botFila.style.borderRadius = '6px'
             botFila.style.cursor = 'pointer'
-            let corFila = primeiro && item == fila[0] ? ['#81d55a', '#51a851'] : ['#dddddd', '#999999']
-            let marcado = primeiro && item == fila[0] ? botFila.dataset.marcado = 1 : botFila.dataset.marcado = 0
-            trocarCorDoBotao(botFila, ...corFila)
+            botFila.dataset.marcado = 0
+            botFila.dataset.processo = numProc
+            trocarCorDoBotao(botFila, '#dddddd', '#999999')
+            
             criaTooltip({
                 id: ancestral + '_fila_tip',
                 texto: 'Executar este',
@@ -154,10 +155,12 @@ async function novoAssistente() {
                 } else {
                     bot.dataset.marcado = 1
                     trocarCorDoBotao(bot, '#81d55a', '#51a851')
+                    abrirProcessoFila(bot.dataset.processo)
                 }
                 alternaCheckBox(botao, ...botFilas)
             })
         }
+        if (primeiro) document.getElementById(botFilas[0]).click()
         
         
         function corDoTexto (chk, texto){
@@ -195,7 +198,12 @@ async function novoAssistente() {
             
         }
     }
-    
+    async function abrirProcessoFila(parametro) {
+        // mandar sinal para fechar todas as janelas
+        alert(parametro)
+        
+        
+    }
     async function acoesFila(parametro, checks) {
         console.log('%c[Rota PJE]%c parametro' + JSON.stringify(parametro), LOG.aviso, 'color:inherit')
         console.log('%c[Rota PJE]%c checks' + JSON.stringify(checks), LOG.aviso, 'color:inherit')
