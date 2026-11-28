@@ -86,6 +86,7 @@ async function novoAssistente() {
         })
         divFila.style.height = '100%'
         divFila.style.overflowY = 'auto'
+        let botFilas = []
         for (let item of fila){
             let {numProc} = item
             console.log('%c[Rota PJE]%c numProc: ' + JSON.stringify(numProc), LOG.info, 'color:inherit')
@@ -124,19 +125,37 @@ async function novoAssistente() {
                 texto: 'Remover da fila',
                 elemento: botRemover
             })
-            let botFila = criaBotaoAzul({
+            let botFila = criaTexto({
                 id: ancestral + '_fila',
                 ancestral,
                 texto: '📍',
-                acao: () => alert('Armazenar o novo da fila e recriar')
+                // acao: () => alert('Armazenar o novo da fila e recriar')
             })
+            botFilas.push(ancestral + '_fila')
             botFila.style.padding = '2px 4px'
+            botFila.style.borderRadius = '6px'
+            botFila.style.cursor = 'pointer'
             let corFila = primeiro && item == fila[0] ? ['#81d55a', '#51a851'] : ['#dddddd', '#999999']
+            let marcado = primeiro && item == fila[0] ? botFila.dataset.marcado = 1 : botFila.dataset.marcado = 0
             trocarCorDoBotao(botFila, ...corFila)
             criaTooltip({
                 id: ancestral + '_fila_tip',
                 texto: 'Executar este',
                 elemento: botFila
+            })
+        }
+        for (let botao of botFilas){
+            let bot = document.getElementById(botao)
+            bot.addEventListener('click', () => {
+                if (bot.dataset.marcado == 1){
+                    bot.dataset.marcado = 0
+                    trocarCorDoBotao(bot, '#dddddd', '#999999')
+                    //['#81d55a', '#51a851'] : ['#dddddd', '#999999']
+                } else {
+                    bot.dataset.marcado = 1
+                    trocarCorDoBotao(bot, '#81d55a', '#51a851')
+                }
+                alternaCheckBox(botao, ...botFilas)
             })
         }
         

@@ -705,7 +705,6 @@ function confereSetor(...setor){
 
 function alternaCheckBox(idCheck, ...checks){
 	for (let check of checks){
-		console.log('%c[Rota PJE]%c check' + JSON.stringify(check), LOG.aviso, 'color:inherit')
 		let id = typeof check == 'string' ? check : check.id
 		if (id.includes('caixa')) continue
 		if (id != idCheck && document.getElementById(id).dataset.marcado == 1 && document.getElementById(idCheck).dataset.marcado == 1) clicar('#' + id)
