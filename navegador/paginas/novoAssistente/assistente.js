@@ -201,7 +201,7 @@ async function novoAssistente() {
     async function abrirProcessoFila(parametro) {
         // mandar sinal para fechar todas as janelas
         alert(parametro)
-        
+
         
     }
     async function acoesFila(parametro, checks) {
@@ -258,3 +258,30 @@ async function novoAssistente() {
 }
 
 novoAssistente()
+
+async function requisicoesAssistente(requisicao, id, idDocumento){
+    
+    async function linkPje() {
+        let urlArmazenada = await obterArmazenamento('rotapje_ultimaOrigem')
+        let url = urlArmazenada?.rotapje_ultimaOrigem || 'https://pje.trt15.jus.br/'
+        
+    }
+    let tipos = [
+        {
+            tipo: 'dadosBasicos',
+            urlPje: true,
+            complemento: ''
+        }
+    ]
+    
+
+    let criada = await NAVEGADOR.runtime.sendMessage({
+        requisicao,
+        configuracao: {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include',
+            headers: rota_cabecalhosApi()
+        }
+    })
+}
